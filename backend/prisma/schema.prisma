@@ -1,0 +1,269 @@
+// Prisma Schema — Portafolio Administrable Manuel Saavedra
+// Datasource: PostgreSQL · ver docs/ARCHITECTURE.md para contexto
+//
+// NOTA DE ARQUITECTURA (Clean Architecture):
+// Estos modelos son la representación de PERSISTENCIA (infrastructure layer).
+// NO deben usarse directamente como entidades de dominio. Cada repositorio
+// Prisma en infrastructure/persistence/ debe mapear estos modelos a las
+// entidades de dominio (domain/entities) y viceversa.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// PERFIL BASE
+// ─────────────────────────────────────────────────────────────
+model Profile {
+  id                String   @id @default(cuid())
+  fullName          String
+  headline          Json     // LocalizedText { es, en }
+  location          String
+  timezone          String   @default("GMT-4")
+  email             String
+  phone             String?
+  summary           Json     // LocalizedText { es, en }
+  yearsOfExperience Int      @default(0)
+
+  // Disponibilidad (embebida como campos simples; traducibles)
+  availModality     Json?    // LocalizedText
+  availContractType Json?    // LocalizedText
+  availStartDate    Json?    // LocalizedText
+
+  languages         Language[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Language {
+  id        String  @id @default(cuid())
+  name      String  // nombre del idioma (no se traduce: "Español"/"Spanish" se maneja como LocalizedText si se desea)
+  nameI18n  Json?   // opcional LocalizedText para el nombre mostrado
+  level     String
+  detail    Json?   // LocalizedText
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId String
+}
+
+// ─────────────────────────────────────────────────────────────
+// EXPERIENCIA LABORAL
+// ─────────────────────────────────────────────────────────────
+model Experience {
+  id           String   @id @default(cuid())
+  company      String                    // no traducible
+  role         Json                      // LocalizedText
+  startDate    String   // formato YYYY-MM
+  endDate      String?  // null = actual
+  current      Boolean  @default(false)
+  location     String                    // no traducible
+  summary      Json                      // LocalizedText
+  highlights   Json                      // LocalizedList { es: string[], en: string[] }
+  technologies String[]                  // no traducible
+  tags         String[]                  // ⭐ filtrado de perfiles curados (no traducible)
+  sector       String[]                  // no traducible
+  order        Int      @default(0)
+  visible      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([order])
+}
+
+// ─────────────────────────────────────────────────────────────
+// SKILLS
+// ─────────────────────────────────────────────────────────────
+model SkillCategory {
+  id        String   @id @default(cuid())
+  name      Json     // LocalizedText { es, en }
+  order     Int      @default(0)
+  skills    Skill[]
+  createdAt DateTime @default(now())
+
+  @@index([order])
+}
+
+model Skill {
+  id         String        @id @default(cuid())
+  name       String
+  tags       String[]      // ⭐ usados por el filtrado de perfiles curados
+  order      Int           @default(0)
+  category   SkillCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String
+}
+
+// ─────────────────────────────────────────────────────────────
+// EDUCACIÓN Y CERTIFICACIONES
+// ─────────────────────────────────────────────────────────────
+model Education {
+  id          String   @id @default(cuid())
+  degree      Json     // LocalizedText { es, en }
+  institution String                    // no traducible
+  startDate   String
+  endDate     String?
+  inProgress  Boolean  @default(false)
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+
+  @@index([order])
+}
+
+model Certification {
+  id        String   @id @default(cuid())
+  name      Json     // LocalizedText { es, en }
+  issuer    String                      // no traducible
+  year      String?
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+
+  @@index([order])
+}
+
+// ─────────────────────────────────────────────────────────────
+// PROYECTOS DESTACADOS
+// ─────────────────────────────────────────────────────────────
+model Project {
+  id           String   @id @default(cuid())
+  name         String                    // no traducible
+  role         Json                      // LocalizedText
+  period       String
+  summary      Json                      // LocalizedText
+  technologies String[]                  // no traducible
+  tags         String[]                  // ⭐ filtrado (no traducible)
+  url          String?
+  order        Int      @default(0)
+  visible      Boolean  @default(true)
+
+  @@index([order])
+}
+
+// ─────────────────────────────────────────────────────────────
+// REDES Y PRESENCIA PÚBLICA (GitHub, YouTube, etc.)
+// ─────────────────────────────────────────────────────────────
+model SocialLink {
+  id          String   @id @default(cuid())
+  platform    String                      // 'github' | 'youtube' | 'linkedin' | ...
+  handle      String                      // ej. 'manuXD270516' o '@manueljoaquinsaavedrasever8888'
+  url         String
+  label       Json                        // LocalizedText — texto corto (ej. "Código y proyectos")
+  description Json?                       // LocalizedText — narrativa más larga
+  stats       Json?                       // estructurado libre: { repos: 67, achievements: [...] }
+  featured    Boolean  @default(false)    // si se destaca en el portafolio
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+
+  @@index([platform])
+  @@index([order])
+}
+
+// Repositorios destacados (curaduría manual; NO un dump del API de GitHub)
+model FeaturedRepository {
+  id           String   @id @default(cuid())
+  name         String                     // nombre del repo
+  url          String
+  language     String?                    // ej. 'TypeScript', 'Java'
+  description  Json                       // LocalizedText
+  technologies String[]
+  tags         String[]                   // para filtrado por perfil curado
+  stars        Int?                       // opcional, manual
+  order        Int      @default(0)
+  visible      Boolean  @default(true)
+
+  @@index([order])
+}
+
+// ─────────────────────────────────────────────────────────────
+// SISTEMA DE PERSONALIZACIÓN (THEMING)
+// ─────────────────────────────────────────────────────────────
+model Theme {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  isPreset  Boolean  @default(false)
+  tokens    Json     // design tokens completos (colors, typography, layout, effects)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  curatedProfiles CuratedProfile[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// PERFIL CURADO — NÚCLEO DEL PRODUCTO
+// ─────────────────────────────────────────────────────────────
+model CuratedProfile {
+  id             String     @id @default(cuid())
+  slug           String     @unique
+  title          Json       // LocalizedText { es, en }
+  headline       Json       // LocalizedText { es, en }
+  description    Json?      // LocalizedText { es, en }
+
+  // Taxonomía para navegación (subclasificación del menú)
+  roleType       Json?      // LocalizedText { es, en } — ej. "Tech Lead", "Backend", "Fullstack"
+  techFocus      String?    // tecnología destacada — ej. ".NET", "Java", "Node / React"
+
+  // Lógica de filtrado/curación
+  filterTags     String[]   // incluir items que compartan al menos un tag
+  includeIds     String[]   // override: forzar inclusión de IDs (exp/skill)
+  excludeIds     String[]   // override: forzar exclusión de IDs
+
+  // Personalización visual
+  accentColor    String     @default("#1A365D")
+  theme          Theme?     @relation(fields: [themeId], references: [id])
+  themeId        String?
+  themeOverrides Json?      // override parcial de tokens del tema
+  layout         String     @default("classic")
+  sectionsOrder  String[]   @default([])
+  sectionsHidden String[]   @default([])
+
+  // Visibilidad y acceso
+  visibility     Visibility @default(PUBLIC)
+  accessToken    String?    // para perfiles PROTECTED
+
+  // Analítica
+  views          Int        @default(0)
+  profileViews   ProfileView[]
+
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([slug])
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  PROTECTED
+}
+
+// ─────────────────────────────────────────────────────────────
+// ANALÍTICA DE VISITAS
+// ─────────────────────────────────────────────────────────────
+model ProfileView {
+  id               String          @id @default(cuid())
+  curatedProfile   CuratedProfile  @relation(fields: [curatedProfileId], references: [id], onDelete: Cascade)
+  curatedProfileId String
+  locale           String?         // idioma servido en esta visita (es/en) — analítica sin duplicar perfil
+  referrer         String?
+  userAgent        String?
+  ipHash           String?         // hash de IP por privacidad, nunca IP cruda
+  viewedAt         DateTime        @default(now())
+
+  @@index([curatedProfileId])
+  @@index([viewedAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// AUTENTICACIÓN (BACKOFFICE)
+// ─────────────────────────────────────────────────────────────
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+  lastLoginAt  DateTime?
+}
