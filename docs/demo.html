@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manuel Saavedra — Portafolio (Demo Estético)</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg-soft: #111827;
+    --card: #161d2e;
+    --card-hover: #1c2438;
+    --border: #252d42;
+    --text: #e8edf5;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --accent-glow: rgba(56, 189, 248, 0.15);
+    --radius: 16px;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  /* Animated gradient background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(800px circle at 10% 10%, rgba(56,189,248,0.06), transparent 40%),
+      radial-gradient(900px circle at 90% 30%, rgba(129,140,248,0.06), transparent 40%),
+      radial-gradient(700px circle at 50% 90%, rgba(56,189,248,0.04), transparent 40%);
+    z-index: 0;
+    pointer-events: none;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* ── Profile selector bar (the curated-profile concept) ── */
+  .profile-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,14,26,0.8);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+  }
+  .profile-bar-inner { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .profile-bar-label { font-size: 13px; color: var(--text-dim); font-weight: 500; white-space: nowrap; }
+  .profile-chips { display: flex; gap: 16px; flex-wrap: wrap; flex: 1; align-items: flex-start; }
+  .chip-group { display: flex; flex-direction: column; gap: 5px; }
+  .chip-group-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); padding-left: 4px;
+  }
+  .chip-group-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15;
+    padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: 500;
+    background: var(--card); border: 1px solid var(--border); color: var(--text-muted);
+    cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
+  }
+  .chip-title { font-weight: 600; }
+  .chip-tech { font-size: 10px; color: var(--text-dim); font-weight: 400; }
+  .chip:hover { background: var(--card-hover); color: var(--text); border-color: var(--accent); }
+  .chip:hover .chip-tech { color: var(--text-muted); }
+  .chip.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #0a0e1a; border-color: transparent; font-weight: 600;
+  }
+  .chip.active .chip-tech { color: rgba(10,14,26,0.7); }
+
+  /* ── Hero ── */
+  .hero { padding: 80px 0 60px; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px; font-size: 13px;
+    background: var(--accent-glow); border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent); margin-bottom: 24px; font-weight: 500;
+  }
+  .hero-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+  .hero h1 {
+    font-size: clamp(36px, 6vw, 60px); font-weight: 800; line-height: 1.05;
+    letter-spacing: -0.02em; margin-bottom: 18px;
+    background: linear-gradient(135deg, #fff 30%, #94a3b8);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero .headline {
+    font-size: clamp(18px, 3vw, 24px); color: var(--accent); font-weight: 600; margin-bottom: 24px;
+    min-height: 32px;
+  }
+  .hero .summary { font-size: 17px; color: var(--text-muted); max-width: 720px; margin-bottom: 32px; }
+  .hero-meta { display: flex; gap: 24px; flex-wrap: wrap; }
+  .hero-meta-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-dim); }
+  .hero-meta-item svg { width: 16px; height: 16px; stroke: var(--accent); }
+
+  /* ── Stats ── */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin: 40px 0 70px; }
+  .stat {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px; text-align: center; transition: all 0.3s ease;
+  }
+  .stat:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 12px 40px var(--accent-glow); }
+  .stat .num {
+    font-size: 36px; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stat .label { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+  /* ── Section ── */
+  .section { margin-bottom: 70px; }
+  .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 8px; }
+  .section-heading { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 32px; }
+
+  /* ── Timeline / Experience ── */
+  .timeline { position: relative; }
+  .exp-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 28px; margin-bottom: 18px; transition: all 0.3s ease; position: relative; overflow: hidden;
+  }
+  .exp-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(180deg, var(--accent), var(--accent2)); opacity: 0; transition: opacity 0.3s;
+  }
+  .exp-card:hover { background: var(--card-hover); transform: translateX(6px); }
+  .exp-card:hover::before { opacity: 1; }
+  .exp-head { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+  .exp-role { font-size: 20px; font-weight: 700; }
+  .exp-company { color: var(--accent); font-weight: 600; }
+  .exp-dates { font-size: 13px; color: var(--text-dim); white-space: nowrap; background: var(--bg-soft); padding: 4px 12px; border-radius: 999px; }
+  .exp-location { font-size: 13px; color: var(--text-dim); margin-bottom: 14px; }
+  .exp-summary { color: var(--text-muted); font-size: 15px; margin-bottom: 16px; }
+  .exp-tech { display: flex; gap: 7px; flex-wrap: wrap; }
+  .tech-tag { font-size: 12px; padding: 4px 11px; border-radius: 7px; background: var(--bg-soft); border: 1px solid var(--border); color: var(--text-muted); }
+  .current-badge { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 999px; background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); margin-left: 8px; vertical-align: middle; }
+
+  /* ── Skills ── */
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .skill-cat { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; transition: all 0.3s ease; }
+  .skill-cat:hover { border-color: var(--accent2); transform: translateY(-3px); }
+  .skill-cat h4 { font-size: 15px; margin-bottom: 14px; color: var(--accent2); }
+  .skill-list { display: flex; gap: 7px; flex-wrap: wrap; }
+  .skill-item { font-size: 12.5px; padding: 5px 12px; border-radius: 7px; background: var(--bg-soft); border: 1px solid var(--border); color: var(--text-muted); transition: all 0.2s; }
+  .skill-item:hover { color: var(--text); border-color: var(--accent); }
+
+  /* ── Public presence (GitHub + LinkedIn protagonistas + YouTube strip) ── */
+  .presence-grid {
+    display: grid; gap: 18px;
+    grid-template-columns: 2fr 1fr;
+  }
+  .presence-grid--featured {
+    grid-template-columns: 1fr 1fr;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 720px) {
+    .presence-grid, .presence-grid--featured { grid-template-columns: 1fr; }
+  }
+  .presence-card {
+    display: block; text-decoration: none; color: inherit;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 26px; transition: all 0.3s ease; position: relative; overflow: hidden;
+  }
+  .presence-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(56,189,248,0.04) 60%, transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .presence-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 12px 40px var(--accent-glow); }
+  .presence-card:hover::before { opacity: 1; }
+  .presence-card--hero { padding: 30px; }
+  .presence-card--side { padding: 22px; background: var(--bg-soft); }
+  .presence-card--strip {
+    padding: 18px 24px; background: var(--bg-soft); border-style: dashed;
+  }
+  .presence-card-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; position: relative; z-index: 1; }
+  .presence-card-head--strip { margin-bottom: 0; }
+  .presence-strip-text {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-size: 13.5px; color: var(--text-muted); line-height: 1.5;
+  }
+  .presence-strip-text strong { color: var(--text); font-weight: 600; }
+  .presence-card-head h3 { font-size: 20px; font-weight: 700; line-height: 1.1; }
+  .presence-card--side .presence-card-head h3 { font-size: 17px; }
+  .presence-handle { font-size: 13px; color: var(--text-dim); font-family: ui-monospace, monospace; }
+  .presence-icon {
+    width: 38px; height: 38px; color: var(--text);
+    background: var(--bg-soft); border-radius: 10px; padding: 7px; flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+  .presence-icon--yt { color: #ff0000; width: 32px; height: 32px; padding: 6px; }
+  .presence-icon--li { color: #0a66c2; }
+  .external-arrow {
+    margin-left: auto; color: var(--text-dim); font-size: 18px; transition: all 0.2s;
+  }
+  .presence-card:hover .external-arrow { color: var(--accent); transform: translate(3px,-3px); }
+  .presence-text { font-size: 14.5px; color: var(--text-muted); line-height: 1.65; margin-bottom: 18px; position: relative; z-index: 1; }
+  .presence-text--small { font-size: 13.5px; margin-bottom: 0; }
+  .presence-stats { display: flex; gap: 10px; flex-wrap: wrap; position: relative; z-index: 1; }
+  .stat-pill {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 8px 14px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px;
+    min-width: 64px;
+  }
+  .stat-pill strong {
+    font-size: 18px; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stat-pill span { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .badge-pill {
+    padding: 8px 12px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px;
+    font-size: 12.5px; color: var(--text-muted); display: flex; align-items: center; gap: 4px;
+  }
+
+  /* ── Footer ── */
+  .footer { border-top: 1px solid var(--border); padding: 50px 0; text-align: center; color: var(--text-dim); font-size: 14px; }
+  .footer .cta { display: inline-flex; gap: 12px; margin-bottom: 24px; }
+  .btn {
+    padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--card); color: var(--text); transition: all 0.2s; text-decoration: none;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0a0e1a; border-color: transparent; }
+  .btn:hover { transform: translateY(-2px); }
+
+  /* fade-in animation */
+  .fade-in { opacity: 0; transform: translateY(20px); animation: fadeIn 0.6s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+  .demo-note {
+    background: rgba(129,140,248,0.1); border: 1px solid rgba(129,140,248,0.3); border-radius: 12px;
+    padding: 16px 20px; margin: 30px 0; font-size: 14px; color: var(--text-muted);
+  }
+  .demo-note strong { color: var(--accent2); }
+</style>
+</head>
+<body>
+
+  <!-- Profile selector — demonstrates the curated-profile concept -->
+  <div class="profile-bar">
+    <div class="container profile-bar-inner">
+      <span class="profile-bar-label">Vista del perfil:</span>
+      <div class="profile-chips" id="chips"></div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="demo-note">
+      <strong>Demo estático.</strong> Esta es una maqueta para validar la dirección visual y el concepto de "perfiles curados". Cambia el perfil en la barra superior para ver cómo la información se filtra y reordena según el público objetivo — exactamente la lógica que tendrá el producto real construido en NestJS + React.
+    </div>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-badge"><span class="dot"></span> Disponible para nuevas oportunidades</div>
+      <h1>Manuel Saavedra Severiche</h1>
+      <div class="headline" id="headline">Senior Software Engineer · Backend & Cloud</div>
+      <p class="summary" id="summary"></p>
+      <div class="hero-meta">
+        <span class="hero-meta-item">📍 Santa Cruz de la Sierra, Bolivia (GMT-4)</span>
+        <span class="hero-meta-item">✉ saavedramanuel100@gmail.com</span>
+        <span class="hero-meta-item">📞 +591 78450348</span>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat"><div class="num">10+</div><div class="label">Años de experiencia</div></div>
+      <div class="stat"><div class="num" id="stat-exp">14</div><div class="label">Empresas</div></div>
+      <div class="stat"><div class="num">1M+</div><div class="label">Transacciones/día</div></div>
+      <div class="stat"><div class="num">5</div><div class="label">Países</div></div>
+    </div>
+
+    <!-- Experience -->
+    <section class="section">
+      <div class="section-title">Trayectoria</div>
+      <h2 class="section-heading">Experiencia Profesional</h2>
+      <div class="timeline" id="timeline"></div>
+    </section>
+
+    <!-- Skills -->
+    <section class="section">
+      <div class="section-title">Stack</div>
+      <h2 class="section-heading">Competencias Técnicas</h2>
+      <div class="skills-grid" id="skills"></div>
+    </section>
+
+    <!-- Public Presence (GitHub + LinkedIn protagonistas + YouTube acompañante) -->
+    <section class="section">
+      <div class="section-title">Presencia Pública</div>
+      <h2 class="section-heading">Código, Red Profesional y Comunidad</h2>
+      <div class="presence-grid presence-grid--featured">
+        <!-- GitHub card — protagonista código -->
+        <a class="presence-card presence-card--hero" href="https://github.com/manuXD270516" target="_blank" rel="noopener">
+          <div class="presence-card-head">
+            <svg class="presence-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.01c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.27-1.69-1.27-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.34.95.1-.74.4-1.24.73-1.53-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.17 1.18.92-.26 1.91-.39 2.89-.39s1.97.13 2.89.39c2.2-1.49 3.17-1.18 3.17-1.18.62 1.58.23 2.75.11 3.04.74.8 1.18 1.83 1.18 3.09 0 4.42-2.7 5.39-5.27 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.79.55C20.21 21.38 23.5 17.07 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
+            <div>
+              <h3>GitHub</h3>
+              <span class="presence-handle">@manuXD270516</span>
+            </div>
+            <span class="external-arrow">↗</span>
+          </div>
+          <p class="presence-text">Perfil con +60 repositorios públicos que abarcan más de una década de práctica — desde proyectos académicos en C++ y Java hasta exploraciones recientes con integraciones Firebase y prototipos móviles. Contribuyente del Arctic Code Vault de GitHub (2020).</p>
+          <div class="presence-stats">
+            <div class="stat-pill"><strong>67</strong><span>repos</span></div>
+            <div class="stat-pill"><strong>10+</strong><span>años activo</span></div>
+            <div class="badge-pill">🐚 Pull Shark</div>
+            <div class="badge-pill">❄️ Arctic Vault</div>
+          </div>
+        </a>
+        <!-- LinkedIn card — protagonista red profesional -->
+        <a class="presence-card presence-card--hero" href="https://www.linkedin.com/in/manuel-joaquin-saavedra-severiche-266a4b125" target="_blank" rel="noopener">
+          <div class="presence-card-head">
+            <svg class="presence-icon presence-icon--li" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43c-1.14 0-2.07-.93-2.07-2.07s.93-2.07 2.07-2.07 2.07.93 2.07 2.07-.93 2.07-2.07 2.07zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
+            <div>
+              <h3>LinkedIn</h3>
+              <span class="presence-handle">manuel-joaquin-saavedra-severiche</span>
+            </div>
+            <span class="external-arrow">↗</span>
+          </div>
+          <p class="presence-text">Perfil profesional con la trayectoria detallada de más de 10 años en ingeniería de software. Posicionado como Senior Full-Stack Software Architect, Senior Tech Lead y Senior Fullstack Developer. Canal preferente para invitaciones profesionales y oportunidades de colaboración.</p>
+          <div class="presence-stats">
+            <div class="badge-pill">💼 Software Architect</div>
+            <div class="badge-pill">🚀 Tech Lead</div>
+            <div class="badge-pill">🔓 Open to opportunities</div>
+          </div>
+        </a>
+      </div>
+      <!-- YouTube card — acompañante discreto, banda inferior full-width -->
+      <a class="presence-card presence-card--strip" href="https://www.youtube.com/@manueljoaquinsaavedrasever8888" target="_blank" rel="noopener">
+        <div class="presence-card-head presence-card-head--strip">
+          <svg class="presence-icon presence-icon--yt" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2c-.3-1-1.1-1.8-2.1-2.1C19.6 3.5 12 3.5 12 3.5s-7.6 0-9.4.6C1.6 4.4.8 5.2.5 6.2 0 8 0 12 0 12s0 4 .5 5.8c.3 1 1.1 1.8 2.1 2.1 1.8.6 9.4.6 9.4.6s7.6 0 9.4-.6c1-.3 1.8-1.1 2.1-2.1.5-1.8.5-5.8.5-5.8s0-4-.5-5.8zM9.6 15.6V8.4l6.4 3.6-6.4 3.6z"/></svg>
+          <div class="presence-strip-text">
+            <strong>YouTube</strong><span class="presence-handle">·</span>
+            <span>Canal técnico mixto sobre desarrollo de software e ingeniería — complemento a más de 8 años de labor docente universitaria.</span>
+          </div>
+          <span class="external-arrow">↗</span>
+        </div>
+      </a>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="cta">
+        <a class="btn btn-primary" href="#">Descargar CV</a>
+        <a class="btn" href="#">Contactar</a>
+      </div>
+      <p>© 2026 Manuel Saavedra Severiche · Portafolio administrable · NestJS + React + TypeScript</p>
+    </div>
+  </footer>
+
+<script>
+// ── Embedded data (subset of cv-data.json) ──
+const DATA = {
+  summary: "Ingeniero en Sistemas e Informática con más de 10 años de experiencia integral en desarrollo de software, especializado en backend Java/Spring Boot y arquitecturas de microservicios escalables, con fuerte experiencia en fintech, banca, seguros, logística y retail.",
+  profiles: [
+    { slug: "all", title: "Completo", roleType: "—", techFocus: "Todo", headline: "Senior Software Engineer · Backend & Cloud", tags: null },
+    { slug: "java", title: "Java Senior", roleType: "Backend", techFocus: "Java", headline: "Senior Java Backend Engineer · Spring Boot · Microservicios", tags: ["java","spring-boot","microservices"] },
+    { slug: "dotnet", title: ".NET Backend", roleType: "Backend", techFocus: ".NET", headline: "Senior .NET Backend Developer · C# · Azure", tags: ["dotnet","azure","integration"] },
+    { slug: "ai", title: "AI Engineer", roleType: "Backend", techFocus: "AI / TypeScript", headline: "AI Software Engineer · Hybrid AI Coding · TypeScript · Python", tags: ["ai-engineer","ai","nodejs","nestjs","fullstack","python"] },
+    { slug: "payments", title: "Backend Pagos", roleType: "Backend", techFocus: "Pagos / Ruby", headline: "Ingeniero Backend de Pagos · Fintech · Ruby on Rails (en formación)", tags: ["payments","fintech","banking","ruby","messaging","integration"] },
+    { slug: "fullstack", title: "Full-Stack", roleType: "Fullstack", techFocus: "Node / React", headline: "Full-Stack Developer Senior · NestJS · React", tags: ["nodejs","nestjs","fullstack","java"] },
+    { slug: "microsoft", title: "Microsoft", roleType: "Fullstack", techFocus: ".NET / Microsoft", headline: "Fullstack · Ecosistema Microsoft · .NET · SQL Server · Reporting", tags: ["microsoft","dotnet","azure","legacy","reporting","integration"] },
+    { slug: "techlead-net", title: "Tech Lead .NET", roleType: "Tech Lead", techFocus: ".NET", headline: "Tech Lead · Líder Técnico · .NET · Microservicios · Modernización Legacy", tags: ["leadership","dotnet","microservices","migration","microsoft","integration","fullstack"] },
+    { slug: "devops", title: "DevOps", roleType: "DevOps", techFocus: "Cloud / K8s", headline: "DevOps / Platform Engineer · CI/CD · Kubernetes · SRE", tags: ["devops","cloud","iac","serverless"] },
+    { slug: "devops-azure", title: "DevOps Azure", roleType: "DevOps", techFocus: "Azure", headline: "DevOps / Platform Engineer · Microsoft Azure · Terraform · SRE", tags: ["devops","azure","cloud","iac","microsoft"] },
+    { slug: "architect", title: "Arquitecto SW", roleType: "Arquitecto", techFocus: "Java / Node", headline: "Ingeniero Senior · Arquitectura de Software · Microservicios", tags: ["microservices","java","spring-boot","event-driven","integration","cloud"] },
+    { slug: "integration", title: "Integración", roleType: "Arquitecto", techFocus: "Integración", headline: "Arquitecto de Integración · Banca & Fintech · APIs · Eventos", tags: ["integration","banking","fintech","messaging"] },
+    { slug: "leadership", title: "Jefe de TI", roleType: "Liderazgo", techFocus: "Gestión TI", headline: "Jefe de TI · Liderazgo Integral · Migración ERP", tags: ["leadership","management","erp","cto","migration"] },
+    { slug: "generalist", title: "Generalista", roleType: "Generalista", techFocus: "Polyglot", headline: "Senior Software Engineer · Backend · Full-Stack · Cloud · Microservicios", tags: ["java","dotnet","nodejs","fullstack","microservices","cloud","fintech","leadership"] },
+  ],
+  experiences: [
+    { role:"Senior Software Engineer", company:"Ensitech (Openpay México)", dates:"Jul 2023 – Presente", current:true, location:"Santa Cruz · Remoto México", summary:"Procesamiento de pagos y tokenización de tarjetas, microservicios Java/Spring Boot con PCI-DSS, >1M transacciones/día. Flujo de IA híbrida con Claude Code y MCP.", tech:["Java 17","Spring Boot","Kubernetes","AWS","Claude Code","MCP",".NET Core","NestJS"], tags:["java","spring-boot","microservices","fintech","devops","cloud","leadership","ai","ai-engineer","nodejs","nestjs","dotnet","python","azure","microsoft","payments","ruby"] },
+    { role:"Backend Consultant", company:"Eron / Directa24", dates:"2023", current:false, location:"Remoto", summary:"Integración de pagos cash-in/cash-out con ISO 8583, conciliación en tiempo real (+40% eficiencia).", tech:["Java 11","Spring Boot","RabbitMQ","ISO 8583"], tags:["java","spring-boot","fintech","messaging","devops","payments"] },
+    { role:"Líder Técnico de Desarrollo", company:"K27", dates:"Ene – Nov 2023", current:false, location:"Santa Cruz · Remoto", summary:"Liderazgo de equipo; migraciones a .NET con React y PoC de Kubernetes para banca. Arquitecturas event-driven, Azure AD, CI/CD con Jenkins.", tech:[".NET","C#","React","Kubernetes","Java 11","Kafka","Azure AD"], tags:["java","spring-boot","microservices","event-driven","devops","ai-engineer","azure","microsoft","dotnet","leadership","fullstack","migration","banking"] },
+    { role:"Software Technical Lead · DevOps", company:"Tul", dates:"Oct 2022 – Abr 2023", current:false, location:"Colombia · Remoto", summary:"Liderazgo técnico (LT) e ingeniería DevOps en fintech multi-país: pipelines CI/CD, observabilidad, Saga/Outbox sobre Kafka, DDD y arquitectura hexagonal.", tech:["Java 11","Spring Boot","Kafka","Bitbucket CI/CD","Splunk","New Relic"], tags:["java","spring-boot","microservices","fintech","leadership","event-driven","ai-engineer","fullstack","nodejs","devops"] },
+    { role:"Software Engineer (Backend)", company:"Vidoomy", dates:"Feb – Dic 2022", current:false, location:"España · Remoto", summary:"Video programático >10M eventos/día, Redis, optimización de latencia 50%, integración legacy Node.js.", tech:["Java 8","Spring Boot","Redis","AWS","Node.js","MongoDB"], tags:["java","spring-boot","microservices","high-volume","cloud","performance","nodejs","fullstack"] },
+    { role:"Software Engineer — QA & Backend", company:"Kiwox", dates:"Abr – Nov 2022", current:false, location:"Chile · Remoto", summary:"Framework de pruebas automatizadas con Appium/Selenium, microservicios con BigQuery.", tech:["Java 8","Spring Boot","Appium","BigQuery","Docker"], tags:["java","spring-boot","testing","qa","gcp","devops"] },
+    { role:"Software Technical Lead · DevOps", company:"NEXTGO.IO", dates:"Dic 2021 – Ago 2022", current:false, location:"EEUU · Remoto", summary:"Liderazgo técnico (LT) de equipo distribuido e ingeniería DevOps: IaC con Terraform, pipelines CI/CD en GitLab, arquitecturas serverless con AWS Lambda.", tech:["Java 11","AWS Lambda","Terraform","GitLab CI/CD","Kafka"], tags:["java","spring-boot","serverless","cloud","iac","leadership","devops","nodejs"] },
+    { role:"Fullstack Developer · Encargado de Proyecto", company:"Banco Ganadero S.A.", dates:"Jun – Dic 2021", current:false, location:"Santa Cruz", summary:"Diseño, desarrollo y puesta en producción de GanaSafi (ahorro e inversión); posterior liderazgo del proyecto con equipo de 3 personas. APIs .NET Core + Java, core Oracle, JWT.", tech:[".NET Core","Java 11","Spring Boot","Oracle","PostgreSQL","Docker"], tags:["java","spring-boot","banking","dotnet","integration","fintech","microsoft","fullstack","payments","leadership"] },
+    { role:"Senior Backend Developer", company:"Mojix Engineering", dates:"Jun – Sep 2021", current:false, location:"Santa Cruz", summary:"Core retail con Quarkus, microservicios cloud-native en Kubernetes, event-driven con Kafka.", tech:["Java 11","Quarkus","Kafka","Kubernetes"], tags:["java","quarkus","microservices","cloud-native","retail","event-driven"] },
+    { role:"Project Manager & Backend Lead", company:"Nannys App", dates:"Nov 2020 – Jul 2021", current:false, location:"Santa Cruz", summary:"Dirección de proyecto, backend Node.js, móvil Flutter, arquitectura serverless AWS.", tech:["Node.js","Flutter","AWS Lambda","Docker"], tags:["nodejs","project-management","serverless","mobile","leadership"] },
+    { role:"Fullstack Developer", company:"Santa Cruz Vida y Salud", dates:"Sep 2020 – Jun 2021", current:false, location:"Santa Cruz", summary:"Integraciones entre sistemas bancarios y core de seguros, emisión de pólizas, Angular 11.", tech:["Java 11","Spring Boot","Hibernate","Angular 11"], tags:["java","spring-boot","insurance","banking","integration","fullstack"] },
+    { role:"Líder de Proyectos / CTO", company:"NSoft Bolivia", dates:"2019 – 2022", current:false, location:"Santa Cruz", summary:"Dirección técnica de equipos, ERP AWA (migración + capacitación) y plataforma TaxiSha. Liderazgo integral.", tech:["Java","Spring Boot",".NET Core","Angular","Scrum"], tags:["leadership","erp","cto","java","dotnet","management","migration","microsoft","integration","nodejs"] },
+    { role:"Software Developer", company:"Delta Cargo SRL", dates:"Jul 2019 – Jul 2020", current:false, location:"Santa Cruz", summary:"TMS logístico con ASP.NET Core, integración bidireccional con ERP Odoo (XML-RPC), DevOps en Azure.", tech:["ASP.NET Core","Node.js","Azure DevOps","Odoo"], tags:["dotnet","nodejs","erp","integration","azure","devops","logistics","microsoft","iac"] },
+    { role:"Software Developer", company:"YPFB Aviación", dates:"Feb 2018 – Abr 2019", current:false, location:"Santa Cruz", summary:"Sistema nacional de integración de combustible con ASP.NET MVC, procesos batch, VB.NET legacy, SSRS.", tech:["ASP.NET MVC","VB.NET","SQL Server","SSRS"], tags:["dotnet","vbnet","legacy","batch","reporting","aviation","microsoft"] },
+  ],
+  skills: [
+    { name:"Lenguajes", items:["Java (8-21)","TypeScript","JavaScript","C#","Python","Kotlin","SQL"], tags:["java","dotnet","nodejs","nestjs","fullstack"] },
+    { name:"Backend Frameworks", items:["Spring Boot","Spring Security","Spring Cloud","Quarkus","NestJS","ASP.NET Core",".NET 8"], tags:["java","spring-boot","nestjs","nodejs","dotnet","fullstack"] },
+    { name:"Frontend", items:["React","Angular","TypeScript","RxJS","Redux","Flutter"], tags:["fullstack","nodejs","nestjs"] },
+    { name:"Arquitectura", items:["Microservicios","Hexagonal","Clean Architecture","DDD","CQRS","SOLID","Event-Driven"], tags:["java","spring-boot","microservices","leadership","integration","event-driven","fullstack","dotnet"] },
+    { name:"Mensajería & Eventos", items:["Apache Kafka","RabbitMQ","AWS EventBridge","GCP Pub/Sub","Saga","Outbox"], tags:["java","microservices","event-driven","messaging","integration"] },
+    { name:"Bases de Datos", items:["PostgreSQL","Oracle","SQL Server","MongoDB","Redis","BigQuery"], tags:["java","dotnet","fullstack","banking","integration"] },
+    { name:"Cloud & DevOps", items:["AWS","Azure","GCP","Docker","Kubernetes","OpenShift","Terraform","Jenkins","GitLab CI/CD"], tags:["devops","cloud","iac","serverless","java"] },
+    { name:"Observabilidad", items:["Prometheus","Grafana","ELK Stack","Splunk","New Relic","Zipkin","SonarQube"], tags:["devops","cloud","microservices"] },
+    { name:"Seguridad", items:["OAuth2","OpenID Connect","JWT","OWASP","PCI-DSS","ISO 8583"], tags:["java","fintech","banking","integration","devops"] },
+    { name:"IA & Herramientas", items:["Claude API","OpenAI API","Cursor AI","Model Context Protocol (MCP)"], tags:["ai","java","leadership","fullstack"] },
+    { name:"Liderazgo & Gestión", items:["Scrum","Kanban","Tech Lead","Mentoría","Gestión de equipos","Migración ERP"], tags:["leadership","management","cto","erp","migration"] },
+  ]
+};
+
+let activeProfile = "all";
+
+function matchesProfile(itemTags, profileTags) {
+  if (!profileTags) return true;
+  return itemTags.some(t => profileTags.includes(t));
+}
+
+function render() {
+  const profile = DATA.profiles.find(p => p.slug === activeProfile);
+  document.getElementById("headline").textContent = profile.headline;
+  document.getElementById("summary").textContent = DATA.summary;
+
+  // Experiences (filtered)
+  const exps = DATA.experiences.filter(e => matchesProfile(e.tags, profile.tags));
+  document.getElementById("stat-exp").textContent = exps.length;
+  document.getElementById("timeline").innerHTML = exps.map((e, i) => `
+    <div class="exp-card fade-in" style="animation-delay:${i*0.05}s">
+      <div class="exp-head">
+        <div>
+          <span class="exp-role">${e.role}</span>${e.current ? '<span class="current-badge">Actual</span>' : ''}
+          <div class="exp-company">${e.company}</div>
+        </div>
+        <span class="exp-dates">${e.dates}</span>
+      </div>
+      <div class="exp-location">${e.location}</div>
+      <div class="exp-summary">${e.summary}</div>
+      <div class="exp-tech">${e.tech.map(t => `<span class="tech-tag">${t}</span>`).join('')}</div>
+    </div>
+  `).join('');
+
+  // Skills (filtered)
+  const skills = DATA.skills.filter(s => matchesProfile(s.tags, profile.tags));
+  document.getElementById("skills").innerHTML = skills.map((s, i) => `
+    <div class="skill-cat fade-in" style="animation-delay:${i*0.04}s">
+      <h4>${s.name}</h4>
+      <div class="skill-list">${s.items.map(it => `<span class="skill-item">${it}</span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+
+function renderChips() {
+  // Agrupar perfiles por roleType (taxonomía de navegación)
+  const order = ["—", "Tech Lead", "Backend", "Fullstack", "DevOps", "Arquitecto", "Liderazgo", "Generalista"];
+  const groups = {};
+  DATA.profiles.forEach(p => { (groups[p.roleType] = groups[p.roleType] || []).push(p); });
+  const sortedRoles = Object.keys(groups).sort((a,b) => {
+    const ia = order.indexOf(a), ib = order.indexOf(b);
+    return (ia<0?99:ia) - (ib<0?99:ib);
+  });
+  document.getElementById("chips").innerHTML = sortedRoles.map(role => {
+    const label = role === "—" ? "" : `<span class="chip-group-label">${role}</span>`;
+    const btns = groups[role].map(p =>
+      `<button class="chip ${p.slug===activeProfile?'active':''}" data-slug="${p.slug}">
+        <span class="chip-title">${p.title}</span>
+        ${p.techFocus && p.techFocus!=="Todo" ? `<span class="chip-tech">${p.techFocus}</span>` : ''}
+      </button>`
+    ).join('');
+    return `<div class="chip-group">${label}<div class="chip-group-row">${btns}</div></div>`;
+  }).join('');
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      activeProfile = c.dataset.slug;
+      renderChips();
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+}
+
+renderChips();
+render();
+</script>
+</body>
+</html>

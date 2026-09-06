@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manuel Saavedra — Portafolio (Demo Theming)</title>
+<style>
+  /* All visual values come from CSS variables → swappable at runtime */
+  :root {
+    --bg: #0a0e1a; --bg-soft: #111827; --card: #161d2e; --card-hover: #1c2438;
+    --border: #252d42; --text: #e8edf5; --text-muted: #94a3b8; --text-dim: #64748b;
+    --accent: #38bdf8; --accent2: #818cf8;
+    --radius: 16px; --max-width: 1080px;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-heading: 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font-sans); background: var(--bg); color: var(--text); line-height: 1.6; transition: background 0.4s ease, color 0.4s ease; }
+
+  .layout { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
+
+  /* ── Customizer panel (simulates backoffice live editor) ── */
+  .customizer {
+    background: var(--bg-soft); border-right: 1px solid var(--border);
+    padding: 24px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  .customizer h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 4px; font-family: var(--font-heading); }
+  .customizer .sub { font-size: 12px; color: var(--text-dim); margin-bottom: 22px; }
+  .cz-group { margin-bottom: 24px; }
+  .cz-group > label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+  .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .preset {
+    padding: 10px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--border); background: var(--card); color: var(--text-muted);
+    transition: all 0.2s; text-align: center;
+  }
+  .preset:hover { border-color: var(--accent); color: var(--text); }
+  .preset.active { border-color: var(--accent); background: var(--accent); color: #0a0e1a; }
+  .swatch-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .swatch { width: 32px; height: 32px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+  .swatch:hover { transform: scale(1.1); }
+  .swatch.active { border-color: var(--text); }
+  .cz-row { display: flex; gap: 8px; }
+  .cz-btn {
+    flex: 1; padding: 8px; border-radius: 8px; font-size: 12px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--card); color: var(--text-muted); transition: all 0.2s;
+  }
+  .cz-btn.active { border-color: var(--accent); color: var(--text); background: var(--card-hover); }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+
+  /* ── Portfolio preview ── */
+  .preview { padding: 0; overflow-y: auto; }
+  .container { max-width: var(--max-width); margin: 0 auto; padding: 0 32px; }
+
+  .profile-bar { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); padding: 14px 0; }
+  .pb-inner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .pb-label { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+  .chips { display: flex; gap: 7px; flex-wrap: wrap; }
+  .chip { padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 500; background: var(--card); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+  .chip:hover { color: var(--text); border-color: var(--accent); }
+  .chip.active { background: var(--accent); color: var(--bg); border-color: transparent; }
+
+  .hero { padding: 64px 0 40px; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 7px; padding: 5px 13px; border-radius: 999px; font-size: 12px; background: color-mix(in srgb, var(--accent) 15%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); color: var(--accent); margin-bottom: 20px; }
+  .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); }
+  .hero h1 { font-family: var(--font-heading); font-size: clamp(32px, 5vw, 52px); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; margin-bottom: 14px; }
+  .hero .headline { font-size: clamp(17px, 2.5vw, 22px); color: var(--accent); font-weight: 600; margin-bottom: 18px; }
+  .hero .summary { font-size: 16px; color: var(--text-muted); max-width: 680px; margin-bottom: 26px; }
+  .hero-meta { display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; color: var(--text-dim); }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 14px; margin: 32px 0 56px; }
+  .stat { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; transition: all 0.3s; }
+  .stat:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .stat .num { font-family: var(--font-heading); font-size: 30px; font-weight: 800; color: var(--accent); }
+  .stat .label { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+  .section { margin-bottom: 56px; }
+  .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); margin-bottom: 6px; }
+  .section-heading { font-family: var(--font-heading); font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 26px; }
+
+  .exp-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; transition: all 0.3s; }
+  .exp-card:hover { background: var(--card-hover); transform: translateX(5px); border-color: var(--accent); }
+  .exp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .exp-role { font-size: 18px; font-weight: 700; }
+  .exp-company { color: var(--accent); font-weight: 600; font-size: 15px; }
+  .exp-dates { font-size: 12px; color: var(--text-dim); background: var(--bg-soft); padding: 4px 11px; border-radius: 999px; white-space: nowrap; }
+  .exp-location { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; }
+  .exp-summary { color: var(--text-muted); font-size: 14px; margin-bottom: 14px; }
+  .exp-tech { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tech-tag { font-size: 11.5px; padding: 4px 10px; border-radius: 7px; background: var(--bg-soft); border: 1px solid var(--border); color: var(--text-muted); }
+  .current-badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent2) 18%, transparent); color: var(--accent2); margin-left: 6px; vertical-align: middle; }
+
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+  .skill-cat { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; transition: all 0.3s; }
+  .skill-cat:hover { border-color: var(--accent2); transform: translateY(-2px); }
+  .skill-cat h4 { font-size: 14px; margin-bottom: 12px; color: var(--accent2); font-family: var(--font-heading); }
+  .skill-list { display: flex; gap: 6px; flex-wrap: wrap; }
+  .skill-item { font-size: 12px; padding: 5px 11px; border-radius: 7px; background: var(--bg-soft); border: 1px solid var(--border); color: var(--text-muted); }
+
+  .fade-in { opacity: 0; transform: translateY(16px); animation: fadeIn 0.5s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+  .badge-note { position: fixed; bottom: 16px; right: 16px; background: var(--accent); color: var(--bg); font-size: 11px; font-weight: 600; padding: 8px 14px; border-radius: 999px; z-index: 100; }
+
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } .customizer { position: relative; height: auto; } }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- CUSTOMIZER (simulates the backoffice live editor) -->
+  <aside class="customizer">
+    <h3>Personalizador</h3>
+    <p class="sub">Simulación del editor del backoffice</p>
+
+    <div class="cz-group">
+      <label>Preset de tema</label>
+      <div class="preset-grid" id="presets"></div>
+    </div>
+
+    <div class="cz-group">
+      <label>Color de acento</label>
+      <div class="swatch-row" id="accents"></div>
+    </div>
+
+    <div class="cz-group">
+      <label>Modo</label>
+      <div class="cz-row">
+        <button class="cz-btn" data-mode="dark">Oscuro</button>
+        <button class="cz-btn" data-mode="light">Claro</button>
+      </div>
+    </div>
+
+    <div class="cz-group">
+      <label>Tipografía</label>
+      <div class="cz-row">
+        <button class="cz-btn active" data-font="'Inter', sans-serif">Inter</button>
+        <button class="cz-btn" data-font="'Georgia', serif">Serif</button>
+      </div>
+      <div class="cz-row" style="margin-top:8px">
+        <button class="cz-btn" data-font="'Poppins', sans-serif">Poppins</button>
+        <button class="cz-btn" data-font="'JetBrains Mono', monospace">Mono</button>
+      </div>
+    </div>
+
+    <div class="cz-group">
+      <label>Radio de bordes: <span id="radius-val">16px</span></label>
+      <input type="range" id="radius" min="0" max="28" value="16">
+    </div>
+  </aside>
+
+  <!-- PORTFOLIO PREVIEW -->
+  <main class="preview">
+    <div class="profile-bar">
+      <div class="container pb-inner">
+        <span class="pb-label">Perfil:</span>
+        <div class="chips" id="chips"></div>
+      </div>
+    </div>
+
+    <div class="container">
+      <section class="hero">
+        <div class="hero-badge"><span class="dot"></span> Disponible para nuevas oportunidades</div>
+        <h1>Manuel Saavedra Severiche</h1>
+        <div class="headline" id="headline"></div>
+        <p class="summary" id="summary"></p>
+        <div class="hero-meta">
+          <span>📍 Santa Cruz de la Sierra (GMT-4)</span>
+          <span>✉ saavedramanuel100@gmail.com</span>
+        </div>
+      </section>
+
+      <div class="stats">
+        <div class="stat"><div class="num">10+</div><div class="label">Años</div></div>
+        <div class="stat"><div class="num" id="stat-exp">14</div><div class="label">Empresas</div></div>
+        <div class="stat"><div class="num">1M+</div><div class="label">Transacciones/día</div></div>
+        <div class="stat"><div class="num">5</div><div class="label">Países</div></div>
+      </div>
+
+      <section class="section">
+        <div class="section-title">Trayectoria</div>
+        <h2 class="section-heading">Experiencia Profesional</h2>
+        <div id="timeline"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">Stack</div>
+        <h2 class="section-heading">Competencias Técnicas</h2>
+        <div class="skills-grid" id="skills"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="badge-note">⚡ Cambios en vivo — sin recarga</div>
+
+<script>
+const PRESETS = {
+  'modern-dark':  { label:'Modern Dark', mode:'dark', accent:'#38bdf8', accent2:'#818cf8',
+    vars:{ '--bg':'#0a0e1a','--bg-soft':'#111827','--card':'#161d2e','--card-hover':'#1c2438','--border':'#252d42','--text':'#e8edf5','--text-muted':'#94a3b8','--text-dim':'#64748b' } },
+  'modern-light': { label:'Modern Light', mode:'light', accent:'#0284c7', accent2:'#6366f1',
+    vars:{ '--bg':'#f8fafc','--bg-soft':'#f1f5f9','--card':'#ffffff','--card-hover':'#f8fafc','--border':'#e2e8f0','--text':'#0f172a','--text-muted':'#475569','--text-dim':'#94a3b8' } },
+  'minimal':      { label:'Minimal', mode:'light', accent:'#18181b', accent2:'#52525b',
+    vars:{ '--bg':'#ffffff','--bg-soft':'#fafafa','--card':'#ffffff','--card-hover':'#fafafa','--border':'#e4e4e7','--text':'#18181b','--text-muted':'#52525b','--text-dim':'#a1a1aa' } },
+  'elegant':      { label:'Elegant', mode:'dark', accent:'#c8a04e', accent2:'#e0c084',
+    vars:{ '--bg':'#1a1814','--bg-soft':'#221f1a','--card':'#28241d','--card-hover':'#312c24','--border':'#3a342a','--text':'#f0ebe0','--text-muted':'#b8ae9c','--text-dim':'#857c6c' } },
+  'corporate':    { label:'Corporate', mode:'light', accent:'#1d4ed8', accent2:'#1e40af',
+    vars:{ '--bg':'#f9fafb','--bg-soft':'#f3f4f6','--card':'#ffffff','--card-hover':'#f9fafb','--border':'#e5e7eb','--text':'#111827','--text-muted':'#4b5563','--text-dim':'#9ca3af' } },
+  'teal-pro':     { label:'Teal Pro', mode:'dark', accent:'#2dd4bf', accent2:'#34d399',
+    vars:{ '--bg':'#0c1413','--bg-soft':'#111c1a','--card':'#162522','--card-hover':'#1c2e2a','--border':'#243835','--text':'#e6f5f1','--text-muted':'#8fb3ab','--text-dim':'#5e7d76' } },
+};
+const ACCENTS = ['#38bdf8','#818cf8','#2dd4bf','#c8a04e','#1d4ed8','#f43f5e','#a855f7','#22c55e'];
+
+const DATA = {
+  summary: "Ingeniero en Sistemas con más de 10 años de experiencia en desarrollo de software, especializado en backend Java/Spring Boot y arquitecturas de microservicios escalables.",
+  profiles: [
+    { slug:"all", title:"Completo", headline:"Senior Software Engineer · Backend & Cloud", tags:null },
+    { slug:"java", title:"Java Senior", headline:"Senior Java Backend Engineer · Spring Boot", tags:["java","spring-boot","microservices"] },
+    { slug:"ai", title:"AI Engineer", headline:"AI Software Engineer · Hybrid AI Coding · TypeScript", tags:["ai-engineer","ai","nodejs","nestjs","fullstack","python"] },
+    { slug:"devops", title:"DevOps", headline:"DevOps / Platform Engineer · CI/CD · Kubernetes", tags:["devops","cloud","iac","serverless"] },
+    { slug:"devops-azure", title:"DevOps Azure", headline:"DevOps · Microsoft Azure · Terraform · SRE", tags:["devops","azure","cloud","iac","microsoft"] },
+    { slug:"dotnet", title:".NET", headline:"Senior .NET Backend Developer · C# · Azure", tags:["dotnet","azure","integration"] },
+    { slug:"microsoft", title:"Microsoft", headline:"Fullstack · Ecosistema Microsoft · .NET · Reporting", tags:["microsoft","dotnet","azure","legacy","reporting","integration"] },
+    { slug:"architect", title:"Arquitecto", headline:"Ingeniero Senior · Arquitectura de Software", tags:["microservices","java","spring-boot","event-driven","integration","cloud"] },
+    { slug:"leadership", title:"Jefe de TI", headline:"Jefe de TI · Liderazgo Integral · Migración ERP", tags:["leadership","management","erp","cto","migration"] },
+  ],
+  experiences: [
+    { role:"Senior Software Engineer", company:"Ensitech (Openpay México)", dates:"Jul 2023 – Presente", current:true, location:"Santa Cruz · Remoto México", summary:"Procesamiento de pagos y tokenización, microservicios Java/Spring Boot, PCI-DSS, >1M tx/día. Flujo IA con Claude Code y MCP.", tech:["Java 17","Spring Boot","Kubernetes","Claude Code","MCP"], tags:["java","spring-boot","microservices","fintech","devops","cloud","leadership","dotnet","ai","ai-engineer","nodejs","nestjs","python","azure","microsoft"] },
+    { role:"Backend Consultant", company:"Eron / Directa24", dates:"2023", current:false, location:"Remoto", summary:"Integración de pagos ISO 8583, conciliación en tiempo real (+40%).", tech:["Java 11","RabbitMQ","ISO 8583"], tags:["java","spring-boot","fintech","devops"] },
+    { role:"Software Engineer", company:"K27", dates:"Ene–Nov 2023", current:false, location:"Santa Cruz · Remoto", summary:"Microservicios event-driven, Spring Cloud, Azure AD.", tech:["Java 11","Kafka","Azure AD"], tags:["java","spring-boot","microservices","event-driven","devops","dotnet","ai-engineer","azure","microsoft"] },
+    { role:"Software Technical Lead", company:"Tul", dates:"Oct 2022 – Abr 2023", current:false, location:"Colombia · Remoto", summary:"Liderazgo técnico fintech multi-país, DDD, Saga/Outbox sobre Kafka.", tech:["Java 11","Kafka","Angular"], tags:["java","spring-boot","microservices","leadership","event-driven","ai-engineer","fullstack","nodejs"] },
+    { role:"Software Engineer", company:"Vidoomy", dates:"Feb–Dic 2022", current:false, location:"España · Remoto", summary:"Video programático >10M eventos/día, Redis, latencia -50%.", tech:["Java 8","Redis","AWS","MongoDB"], tags:["java","spring-boot","microservices","cloud","nodejs","fullstack","performance"] },
+    { role:"Software Technical Lead", company:"NEXTGO.IO", dates:"Dic 2021 – Ago 2022", current:false, location:"EEUU · Remoto", summary:"Serverless AWS Lambda, IaC con Terraform, liderazgo de equipo.", tech:["Java 11","AWS Lambda","Terraform"], tags:["java","serverless","cloud","iac","leadership","devops","nodejs"] },
+    { role:"Fullstack Developer", company:"Banco Ganadero", dates:"Jun–Dic 2021", current:false, location:"Santa Cruz", summary:"APIs para GanaMovil, integración core Oracle, .NET Core.", tech:["Java 11",".NET Core","Oracle"], tags:["java","spring-boot","dotnet","integration","banking","fintech","microsoft","fullstack"] },
+    { role:"Líder de Proyectos / CTO", company:"NSoft Bolivia", dates:"2019 – 2022", current:false, location:"Santa Cruz", summary:"ERP AWA (migración + capacitación) y TaxiSha. Liderazgo integral.", tech:["Java",".NET Core","Angular"], tags:["leadership","erp","cto","java","dotnet","management","migration","microsoft","integration","nodejs"] },
+    { role:"Software Developer", company:"Delta Cargo SRL", dates:"Jul 2019 – Jul 2020", current:false, location:"Santa Cruz", summary:"TMS con ASP.NET Core, integración ERP Odoo, DevOps Azure.", tech:["ASP.NET Core","Azure DevOps","Odoo"], tags:["dotnet","erp","integration","azure","devops","logistics","microsoft","iac"] },
+    { role:"Software Developer", company:"YPFB Aviación", dates:"Feb 2018 – Abr 2019", current:false, location:"Santa Cruz", summary:"Sistema nacional de combustible, ASP.NET MVC, VB.NET legacy, SSRS.", tech:["ASP.NET MVC","VB.NET","SSRS"], tags:["dotnet","legacy","reporting","aviation","microsoft","batch"] },
+  ],
+  skills: [
+    { name:"Lenguajes", items:["Java (8-21)","TypeScript","C#","Python","SQL"], tags:["java","dotnet","ai-engineer","nodejs","python","microsoft"] },
+    { name:"Backend", items:["Spring Boot","Quarkus","NestJS","ASP.NET Core",".NET 8"], tags:["java","spring-boot","dotnet","nestjs","nodejs","microsoft","ai-engineer"] },
+    { name:"IA & Agentes", items:["Claude Code","Cursor AI","Copilot","Claude API","MCP"], tags:["ai","ai-engineer","nodejs","fullstack"] },
+    { name:"Arquitectura", items:["Microservicios","Hexagonal","Clean Architecture","DDD","SOLID"], tags:["java","microservices","leadership","integration","dotnet","ai-engineer","event-driven"] },
+    { name:"Cloud & DevOps", items:["AWS","Azure","GCP","Docker","Kubernetes","Terraform","Jenkins"], tags:["devops","cloud","iac","serverless","java","azure","microsoft"] },
+    { name:"Mensajería", items:["Kafka","RabbitMQ","Pub/Sub","Saga","Outbox"], tags:["java","microservices","event-driven","integration"] },
+    { name:"Liderazgo", items:["Scrum","Tech Lead","Mentoría","Migración ERP"], tags:["leadership","management","cto","erp","migration"] },
+  ]
+};
+
+let activeProfile = "all", activePreset = "modern-dark", activeAccent = "#38bdf8";
+
+function applyPreset(key) {
+  const p = PRESETS[key]; activePreset = key; activeAccent = p.accent;
+  const root = document.documentElement;
+  Object.entries(p.vars).forEach(([k,v]) => root.style.setProperty(k, v));
+  root.style.setProperty('--accent', p.accent);
+  root.style.setProperty('--accent2', p.accent2);
+  renderPresets(); renderAccents();
+}
+function setAccent(c) { activeAccent = c; document.documentElement.style.setProperty('--accent', c); renderAccents(); }
+function setMode(mode) {
+  document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode===mode));
+  // swap to a preset of that mode
+  const key = mode==='light' ? 'modern-light' : 'modern-dark';
+  applyPreset(key);
+}
+
+function matches(itemTags, pTags){ if(!pTags) return true; return itemTags.some(t=>pTags.includes(t)); }
+
+function render() {
+  const profile = DATA.profiles.find(p=>p.slug===activeProfile);
+  document.getElementById("headline").textContent = profile.headline;
+  document.getElementById("summary").textContent = DATA.summary;
+  const exps = DATA.experiences.filter(e=>matches(e.tags, profile.tags));
+  document.getElementById("stat-exp").textContent = exps.length;
+  document.getElementById("timeline").innerHTML = exps.map((e,i)=>`
+    <div class="exp-card fade-in" style="animation-delay:${i*0.05}s">
+      <div class="exp-head"><div><span class="exp-role">${e.role}</span>${e.current?'<span class="current-badge">Actual</span>':''}<div class="exp-company">${e.company}</div></div><span class="exp-dates">${e.dates}</span></div>
+      <div class="exp-location">${e.location}</div><div class="exp-summary">${e.summary}</div>
+      <div class="exp-tech">${e.tech.map(t=>`<span class="tech-tag">${t}</span>`).join('')}</div>
+    </div>`).join('');
+  const skills = DATA.skills.filter(s=>matches(s.tags, profile.tags));
+  document.getElementById("skills").innerHTML = skills.map((s,i)=>`
+    <div class="skill-cat fade-in" style="animation-delay:${i*0.04}s"><h4>${s.name}</h4>
+      <div class="skill-list">${s.items.map(it=>`<span class="skill-item">${it}</span>`).join('')}</div></div>`).join('');
+}
+function renderChips() {
+  document.getElementById("chips").innerHTML = DATA.profiles.map(p=>`<button class="chip ${p.slug===activeProfile?'active':''}" data-slug="${p.slug}">${p.title}</button>`).join('');
+  document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{activeProfile=c.dataset.slug;renderChips();render();}));
+}
+function renderPresets() {
+  document.getElementById("presets").innerHTML = Object.entries(PRESETS).map(([k,p])=>`<button class="preset ${k===activePreset?'active':''}" data-preset="${k}">${p.label}</button>`).join('');
+  document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>applyPreset(b.dataset.preset)));
+}
+function renderAccents() {
+  document.getElementById("accents").innerHTML = ACCENTS.map(c=>`<div class="swatch ${c===activeAccent?'active':''}" style="background:${c}" data-accent="${c}"></div>`).join('');
+  document.querySelectorAll('[data-accent]').forEach(s=>s.addEventListener('click',()=>setAccent(s.dataset.accent)));
+}
+
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+document.querySelectorAll('[data-font]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('[data-font]').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  document.documentElement.style.setProperty('--font-sans', b.dataset.font);
+  document.documentElement.style.setProperty('--font-heading', b.dataset.font);
+}));
+document.getElementById('radius').addEventListener('input', e=>{
+  document.documentElement.style.setProperty('--radius', e.target.value+'px');
+  document.getElementById('radius-val').textContent = e.target.value+'px';
+});
+
+renderChips(); renderPresets(); renderAccents(); render();
+</script>
+</body>
+</html>

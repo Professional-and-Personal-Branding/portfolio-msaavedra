@@ -1,0 +1,470 @@
+{
+  "profile": {
+    "fullName": "Manuel Joaquín Saavedra Severiche",
+    "headline": "Senior Software Engineer · Backend & Cloud",
+    "location": "Santa Cruz de la Sierra, Bolivia",
+    "timezone": "GMT-4",
+    "phone": "+591 78450348",
+    "email": "saavedramanuel100@gmail.com",
+    "yearsOfExperience": 10,
+    "summary": "Ingeniero en Sistemas e Informática con más de 10 años de experiencia integral en desarrollo de software y tecnología, especializado en backend Java/Spring Boot y arquitecturas de microservicios escalables, con fuerte experiencia en fintech, banca, seguros, logística y retail. Perfil polyglot con dominio adicional de .NET, Node.js/NestJS y Python. Experiencia probada como Tech Lead y en liderazgo integral de TI.",
+    "availability": {
+      "modality": "Remoto / Presencial (Santa Cruz)",
+      "contractType": "Relación de dependencia · Freelance / Contractor",
+      "startDate": "Inmediata"
+    },
+    "languages": [
+      { "name": "Español", "level": "Nativo", "detail": "Oral, escrito y lectura avanzados" },
+      { "name": "Inglés", "level": "B1-B2", "detail": "Conversacional y escrito intermedio; avanzado en lectura técnica" }
+    ]
+  },
+
+  "experiences": [
+    {
+      "id": "ensitech",
+      "company": "Ensitech (Openpay México)",
+      "role": "Senior Software Engineer",
+      "startDate": "2023-07",
+      "endDate": null,
+      "current": true,
+      "location": "Santa Cruz, Bolivia · Remoto para México",
+      "sector": ["fintech", "payments", "banking"],
+      "summary": "Desarrollo backend especializado en procesamiento de pagos y tokenización de tarjetas para Openpay, microservicios Java/Spring Boot con enfoque PCI-DSS.",
+      "highlights": [
+        "Diseño e implementación del microservicio de tokenización de tarjetas integrado con API TOHU usando Java 17 (Records, Pattern Matching, Sealed Classes), implementando ISO 8583 según especificaciones BBVA Latam para redes Visa y MasterCard.",
+        "Desarrollo de arquetipos Maven personalizados adoptados en 15+ microservicios, reduciendo el tiempo de setup en 70%, con catálogos de errores multilingües (i18n).",
+        "Integración con AWS Secrets Manager para gestión segura de credenciales multi-ambiente y multi-región, pipelines CI/CD con Jenkins sobre Docker/Kubernetes reduciendo deployment en 60%.",
+        "Monitoreo centralizado con Rapid7, logging estructurado JSON y componentes heartbeat para >1M transacciones/día.",
+        "Patrones de resiliencia con Resilience4j (Circuit Breaker, Bulkhead, Retry, Time Limiter).",
+        "Integración de IA (Claude, ChatGPT, Cursor AI, MCP) para generación de tests y documentación, cobertura >95%.",
+        "Liderazgo técnico: code reviews, mentoría, definición de estándares arquitectónicos."
+      ],
+      "technologies": ["Java 17", "Spring Boot 3.x", "Spring Security", "Spring Cloud", "Resilience4j", "Maven", "Docker", "Kubernetes", "AWS", "Jenkins", "PostgreSQL", "RabbitMQ", "JUnit 5", "Mockito", "Testcontainers", "SonarQube", ".NET Core", "Node.js", "NestJS", "Claude Code", "Cursor AI", "MCP"],
+      "tags": ["java", "spring-boot", "microservices", "fintech", "devops", "cloud", "leadership", "ai", "ai-engineer", "nodejs", "nestjs", "dotnet", "python", "azure", "microsoft"]
+    },
+    {
+      "id": "eron-directa24",
+      "company": "Eron International / Directa24",
+      "role": "Backend Consultant (Part-time)",
+      "startDate": "2023-01",
+      "endDate": "2023-12",
+      "current": false,
+      "location": "Remoto",
+      "sector": ["fintech", "payments"],
+      "summary": "Integración de proveedores de pago en flujos cash-in/cash-out con mensajería ISO 8583.",
+      "highlights": [
+        "Integración de proveedores de pago en flujos cash-in/cash-out con ISO 8583 según redes Visa/MasterCard.",
+        "RabbitMQ para comunicación asíncrona con patrones retry y dead-letter queues.",
+        "Optimización de conciliación y liquidación en tiempo real con Streams API y CompletableFuture, mejorando eficiencia operativa en 40%.",
+        "Pipelines CI/CD con Jenkins, Docker, Kubernetes, cumplimiento PCI-DSS."
+      ],
+      "technologies": ["Java 11", "Spring Boot", "ISO 8583", "RabbitMQ", "Docker", "Kubernetes", "Jenkins", "PostgreSQL"],
+      "tags": ["java", "spring-boot", "fintech", "messaging", "devops"]
+    },
+    {
+      "id": "k27",
+      "company": "K27",
+      "role": "Software Engineer (Backend) — Part-time",
+      "startDate": "2023-01",
+      "endDate": "2023-11",
+      "current": false,
+      "location": "Santa Cruz, Bolivia · Remoto",
+      "sector": ["enterprise", "document-management"],
+      "summary": "Microservicios Java/Spring Boot para plataforma de gestión documental con arquitectura event-driven.",
+      "highlights": [
+        "Microservicios Java 11/Spring Boot para gestión documental con arquitectura event-driven (Kafka, RabbitMQ).",
+        "Spring Cloud Config Server y Eureka para service discovery.",
+        "Integración con Azure AD para autenticación OAuth2.",
+        "Pipelines CI/CD con Jenkins, monitoreo con Prometheus y Grafana, optimización de SQL Server."
+      ],
+      "technologies": ["Java 11", "Spring Boot", "Spring Cloud", "Eureka", "Kafka", "RabbitMQ", "SQL Server", "Docker", "Jenkins", "Prometheus", "Grafana", "Azure AD"],
+      "tags": ["java", "spring-boot", "microservices", "event-driven", "devops", "ai-engineer", "azure", "microsoft", "dotnet"]
+    },
+    {
+      "id": "tul",
+      "company": "Tul",
+      "role": "Software Technical Lead",
+      "startDate": "2022-10",
+      "endDate": "2023-04",
+      "current": false,
+      "location": "Colombia · Remoto",
+      "sector": ["fintech", "ecommerce"],
+      "summary": "Liderazgo técnico de equipo multidisciplinario en productos fintech para Brasil, México y Colombia.",
+      "highlights": [
+        "Liderazgo técnico de equipo en productos fintech multi-país con microservicios Java 11/Spring Boot, DDD y arquitectura hexagonal.",
+        "Arquitecturas event-driven con Kafka aplicando patrones Saga y Outbox.",
+        "Testing automatizado >90% (JUnit 5, Mockito, Appium), pipelines CI/CD en Bitbucket.",
+        "Integración con observabilidad (Splunk, New Relic) y distributed tracing.",
+        "Mentoría técnica y code reviews con foco educativo."
+      ],
+      "technologies": ["Java 11", "Spring Boot", "Spring Cloud", "Kafka", "Resilience4j", "JUnit 5", "Mockito", "Splunk", "New Relic", "Bitbucket", "Angular", "Flutter", "Kotlin"],
+      "tags": ["java", "spring-boot", "microservices", "fintech", "leadership", "event-driven", "ai-engineer", "fullstack", "nodejs"]
+    },
+    {
+      "id": "vidoomy",
+      "company": "Vidoomy",
+      "role": "Software Engineer (Backend)",
+      "startDate": "2022-02",
+      "endDate": "2022-12",
+      "current": false,
+      "location": "España · Remoto",
+      "sector": ["adtech", "media"],
+      "summary": "Microservicios Java/Spring Boot para plataforma de video programático procesando >10M eventos/día.",
+      "highlights": [
+        "Microservicios Java 8/Spring Boot para video programático, >10M eventos/día con Streams API y caché Redis.",
+        "Integración con SSPs/DSPs vía APIs REST, optimización de latencia en 50%.",
+        "Containerización con Docker en AWS, integración de servicios Node.js legacy con Anti-Corruption Layer."
+      ],
+      "technologies": ["Java 8", "Spring Boot", "Redis", "Docker", "AWS", "Node.js", "MongoDB", "React"],
+      "tags": ["java", "spring-boot", "microservices", "high-volume", "cloud", "performance", "nodejs", "fullstack"]
+    },
+    {
+      "id": "kiwox",
+      "company": "Kiwox Soluciones Tecnológicas",
+      "role": "Software Engineer — QA & Backend",
+      "startDate": "2022-04",
+      "endDate": "2022-11",
+      "current": false,
+      "location": "Chile · Remoto",
+      "sector": ["quality", "testing"],
+      "summary": "Framework de pruebas automatizadas y microservicios con integración a BigQuery.",
+      "highlights": [
+        "Framework de pruebas automatizadas iOS/Android con Java 8 y Appium (Page Object Model), Selenium para web.",
+        "Microservicios Java 8/Spring Boot para reportes de métricas integrados con Google BigQuery.",
+        "Containerización con Docker y Kubernetes."
+      ],
+      "technologies": ["Java 8", "Spring Boot", "Selenium", "Appium", "Docker", "Kubernetes", "BigQuery", "Jenkins"],
+      "tags": ["java", "spring-boot", "testing", "qa", "gcp", "devops"]
+    },
+    {
+      "id": "nextgo",
+      "company": "NEXTGO.IO",
+      "role": "Software Technical Lead",
+      "startDate": "2021-12",
+      "endDate": "2022-08",
+      "current": false,
+      "location": "Estados Unidos · Remoto",
+      "sector": ["technology", "serverless"],
+      "summary": "Arquitecturas serverless con AWS Lambda y liderazgo técnico de equipo distribuido.",
+      "highlights": [
+        "Arquitecturas serverless con AWS Lambda en Java 11, optimización de cold start con GraalVM Native Image.",
+        "Integración con S3, SQS, Cognito, API Gateway.",
+        "Infrastructure as Code con Terraform, pipelines CI/CD con GitLab.",
+        "Event-driven con Kafka y Spring Kafka para streams en tiempo real.",
+        "Liderazgo técnico de equipo distribuido."
+      ],
+      "technologies": ["Java 11", "Spring Boot", "AWS Lambda", "Kafka", "Terraform", "Docker", "GitLab CI/CD", "Node.js", "Angular"],
+      "tags": ["java", "spring-boot", "serverless", "cloud", "iac", "leadership", "devops"]
+    },
+    {
+      "id": "banco-ganadero",
+      "company": "Banco Ganadero S.A.",
+      "role": "Fullstack Developer",
+      "startDate": "2021-06",
+      "endDate": "2021-12",
+      "current": false,
+      "location": "Santa Cruz, Bolivia",
+      "sector": ["banking", "fintech"],
+      "summary": "APIs REST Java/Spring Boot para la app móvil GanaMovil e integración con core bancario Oracle.",
+      "highlights": [
+        "APIs REST Java 11/Spring Boot para servicios bancarios en la app móvil GanaMovil.",
+        "Integración con core bancario Oracle (PL/SQL), autenticación con Spring Security JWT.",
+        "Microservicios containerizados con Docker, persistencia PostgreSQL optimizada.",
+        "Componentes en .NET Core y módulos nativos con Kony SDK."
+      ],
+      "technologies": ["Java 11", "Spring Boot", "Spring Security", ".NET Core", "Oracle", "PL/SQL", "PostgreSQL", "Docker", "Kony SDK"],
+      "tags": ["java", "spring-boot", "banking", "dotnet", "integration", "fintech", "microsoft", "fullstack"]
+    },
+    {
+      "id": "mojix",
+      "company": "Mojix Engineering",
+      "role": "Senior Backend Developer",
+      "startDate": "2021-06",
+      "endDate": "2021-09",
+      "current": false,
+      "location": "Santa Cruz, Bolivia",
+      "sector": ["retail"],
+      "summary": "Core retail con Java 11 y Quarkus, microservicios cloud-native en Kubernetes.",
+      "highlights": [
+        "Core retail con Java 11 y Quarkus, microservicios cloud-native en Kubernetes con bajo consumo de memoria.",
+        "Arquitectura event-driven con Kafka, persistencia reactiva con Hibernate Panache sobre PostgreSQL."
+      ],
+      "technologies": ["Java 11", "Quarkus", "Kafka", "PostgreSQL", "Docker", "Kubernetes", "Hibernate"],
+      "tags": ["java", "quarkus", "microservices", "cloud-native", "retail", "event-driven"]
+    },
+    {
+      "id": "nannys",
+      "company": "Nannys App",
+      "role": "Project Manager & Backend Lead",
+      "startDate": "2020-11",
+      "endDate": "2021-07",
+      "current": false,
+      "location": "Santa Cruz, Bolivia",
+      "sector": ["startup", "mobile"],
+      "summary": "Dirección de proyecto y desarrollo backend Node.js para plataforma de servicios de cuidado infantil.",
+      "highlights": [
+        "Dirección de proyecto y supervisión técnica de backend (Node.js/Sequelize) y móvil (Flutter).",
+        "Integración con pasarelas de pago y geolocalización.",
+        "Arquitectura serverless con AWS Lambda, deployment en EC2 con Docker.",
+        "Coordinación con stakeholders, planificación de sprints, resolución de dudas técnicas."
+      ],
+      "technologies": ["Node.js", "Sequelize", "Flutter", "AWS Lambda", "AWS S3", "AWS EC2", "MSSQL", "Docker", "Firebase"],
+      "tags": ["nodejs", "project-management", "serverless", "mobile", "leadership"]
+    },
+    {
+      "id": "scvs",
+      "company": "Santa Cruz Vida y Salud S.A.",
+      "role": "Fullstack Developer",
+      "startDate": "2020-09",
+      "endDate": "2021-06",
+      "current": false,
+      "location": "Santa Cruz, Bolivia",
+      "sector": ["insurance", "banking"],
+      "summary": "Integraciones Java/Spring Boot entre sistemas bancarios y core de seguros.",
+      "highlights": [
+        "Integraciones Java 11/Spring Boot entre sistemas bancarios y core de seguros.",
+        "Transaccionalidad con @Transactional para emisión de pólizas y procesamiento de siniestros.",
+        "Persistencia con Hibernate sobre MSSQL, interfaces web con JSF y Angular 11.",
+        "Java 11 HTTP Client API para consumo de APIs externas."
+      ],
+      "technologies": ["Java 11", "Spring Boot", "Hibernate", "MSSQL", "JSF", "Angular 11"],
+      "tags": ["java", "spring-boot", "insurance", "banking", "integration", "fullstack"]
+    },
+    {
+      "id": "nsoft",
+      "company": "NSoft Bolivia",
+      "role": "Líder de Proyectos / CTO (rol paralelo)",
+      "startDate": "2019-01",
+      "endDate": "2022-01",
+      "current": false,
+      "location": "Santa Cruz de la Sierra, Bolivia",
+      "sector": ["erp", "enterprise", "transport"],
+      "summary": "Dirección técnica de equipos y proyectos empresariales: ERP AWA y plataforma de transporte TaxiSha.",
+      "highlights": [
+        "Liderazgo técnico y dirección de proyectos de desarrollo backend y full-stack para clientes empresariales.",
+        "Dirección del sistema ERP AWA — plataforma modular (facturación, inventario, RRHH, contabilidad) con backend Spring Boot y .NET Core, incluyendo migración de datos y capacitación a usuarios.",
+        "Dirección del proyecto TaxiSha — sistema de gestión operativa para transporte privado con geolocalización, despacho y liquidación.",
+        "Definición de estándares técnicos, code reviews, mentoría y evaluación de tecnologías.",
+        "Supervisión de infraestructura, continuidad operativa y seguridad."
+      ],
+      "technologies": ["Java", "Spring Boot", ".NET Core", "Node.js", "SQL Server", "PostgreSQL", "Docker", "Angular", "JIRA", "Scrum"],
+      "tags": ["leadership", "erp", "cto", "java", "dotnet", "management", "migration", "microsoft", "integration", "nodejs"]
+    },
+    {
+      "id": "delta-cargo",
+      "company": "Delta Cargo SRL",
+      "role": "Software Developer",
+      "startDate": "2019-07",
+      "endDate": "2020-07",
+      "current": false,
+      "location": "Santa Cruz, Bolivia",
+      "sector": ["logistics", "erp"],
+      "summary": "TMS de operaciones logísticas con ASP.NET Core e integración con ERP Odoo.",
+      "highlights": [
+        "Desarrollo del TMS de operaciones logísticas con ASP.NET Core y Node.js.",
+        "Integración bidireccional con ERP Odoo mediante XML-RPC API.",
+        "DevOps en Azure con pipelines CI/CD automatizados, gestión con JIRA y Scrum."
+      ],
+      "technologies": ["ASP.NET Core", "Node.js", "SQL Server", "Azure", "Azure DevOps", "Odoo", "JIRA"],
+      "tags": ["dotnet", "nodejs", "erp", "integration", "azure", "devops", "logistics", "microsoft", "iac"]
+    },
+    {
+      "id": "ypfb",
+      "company": "YPFB Aviación",
+      "role": "Software Developer",
+      "startDate": "2018-02",
+      "endDate": "2019-04",
+      "current": false,
+      "location": "Santa Cruz, Bolivia",
+      "sector": ["aviation", "energy"],
+      "summary": "Sistema nacional de integración de volúmenes de combustible con ASP.NET MVC y procesos batch.",
+      "highlights": [
+        "Sistema de integración nacional de volúmenes de combustible con ASP.NET MVC y ServiceStack.",
+        "Procesos batch de conciliación nocturna ejecutados en Windows Server.",
+        "Mantenimiento de componentes VB.NET legacy.",
+        "Reportería con SSRS y Crystal Reports, deployment en Windows Server con IIS."
+      ],
+      "technologies": ["ASP.NET MVC", "VB.NET", "ServiceStack", "SQL Server", "Windows Server", "IIS", "SSRS", "Crystal Reports"],
+      "tags": ["dotnet", "vbnet", "legacy", "batch", "reporting", "aviation", "microsoft"]
+    }
+  ],
+
+  "skillCategories": [
+    {
+      "name": "Lenguajes",
+      "skills": ["Java (8-21)", "TypeScript", "JavaScript", "C#", "Python", "Kotlin", "SQL", "PL/SQL", "VB.NET"]
+    },
+    {
+      "name": "Backend Frameworks",
+      "skills": ["Spring Boot", "Spring Security", "Spring Cloud", "Spring Data JPA", "Quarkus", "NestJS", "Express.js", "ASP.NET Core", ".NET 8", "Hibernate"]
+    },
+    {
+      "name": "Frontend",
+      "skills": ["React", "Angular", "TypeScript", "RxJS", "Redux", "Flutter", "JSF"]
+    },
+    {
+      "name": "Arquitectura",
+      "skills": ["Microservicios", "Arquitectura Hexagonal", "Clean Architecture", "DDD", "CQRS", "Event Sourcing", "SOLID", "Event-Driven", "Serverless", "Patrones GoF"]
+    },
+    {
+      "name": "Mensajería & Eventos",
+      "skills": ["Apache Kafka", "RabbitMQ", "AWS EventBridge", "Azure Service Bus", "GCP Pub/Sub", "Saga", "Outbox"]
+    },
+    {
+      "name": "Bases de Datos",
+      "skills": ["PostgreSQL", "Oracle", "SQL Server", "MySQL", "MongoDB", "Redis", "BigQuery", "DynamoDB"]
+    },
+    {
+      "name": "Cloud & DevOps",
+      "skills": ["AWS", "Azure", "GCP", "Docker", "Kubernetes", "OpenShift", "Terraform", "Helm", "Jenkins", "GitLab CI/CD", "GitHub Actions", "Bitbucket Pipelines"]
+    },
+    {
+      "name": "Observabilidad",
+      "skills": ["Prometheus", "Grafana", "ELK Stack", "Splunk", "New Relic", "Rapid7", "Zipkin", "SonarQube", "OpenTelemetry"]
+    },
+    {
+      "name": "Seguridad",
+      "skills": ["OAuth2", "OpenID Connect", "JWT", "mTLS", "OWASP", "PCI-DSS", "ISO 8583", "AWS Secrets Manager"]
+    },
+    {
+      "name": "Testing",
+      "skills": ["JUnit 5", "Mockito", "Testcontainers", "Jest", "Vitest", "Selenium", "Appium", "Cypress", "PyTest", "Postman", "JMeter"]
+    },
+    {
+      "name": "IA & Herramientas Modernas",
+      "skills": ["Claude Code", "Cursor AI", "GitHub Copilot", "Antigravity", "Claude API", "OpenAI API", "Gemini", "Model Context Protocol (MCP)", "agentic workflows", "prompt engineering"]
+    },
+    {
+      "name": "Metodologías",
+      "skills": ["Scrum", "Kanban", "Agile", "DevOps", "Git Flow", "TDD", "BDD"]
+    }
+  ],
+
+  "education": [
+    { "degree": "Doctorado en Ciencias de la Computación y Telecomunicaciones (PhD)", "institution": "UAGRM School of Engineering", "startDate": "2024-02", "endDate": null, "inProgress": true },
+    { "degree": "Maestría en Dirección Estratégica de Ingeniería de Software", "institution": "UAGRM School of Engineering", "startDate": "2020-10", "endDate": null, "inProgress": true },
+    { "degree": "Maestría en Docencia Universitaria", "institution": "UAGRM Business School", "startDate": "2022-05", "endDate": null, "inProgress": true },
+    { "degree": "Diplomado en Educación Superior", "institution": "UAGRM Business School", "startDate": "2020-09", "endDate": "2021-04", "inProgress": false },
+    { "degree": "Ingeniería Informática (Licenciatura)", "institution": "UAGRM", "startDate": "2017-05", "endDate": "2021-01", "inProgress": false },
+    { "degree": "Ingeniería de Sistemas (Licenciatura)", "institution": "UAGRM", "startDate": "2012-03", "endDate": "2020-06", "inProgress": false }
+  ],
+
+  "certifications": [
+    { "name": "Scrum Foundation Professional Certificate", "issuer": "CertifPro, Sunrise Florida, EEUU", "year": "2021" },
+    { "name": "Scrum Master", "issuer": "UAGRM School of Engineering", "year": "2022" },
+    { "name": "Bootcamp Gestión de Proyectos Ágiles", "issuer": "Innova CAINCO", "year": "2021" },
+    { "name": "Curso Fundamentos Terraform", "issuer": "Platzi", "year": null },
+    { "name": "Curso Profesional Docker", "issuer": "Platzi", "year": null },
+    { "name": "Curso Profesional Git & GitHub", "issuer": "Platzi", "year": null },
+    { "name": "Workshop Angular y NestJS", "issuer": "Google Developer Group (GDG)", "year": null },
+    { "name": "Curso Desarrollo ASP.NET MVC", "issuer": "Udemy", "year": null }
+  ],
+
+  "profileTemplates": [
+    {
+      "slug": "java-senior-backend",
+      "title": "Senior Java Backend Engineer",
+      "description": "Perfil enfocado en Java, Spring Boot y microservicios para roles backend puros.",
+      "headline": "Senior Java Backend Engineer · Spring Boot · Microservicios",
+      "filterTags": ["java", "spring-boot", "microservices"],
+      "accentColor": "#1A365D"
+    },
+    {
+      "slug": "fullstack-nest-react",
+      "title": "Full-Stack Developer Senior",
+      "description": "Perfil full-stack con foco backend NestJS/Node y frontend React/Angular.",
+      "headline": "Full-Stack Developer Senior · NestJS · React · Backend-Focused",
+      "filterTags": ["nodejs", "nestjs", "fullstack", "java"],
+      "accentColor": "#065F46"
+    },
+    {
+      "slug": "devops-platform",
+      "title": "DevOps / Platform Engineer",
+      "description": "Perfil DevOps con foco en CI/CD, Kubernetes, IaC y observabilidad.",
+      "headline": "DevOps / Platform Engineer · CI/CD · Kubernetes · Terraform · SRE",
+      "filterTags": ["devops", "cloud", "iac", "serverless"],
+      "accentColor": "#0F766E"
+    },
+    {
+      "slug": "dotnet-backend",
+      "title": "Senior .NET Backend Developer",
+      "description": "Perfil .NET/C# con experiencia Azure y SQL Server.",
+      "headline": "Senior .NET Backend Developer · C# · ASP.NET Core · Azure",
+      "filterTags": ["dotnet", "azure", "integration"],
+      "accentColor": "#0078D4"
+    },
+    {
+      "slug": "it-leadership",
+      "title": "IT Leadership / Jefe de TI",
+      "description": "Perfil de liderazgo integral de TI, gestión de equipos y migración ERP.",
+      "headline": "Jefe de TI · Gerente de Sistemas · Liderazgo Integral",
+      "filterTags": ["leadership", "management", "erp", "cto", "migration"],
+      "accentColor": "#1B3A6B"
+    },
+    {
+      "slug": "integration-architect",
+      "title": "Arquitecto de Integración",
+      "description": "Perfil de arquitectura de integración, APIs, mensajería y banca.",
+      "headline": "Arquitecto de Integración · Banca & Fintech · APIs · Eventos",
+      "filterTags": ["integration", "banking", "fintech", "messaging"],
+      "accentColor": "#0E5263"
+    },
+    {
+      "slug": "ai-software-engineer",
+      "title": "AI Software Engineer",
+      "description": "Perfil enfocado en fluidez con stack de IA híbrida (Claude Code, Cursor, MCP) y desarrollo full-stack TypeScript/Python.",
+      "headline": "AI Software Engineer · Hybrid AI Coding · Full-Stack · TypeScript · Python",
+      "filterTags": ["ai-engineer", "ai", "nodejs", "nestjs", "fullstack", "python"],
+      "accentColor": "#6D28D9"
+    },
+    {
+      "slug": "fullstack-microsoft",
+      "title": "Fullstack Developer · Ecosistema Microsoft",
+      "description": "Perfil Microsoft end-to-end: .NET, SQL Server, automatización, reporting y modernización de legacy.",
+      "headline": "Fullstack Developer · Ecosistema Microsoft · .NET · SQL Server · Reporting",
+      "filterTags": ["microsoft", "dotnet", "azure", "legacy", "reporting", "integration"],
+      "accentColor": "#0078D4"
+    },
+    {
+      "slug": "devops-azure",
+      "title": "DevOps / Platform Engineer · Azure",
+      "description": "Perfil DevOps con Azure al frente: Azure DevOps, Terraform, Kubernetes, observabilidad e incident management.",
+      "headline": "DevOps / Platform Engineer · Microsoft Azure · Terraform · Kubernetes · SRE",
+      "filterTags": ["devops", "azure", "cloud", "iac", "microsoft"],
+      "accentColor": "#0078D4"
+    },
+    {
+      "slug": "software-architect",
+      "title": "Arquitecto de Software",
+      "description": "Perfil de arquitectura de software: microservicios, patrones, alto rendimiento y decisiones técnicas.",
+      "headline": "Ingeniero Senior · Arquitectura de Software · Java · Node.js · Microservicios",
+      "filterTags": ["microservices", "java", "spring-boot", "event-driven", "integration", "cloud"],
+      "accentColor": "#1E293B"
+    }
+  ],
+
+  "projects": [
+    {
+      "id": "portfolio-web",
+      "name": "Portafolio Web Administrable",
+      "role": "Proyecto personal",
+      "period": "2026",
+      "summary": "Portafolio administrable con perfiles curados: backend NestJS + TypeScript con Clean Architecture, frontend React + Vite, ORM Prisma sobre PostgreSQL, sistema de theming con design tokens. Construido con flujo de IA híbrida (Claude Code).",
+      "technologies": ["NestJS", "React", "TypeScript", "Prisma", "PostgreSQL", "Tailwind", "Claude Code"],
+      "tags": ["ai-engineer", "nodejs", "nestjs", "fullstack", "ai"],
+      "url": null,
+      "visible": true
+    },
+    {
+      "id": "erp-awa",
+      "name": "ERP AWA",
+      "role": "Líder de proyecto · NSoft",
+      "period": "2019 – 2022",
+      "summary": "Plataforma ERP empresarial modular (facturación, inventario, RRHH, contabilidad) llevada de cero a producción, con backend Spring Boot y .NET Core, frontend Angular, migración de datos legacy y capacitación a usuarios.",
+      "technologies": ["Java", "Spring Boot", ".NET Core", "Angular", "SQL Server"],
+      "tags": ["erp", "leadership", "java", "dotnet", "migration", "microsoft"],
+      "url": null,
+      "visible": true
+    }
+  ]
+}

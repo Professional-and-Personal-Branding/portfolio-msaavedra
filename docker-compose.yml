@@ -1,0 +1,45 @@
+# Docker Compose — Entorno local del Portafolio
+# Levanta PostgreSQL y Adminer (UI ligera para inspeccionar la DB).
+#
+# Uso:
+#   docker compose up -d        # levantar en background
+#   docker compose down         # detener
+#   docker compose down -v      # detener y borrar el volumen (reset total)
+#
+# DATABASE_URL para el backend (.env):
+#   DATABASE_URL="postgresql://portfolio:portfolio@localhost:5432/portfolio?schema=public"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: portfolio-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: portfolio
+      POSTGRES_PASSWORD: portfolio
+      POSTGRES_DB: portfolio
+    ports:
+      - "5432:5432"
+    volumes:
+      - portfolio-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portfolio -d portfolio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:latest
+    container_name: portfolio-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+
+volumes:
+  portfolio-pgdata:
+    name: portfolio-pgdata

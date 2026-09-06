@@ -1,0 +1,36 @@
+schema: spec-driven
+
+context: |
+  Language: es
+  All artifacts must be written in es.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+
+  Proyecto: Portafolio Administrable (Manuel Saavedra).
+  - Contrato de arquitectura y convenciones: CLAUDE.md (obligatorio).
+  - Fuente de verdad ampliada: docs/ARCHITECTURE.md.
+  - Input de negocio por fase (objetivo, alcance, criterios de aceptación):
+    docs/SPECS-POR-FASE.md. Las propuestas OpenSpec son el "cómo": referenciar
+    la fase correspondiente, NO duplicar sus criterios.
+  - Diseño i18n: docs/I18N.md. Hardening: docs/RELEASE-1.0.0-CHECKLIST.md.
+  - Flujo con Human Gate: Explorer → Architect (propose) → GATE humano →
+    Implementer (apply) → Verifier (criterios como tests, máx. 3 ciclos) →
+    Reviewer (archive). Nunca implementar antes del OK del gate.
+
+rules:
+  proposal:
+    - Referenciar la fase de docs/SPECS-POR-FASE.md que materializa el change
+    - Incluir una sección "Non-goals" explícita
+  specs:
+    - Cada escenario debe ser verificable como test (unitario o e2e)
+  tasks:
+    - Cada tarea indica cómo se verifica (comando, test o artefacto)
+    - Incluir un grupo final que corra los criterios de aceptación de la fase
+
+operations:
+  apply:
+    guidance:
+      - Respetar la regla de dependencia domain ← application ← infrastructure
+      - Prisma solo en infrastructure/persistence; nunca en domain o application
+  archive:
+    guidance:
+      - Actualizar docs/CHANGELOG.md y el checkbox de fase en CLAUDE.md
