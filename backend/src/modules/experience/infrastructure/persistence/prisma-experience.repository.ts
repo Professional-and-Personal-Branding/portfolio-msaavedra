@@ -12,7 +12,7 @@ export class PrismaExperienceRepository implements ExperienceRepository {
   async findAllVisible(): Promise<Experience[]> {
     const records = await this.prisma.experience.findMany({
       where: { visible: true },
-      orderBy: [{ order: 'asc' }, { startDate: 'desc' }],
+      orderBy: [{ startDate: 'desc' }, { order: 'asc' }],
     });
     return records.map(toExperienceEntity);
   }

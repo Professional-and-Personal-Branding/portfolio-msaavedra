@@ -93,7 +93,7 @@ El JSON tiene seis secciones:
 
 Cada **experiencia**, **skill** y **proyecto** tiene `tags`. Cada **perfil curado** tiene `filterTags`. La regla de inclusión es simple:
 
-> Un item aparece en un perfil curado si comparte **al menos un tag** con los `filterTags` de ese perfil.
+> Un item aparece en un perfil curado si comparte **al menos un tag** con los `filterTags` de ese perfil (`filterTags` vacío = todos, como el perfil `all`). Los overrides `includeIds`/`excludeIds` referencian ids generados por el seed, así que **no viven en este JSON**: se gestionan desde el backoffice. Las experiencias se sirven en orden cronológico (`startDate` desc; `order` solo desempata).
 
 Ejemplo: el perfil `ai-software-engineer` tiene `filterTags: ["ai-engineer","ai","nodejs","nestjs","fullstack","python"]`. La experiencia de Ensitech tiene el tag `ai-engineer`, por lo tanto aparece. Mojix (solo tags Java/Quarkus/retail) no aparece.
 

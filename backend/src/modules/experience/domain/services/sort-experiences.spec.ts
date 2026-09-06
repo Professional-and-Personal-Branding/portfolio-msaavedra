@@ -20,23 +20,23 @@ function exp(id: string, order: number, startDate: string): Experience {
   });
 }
 
-describe('sortExperiences', () => {
-  it('ordena por order ascendente', () => {
+describe('sortExperiences (orden canónico cronológico)', () => {
+  it('ordena por startDate descendente aunque order diga otra cosa', () => {
     const sorted = sortExperiences([
-      exp('c', 2, '2020-01'),
-      exp('a', 0, '2018-01'),
-      exp('b', 1, '2019-01'),
+      exp('vidoomy', 5, '2022-02'),
+      exp('kiwox', 6, '2022-04'),
+      exp('novacomp', 0, '2026-03'),
     ]);
-    expect(sorted.map((e) => e.id)).toEqual(['a', 'b', 'c']);
+    expect(sorted.map((e) => e.id)).toEqual(['novacomp', 'kiwox', 'vidoomy']);
   });
 
-  it('a igual order, la startDate más reciente va primero', () => {
+  it('a igual startDate, desempata por order ascendente', () => {
     const sorted = sortExperiences([
-      exp('old', 0, '2019-03'),
-      exp('new', 0, '2021-11'),
-      exp('mid', 0, '2020-06'),
+      exp('k27', 3, '2023-01'),
+      exp('eron', 2, '2023-01'),
+      exp('ensitech', 1, '2023-07'),
     ]);
-    expect(sorted.map((e) => e.id)).toEqual(['new', 'mid', 'old']);
+    expect(sorted.map((e) => e.id)).toEqual(['ensitech', 'eron', 'k27']);
   });
 
   it('no muta el array original', () => {
@@ -44,5 +44,9 @@ describe('sortExperiences', () => {
     const copy = [...input];
     sortExperiences(input);
     expect(input).toEqual(copy);
+  });
+
+  it('lista vacía devuelve lista vacía', () => {
+    expect(sortExperiences([])).toEqual([]);
   });
 });

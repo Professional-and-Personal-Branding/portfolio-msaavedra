@@ -1,5 +1,9 @@
-import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { DomainError, NotFoundError } from '../../domain/errors';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { AccessDeniedError, DomainError, NotFoundError } from '../../domain/errors';
 import { toHttpException } from './domain-error.mapper';
 
 class WeirdError extends DomainError {
@@ -19,6 +23,13 @@ describe('toHttpException', () => {
       message: 'Experiencia con id "abc" no encontrado',
       error: 'Not Found',
     });
+  });
+
+  it('AccessDeniedError → 401 Unauthorized', () => {
+    const ex = toHttpException(new AccessDeniedError('Perfil curado'));
+    expect(ex).toBeInstanceOf(UnauthorizedException);
+    expect(ex.getStatus()).toBe(401);
+    expect(ex.getResponse()).toMatchObject({ statusCode: 401, error: 'Unauthorized' });
   });
 
   it('error de dominio no previsto → 500 sin filtrar detalles', () => {

@@ -1,0 +1,368 @@
+import { Experience } from '../../../experience/domain/entities/experience.entity';
+import { ExperienceRepository } from '../../../experience/domain/repositories/experience.repository';
+import { Profile } from '../../../profile/domain/entities/profile.entity';
+import { ProfileRepository } from '../../../profile/domain/repositories/profile.repository';
+import { Availability } from '../../../profile/domain/value-objects/availability.vo';
+import { SkillCategory } from '../../../skill/domain/entities/skill-category.entity';
+import { Skill } from '../../../skill/domain/entities/skill.entity';
+import { SkillCategoryRepository } from '../../../skill/domain/repositories/skill-category.repository';
+import { Theme } from '../../../theme/domain/entities/theme.entity';
+import { ThemeRepository } from '../../../theme/domain/repositories/theme.repository';
+import { CuratedProfile, CuratedProfileProps } from '../../domain/entities/curated-profile.entity';
+import { CuratedProfileAccessDeniedError } from '../../domain/errors/curated-profile-access-denied.error';
+import { CuratedProfileNotFoundError } from '../../domain/errors/curated-profile-not-found.error';
+import { CuratedProfileRepository } from '../../domain/repositories/curated-profile.repository';
+import { AccessToken } from '../../domain/value-objects/access-token.vo';
+import { ListCuratedProfilesUseCase } from './list-curated-profiles.use-case';
+import { ResolveCuratedProfileUseCase } from './resolve-curated-profile.use-case';
+
+// ── Fixtures ────────────────────────────────────────────────────────────────
+function exp(id: string, startDate: string, tags: string[], order = 0, visible = true): Experience {
+  return Experience.create({
+    id,
+    company: id,
+    role: { es: `Rol ${id}`, en: `Role ${id}` },
+    startDate,
+    endDate: null,
+    current: false,
+    location: 'Remoto',
+    summary: { es: 'Resumen', en: 'Summary' },
+    highlights: { es: ['logro'], en: ['achievement'] },
+    technologies: [],
+    tags,
+    sector: [],
+    order,
+    visible,
+  });
+}
+
+const EXPERIENCES = [
+  exp('novacomp', '2026-03', ['dotnet', 'java', 'fintech'], 0),
+  exp('kiwox', '2022-04', ['nodejs', 'aws'], 6),
+  exp('vidoomy', '2022-02', ['java'], 5),
+  exp('ypfb', '2018-02', ['dotnet', 'legacy'], 14),
+  exp('oculta', '2030-01', ['java'], 99, false),
+];
+
+const CATEGORIES = [
+  SkillCategory.create({
+    id: 'c1',
+    name: { es: 'Lenguajes', en: 'Languages' },
+    order: 0,
+    skills: [
+      Skill.create({ id: 's-java', name: 'Java', tags: ['java'], order: 0 }),
+      Skill.create({ id: 's-cs', name: 'C#', tags: ['dotnet'], order: 1 }),
+    ],
+  }),
+  SkillCategory.create({
+    id: 'c2',
+    name: { es: 'Metodologías', en: 'Methodologies' },
+    order: 1,
+    skills: [Skill.create({ id: 's-scrum', name: 'Scrum', tags: ['leadership'], order: 0 })],
+  }),
+];
+
+const MODERN_DARK = Theme.create({
+  id: 't-md',
+  name: 'Modern Dark',
+  slug: 'modern-dark',
+  isPreset: true,
+  tokens: { mode: 'dark', colors: { bg: '#0a0e1a', accent: '#38bdf8' } },
+});
+const ELEGANT = Theme.create({
+  id: 't-el',
+  name: 'Elegant',
+  slug: 'elegant',
+  isPreset: true,
+  tokens: { mode: 'dark', colors: { bg: '#1a1814', accent: '#c8a04e' } },
+});
+
+const PROFILE = Profile.create({
+  id: 'p1',
+  fullName: 'Manuel',
+  headline: { es: 'Ingeniero', en: 'Engineer' },
+  location: 'SCZ',
+  timezone: 'GMT-4',
+  email: 'm@x.com',
+  phone: null,
+  summary: { es: 'Resumen', en: 'Summary' },
+  yearsOfExperience: 10,
+  availability: Availability.create({ modality: null, contractType: null, startDate: null }),
+  languages: [],
+});
+
+function curated(overrides: Partial<CuratedProfileProps> = {}): CuratedProfile {
+  return CuratedProfile.create({
+    id: 'cp1',
+    slug: 'java-senior',
+    title: { es: 'Java Senior', en: 'Senior Java' },
+    headline: { es: 'Titular', en: 'Headline' },
+    description: { es: 'Desc', en: 'Description' },
+    roleType: { es: 'Backend', en: 'Backend' },
+    techFocus: 'Java',
+    filterTags: ['java'],
+    includeIds: [],
+    excludeIds: [],
+    accentColor: '#112233',
+    themeId: null,
+    themeOverrides: null,
+    layout: 'classic',
+    sectionsOrder: [],
+    sectionsHidden: [],
+    visibility: 'PUBLIC',
+    accessToken: AccessToken.none(),
+    views: 0,
+    ...overrides,
+  });
+}
+
+interface Deps {
+  curated?: CuratedProfile | null;
+  profile?: Profile | null;
+  experiences?: Experience[];
+  categories?: SkillCategory[];
+  themes?: Theme[];
+}
+
+function build(deps: Deps = {}) {
+  const themes = deps.themes ?? [MODERN_DARK, ELEGANT];
+  const curatedRepo: CuratedProfileRepository = {
+    findBySlug: jest.fn().mockResolvedValue(deps.curated === undefined ? curated() : deps.curated),
+    findAllPublic: jest.fn().mockResolvedValue([]),
+  };
+  const profileRepo: ProfileRepository = {
+    findOne: jest.fn().mockResolvedValue(deps.profile === undefined ? PROFILE : deps.profile),
+  };
+  const experienceRepo: ExperienceRepository = {
+    findAllVisible: jest
+      .fn()
+      .mockResolvedValue((deps.experiences ?? EXPERIENCES).filter((e) => e.visible)),
+    findVisibleById: jest.fn(),
+  };
+  const skillRepo: SkillCategoryRepository = {
+    findAll: jest.fn().mockResolvedValue(deps.categories ?? CATEGORIES),
+  };
+  const themeRepo: ThemeRepository = {
+    findById: jest
+      .fn()
+      .mockImplementation((id: string) => Promise.resolve(themes.find((t) => t.id === id) ?? null)),
+    findBySlug: jest
+      .fn()
+      .mockImplementation((slug: string) =>
+        Promise.resolve(themes.find((t) => t.slug === slug) ?? null),
+      ),
+  };
+  return new ResolveCuratedProfileUseCase(
+    curatedRepo,
+    profileRepo,
+    experienceRepo,
+    skillRepo,
+    themeRepo,
+  );
+}
+
+async function resolveOk(useCase: ResolveCuratedProfileUseCase, input = {}) {
+  const result = await useCase.execute({ slug: 'java-senior', locale: 'es', ...input });
+  if (!result.ok) throw new Error(`esperaba éxito, obtuve ${result.error.code}`);
+  return result.value;
+}
+
+// ── ResolveCuratedProfileUseCase ─────────────────────────────────────────────
+describe('ResolveCuratedProfileUseCase', () => {
+  it('perfil público: selecciona por tags y ordena cronológicamente', async () => {
+    const out = await resolveOk(build());
+    expect(out.slug).toBe('java-senior');
+    expect(out.experiences.map((e) => e.id)).toEqual(['novacomp', 'vidoomy']);
+    expect(out.visibility).toBe('PUBLIC');
+  });
+
+  it('slug inexistente → CuratedProfileNotFoundError', async () => {
+    const result = await build({ curated: null }).execute({ slug: 'nope', locale: 'es' });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toBeInstanceOf(CuratedProfileNotFoundError);
+    expect(result.error.message).toContain('nope');
+  });
+
+  it('PRIVATE se comporta como inexistente, con o sin token', async () => {
+    const useCase = build({
+      curated: curated({ visibility: 'PRIVATE', accessToken: AccessToken.create('t') }),
+    });
+    const sin = await useCase.execute({ slug: 'java-senior', locale: 'es' });
+    const con = await useCase.execute({ slug: 'java-senior', locale: 'es', accessToken: 't' });
+    expect(sin.ok).toBe(false);
+    expect(con.ok).toBe(false);
+    if (!sin.ok) expect(sin.error).toBeInstanceOf(CuratedProfileNotFoundError);
+    if (!con.ok) expect(con.error).toBeInstanceOf(CuratedProfileNotFoundError);
+  });
+
+  it('PROTECTED sin token o con token incorrecto → AccessDenied', async () => {
+    const useCase = build({
+      curated: curated({ visibility: 'PROTECTED', accessToken: AccessToken.create('s3cret') }),
+    });
+    const sin = await useCase.execute({ slug: 'java-senior', locale: 'es' });
+    const mal = await useCase.execute({ slug: 'java-senior', locale: 'es', accessToken: 'otro' });
+    expect(sin.ok).toBe(false);
+    expect(mal.ok).toBe(false);
+    if (!sin.ok) expect(sin.error).toBeInstanceOf(CuratedProfileAccessDeniedError);
+    if (!mal.ok) expect(mal.error.code).toBe('PERFIL_CURADO_ACCESS_DENIED');
+  });
+
+  it('PROTECTED con token válido resuelve', async () => {
+    const useCase = build({
+      curated: curated({ visibility: 'PROTECTED', accessToken: AccessToken.create('s3cret') }),
+    });
+    const out = await resolveOk(useCase, { accessToken: 's3cret' });
+    expect(out.visibility).toBe('PROTECTED');
+  });
+
+  it('filterTags vacío incluye todas las visibles', async () => {
+    const out = await resolveOk(build({ curated: curated({ filterTags: [] }) }));
+    expect(out.experiences.map((e) => e.id)).toEqual(['novacomp', 'kiwox', 'vidoomy', 'ypfb']);
+  });
+
+  it('excludeIds gana; includeIds fuerza', async () => {
+    const out = await resolveOk(
+      build({ curated: curated({ includeIds: ['kiwox'], excludeIds: ['novacomp'] }) }),
+    );
+    expect(out.experiences.map((e) => e.id)).toEqual(['kiwox', 'vidoomy']);
+  });
+
+  it('una experiencia oculta no entra ni con includeIds', async () => {
+    const out = await resolveOk(build({ curated: curated({ includeIds: ['oculta'] }) }));
+    expect(out.experiences.map((e) => e.id)).not.toContain('oculta');
+  });
+
+  it('skills reagrupadas por categoría sin categorías vacías', async () => {
+    const out = await resolveOk(build());
+    expect(out.skillCategories).toEqual([{ name: 'Lenguajes', skills: ['Java'] }]);
+  });
+
+  it('tema: sin themeId usa modern-dark; con themeId usa el propio; overrides se mergean', async () => {
+    const def = await resolveOk(build());
+    expect(def.theme?.slug).toBe('modern-dark');
+
+    const own = await resolveOk(
+      build({
+        curated: curated({ themeId: 't-el', themeOverrides: { colors: { accent: '#fff' } } }),
+      }),
+    );
+    expect(own.theme?.slug).toBe('elegant');
+    expect(own.theme?.tokens).toEqual({ mode: 'dark', colors: { bg: '#1a1814', accent: '#fff' } });
+    expect(ELEGANT.tokens.colors).toEqual({ bg: '#1a1814', accent: '#c8a04e' }); // base intacto
+  });
+
+  it('themeId inexistente cae a modern-dark; sin ningún tema → null', async () => {
+    const fallback = await resolveOk(build({ curated: curated({ themeId: 'no-existe' }) }));
+    expect(fallback.theme?.slug).toBe('modern-dark');
+
+    const none = await resolveOk(build({ themes: [] }));
+    expect(none.theme).toBeNull();
+    expect(none.experiences.length).toBeGreaterThan(0);
+  });
+
+  it('secciones: orden custom con ocultas y default cuando está vacío', async () => {
+    const custom = await resolveOk(
+      build({
+        curated: curated({
+          sectionsOrder: ['hero', 'skills', 'contact'],
+          sectionsHidden: ['skills'],
+        }),
+      }),
+    );
+    expect(custom.sections).toEqual(['hero', 'contact']);
+    expect(custom.hiddenSections).toEqual(['skills']);
+
+    const def = await resolveOk(build());
+    expect(def.sections).toEqual([
+      'hero',
+      'stats',
+      'experience',
+      'skills',
+      'education',
+      'certifications',
+      'contact',
+    ]);
+  });
+
+  it('locale en aplica a todo el árbol y no quedan objetos {es,en}', async () => {
+    const out = await resolveOk(build(), { locale: 'en' });
+    expect(out.title).toBe('Senior Java');
+    expect(out.profile?.headline).toBe('Engineer');
+    expect(out.experiences[0].role).toBe('Role novacomp');
+    expect(out.skillCategories[0].name).toBe('Languages');
+    const json = JSON.stringify(out);
+    expect(json).not.toMatch(/"es":/);
+    expect(json).not.toMatch(/"en":/);
+  });
+
+  it('no expone datos sensibles ni internos', async () => {
+    const out = (await resolveOk(
+      build({
+        curated: curated({ visibility: 'PROTECTED', accessToken: AccessToken.create('s3cret') }),
+      }),
+      { accessToken: 's3cret' },
+    )) as unknown as Record<string, unknown>;
+    for (const key of [
+      'accessToken',
+      'includeIds',
+      'excludeIds',
+      'filterTags',
+      'themeId',
+      'themeOverrides',
+    ]) {
+      expect(out).not.toHaveProperty(key);
+    }
+    expect(JSON.stringify(out)).not.toContain('s3cret');
+  });
+
+  it('forma completa del resultado', async () => {
+    const out = await resolveOk(build());
+    expect(Object.keys(out).sort()).toEqual(
+      [
+        'slug',
+        'title',
+        'headline',
+        'description',
+        'roleType',
+        'techFocus',
+        'accentColor',
+        'layout',
+        'visibility',
+        'sections',
+        'hiddenSections',
+        'theme',
+        'profile',
+        'experiences',
+        'skillCategories',
+      ].sort(),
+    );
+  });
+
+  it('sin perfil base → profile null, resolución continúa', async () => {
+    const out = await resolveOk(build({ profile: null }));
+    expect(out.profile).toBeNull();
+    expect(out.experiences).toHaveLength(2);
+  });
+});
+
+// ── ListCuratedProfilesUseCase ───────────────────────────────────────────────
+describe('ListCuratedProfilesUseCase', () => {
+  it('lista solo públicos, en orden de entrada, resueltos al locale y sin campos internos', async () => {
+    const repo: CuratedProfileRepository = {
+      findBySlug: jest.fn(),
+      findAllPublic: jest
+        .fn()
+        .mockResolvedValue([
+          curated({ slug: 'b', title: { es: 'B-es', en: 'B-en' } }),
+          curated({ slug: 'priv', visibility: 'PRIVATE' }),
+          curated({ slug: 'a', title: { es: 'A-es', en: 'A-en' } }),
+        ]),
+    };
+    const result = await new ListCuratedProfilesUseCase(repo).execute({ locale: 'en' });
+    expect(result.value.map((p) => p.slug)).toEqual(['b', 'a']);
+    expect(result.value[0].title).toBe('B-en');
+    expect(result.value[0]).not.toHaveProperty('filterTags');
+    expect(result.value[0]).not.toHaveProperty('visibility');
+  });
+});

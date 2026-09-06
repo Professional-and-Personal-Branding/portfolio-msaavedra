@@ -15,6 +15,7 @@ export function setupSwagger(app: INestApplication): void {
     .setVersion('0.1.0')
     .addTag('profile', 'Perfil profesional base')
     .addTag('experiences', 'Trayectoria laboral')
+    .addTag('curated-profiles', 'Perfiles curados (núcleo del producto)')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

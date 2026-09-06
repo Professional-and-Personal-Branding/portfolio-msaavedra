@@ -1,5 +1,23 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Septiembre 2026 (Fase 2 — change OpenSpec `add-curated-profile-resolution`)
+
+Núcleo del producto implementado bajo SDD (propuesta aprobada por Human Gate, commit `67ea1a9`).
+
+### Backend (`backend/`)
+- Módulo `curated-profile`: `ResolveCuratedProfileUseCase(slug, locale, accessToken?)` y `ListCuratedProfilesUseCase`; servicios de dominio puros `select-by-tags` (intersección + overrides), `select-skill-categories`, `resolve-sections`; value object `AccessToken` (comparación en tiempo constante).
+- Módulos mínimos `skill` y `theme` (dominio + puerto + adaptador Prisma); `merge-theme-tokens` (merge profundo inmutable de `themeOverrides`); preset por defecto `modern-dark`.
+- Endpoints `GET /api/curated-profiles` (solo PUBLIC) y `GET /api/curated-profiles/:slug` (404 PRIVATE/inexistente, 401 PROTECTED sin token vía `X-Access-Token` o `?token=`).
+- **Orden canónico de experiencias pasa a cronológico** (`startDate` desc, `order` asc como desempate) en toda la API, incluido `GET /api/experiences` (decisión D1, aprobada). Motivo: los datos reales tenían 2 casos donde `order` no era cronológico.
+- `AccessDeniedError` en shared + mapeo a 401. `ProfileModule`/`ExperienceModule` exportan sus puertos.
+- Tests: 117 unitarios (incluye arquitectura) + 43 e2e.
+
+### Docs sincronizadas
+- `CLAUDE.md`: checkbox Fase 2; § núcleo actualizado (orden canónico, `ProfileView` en Fase 3, visibilidad).
+- `ARCHITECTURE.md` §6/§7: rutas de Fase 2 marcadas; endpoint `access` descartado.
+- `DATA-POPULATION.md`: overrides no viven en el JSON; orden cronológico.
+- `openspec/specs/public-experience-api`: requisito de orden modificado.
+
 ## Update — Septiembre 2026 (Fase 1 — change OpenSpec `add-backend-base`)
 
 Primer change de código bajo disciplina SDD con OpenSpec (`openspec/`), aprobado por Human Gate antes de implementar.

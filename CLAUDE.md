@@ -92,15 +92,15 @@ Dado un `slug`, el caso de uso `ResolveCuratedProfileUseCase`:
 1. Busca el `CuratedProfile` por slug. Si no existe o no es visible → error de dominio.
 2. Si es `PROTECTED`, valida el token de acceso.
 3. Resuelve las **experiencias** y **skills** aplicando:
-   - Filtro por `filterTags` (incluir si el item comparte al menos un tag).
-   - Overrides: `includeIds` fuerza inclusión, `excludeIds` fuerza exclusión.
-   - Orden: por `order` y luego por fecha descendente.
+   - Filtro por `filterTags` (incluir si el item comparte al menos un tag; `filterTags` vacío = todo).
+   - Overrides: `includeIds` fuerza inclusión (solo de items visibles), `excludeIds` fuerza exclusión y siempre gana.
+   - Orden canónico (decisión D1 de `add-curated-profile-resolution`): **cronológico**, `startDate` desc y `order` asc como desempate — el mismo que `GET /api/experiences`.
 4. Resuelve el **tema**: `theme` base + `themeOverrides` (merge profundo).
 5. Aplica `sectionsOrder` y `sectionsHidden`.
-6. Incrementa el contador de vistas (registrar `ProfileView`).
+6. Incrementa el contador de vistas (registrar `ProfileView`) — **se implementa en Fase 3** (según `docs/SPECS-POR-FASE.md`).
 7. Devuelve un DTO de presentación listo para el frontend.
 
-Este caso de uso es el corazón del producto — implementarlo con tests exhaustivos.
+Este caso de uso es el corazón del producto — implementarlo con tests exhaustivos. Implementado en `backend/src/modules/curated-profile/` (servicios puros `select-by-tags`, `select-skill-categories`, `resolve-sections`; tema en `modules/theme/domain/services/merge-theme-tokens.ts`). `PRIVATE` → 404 (no revela existencia); `PROTECTED` → 401 sin token válido (`X-Access-Token` o `?token=`).
 
 ---
 
@@ -129,7 +129,7 @@ npm run test             # vitest
 > Specs por fase con criterios de aceptación: `docs/SPECS-POR-FASE.md` (guía SDD).
 
 - [x] Fase 1 — Backend base (profile, experience) + Prisma + seed + Swagger — change `add-backend-base` (ver `openspec/changes/archive/`)
-- [ ] Fase 2 — curated-profile (ResolveCuratedProfile)
+- [x] Fase 2 — curated-profile (ResolveCuratedProfile) — change `add-curated-profile-resolution`
 - [ ] Fase 3 — auth JWT + backoffice API (CRUD)
 - [ ] Fase 4 — frontend público + motor de theming
 - [ ] Fase 5 — frontend backoffice + customizador visual

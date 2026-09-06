@@ -273,15 +273,15 @@ describe('API pública (e2e)', () => {
       expect(res.body[0].highlights).toEqual(cv.experiences[0].highlights.en);
     });
 
-    it('orden: order ascendente y startDate descendente a igual order', async () => {
+    it('orden cronológico: startDate descendente y order ascendente a igual startDate', async () => {
       const res = await request(app.getHttpServer()).get('/api/experiences');
       const items = res.body as { order: number; startDate: string }[];
       for (let i = 1; i < items.length; i++) {
         const prev = items[i - 1];
         const curr = items[i];
         const okOrder =
-          prev.order < curr.order ||
-          (prev.order === curr.order && prev.startDate >= curr.startDate);
+          prev.startDate > curr.startDate ||
+          (prev.startDate === curr.startDate && prev.order <= curr.order);
         expect(okOrder).toBe(true);
       }
     });

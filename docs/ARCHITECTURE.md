@@ -210,9 +210,9 @@ model ProfileView { /* analítica: slug, timestamp, referrer */ }
 
 ### Públicos (rutas planas bajo `/api`, según los criterios de `docs/SPECS-POR-FASE.md`)
 - `GET /api/profile` — perfil base ✅ Fase 1
-- `GET /api/experiences` · `GET /api/experiences/:id` — experiencias visibles ✅ Fase 1
-- `GET /api/curated-profiles` · `GET /api/curated-profiles/:slug` — perfil curado resuelto (Fase 2)
-- `POST /api/curated-profiles/:slug/access` — validar token de perfil protegido (Fase 2)
+- `GET /api/experiences` · `GET /api/experiences/:id` — experiencias visibles, orden cronológico ✅ Fase 1
+- `GET /api/curated-profiles` · `GET /api/curated-profiles/:slug` — perfil curado resuelto ✅ Fase 2 (PROTECTED: token por header `X-Access-Token` o `?token=`; PRIVATE → 404)
+- ~~`POST /api/curated-profiles/:slug/access`~~ — no necesario: el token viaja en el `GET` (puede añadirse en Fase 3 si el frontend lo requiere)
 - Idioma por request: `?locale=` > `?lang=` > `Accept-Language` > `es`. Swagger en `/api/docs`, OpenAPI en `/api/docs-json`.
 
 ### Backoffice (protegidos con JWT)
@@ -239,7 +239,7 @@ model ProfileView { /* analítica: slug, timestamp, referrer */ }
 4. Módulo `profile` y `experience` con Clean Architecture completa (un módulo de referencia bien hecho).
 5. Endpoints públicos de lectura + Swagger.
 
-### Fase 2 — Núcleo curated-profile
+### ✅ Fase 2 — Núcleo curated-profile (change OpenSpec `add-curated-profile-resolution`, sept. 2026)
 1. Módulo `curated-profile` con lógica de resolución (filtrado por tags + overrides).
 2. Caso de uso `ResolveCuratedProfile`: dado un slug, devuelve perfil + experiencias filtradas y ordenadas.
 3. Endpoints públicos de perfiles curados.

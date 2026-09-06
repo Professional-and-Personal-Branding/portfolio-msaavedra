@@ -13,6 +13,6 @@ import { PrismaExperienceRepository } from './infrastructure/persistence/prisma-
     ListExperiencesUseCase,
     GetExperienceByIdUseCase,
   ],
-  exports: [ListExperiencesUseCase, GetExperienceByIdUseCase],
+  exports: [ListExperiencesUseCase, GetExperienceByIdUseCase, EXPERIENCE_REPOSITORY],
 })
 export class ExperienceModule {}

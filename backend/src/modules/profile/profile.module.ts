@@ -14,6 +14,6 @@ import { PrismaProfileRepository } from './infrastructure/persistence/prisma-pro
     { provide: PROFILE_REPOSITORY, useClass: PrismaProfileRepository },
     GetProfileUseCase,
   ],
-  exports: [GetProfileUseCase],
+  exports: [GetProfileUseCase, PROFILE_REPOSITORY],
 })
 export class ProfileModule {}
