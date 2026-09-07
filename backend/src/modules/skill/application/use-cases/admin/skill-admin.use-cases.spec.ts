@@ -1,4 +1,7 @@
-import { SkillCategory } from '../../../domain/entities/skill-category.entity';
+import {
+  NewSkillCategoryProps,
+  SkillCategory,
+} from '../../../domain/entities/skill-category.entity';
 import { NewSkillProps, Skill } from '../../../domain/entities/skill.entity';
 import {
   SkillCategoryNotFoundError,
@@ -34,7 +37,7 @@ function buildRepo() {
       .mockImplementation((id: string) =>
         Promise.resolve(categories.find((c) => c.id === id) ?? null),
       ),
-    create: jest.fn().mockImplementation((props) => {
+    create: jest.fn().mockImplementation((props: NewSkillCategoryProps) => {
       const c = SkillCategory.create({ id: 'c-new', skills: [], ...props });
       categories.push(c);
       return Promise.resolve(c);

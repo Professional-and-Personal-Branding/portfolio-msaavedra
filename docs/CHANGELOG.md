@@ -1,5 +1,14 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Septiembre 2026 (change OpenSpec `add-portfolio-sections-api`, previo a Fase 4)
+
+Cierra el hueco de datos para el frontend público (propuesta aprobada por Human Gate, commit `145d4df`).
+
+### Backend (`backend/`)
+- Módulos mínimos `education` (educación + certificaciones), `project` y `social-link`: entidades, puertos de lectura, adaptadores Prisma, casos de uso y endpoints `GET /api/education`, `/api/certifications`, `/api/projects`, `/api/social-links` (solo visibles, orden `order`, locale negociado).
+- La vista curada agrega `projects` (filtrados por tags + overrides, mismo espacio de ids), `education`, `certifications` y `socialLinks`; `PortfolioSectionsLoader` agrupa las cuatro lecturas.
+- Specs: nueva `public-portfolio-sections-api`; `curated-profile-resolution` con la regla de proyectos y la forma completa ampliada.
+
 ## Update — Septiembre 2026 (Fase 3 — change OpenSpec `add-auth-and-crud`)
 
 Backoffice API bajo SDD (propuesta aprobada por Human Gate, commit `31cdbe7`).

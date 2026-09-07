@@ -36,6 +36,7 @@ import { selectByTags, SelectionCriteria } from '../../domain/services/select-by
 import { selectSkillCategories } from '../../domain/services/select-skill-categories';
 import { CuratedProfileOutput } from '../dto/curated-profile.output';
 import { toCuratedProfileOutput } from '../mappers/curated-profile.mapper';
+import { PortfolioSectionsLoader } from '../services/portfolio-sections.loader';
 
 /** Contexto de la visita pública. Si viene, la resolución exitosa registra un ProfileView. */
 export interface ViewContext {
@@ -72,6 +73,7 @@ export class ResolveCuratedProfileUseCase {
     @Inject(SKILL_CATEGORY_REPOSITORY) private readonly skillCategories: SkillCategoryRepository,
     @Inject(THEME_REPOSITORY) private readonly themes: ThemeRepository,
     @Inject(PROFILE_VIEW_REPOSITORY) private readonly profileViews: ProfileViewRepository,
+    private readonly sectionsLoader: PortfolioSectionsLoader,
   ) {}
 
   async execute(
@@ -85,11 +87,12 @@ export class ResolveCuratedProfileUseCase {
     if (!curated.canAccess(input.accessToken)) return fail(new CuratedProfileAccessDeniedError());
 
     // 3. Lecturas en paralelo.
-    const [profile, allExperiences, allCategories, theme] = await Promise.all([
+    const [profile, allExperiences, allCategories, theme, portfolio] = await Promise.all([
       this.profiles.findOne(),
       this.experiences.findAllVisible(),
       this.skillCategories.findAll(),
       this.resolveTheme(curated.themeId),
+      this.sectionsLoader.load(),
     ]);
 
     const criteria: SelectionCriteria = {
@@ -98,13 +101,14 @@ export class ResolveCuratedProfileUseCase {
       excludeIds: curated.excludeIds,
     };
 
-    // 4. Experiencias: solo visibles → selección por tags/overrides → orden canónico.
+    // 4. Experiencias y proyectos: solo visibles → selección por tags/overrides → orden.
     const experiences = sortExperiences(
       selectByTags(
         allExperiences.filter((e) => e.visible),
         criteria,
       ),
     );
+    const projects = selectByTags(portfolio.projects, criteria).sort((a, b) => a.order - b.order);
 
     // 5. Skills por categoría (sin categorías vacías).
     const skillCategories = selectSkillCategories(allCategories, criteria);
@@ -126,6 +130,10 @@ export class ResolveCuratedProfileUseCase {
         profile,
         experiences,
         skillCategories,
+        projects,
+        education: portfolio.education,
+        certifications: portfolio.certifications,
+        socialLinks: portfolio.socialLinks,
         theme: resolvedTheme,
         sections,
       }),

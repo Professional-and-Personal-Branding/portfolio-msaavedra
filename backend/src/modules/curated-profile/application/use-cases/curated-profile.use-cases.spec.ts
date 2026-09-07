@@ -1,4 +1,9 @@
 import { ProfileViewRepository } from '../../../analytics/domain/repositories/profile-view.repository';
+import { Certification } from '../../../education/domain/entities/certification.entity';
+import { Education } from '../../../education/domain/entities/education.entity';
+import { Project } from '../../../project/domain/entities/project.entity';
+import { SocialLink } from '../../../social-link/domain/entities/social-link.entity';
+import { PortfolioSectionsLoader } from '../services/portfolio-sections.loader';
 import { Experience } from '../../../experience/domain/entities/experience.entity';
 import { ExperienceRepository } from '../../../experience/domain/repositories/experience.repository';
 import { Profile } from '../../../profile/domain/entities/profile.entity';
@@ -117,6 +122,69 @@ function curated(overrides: Partial<CuratedProfileProps> = {}): CuratedProfile {
   });
 }
 
+const PROJECTS = [
+  Project.create({
+    id: 'proj-erp',
+    name: 'ERP AWA',
+    role: { es: 'Líder', en: 'Lead' },
+    period: '2019',
+    summary: { es: 'x' },
+    technologies: [],
+    tags: ['erp', 'java'],
+    url: null,
+    order: 1,
+    visible: true,
+  }),
+  Project.create({
+    id: 'proj-web',
+    name: 'Portafolio',
+    role: { es: 'Autor', en: 'Author' },
+    period: '2026',
+    summary: { es: 'y' },
+    technologies: [],
+    tags: ['nodejs'],
+    url: null,
+    order: 0,
+    visible: true,
+  }),
+];
+const EDUCATION = [
+  Education.create({
+    id: 'edu-1',
+    degree: { es: 'Doctorado', en: 'PhD' },
+    institution: 'UAGRM',
+    startDate: '2024-02',
+    endDate: null,
+    inProgress: true,
+    order: 0,
+    visible: true,
+  }),
+];
+const CERTIFICATIONS = [
+  Certification.create({
+    id: 'cert-1',
+    name: { es: 'Scrum', en: 'Scrum' },
+    issuer: 'X',
+    year: '2021',
+    order: 0,
+    visible: true,
+  }),
+];
+const SOCIAL_LINKS = [
+  SocialLink.create({
+    id: 'sl-1',
+    platform: 'github',
+    handle: 'manu',
+    url: 'https://github.com/manu',
+    label: { es: 'Código', en: 'Code' },
+    description: null,
+    stats: { repos: 67 },
+    featured: true,
+    order: 0,
+    visible: true,
+  }),
+];
+
 const stubs = () => ({
   findAll: jest.fn(),
   findById: jest.fn(),
@@ -172,6 +240,14 @@ function build(deps: Deps = {}) {
   };
   const record = deps.record ?? jest.fn().mockResolvedValue(undefined);
   const viewsRepo: ProfileViewRepository = { record, aggregate: jest.fn() };
+  const loader = {
+    load: jest.fn().mockResolvedValue({
+      education: EDUCATION,
+      certifications: CERTIFICATIONS,
+      projects: PROJECTS,
+      socialLinks: SOCIAL_LINKS,
+    }),
+  } as unknown as PortfolioSectionsLoader;
   const useCase = new ResolveCuratedProfileUseCase(
     curatedRepo,
     profileRepo,
@@ -179,8 +255,9 @@ function build(deps: Deps = {}) {
     skillRepo,
     themeRepo,
     viewsRepo,
+    loader,
   );
-  return { useCase, record };
+  return { useCase, record, loader };
 }
 
 async function resolveOk(useCase: ResolveCuratedProfileUseCase, input = {}) {
@@ -357,6 +434,10 @@ describe('ResolveCuratedProfileUseCase', () => {
         'profile',
         'experiences',
         'skillCategories',
+        'projects',
+        'education',
+        'certifications',
+        'socialLinks',
       ].sort(),
     );
   });
@@ -405,6 +486,48 @@ describe('ResolveCuratedProfileUseCase', () => {
       expect(out.slug).toBe('java-senior');
       expect(failing.record).toHaveBeenCalled();
     });
+  });
+});
+
+// ── Secciones del portafolio (add-portfolio-sections-api) ──
+describe('secciones del portafolio', () => {
+  it('proyectos: selección por tags con overrides y orden por order', async () => {
+    const java = await resolveOk(build().useCase);
+    expect(java.projects.map((p) => p.id)).toEqual(['proj-erp']);
+
+    const none = await resolveOk(build({ curated: curated({ filterTags: ['devops'] }) }).useCase);
+    expect(none.projects).toEqual([]);
+
+    const all = await resolveOk(build({ curated: curated({ filterTags: [] }) }).useCase);
+    expect(all.projects.map((p) => p.id)).toEqual(['proj-web', 'proj-erp']);
+
+    const excluded = await resolveOk(
+      build({ curated: curated({ excludeIds: ['proj-erp'], includeIds: ['proj-web'] }) }).useCase,
+    );
+    expect(excluded.projects.map((p) => p.id)).toEqual(['proj-web']);
+  });
+
+  it('educación, certificaciones y social links completos y resueltos al locale', async () => {
+    const out = await resolveOk(build().useCase, { locale: 'en' });
+    expect(out.education).toEqual([
+      {
+        id: 'edu-1',
+        degree: 'PhD',
+        institution: 'UAGRM',
+        startDate: '2024-02',
+        endDate: null,
+        inProgress: true,
+        order: 0,
+      },
+    ]);
+    expect(out.certifications[0]).toMatchObject({ id: 'cert-1', name: 'Scrum', year: '2021' });
+    expect(out.socialLinks[0]).toMatchObject({
+      platform: 'github',
+      label: 'Code',
+      stats: { repos: 67 },
+    });
+    expect(out.projects[0].role).toBe('Lead');
+    expect(JSON.stringify(out)).not.toMatch(/"es":/);
   });
 });
 

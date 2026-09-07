@@ -195,6 +195,10 @@ describe('Perfiles curados (e2e)', () => {
           'profile',
           'experiences',
           'skillCategories',
+          'projects',
+          'education',
+          'certifications',
+          'socialLinks',
         ].sort(),
       );
       for (const key of ['accessToken', 'includeIds', 'excludeIds', 'filterTags']) {

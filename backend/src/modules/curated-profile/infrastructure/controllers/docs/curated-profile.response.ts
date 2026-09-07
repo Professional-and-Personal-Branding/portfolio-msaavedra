@@ -1,4 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
+import {
+  CertificationResponse,
+  EducationResponse,
+} from '../../../../education/infrastructure/controllers/docs/education.response';
+import { ProjectResponse } from '../../../../project/infrastructure/controllers/docs/project.response';
+import { SocialLinkResponse } from '../../../../social-link/infrastructure/controllers/docs/social-link.response';
 import { ExperienceResponse } from '../../../../experience/infrastructure/controllers/docs/experience.response';
 import { ProfileResponse } from '../../../../profile/infrastructure/controllers/docs/profile.response';
 import {
@@ -95,4 +101,16 @@ export class CuratedProfileResponse
 
   @ApiProperty({ type: [SkillCategoryResponse] })
   skillCategories!: SkillCategoryResponse[];
+
+  @ApiProperty({ type: [ProjectResponse], description: 'Seleccionados por tags/overrides.' })
+  projects!: ProjectResponse[];
+
+  @ApiProperty({ type: [EducationResponse] })
+  education!: EducationResponse[];
+
+  @ApiProperty({ type: [CertificationResponse] })
+  certifications!: CertificationResponse[];
+
+  @ApiProperty({ type: [SocialLinkResponse] })
+  socialLinks!: SocialLinkResponse[];
 }

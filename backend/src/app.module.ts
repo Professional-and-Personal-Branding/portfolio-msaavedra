@@ -5,6 +5,9 @@ import { loadConfiguration } from './config/configuration';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CuratedProfileModule } from './modules/curated-profile/curated-profile.module';
+import { EducationModule } from './modules/education/education.module';
+import { ProjectModule } from './modules/project/project.module';
+import { SocialLinkModule } from './modules/social-link/social-link.module';
 import { ExperienceModule } from './modules/experience/experience.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { ContentLanguageInterceptor } from './shared/infrastructure/http/content-language.interceptor';
@@ -24,6 +27,9 @@ import { PrismaModule } from './shared/infrastructure/persistence/prisma.module'
     ExperienceModule,
     CuratedProfileModule,
     AnalyticsModule,
+    EducationModule,
+    ProjectModule,
+    SocialLinkModule,
   ],
   providers: [{ provide: APP_INTERCEPTOR, useClass: ContentLanguageInterceptor }],
 })

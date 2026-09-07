@@ -91,7 +91,7 @@ frontend/src/
 Dado un `slug`, el caso de uso `ResolveCuratedProfileUseCase`:
 1. Busca el `CuratedProfile` por slug. Si no existe o no es visible → error de dominio.
 2. Si es `PROTECTED`, valida el token de acceso.
-3. Resuelve las **experiencias** y **skills** aplicando:
+3. Resuelve las **experiencias**, **skills** y **proyectos** aplicando (y adjunta educación, certificaciones y enlaces sociales sin filtrar):
    - Filtro por `filterTags` (incluir si el item comparte al menos un tag; `filterTags` vacío = todo).
    - Overrides: `includeIds` fuerza inclusión (solo de items visibles), `excludeIds` fuerza exclusión y siempre gana.
    - Orden canónico (decisión D1 de `add-curated-profile-resolution`): **cronológico**, `startDate` desc y `order` asc como desempate — el mismo que `GET /api/experiences`.

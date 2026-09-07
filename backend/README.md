@@ -2,7 +2,7 @@
 
 API NestJS 11 + Prisma 6 (PostgreSQL) en **Clean Architecture**. Fases 1, 2 y 3 completadas: auth JWT del backoffice (argon2id), CRUD de experiencias/skills/perfiles curados y analítica de visitas; módulos `profile`, `experience`, `skill`, `theme` y el núcleo `curated-profile` (resolución de perfiles curados por tags, overrides, tema y secciones), migración inicial versionada, seed desde `docs/cv-data.json`, endpoints públicos con Swagger e i18n ES/EN con fallback.
 
-> Contrato de arquitectura: [`../CLAUDE.md`](../CLAUDE.md). Specs de negocio: [`../docs/SPECS-POR-FASE.md`](../docs/SPECS-POR-FASE.md). Changes archivados: [`../openspec/changes/archive/`](../openspec/changes/archive/) (`add-backend-base`, `add-curated-profile-resolution`, `add-auth-and-crud`). Specs vigentes: [`../openspec/specs/`](../openspec/specs/).
+> Contrato de arquitectura: [`../CLAUDE.md`](../CLAUDE.md). Specs de negocio: [`../docs/SPECS-POR-FASE.md`](../docs/SPECS-POR-FASE.md). Changes archivados: [`../openspec/changes/archive/`](../openspec/changes/archive/) (`add-backend-base`, `add-curated-profile-resolution`, `add-auth-and-crud`, `add-portfolio-sections-api`). Specs vigentes: [`../openspec/specs/`](../openspec/specs/).
 
 ## Requisitos
 
@@ -45,7 +45,10 @@ npm run start:dev           # http://localhost:$PORT/api  ·  Swagger: /api/docs
 | GET | `/api/experiences` | Experiencias visibles, orden cronológico (`startDate` desc, `order` asc como desempate) |
 | GET | `/api/experiences/:id` | Detalle de una experiencia visible (404 si no existe/oculta) |
 | GET | `/api/curated-profiles` | Perfiles curados `PUBLIC` para el menú (título, `roleType`, `techFocus`, color) |
-| GET | `/api/curated-profiles/:slug` | **Núcleo:** perfil curado resuelto (experiencias y skills filtradas por tags + overrides, tema mergeado, secciones, perfil base). 404 si no existe o es `PRIVATE`; 401 si es `PROTECTED` sin token |
+| GET | `/api/curated-profiles/:slug` | **Núcleo:** perfil curado resuelto (experiencias, skills y proyectos filtrados por tags + overrides; tema mergeado; secciones; perfil base; educación, certificaciones y enlaces sociales). 404 si no existe o es `PRIVATE`; 401 si es `PROTECTED` sin token |
+| GET | `/api/education` · `/api/certifications` | Formación y certificaciones visibles |
+| GET | `/api/projects` | Proyectos destacados visibles (con `tags`) |
+| GET | `/api/social-links` | Presencia pública (GitHub, LinkedIn, YouTube…) con `stats` libre |
 | GET | `/api/docs` · `/api/docs-json` | Swagger UI · documento OpenAPI |
 
 ## Backoffice (requiere `Authorization: Bearer <JWT>`)
@@ -107,6 +110,7 @@ src/
     ├── skill/ · theme/           mínimos: dominio + puerto + adaptador Prisma (sin endpoints); theme/domain/services/merge-theme-tokens.ts
     ├── curated-profile/          núcleo: domain/services/{select-by-tags,select-skill-categories,resolve-sections,validate-curated-profile} · value-objects/access-token
     │                             application/use-cases/{resolve-curated-profile,list-curated-profiles,admin/*} · infrastructure/{persistence,controllers}
+    ├── education/ · project/ · social-link/   secciones: lectura pública + puertos que consume PortfolioSectionsLoader (curated-profile/application/services)
     ├── auth/                     AdminUser · puertos PasswordHasher/TokenSigner · LoginUseCase · argon2 + JWT (Passport) · JwtAuthGuard
     └── analytics/                ProfileView: registro atómico (create + views++) y agregado por perfil/idioma/día
 ```

@@ -16,6 +16,10 @@ export function setupSwagger(app: INestApplication): void {
     .addTag('profile', 'Perfil profesional base')
     .addTag('experiences', 'Trayectoria laboral')
     .addTag('curated-profiles', 'Perfiles curados (núcleo del producto)')
+    .addTag(
+      'sections',
+      'Secciones del portafolio: educación, certificaciones, proyectos, presencia pública',
+    )
     .addTag('auth', 'Autenticación del backoffice')
     .addTag('admin', 'Backoffice (requiere Bearer JWT)')
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })

@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
 import { AnalyticsModule } from '../analytics/analytics.module';
+import { EducationModule } from '../education/education.module';
 import { ExperienceModule } from '../experience/experience.module';
 import { ProfileModule } from '../profile/profile.module';
+import { ProjectModule } from '../project/project.module';
 import { SkillModule } from '../skill/skill.module';
+import { SocialLinkModule } from '../social-link/social-link.module';
 import { ThemeModule } from '../theme/theme.module';
+import { PortfolioSectionsLoader } from './application/services/portfolio-sections.loader';
 import {
   CreateCuratedProfileUseCase,
   DeleteCuratedProfileUseCase,
@@ -20,13 +24,24 @@ import { PrismaCuratedProfileRepository } from './infrastructure/persistence/pri
 
 /**
  * Núcleo del producto. Consume los puertos exportados por profile, experience,
- * skill, theme y analytics; el resolver nunca toca Prisma directamente.
+ * skill, theme, analytics y las secciones (education, project, social-link);
+ * el resolver nunca toca Prisma directamente.
  */
 @Module({
-  imports: [ProfileModule, ExperienceModule, SkillModule, ThemeModule, AnalyticsModule],
+  imports: [
+    ProfileModule,
+    ExperienceModule,
+    SkillModule,
+    ThemeModule,
+    AnalyticsModule,
+    EducationModule,
+    ProjectModule,
+    SocialLinkModule,
+  ],
   controllers: [CuratedProfileController, AdminCuratedProfileController],
   providers: [
     { provide: CURATED_PROFILE_REPOSITORY, useClass: PrismaCuratedProfileRepository },
+    PortfolioSectionsLoader,
     ListCuratedProfilesUseCase,
     ResolveCuratedProfileUseCase,
     ListAllCuratedProfilesUseCase,
