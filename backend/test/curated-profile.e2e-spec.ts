@@ -63,7 +63,7 @@ describe('Perfiles curados (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix(GLOBAL_PREFIX);
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
     app.enableCors(buildCorsOptions('http://localhost:5173'));
     setupSwagger(app);
     await app.init();

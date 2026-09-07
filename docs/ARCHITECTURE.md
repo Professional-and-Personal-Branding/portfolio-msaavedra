@@ -215,12 +215,13 @@ model ProfileView { /* analítica: slug, timestamp, referrer */ }
 - ~~`POST /api/curated-profiles/:slug/access`~~ — no necesario: el token viaja en el `GET` (puede añadirse en Fase 3 si el frontend lo requiere)
 - Idioma por request: `?locale=` > `?lang=` > `Accept-Language` > `es`. Swagger en `/api/docs`, OpenAPI en `/api/docs-json`.
 
-### Backoffice (protegidos con JWT)
-- `POST /api/auth/login`
-- `GET|POST|PATCH|DELETE /api/admin/experiences`
-- `GET|POST|PATCH|DELETE /api/admin/skills`
-- `GET|POST|PATCH|DELETE /api/admin/curated-profiles`
-- `GET /api/admin/analytics` — visitas por perfil
+### Backoffice (protegidos con JWT Bearer) ✅ Fase 3
+- `POST /api/auth/login` · `GET /api/auth/me`
+- `GET|POST /api/admin/experiences` · `GET|PATCH|DELETE /api/admin/experiences/:id`
+- `GET|POST /api/admin/skill-categories` · `PATCH|DELETE /api/admin/skill-categories/:id` · `POST /api/admin/skill-categories/:id/skills` · `PATCH|DELETE /api/admin/skills/:id`
+- `GET|POST /api/admin/curated-profiles` · `GET|PATCH|DELETE /api/admin/curated-profiles/:id`
+- `GET /api/admin/analytics/views?from&to` — visitas por perfil, idioma y día
+- Contraseñas: argon2id. Administrador único vía `npm run admin:bootstrap`. Rate limiting, Helmet y cookies: Fase 6.
 
 ---
 
@@ -244,7 +245,7 @@ model ProfileView { /* analítica: slug, timestamp, referrer */ }
 2. Caso de uso `ResolveCuratedProfile`: dado un slug, devuelve perfil + experiencias filtradas y ordenadas.
 3. Endpoints públicos de perfiles curados.
 
-### Fase 3 — Auth + Backoffice API
+### ✅ Fase 3 — Auth + Backoffice API (change OpenSpec `add-auth-and-crud`, sept. 2026)
 1. Módulo `auth` con JWT.
 2. CRUD completo de experiencias, skills, perfiles curados.
 3. Analítica de visitas.

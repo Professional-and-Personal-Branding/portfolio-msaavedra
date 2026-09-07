@@ -26,7 +26,8 @@
     "prisma:status": "prisma migrate status",
     "prisma:studio": "prisma studio",
     "seed": "tsx scripts/seed.ts",
-    "seed:verify": "tsx scripts/verify-seed.ts"
+    "seed:verify": "tsx scripts/verify-seed.ts",
+    "admin:bootstrap": "tsx scripts/bootstrap-admin.ts"
   },
   "prisma": {
     "seed": "tsx scripts/seed.ts"
@@ -35,11 +36,16 @@
     "@nestjs/common": "~11.2.3",
     "@nestjs/config": "~4.0.4",
     "@nestjs/core": "~11.2.3",
+    "@nestjs/jwt": "~11.0.0",
+    "@nestjs/passport": "~11.0.5",
     "@nestjs/platform-express": "~11.2.3",
     "@nestjs/swagger": "~11.4.7",
     "@prisma/client": "~6.19.3",
+    "argon2": "^0.45.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
@@ -51,6 +57,7 @@
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.19.0",
+    "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^7.2.1",
     "eslint": "^9.39.0",
     "eslint-config-prettier": "^10.1.8",
@@ -71,14 +78,24 @@
     "typescript-eslint": "^8.69.0"
   },
   "jest": {
-    "moduleFileExtensions": ["js", "json", "ts"],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
     "rootDir": ".",
-    "roots": ["<rootDir>/src", "<rootDir>/test"],
+    "roots": [
+      "<rootDir>/src",
+      "<rootDir>/test"
+    ],
     "testRegex": "(src/.*\\.spec\\.ts|test/architecture\\.spec\\.ts)$",
     "transform": {
       "^.+\\.ts$": "ts-jest"
     },
-    "collectCoverageFrom": ["src/**/*.(t|j)s", "!src/main.ts"],
+    "collectCoverageFrom": [
+      "src/**/*.(t|j)s",
+      "!src/main.ts"
+    ],
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {

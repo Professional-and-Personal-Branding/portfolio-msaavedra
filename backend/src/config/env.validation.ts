@@ -7,8 +7,10 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  Matches,
   Max,
   Min,
+  MinLength,
   validateSync,
 } from 'class-validator';
 
@@ -39,6 +41,21 @@ export class EnvironmentVariables {
   @IsUrl({ require_tld: false, require_protocol: true })
   @IsOptional()
   FRONTEND_URL: string = 'http://localhost:5173';
+
+  /** Secreto HS256 del JWT del backoffice. Obligatorio; Fase 6 exigirá un valor fuerte. */
+  @IsString()
+  @MinLength(16)
+  JWT_SECRET!: string;
+
+  /** Segundos o notación `30m`, `12h`, `1d`. */
+  @Matches(/^\d+(s|m|h|d)?$/, { message: 'JWT_EXPIRES_IN must be seconds or like 30m, 12h, 1d' })
+  JWT_EXPIRES_IN: string = '1d';
+
+  /** Sal del hash de IP para analítica. Si falta, se usa JWT_SECRET. */
+  @IsOptional()
+  @IsString()
+  @MinLength(8)
+  ANALYTICS_SALT?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {
@@ -55,4 +72,14 @@ export function validateEnv(config: Record<string, unknown>): EnvironmentVariabl
     throw new Error(`Configuración de entorno inválida:\n  - ${details}`);
   }
   return validated;
+}
+
+/** Convierte `JWT_EXPIRES_IN` a segundos. */
+export function expiresInToSeconds(value: string): number {
+  const match = /^(\d+)(s|m|h|d)?$/.exec(value);
+  if (!match) throw new Error(`JWT_EXPIRES_IN inválido: ${value}`);
+  const amount = Number(match[1]);
+  const unit = match[2] ?? 's';
+  const factor = { s: 1, m: 60, h: 3600, d: 86400 }[unit] ?? 1;
+  return amount * factor;
 }

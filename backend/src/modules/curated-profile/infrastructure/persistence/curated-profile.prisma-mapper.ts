@@ -1,10 +1,12 @@
 import { Logger } from '@nestjs/common';
 import type { CuratedProfile as CuratedProfileRecord } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { toLocalizedText } from '../../../../shared/infrastructure/persistence/json.guards';
 import {
   CuratedProfile,
   CuratedVisibility,
   isCuratedVisibility,
+  NewCuratedProfileProps,
 } from '../../domain/entities/curated-profile.entity';
 import { AccessToken } from '../../domain/value-objects/access-token.vo';
 
@@ -40,5 +42,34 @@ export function toCuratedProfileEntity(record: CuratedProfileRecord): CuratedPro
     visibility: toVisibility(record.visibility, record.slug),
     accessToken: AccessToken.create(record.accessToken),
     views: record.views,
+    createdAt: record.createdAt,
+    updatedAt: record.updatedAt,
   });
+}
+
+/** Props de dominio → datos de escritura Prisma. `null` en Json se persiste como DbNull. */
+export function toCuratedProfileData(
+  props: NewCuratedProfileProps,
+): Prisma.CuratedProfileUncheckedCreateInput {
+  const json = (v: unknown): Prisma.InputJsonValue | typeof Prisma.DbNull =>
+    v === null || v === undefined ? Prisma.DbNull : v;
+  return {
+    slug: props.slug,
+    title: props.title,
+    headline: props.headline,
+    description: json(props.description),
+    roleType: json(props.roleType),
+    techFocus: props.techFocus,
+    filterTags: [...props.filterTags],
+    includeIds: [...props.includeIds],
+    excludeIds: [...props.excludeIds],
+    accentColor: props.accentColor,
+    themeId: props.themeId,
+    themeOverrides: json(props.themeOverrides),
+    layout: props.layout,
+    sectionsOrder: [...props.sectionsOrder],
+    sectionsHidden: [...props.sectionsHidden],
+    visibility: props.visibility,
+    accessToken: props.accessToken.value,
+  };
 }

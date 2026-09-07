@@ -15,7 +15,10 @@ async function bootstrap(): Promise<void> {
   const config = app.get(ConfigService).getOrThrow<AppConfig>(APP_CONFIG);
 
   app.setGlobalPrefix(GLOBAL_PREFIX);
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  // Global: solo transform. El whitelist/forbidNonWhitelisted vive en los controllers con cuerpo
+  // (adminValidationPipe): un pipe global con whitelist correría antes y borraría los campos
+  // desconocidos sin dar 400.
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.enableCors(buildCorsOptions(config.frontendUrl));
   app.enableShutdownHooks();
 

@@ -40,12 +40,19 @@ export default tseslint.config(
     },
   },
   {
+    // En specs se pasan métodos de mocks a expect(): la regla no aplica a jest.fn().
+    files: ['**/*.spec.ts', 'test/**/*.ts'],
+    rules: { '@typescript-eslint/unbound-method': 'off' },
+  },
+  {
     // supertest tipa `res.body` y `getHttpServer()` como `any`; en e2e se acepta.
-    files: ['test/**/*.e2e-spec.ts'],
+    files: ['test/**/*.e2e-spec.ts', 'test/e2e-helpers.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
     },
   },
 );

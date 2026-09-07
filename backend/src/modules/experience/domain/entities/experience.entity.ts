@@ -18,11 +18,17 @@ export interface ExperienceProps {
   readonly sector: readonly string[];
   readonly order: number;
   readonly visible: boolean;
+  /** Metadatos de persistencia (solo lectura; los expone el backoffice). */
+  readonly createdAt?: Date;
+  readonly updatedAt?: Date;
 }
+
+/** Datos para crear una experiencia: el id lo genera la persistencia. */
+export type NewExperienceProps = Omit<ExperienceProps, 'id' | 'createdAt' | 'updatedAt'>;
 
 /**
  * Experiencia laboral. Bilingüe por diseño: la proyección a un idioma es
- * responsabilidad de la capa de aplicación.
+ * responsabilidad de la capa de aplicación. Inmutable: `with()` devuelve otra instancia.
  */
 export class Experience {
   private constructor(private readonly props: ExperienceProps) {}
@@ -34,6 +40,20 @@ export class Experience {
       tags: [...props.tags],
       sector: [...props.sector],
     });
+  }
+
+  /** Copia con cambios parciales (edición desde el backoffice). */
+  with(changes: Partial<NewExperienceProps>): Experience {
+    return Experience.create({ ...this.props, ...changes });
+  }
+
+  toProps(): ExperienceProps {
+    return {
+      ...this.props,
+      technologies: [...this.props.technologies],
+      tags: [...this.props.tags],
+      sector: [...this.props.sector],
+    };
   }
 
   get id(): string {
@@ -77,6 +97,12 @@ export class Experience {
   }
   get visible(): boolean {
     return this.props.visible;
+  }
+  get createdAt(): Date | undefined {
+    return this.props.createdAt;
+  }
+  get updatedAt(): Date | undefined {
+    return this.props.updatedAt;
   }
 
   /** Regla de negocio: comparte al menos un tag con el conjunto dado (base de Fase 2). */

@@ -1,9 +1,17 @@
 import {
+  BadRequestException,
+  ConflictException,
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AccessDeniedError, DomainError, NotFoundError } from '../../domain/errors';
+import {
+  AccessDeniedError,
+  ConflictError,
+  DomainError,
+  NotFoundError,
+  ValidationError,
+} from '../../domain/errors';
 import { toHttpException } from './domain-error.mapper';
 
 class WeirdError extends DomainError {
@@ -17,7 +25,6 @@ describe('toHttpException', () => {
   it('NotFoundError → 404 con el mensaje del dominio', () => {
     const ex = toHttpException(new NotFoundError('Experiencia', 'abc'));
     expect(ex).toBeInstanceOf(NotFoundException);
-    expect(ex.getStatus()).toBe(404);
     expect(ex.getResponse()).toMatchObject({
       statusCode: 404,
       message: 'Experiencia con id "abc" no encontrado',
@@ -28,8 +35,23 @@ describe('toHttpException', () => {
   it('AccessDeniedError → 401 Unauthorized', () => {
     const ex = toHttpException(new AccessDeniedError('Perfil curado'));
     expect(ex).toBeInstanceOf(UnauthorizedException);
-    expect(ex.getStatus()).toBe(401);
     expect(ex.getResponse()).toMatchObject({ statusCode: 401, error: 'Unauthorized' });
+  });
+
+  it('ValidationError → 400 Bad Request', () => {
+    const ex = toHttpException(new ValidationError('accessToken es obligatorio', ['accessToken']));
+    expect(ex).toBeInstanceOf(BadRequestException);
+    expect(ex.getResponse()).toMatchObject({
+      statusCode: 400,
+      message: 'accessToken es obligatorio',
+      error: 'Bad Request',
+    });
+  });
+
+  it('ConflictError → 409 Conflict', () => {
+    const ex = toHttpException(new ConflictError('Perfil curado', 'slug "all" ya existe'));
+    expect(ex).toBeInstanceOf(ConflictException);
+    expect(ex.getResponse()).toMatchObject({ statusCode: 409, error: 'Conflict' });
   });
 
   it('error de dominio no previsto → 500 sin filtrar detalles', () => {

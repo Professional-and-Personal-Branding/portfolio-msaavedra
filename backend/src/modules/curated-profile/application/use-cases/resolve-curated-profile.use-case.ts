@@ -1,6 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Locale } from '../../../../shared/domain/i18n';
 import { fail, ok, Result } from '../../../../shared/domain/result';
+import {
+  PROFILE_VIEW_REPOSITORY,
+  ProfileViewRepository,
+} from '../../../analytics/domain/repositories/profile-view.repository';
 import {
   EXPERIENCE_REPOSITORY,
   ExperienceRepository,
@@ -14,7 +18,7 @@ import {
   SKILL_CATEGORY_REPOSITORY,
   SkillCategoryRepository,
 } from '../../../skill/domain/repositories/skill-category.repository';
-import { Theme, ThemeTokens } from '../../../theme/domain/entities/theme.entity';
+import { Theme } from '../../../theme/domain/entities/theme.entity';
 import {
   DEFAULT_THEME_SLUG,
   THEME_REPOSITORY,
@@ -33,28 +37,41 @@ import { selectSkillCategories } from '../../domain/services/select-skill-catego
 import { CuratedProfileOutput } from '../dto/curated-profile.output';
 import { toCuratedProfileOutput } from '../mappers/curated-profile.mapper';
 
+/** Contexto de la visita pública. Si viene, la resolución exitosa registra un ProfileView. */
+export interface ViewContext {
+  locale: Locale;
+  referrer?: string;
+  userAgent?: string;
+  ipHash?: string;
+}
+
 export interface ResolveCuratedProfileInput {
   slug: string;
   locale: Locale;
   /** Token presentado por el cliente (solo relevante para perfiles PROTECTED). */
   accessToken?: string | null;
+  /** Ausente en usos internos y tests: no se registra nada. */
+  viewContext?: ViewContext;
 }
 
 export type ResolveCuratedProfileError =
   CuratedProfileNotFoundError | CuratedProfileAccessDeniedError;
 
 /**
- * Núcleo del producto (CLAUDE.md § ResolveCuratedProfile, pasos 1-5 y 7).
- * El paso 6 (registro de ProfileView) se implementa en Fase 3.
+ * Núcleo del producto (CLAUDE.md § ResolveCuratedProfile, pasos 1-7).
+ * El paso 6 (registro de ProfileView) nunca altera el resultado ni lo convierte en error.
  */
 @Injectable()
 export class ResolveCuratedProfileUseCase {
+  private readonly logger = new Logger(ResolveCuratedProfileUseCase.name);
+
   constructor(
     @Inject(CURATED_PROFILE_REPOSITORY) private readonly curatedProfiles: CuratedProfileRepository,
     @Inject(PROFILE_REPOSITORY) private readonly profiles: ProfileRepository,
     @Inject(EXPERIENCE_REPOSITORY) private readonly experiences: ExperienceRepository,
     @Inject(SKILL_CATEGORY_REPOSITORY) private readonly skillCategories: SkillCategoryRepository,
     @Inject(THEME_REPOSITORY) private readonly themes: ThemeRepository,
+    @Inject(PROFILE_VIEW_REPOSITORY) private readonly profileViews: ProfileViewRepository,
   ) {}
 
   async execute(
@@ -92,14 +109,16 @@ export class ResolveCuratedProfileUseCase {
     // 5. Skills por categoría (sin categorías vacías).
     const skillCategories = selectSkillCategories(allCategories, criteria);
 
-    // 6. Tema: base + overrides (merge profundo).
+    // Tema: base + overrides (merge profundo). Secciones.
     const resolvedTheme = theme
       ? { theme, tokens: mergeThemeTokens(theme.tokens, curated.themeOverrides) }
       : null;
-
-    // 7. Secciones.
     const sections = resolveSections(curated.sectionsOrder, curated.sectionsHidden);
 
+    // 6. Registro de visita (solo con contexto; nunca rompe la respuesta).
+    if (input.viewContext) await this.recordView(curated.id, input.viewContext);
+
+    // 7. DTO de presentación.
     return ok(
       toCuratedProfileOutput({
         curated,
@@ -121,6 +140,19 @@ export class ResolveCuratedProfileUseCase {
     }
     return this.themes.findBySlug(DEFAULT_THEME_SLUG);
   }
-}
 
-export type { ThemeTokens };
+  private async recordView(curatedProfileId: string, ctx: ViewContext): Promise<void> {
+    try {
+      await this.profileViews.record({
+        curatedProfileId,
+        locale: ctx.locale,
+        referrer: ctx.referrer,
+        userAgent: ctx.userAgent,
+        ipHash: ctx.ipHash,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`No se pudo registrar la visita de ${curatedProfileId}: ${message}`);
+    }
+  }
+}

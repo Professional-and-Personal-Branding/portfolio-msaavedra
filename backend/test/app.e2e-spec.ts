@@ -54,7 +54,7 @@ describe('API pública (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix(GLOBAL_PREFIX);
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
     app.enableCors(buildCorsOptions(FRONTEND_URL));
     setupSwagger(app);
     await app.init();

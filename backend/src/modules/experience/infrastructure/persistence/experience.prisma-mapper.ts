@@ -1,9 +1,9 @@
-import type { Experience as ExperienceRecord } from '@prisma/client';
+import type { Experience as ExperienceRecord, Prisma } from '@prisma/client';
 import {
   toLocalizedList,
   toLocalizedText,
 } from '../../../../shared/infrastructure/persistence/json.guards';
-import { Experience } from '../../domain/entities/experience.entity';
+import { Experience, NewExperienceProps } from '../../domain/entities/experience.entity';
 
 export type { ExperienceRecord };
 
@@ -24,5 +24,26 @@ export function toExperienceEntity(record: ExperienceRecord): Experience {
     sector: record.sector,
     order: record.order,
     visible: record.visible,
+    createdAt: record.createdAt,
+    updatedAt: record.updatedAt,
   });
+}
+
+/** Traduce props de dominio a datos de escritura Prisma (Json para bilingües). */
+export function toExperienceData(props: NewExperienceProps): Prisma.ExperienceUncheckedCreateInput {
+  return {
+    company: props.company,
+    role: props.role,
+    startDate: props.startDate,
+    endDate: props.endDate,
+    current: props.current,
+    location: props.location,
+    summary: props.summary,
+    highlights: props.highlights,
+    technologies: [...props.technologies],
+    tags: [...props.tags],
+    sector: [...props.sector],
+    order: props.order,
+    visible: props.visible,
+  };
 }

@@ -97,7 +97,7 @@ Dado un `slug`, el caso de uso `ResolveCuratedProfileUseCase`:
    - Orden canónico (decisión D1 de `add-curated-profile-resolution`): **cronológico**, `startDate` desc y `order` asc como desempate — el mismo que `GET /api/experiences`.
 4. Resuelve el **tema**: `theme` base + `themeOverrides` (merge profundo).
 5. Aplica `sectionsOrder` y `sectionsHidden`.
-6. Incrementa el contador de vistas (registrar `ProfileView`) — **se implementa en Fase 3** (según `docs/SPECS-POR-FASE.md`).
+6. Incrementa el contador de vistas (registrar `ProfileView`) — implementado en Fase 3: solo cuando el caso de uso recibe `viewContext` (ruta pública), de forma atómica y sin que un fallo altere la respuesta. IP solo como HMAC (`ANALYTICS_SALT`).
 7. Devuelve un DTO de presentación listo para el frontend.
 
 Este caso de uso es el corazón del producto — implementarlo con tests exhaustivos. Implementado en `backend/src/modules/curated-profile/` (servicios puros `select-by-tags`, `select-skill-categories`, `resolve-sections`; tema en `modules/theme/domain/services/merge-theme-tokens.ts`). `PRIVATE` → 404 (no revela existencia); `PROTECTED` → 401 sin token válido (`X-Access-Token` o `?token=`).
@@ -113,6 +113,7 @@ npm run prisma:migrate   # prisma migrate dev
 npm run prisma:generate  # prisma generate
 npm run seed             # carga docs/cv-data.json
 npm run seed:verify      # compara conteos DB vs cv-data.json
+npm run admin:bootstrap  # crea/actualiza el administrador (ADMIN_EMAIL/ADMIN_PASSWORD/ADMIN_NAME, argon2id)
 npm run test             # jest
 
 # Frontend
@@ -130,7 +131,7 @@ npm run test             # vitest
 
 - [x] Fase 1 — Backend base (profile, experience) + Prisma + seed + Swagger — change `add-backend-base` (ver `openspec/changes/archive/`)
 - [x] Fase 2 — curated-profile (ResolveCuratedProfile) — change `add-curated-profile-resolution`
-- [ ] Fase 3 — auth JWT + backoffice API (CRUD)
+- [x] Fase 3 — auth JWT + backoffice API (CRUD) — change `add-auth-and-crud`
 - [ ] Fase 4 — frontend público + motor de theming
 - [ ] Fase 5 — frontend backoffice + customizador visual
 - [ ] Fase 6 — hardening para producción (ver `docs/RELEASE-1.0.0-CHECKLIST.md`) → deploy 1.0.0

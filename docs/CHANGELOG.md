@@ -1,5 +1,22 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Septiembre 2026 (Fase 3 — change OpenSpec `add-auth-and-crud`)
+
+Backoffice API bajo SDD (propuesta aprobada por Human Gate, commit `31cdbe7`).
+
+### Backend (`backend/`)
+- Módulo `auth`: `LoginUseCase` con puertos `PasswordHasher` (argon2id) y `TokenSigner` (JWT HS256 vía `@nestjs/jwt` 11 + Passport); `JwtAuthGuard` en todo `/api/admin/*`; `GET /api/auth/me`; `npm run admin:bootstrap`.
+- CRUD de experiencias, categorías/skills y perfiles curados con DTOs bilingües `{ es, en? }`, `PATCH` parcial, reglas de dominio (`validateExperience`, `validateCuratedProfile`), `ValidationError` → 400 y `ConflictError` → 409. Campos desconocidos → 400 en rutas con cuerpo (pipe estricto por controller; el global solo transforma).
+- Módulo `analytics`: `ProfileView` registrado en cada resolución pública exitosa (transacción `create` + `views++`, IP solo como HMAC-SHA256) y `GET /api/admin/analytics/views` (total, por perfil, por idioma, por día).
+- Config: `JWT_SECRET` (min 16), `JWT_EXPIRES_IN`, `ANALYTICS_SALT`; CORS con `POST/PATCH/DELETE` y `Authorization`.
+- Tests: 157 unitarios + 65 e2e (auth, backoffice, Fase 1 y 2).
+
+### Docs sincronizadas
+- `CLAUDE.md`: checkbox Fase 3; paso 6 del núcleo implementado; comando `admin:bootstrap`.
+- `ARCHITECTURE.md` §6/§7: rutas admin reales y Fase 3 marcada.
+- `DATA-POPULATION.md`: el seed convive con la edición por API y preserva `AdminUser`.
+- `backend/.env.example`: `ADMIN_NAME`, `ANALYTICS_SALT`, notas de `JWT_SECRET`.
+
 ## Update — Septiembre 2026 (Fase 2 — change OpenSpec `add-curated-profile-resolution`)
 
 Núcleo del producto implementado bajo SDD (propuesta aprobada por Human Gate, commit `67ea1a9`).

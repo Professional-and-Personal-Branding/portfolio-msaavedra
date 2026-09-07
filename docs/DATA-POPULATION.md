@@ -69,7 +69,7 @@ Cada vez que generemos un CV nuevo, cambies un dato o agregues una experiencia:
    ```
    El seed limpia las tablas y recarga todo desde el JSON. Tus datos quedan sincronizados.
 
-> ⚠️ El seed **borra y recarga**. Es seguro mientras el JSON sea la fuente de verdad. Cuando el backoffice (Fase 5) esté listo, vas a editar desde la interfaz y el seed quedará solo para inicializar/resetear.
+> ⚠️ El seed **borra y recarga** los datos del portafolio (no toca `AdminUser`). Desde la Fase 3 también podés editar experiencias, skills y perfiles curados por la API de backoffice (`/api/admin/*`, ver `backend/README.md`); esas ediciones **se pierden** si volvés a correr el seed, así que el JSON sigue siendo la fuente de verdad hasta que el backoffice visual (Fase 5) invierta el flujo. El administrador se crea con `npm run admin:bootstrap`.
 
 ---
 

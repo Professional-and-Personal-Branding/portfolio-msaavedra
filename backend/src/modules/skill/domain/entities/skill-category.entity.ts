@@ -8,6 +8,12 @@ export interface SkillCategoryProps {
   readonly skills: readonly Skill[];
 }
 
+/** Datos para crear una categoría (nace sin skills). */
+export interface NewSkillCategoryProps {
+  readonly name: LocalizedText | string;
+  readonly order: number;
+}
+
 /** Categoría de skills (ej. "Lenguajes", "Cloud & DevOps"). Agregado raíz. */
 export class SkillCategory {
   private constructor(private readonly props: SkillCategoryProps) {}
@@ -32,5 +38,10 @@ export class SkillCategory {
   /** Nueva categoría con un subconjunto de skills (no muta la original). */
   withSkills(skills: readonly Skill[]): SkillCategory {
     return SkillCategory.create({ ...this.props, skills });
+  }
+
+  /** Copia con cambios de nombre/orden (edición desde el backoffice). */
+  with(changes: Partial<NewSkillCategoryProps>): SkillCategory {
+    return SkillCategory.create({ ...this.props, ...changes });
   }
 }

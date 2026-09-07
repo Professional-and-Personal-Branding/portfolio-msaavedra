@@ -1,3 +1,4 @@
+import { ProfileViewRepository } from '../../../analytics/domain/repositories/profile-view.repository';
 import { Experience } from '../../../experience/domain/entities/experience.entity';
 import { ExperienceRepository } from '../../../experience/domain/repositories/experience.repository';
 import { Profile } from '../../../profile/domain/entities/profile.entity';
@@ -116,17 +117,28 @@ function curated(overrides: Partial<CuratedProfileProps> = {}): CuratedProfile {
   });
 }
 
+const stubs = () => ({
+  findAll: jest.fn(),
+  findById: jest.fn(),
+  create: jest.fn(),
+  update: jest.fn(),
+  delete: jest.fn(),
+});
+
 interface Deps {
   curated?: CuratedProfile | null;
   profile?: Profile | null;
   experiences?: Experience[];
   categories?: SkillCategory[];
   themes?: Theme[];
+  record?: jest.Mock;
 }
 
 function build(deps: Deps = {}) {
   const themes = deps.themes ?? [MODERN_DARK, ELEGANT];
   const curatedRepo: CuratedProfileRepository = {
+    ...stubs(),
+    existsBySlug: jest.fn(),
     findBySlug: jest.fn().mockResolvedValue(deps.curated === undefined ? curated() : deps.curated),
     findAllPublic: jest.fn().mockResolvedValue([]),
   };
@@ -134,12 +146,18 @@ function build(deps: Deps = {}) {
     findOne: jest.fn().mockResolvedValue(deps.profile === undefined ? PROFILE : deps.profile),
   };
   const experienceRepo: ExperienceRepository = {
+    ...stubs(),
     findAllVisible: jest
       .fn()
       .mockResolvedValue((deps.experiences ?? EXPERIENCES).filter((e) => e.visible)),
     findVisibleById: jest.fn(),
   };
   const skillRepo: SkillCategoryRepository = {
+    ...stubs(),
+    findSkillById: jest.fn(),
+    createSkill: jest.fn(),
+    updateSkill: jest.fn(),
+    deleteSkill: jest.fn(),
     findAll: jest.fn().mockResolvedValue(deps.categories ?? CATEGORIES),
   };
   const themeRepo: ThemeRepository = {
@@ -152,13 +170,17 @@ function build(deps: Deps = {}) {
         Promise.resolve(themes.find((t) => t.slug === slug) ?? null),
       ),
   };
-  return new ResolveCuratedProfileUseCase(
+  const record = deps.record ?? jest.fn().mockResolvedValue(undefined);
+  const viewsRepo: ProfileViewRepository = { record, aggregate: jest.fn() };
+  const useCase = new ResolveCuratedProfileUseCase(
     curatedRepo,
     profileRepo,
     experienceRepo,
     skillRepo,
     themeRepo,
+    viewsRepo,
   );
+  return { useCase, record };
 }
 
 async function resolveOk(useCase: ResolveCuratedProfileUseCase, input = {}) {
@@ -170,14 +192,14 @@ async function resolveOk(useCase: ResolveCuratedProfileUseCase, input = {}) {
 // ── ResolveCuratedProfileUseCase ─────────────────────────────────────────────
 describe('ResolveCuratedProfileUseCase', () => {
   it('perfil público: selecciona por tags y ordena cronológicamente', async () => {
-    const out = await resolveOk(build());
+    const out = await resolveOk(build().useCase);
     expect(out.slug).toBe('java-senior');
     expect(out.experiences.map((e) => e.id)).toEqual(['novacomp', 'vidoomy']);
     expect(out.visibility).toBe('PUBLIC');
   });
 
   it('slug inexistente → CuratedProfileNotFoundError', async () => {
-    const result = await build({ curated: null }).execute({ slug: 'nope', locale: 'es' });
+    const result = await build({ curated: null }).useCase.execute({ slug: 'nope', locale: 'es' });
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error).toBeInstanceOf(CuratedProfileNotFoundError);
@@ -185,7 +207,7 @@ describe('ResolveCuratedProfileUseCase', () => {
   });
 
   it('PRIVATE se comporta como inexistente, con o sin token', async () => {
-    const useCase = build({
+    const { useCase } = build({
       curated: curated({ visibility: 'PRIVATE', accessToken: AccessToken.create('t') }),
     });
     const sin = await useCase.execute({ slug: 'java-senior', locale: 'es' });
@@ -197,7 +219,7 @@ describe('ResolveCuratedProfileUseCase', () => {
   });
 
   it('PROTECTED sin token o con token incorrecto → AccessDenied', async () => {
-    const useCase = build({
+    const { useCase } = build({
       curated: curated({ visibility: 'PROTECTED', accessToken: AccessToken.create('s3cret') }),
     });
     const sin = await useCase.execute({ slug: 'java-senior', locale: 'es' });
@@ -209,7 +231,7 @@ describe('ResolveCuratedProfileUseCase', () => {
   });
 
   it('PROTECTED con token válido resuelve', async () => {
-    const useCase = build({
+    const { useCase } = build({
       curated: curated({ visibility: 'PROTECTED', accessToken: AccessToken.create('s3cret') }),
     });
     const out = await resolveOk(useCase, { accessToken: 's3cret' });
@@ -217,35 +239,35 @@ describe('ResolveCuratedProfileUseCase', () => {
   });
 
   it('filterTags vacío incluye todas las visibles', async () => {
-    const out = await resolveOk(build({ curated: curated({ filterTags: [] }) }));
+    const out = await resolveOk(build({ curated: curated({ filterTags: [] }) }).useCase);
     expect(out.experiences.map((e) => e.id)).toEqual(['novacomp', 'kiwox', 'vidoomy', 'ypfb']);
   });
 
   it('excludeIds gana; includeIds fuerza', async () => {
     const out = await resolveOk(
-      build({ curated: curated({ includeIds: ['kiwox'], excludeIds: ['novacomp'] }) }),
+      build({ curated: curated({ includeIds: ['kiwox'], excludeIds: ['novacomp'] }) }).useCase,
     );
     expect(out.experiences.map((e) => e.id)).toEqual(['kiwox', 'vidoomy']);
   });
 
   it('una experiencia oculta no entra ni con includeIds', async () => {
-    const out = await resolveOk(build({ curated: curated({ includeIds: ['oculta'] }) }));
+    const out = await resolveOk(build({ curated: curated({ includeIds: ['oculta'] }) }).useCase);
     expect(out.experiences.map((e) => e.id)).not.toContain('oculta');
   });
 
   it('skills reagrupadas por categoría sin categorías vacías', async () => {
-    const out = await resolveOk(build());
+    const out = await resolveOk(build().useCase);
     expect(out.skillCategories).toEqual([{ name: 'Lenguajes', skills: ['Java'] }]);
   });
 
   it('tema: sin themeId usa modern-dark; con themeId usa el propio; overrides se mergean', async () => {
-    const def = await resolveOk(build());
+    const def = await resolveOk(build().useCase);
     expect(def.theme?.slug).toBe('modern-dark');
 
     const own = await resolveOk(
       build({
         curated: curated({ themeId: 't-el', themeOverrides: { colors: { accent: '#fff' } } }),
-      }),
+      }).useCase,
     );
     expect(own.theme?.slug).toBe('elegant');
     expect(own.theme?.tokens).toEqual({ mode: 'dark', colors: { bg: '#1a1814', accent: '#fff' } });
@@ -253,10 +275,10 @@ describe('ResolveCuratedProfileUseCase', () => {
   });
 
   it('themeId inexistente cae a modern-dark; sin ningún tema → null', async () => {
-    const fallback = await resolveOk(build({ curated: curated({ themeId: 'no-existe' }) }));
+    const fallback = await resolveOk(build({ curated: curated({ themeId: 'no-existe' }) }).useCase);
     expect(fallback.theme?.slug).toBe('modern-dark');
 
-    const none = await resolveOk(build({ themes: [] }));
+    const none = await resolveOk(build({ themes: [] }).useCase);
     expect(none.theme).toBeNull();
     expect(none.experiences.length).toBeGreaterThan(0);
   });
@@ -268,12 +290,12 @@ describe('ResolveCuratedProfileUseCase', () => {
           sectionsOrder: ['hero', 'skills', 'contact'],
           sectionsHidden: ['skills'],
         }),
-      }),
+      }).useCase,
     );
     expect(custom.sections).toEqual(['hero', 'contact']);
     expect(custom.hiddenSections).toEqual(['skills']);
 
-    const def = await resolveOk(build());
+    const def = await resolveOk(build().useCase);
     expect(def.sections).toEqual([
       'hero',
       'stats',
@@ -286,7 +308,7 @@ describe('ResolveCuratedProfileUseCase', () => {
   });
 
   it('locale en aplica a todo el árbol y no quedan objetos {es,en}', async () => {
-    const out = await resolveOk(build(), { locale: 'en' });
+    const out = await resolveOk(build().useCase, { locale: 'en' });
     expect(out.title).toBe('Senior Java');
     expect(out.profile?.headline).toBe('Engineer');
     expect(out.experiences[0].role).toBe('Role novacomp');
@@ -300,7 +322,7 @@ describe('ResolveCuratedProfileUseCase', () => {
     const out = (await resolveOk(
       build({
         curated: curated({ visibility: 'PROTECTED', accessToken: AccessToken.create('s3cret') }),
-      }),
+      }).useCase,
       { accessToken: 's3cret' },
     )) as unknown as Record<string, unknown>;
     for (const key of [
@@ -317,7 +339,7 @@ describe('ResolveCuratedProfileUseCase', () => {
   });
 
   it('forma completa del resultado', async () => {
-    const out = await resolveOk(build());
+    const out = await resolveOk(build().useCase);
     expect(Object.keys(out).sort()).toEqual(
       [
         'slug',
@@ -340,9 +362,49 @@ describe('ResolveCuratedProfileUseCase', () => {
   });
 
   it('sin perfil base → profile null, resolución continúa', async () => {
-    const out = await resolveOk(build({ profile: null }));
+    const out = await resolveOk(build({ profile: null }).useCase);
     expect(out.profile).toBeNull();
     expect(out.experiences).toHaveLength(2);
+  });
+
+  // ── Registro de visitas (spec curated-profile-resolution / profile-view-analytics) ──
+  describe('registro de visita', () => {
+    it('con viewContext registra la visita y el resultado es el mismo que sin contexto', async () => {
+      const withCtx = build();
+      const withoutCtx = build();
+      const a = await resolveOk(withCtx.useCase, {
+        viewContext: { locale: 'es', referrer: 'https://x', userAgent: 'UA', ipHash: 'h' },
+      });
+      const b = await resolveOk(withoutCtx.useCase);
+      expect(a).toEqual(b);
+      expect(withCtx.record).toHaveBeenCalledWith({
+        curatedProfileId: 'cp1',
+        locale: 'es',
+        referrer: 'https://x',
+        userAgent: 'UA',
+        ipHash: 'h',
+      });
+      expect(withoutCtx.record).not.toHaveBeenCalled();
+    });
+
+    it('no registra cuando el acceso es denegado o el perfil no existe', async () => {
+      const denied = build({
+        curated: curated({ visibility: 'PROTECTED', accessToken: AccessToken.create('t') }),
+      });
+      await denied.useCase.execute({ slug: 'x', locale: 'es', viewContext: { locale: 'es' } });
+      expect(denied.record).not.toHaveBeenCalled();
+
+      const missing = build({ curated: null });
+      await missing.useCase.execute({ slug: 'x', locale: 'es', viewContext: { locale: 'es' } });
+      expect(missing.record).not.toHaveBeenCalled();
+    });
+
+    it('un fallo del registro no altera el resultado exitoso', async () => {
+      const failing = build({ record: jest.fn().mockRejectedValue(new Error('db down')) });
+      const out = await resolveOk(failing.useCase, { viewContext: { locale: 'en' } });
+      expect(out.slug).toBe('java-senior');
+      expect(failing.record).toHaveBeenCalled();
+    });
   });
 });
 
@@ -350,6 +412,8 @@ describe('ResolveCuratedProfileUseCase', () => {
 describe('ListCuratedProfilesUseCase', () => {
   it('lista solo públicos, en orden de entrada, resueltos al locale y sin campos internos', async () => {
     const repo: CuratedProfileRepository = {
+      ...stubs(),
+      existsBySlug: jest.fn(),
       findBySlug: jest.fn(),
       findAllPublic: jest
         .fn()

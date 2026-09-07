@@ -40,7 +40,7 @@ portfolio/
 - [x] **Fase 0** — Scaffolding, datos consolidados, demo estético
 - [x] **Fase 1** — Backend NestJS base (módulos profile, experience) + Prisma + seed
 - [x] **Fase 2** — Núcleo curated-profile (resolución por tags + overrides)
-- [ ] **Fase 3** — Auth JWT + Backoffice API (CRUD)
+- [x] **Fase 3** — Auth JWT + Backoffice API (CRUD)
 - [ ] **Fase 4** — Frontend público (home + vista curada + temas)
 - [ ] **Fase 5** — Frontend backoffice (constructor de perfiles)
 - [ ] **Fase 6** — Pulido (SEO, export PDF, deploy)

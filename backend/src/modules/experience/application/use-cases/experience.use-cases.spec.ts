@@ -4,6 +4,14 @@ import { ExperienceRepository } from '../../domain/repositories/experience.repos
 import { GetExperienceByIdUseCase } from './get-experience-by-id.use-case';
 import { ListExperiencesUseCase } from './list-experiences.use-case';
 
+const writeStubs = () => ({
+  findAll: jest.fn(),
+  findById: jest.fn(),
+  create: jest.fn(),
+  update: jest.fn(),
+  delete: jest.fn(),
+});
+
 function exp(id: string, order: number, startDate: string, visible = true): Experience {
   return Experience.create({
     id,
@@ -25,6 +33,7 @@ function exp(id: string, order: number, startDate: string, visible = true): Expe
 
 function repoWith(items: Experience[]): ExperienceRepository {
   return {
+    ...writeStubs(),
     findAllVisible: jest.fn().mockResolvedValue(items.filter((e) => e.visible)),
     findVisibleById: jest
       .fn()
@@ -59,6 +68,7 @@ describe('ListExperiencesUseCase', () => {
 
   it('excluye experiencias ocultas aunque el repo las devolviera', async () => {
     const repo: ExperienceRepository = {
+      ...writeStubs(),
       findAllVisible: jest
         .fn()
         .mockResolvedValue([exp('a', 0, '2021-01'), exp('h', 1, '2020-01', false)]),

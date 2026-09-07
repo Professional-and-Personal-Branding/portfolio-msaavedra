@@ -4,7 +4,7 @@
 
 Ver `proposal.md` y `docs/SPECS-POR-FASE.md` § Fase 3. Estado de partida: Fases 1-2 archivadas; módulos `profile`, `experience`, `skill`, `theme`, `curated-profile` con puertos de solo lectura; `AdminUser` y `ProfileView` ya existen en `schema.prisma`; el seed no borra `AdminUser`; `.env.example` trae `JWT_SECRET`, `JWT_EXPIRES_IN`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
 
-Verificado en el entorno (2026-09-07): `argon2@0.45.1` instala con binario precompilado y funciona en Windows/Node 22; `@nestjs/jwt@12.0.1` declara peer `@nestjs/common ^11 || ^12`; `@nestjs/passport@11.0.5` es la última 11.x; `passport-jwt@4.0.1`.
+Verificado en el entorno (2026-09-07): `argon2@0.45.1` instala con binario precompilado y funciona en Windows/Node 22; `@nestjs/passport@11.0.5` es la última 11.x; `passport-jwt@4.0.1`. **Nota post-implementación:** `@nestjs/jwt@12` (peer `^11 || ^12`) se publica solo como ESM y Jest no puede cargarlo; se usa `@nestjs/jwt@~11.0.2` (CommonJS). Ver `verification.md`.
 
 ## Goals / Non-Goals
 
@@ -39,7 +39,7 @@ Fase 3 solo API; Fase 5 lo guardará en memoria (CLAUDE.md prohíbe localStorage
 Entidades: `Experience.create` sigue igual; se agrega `with(changes: Partial<ExperienceProps>)` que devuelve una instancia nueva. `NewExperienceProps = Omit<ExperienceProps, 'id'>`; el adaptador Prisma genera el `cuid`.
 
 ### D6 — Validación en dos niveles
-1. **HTTP (class-validator)**: DTOs en `infrastructure/controllers/dto/` de cada módulo. DTOs bilingües compartidos en `shared/infrastructure/http/dto/localized.dto.ts`: `LocalizedTextDto { @IsString es; @IsOptional @IsString en }`, `LocalizedListDto { @IsArray @IsString({each}) es; en? }`. `ValidationPipe` sigue global con `whitelist + transform`; los controllers admin agregan `forbidNonWhitelisted: true` vía `@UsePipes` para rechazar campos desconocidos (las rutas públicas no cambian).
+1. **HTTP (class-validator)**: DTOs en `infrastructure/controllers/dto/` de cada módulo. DTOs bilingües compartidos en `shared/infrastructure/http/dto/localized.dto.ts`: `LocalizedTextDto { @IsString es; @IsOptional @IsString en }`, `LocalizedListDto { @IsArray @IsString({each}) es; en? }`. **Ajuste post-implementación:** el `ValidationPipe` global queda solo con `transform` (un `whitelist` global corre antes que el pipe del controller y borra los campos desconocidos sin dar 400); `adminValidationPipe` (`whitelist + forbidNonWhitelisted + transform`) se aplica vía `@UsePipes` en los controllers con cuerpo (admin y `auth`). Las rutas públicas GET no cambian.
 2. **Dominio**: reglas que dependen del estado resultante o de otros agregados viven en el caso de uso/entidad y devuelven `ValidationError` (nuevo en `shared/domain/errors`, → 400) o `ConflictError` (→ 409): `PROTECTED` requiere `accessToken`; `slug` único (`existsBySlug`); `themeId` debe existir (`ThemeRepository.findById`); `endDate` requiere `!current`; `startDate <= endDate`.
 
 ### D7 — Salidas admin "crudas"

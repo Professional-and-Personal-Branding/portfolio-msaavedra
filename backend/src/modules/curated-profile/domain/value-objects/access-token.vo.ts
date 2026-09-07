@@ -3,7 +3,7 @@
  * (sin depender de node:crypto para mantener el dominio puro).
  */
 export class AccessToken {
-  private constructor(private readonly value: string | null) {}
+  private constructor(private readonly tokenValue: string | null) {}
 
   static create(value: string | null | undefined): AccessToken {
     const trimmed = value?.trim();
@@ -15,13 +15,18 @@ export class AccessToken {
   }
 
   get isSet(): boolean {
-    return this.value !== null;
+    return this.tokenValue !== null;
+  }
+
+  /** Valor crudo, solo para persistencia y backoffice. Nunca sale por rutas públicas. */
+  get value(): string | null {
+    return this.tokenValue;
   }
 
   /** true solo si hay token configurado y el candidato coincide exactamente. */
   matches(candidate: string | null | undefined): boolean {
-    if (this.value === null || !candidate) return false;
-    return constantTimeEquals(this.value, candidate);
+    if (this.tokenValue === null || !candidate) return false;
+    return constantTimeEquals(this.tokenValue, candidate);
   }
 }
 
