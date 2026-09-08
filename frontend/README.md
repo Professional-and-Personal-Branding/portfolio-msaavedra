@@ -1,6 +1,6 @@
 # Frontend — Portafolio Administrable
 
-SPA pública del portafolio (Fase 4, change OpenSpec `add-public-frontend-theming`): home, vista de perfil curado por slug, motor de theming por design tokens, dos layouts y bilingüe ES/EN. Todo el contenido viene de la API del backend; no hay datos hardcodeados.
+SPA del portafolio: la vista pública (Fase 4, change `add-public-frontend-theming`) con home, perfil curado por slug, motor de theming por design tokens, dos layouts y bilingüe ES/EN; y el backoffice en `/admin` (Fase 5, change `add-admin-backoffice`). Todo el contenido viene de la API del backend; no hay datos hardcodeados.
 
 ## Stack
 
@@ -84,6 +84,35 @@ src/
 ## Perfiles protegidos
 
 Si la API responde 401, se muestra un formulario de token; al enviarlo se reintenta con `X-Access-Token` y la URL refleja `?token=` (enlace compartible). `?token=` en la URL se usa automáticamente.
+
+## Backoffice (`/admin`, Fase 5)
+
+Panel de administración dentro del mismo proyecto, cargado con `React.lazy` en su propio chunk: un visitante anónimo no lo descarga.
+
+| Ruta | Qué hace |
+|---|---|
+| `/admin/login` | Email y contraseña contra `POST /api/auth/login` |
+| `/admin` | Dashboard de visitas (`ProfileView`) por perfil, idioma y día, con rango de fechas |
+| `/admin/experiencias` | Alta, edición y borrado de experiencias, con textos ES/EN, tags y visibilidad |
+| `/admin/skills` | Categorías y skills, con sus tags |
+| `/admin/perfiles` | Listado de perfiles curados con sus visitas |
+| `/admin/perfiles/:id` · `/admin/perfiles/nuevo` | Constructor: identidad, selección, diseño y publicación, con vista previa en vivo |
+
+### Sesión
+
+El login emite una cookie `httpOnly` (`portfolio_session`): el frontend **nunca** guarda el JWT, y deriva la sesión de `GET /api/auth/me`, así que sobrevive a un refresh sin `localStorage`. Un 401 en cualquier petición del panel invalida la sesión y devuelve al login recordando el destino. `Cerrar sesión` llama a `POST /api/auth/logout`.
+
+### Constructor de perfiles curados
+
+- **Selección**: los tags se ofrecen desde el universo real de los datos (experiencias, skills y proyectos); además se puede forzar la inclusión o exclusión de una experiencia concreta.
+- **Vista previa en vivo**: cada cambio de selección, layout o secciones llama a `POST /api/admin/curated-profiles/preview` (agrupado con 400 ms de retardo) y se renderiza con los **mismos componentes** de la vista pública, así que lo que ves es lo que verá quien abra el link.
+- **Publicación**: visibilidad `PUBLIC`/`PRIVATE`/`PROTECTED` (con token obligatorio), link público con copiar y abrir; en los protegidos el link incluye `?token=`.
+
+### Customizador de tema
+
+Ocho colores con selector y campo hexadecimal, tipografía, modo claro/oscuro, densidad y radio. Los tokens se aplican en el cliente con el `ThemeProvider`, así que el preview responde **sin ir a la red**; al guardar se persisten solo las diferencias contra el tema base en `themeOverrides` del perfil. Restablecer deja el perfil con el tema base limpio.
+
+El panel usa siempre el preset `modern-dark` para su propia interfaz: cambiar el tema del perfil no altera los colores del panel, porque cada `ThemeProvider` aplica sus variables a su contenedor.
 
 ## Tests
 

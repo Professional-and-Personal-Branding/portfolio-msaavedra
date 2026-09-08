@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { AppRouter } from '@/app/router';
@@ -67,6 +67,28 @@ describe('ProfileBuilderPage', () => {
 
     // Previsualizar no guarda nada.
     expect(saves).toBe(0);
+  });
+
+  it('varios tags alternados en la misma tanda no se pisan entre sí', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    server.use(trackPreviews(bodies), ...adminHandlers);
+    const user = userEvent.setup();
+
+    await openBuilder();
+    await waitFor(() => expect(bodies).toHaveLength(1));
+    await user.click(screen.getByRole('tab', { name: 'Selección' }));
+
+    // Tres clics sincrónicos: React los agrupa en un solo renderizado.
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'java', pressed: false }));
+      fireEvent.click(screen.getByRole('button', { name: 'legacy', pressed: false }));
+      fireEvent.click(screen.getByRole('button', { name: 'leadership', pressed: false }));
+    });
+
+    await waitFor(() => expect(bodies).toHaveLength(2), { timeout: 3000 });
+    expect(bodies[1]?.filterTags).toEqual(
+      expect.arrayContaining(['nodejs', 'java', 'legacy', 'leadership']),
+    );
   });
 
   it('excluir una experiencia la manda en excludeIds', async () => {

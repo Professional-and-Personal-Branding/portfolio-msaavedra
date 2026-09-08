@@ -107,7 +107,7 @@ frontend/src/
 │   ├── portfolio-public/     HomePage → perfil curado `all`
 │   ├── curated-view/         CuratedProfilePage · CuratedProfileView (orquesta URL → API → layout) · hooks/use-curated-profile · components/{AccessTokenForm, NotFound, ErrorState, LoadingSkeleton}
 │   ├── navigation/           TopBar · ProfileMenu (agrupado por roleType) · ThemeSwitcher · LayoutSwitcher · LocaleSwitcher
-│   └── backoffice/           (Fase 5)
+│   └── backoffice/           BackofficeApp (chunk aparte) · auth/{LoginPage, RequireSession, use-session} · dashboard/ · experiencias/ · skills/ · curated-profiles/{ProfilesPage, ProfileBuilderPage, PreviewPanel, use-preview} · theme-customizer/ · shared/{AdminShell, ConfirmDialog, fields/}
 ├── shared/
 │   ├── components/ui/        shadcn/ui (generados por el CLI, sin modificar)
 │   ├── components/portfolio/ Hero · Stats · ExperienceTimeline · SkillsGrid · Projects · Education · Certifications · Presence · Contact
@@ -135,6 +135,11 @@ Los layouts son componentes que reciben los mismos datos: `classic` (una columna
 
 ### Estado en la URL
 `?lang=`, `?theme=`, `?layout=` y `?token=` (perfiles PROTECTED) viven en la URL: enlaces compartibles y nada en `localStorage`.
+
+### Backoffice (Fase 5)
+El panel vive en `/admin`, dentro del mismo proyecto, y reutiliza el cliente tipado, el motor de theming y los layouts de la Fase 4; se carga con `React.lazy`, así que el visitante anónimo no lo descarga. La sesión es una cookie `httpOnly` que emite el login: el cliente no guarda el JWT y deriva el estado de `GET /api/auth/me`, de modo que sobrevive a un refresh sin usar `localStorage`.
+
+El constructor de perfiles curados previsualiza el borrador con `POST /api/admin/curated-profiles/preview`, que resuelve **sin guardar** usando `CuratedProfileComposer`, el mismo servicio de aplicación que la ruta pública (extraído de `ResolveCuratedProfileUseCase` en esta fase). Los cambios de selección se agrupan con un retardo de 400 ms; los del tema no van a la red, porque el customizador aplica los tokens en el cliente con el `ThemeProvider` y al guardar persiste solo las diferencias contra el tema base en `themeOverrides`.
 
 ---
 
@@ -224,7 +229,7 @@ model ProfileView { /* analítica: slug, timestamp, referrer */ }
 - ~~`POST /api/curated-profiles/:slug/access`~~ — no necesario: el token viaja en el `GET` (puede añadirse en Fase 3 si el frontend lo requiere)
 - Idioma por request: `?locale=` > `?lang=` > `Accept-Language` > `es`. Swagger en `/api/docs`, OpenAPI en `/api/docs-json`.
 
-### Backoffice (protegidos con JWT Bearer) ✅ Fase 3
+### Backoffice (protegidos con JWT: header `Authorization: Bearer` o cookie de sesión) ✅ Fases 3 y 5
 - `POST /api/auth/login` · `GET /api/auth/me`
 - `GET|POST /api/admin/experiences` · `GET|PATCH|DELETE /api/admin/experiences/:id`
 - `GET|POST /api/admin/skill-categories` · `PATCH|DELETE /api/admin/skill-categories/:id` · `POST /api/admin/skill-categories/:id/skills` · `PATCH|DELETE /api/admin/skills/:id`
@@ -267,12 +272,12 @@ model ProfileView { /* analítica: slug, timestamp, referrer */ }
 5. ✅ Layouts `classic` + `sidebar` (`?layout=`), orden/ocultamiento de secciones y stats derivadas.
 6. ✅ Tipos generados del OpenAPI (`openapi:export` + `api:types`, versionados).
 
-### Fase 5 — Frontend backoffice + Customizador visual
-1. Login.
-2. Dashboard con analítica.
-3. CRUD visual de experiencias/skills.
-4. Constructor de perfiles curados: seleccionar tags, preview en vivo, elegir tema/layout, ordenar y ocultar secciones, generar link.
-5. **Customizador de tema con preview en vivo:** color pickers, selector de fuente, toggle claro/oscuro, densidad — aplicando cambios en tiempo real sobre un preview del perfil.
+### ✅ Fase 5 — Frontend backoffice + Customizador visual (change OpenSpec `add-admin-backoffice`, sept. 2026)
+1. ✅ Login con sesión por cookie httpOnly y rutas `/admin/*` protegidas.
+2. ✅ Dashboard de visitas (`ProfileView`) por perfil, idioma y día, con rango de fechas.
+3. ✅ CRUD visual de experiencias y skills, con campos bilingües ES/EN y confirmaciones.
+4. ✅ Constructor de perfiles curados: tags del universo real, include/exclude por experiencia, preview en vivo resuelto por el backend, tema y layout, orden y ocultamiento de secciones, visibilidad y link público.
+5. ✅ Customizador de tema en tiempo real (8 colores, tipografía, modo, densidad, radio) que guarda solo las diferencias como `themeOverrides`.
 
 ### Fase 6 — Hardening para producción (release 1.0.0)
 

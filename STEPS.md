@@ -105,9 +105,20 @@ Prueba: `/` (perfil `all`), `/tech-lead-dotnet`, `?theme=elegant`, `?layout=side
 
 ---
 
-## Paso 7 — FASE 5: Frontend backoffice + customizador
+## Paso 7 — ✅ FASE 5: Frontend backoffice + customizador (change `add-admin-backoffice`)
 
 > "Implementa el backoffice: login, dashboard con analítica, CRUD visual de experiencias y skills, y el constructor de perfiles curados con preview en vivo, selección de tags, elección de tema/layout y el customizador visual (color pickers, fuente, modo claro/oscuro) aplicando cambios en tiempo real."
+
+Hecho. Para usarlo:
+
+```bash
+cd backend && npm run admin:bootstrap   # crea el administrador desde ADMIN_EMAIL / ADMIN_PASSWORD
+npm run start:dev
+cd ../frontend && npm run dev
+# abrir http://localhost:5173/admin e iniciar sesión
+```
+
+Flujo típico: **Perfiles curados → Nuevo perfil →** poné slug, título y titular → pestaña **Selección** para elegir tags (el preview de la derecha muestra al instante qué experiencias entran) → pestaña **Diseño** para el tema, el layout y el orden de secciones → **Publicación** para la visibilidad y el link → **Guardar**. Ver `frontend/README.md`.
 
 ---
 

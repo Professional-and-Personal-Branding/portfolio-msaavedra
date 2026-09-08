@@ -113,6 +113,21 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
   const update = <K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) =>
     setDraft((current) => ({ ...current, [key]: value }));
 
+  /**
+   * Alterna un valor en una lista partiendo SIEMPRE del estado vigente: varios
+   * clics en la misma tanda de renderizado no se pisan entre sí.
+   */
+  const toggleIn = (
+    key: 'filterTags' | 'includeIds' | 'excludeIds' | 'sectionsHidden',
+    value: string,
+  ) =>
+    setDraft((current) => ({
+      ...current,
+      [key]: current[key].includes(value)
+        ? current[key].filter((item) => item !== value)
+        : [...current[key], value],
+    }));
+
   const publicUrl = `${globalThis.location?.origin ?? ''}${profilePath(draft.slug)}${
     draft.visibility === 'PROTECTED' && draft.accessToken
       ? `?token=${encodeURIComponent(draft.accessToken)}`
@@ -254,14 +269,7 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
                         <button
                           type="button"
                           aria-pressed={active}
-                          onClick={() =>
-                            update(
-                              'filterTags',
-                              active
-                                ? draft.filterTags.filter((t) => t !== tag)
-                                : [...draft.filterTags, tag],
-                            )
-                          }
+                          onClick={() => toggleIn('filterTags', tag)}
                           className={cn(
                             'chip transition-colors',
                             active && 'border-transparent bg-brand-gradient text-brand-foreground',
@@ -300,14 +308,7 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
                         variant={included ? 'default' : 'outline'}
                         aria-pressed={included}
                         aria-label={`Incluir ${experience.company}`}
-                        onClick={() =>
-                          update(
-                            'includeIds',
-                            included
-                              ? draft.includeIds.filter((i) => i !== experience.id)
-                              : [...draft.includeIds, experience.id],
-                          )
-                        }
+                        onClick={() => toggleIn('includeIds', experience.id)}
                       >
                         Incluir
                       </Button>
@@ -317,14 +318,7 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
                         variant={excluded ? 'destructive' : 'outline'}
                         aria-pressed={excluded}
                         aria-label={`Excluir ${experience.company}`}
-                        onClick={() =>
-                          update(
-                            'excludeIds',
-                            excluded
-                              ? draft.excludeIds.filter((i) => i !== experience.id)
-                              : [...draft.excludeIds, experience.id],
-                          )
-                        }
+                        onClick={() => toggleIn('excludeIds', experience.id)}
                       >
                         Excluir
                       </Button>
@@ -371,14 +365,7 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
                       <Switch
                         aria-label={`Mostrar ${section}`}
                         checked={!hidden}
-                        onCheckedChange={(checked) =>
-                          update(
-                            'sectionsHidden',
-                            checked
-                              ? draft.sectionsHidden.filter((s) => s !== section)
-                              : [...draft.sectionsHidden, section],
-                          )
-                        }
+                        onCheckedChange={() => toggleIn('sectionsHidden', section)}
                       />
                       <Button
                         type="button"

@@ -1,5 +1,26 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Septiembre 2026 (Fase 5 — change OpenSpec `add-admin-backoffice`)
+
+Backoffice visual bajo SDD (propuesta aprobada por Human Gate, commit `379bf46`).
+
+### Backend (`backend/`)
+- Sesión del panel por cookie `httpOnly` (`portfolio_session`): la emite `POST /api/auth/login`, la borra `POST /api/auth/logout` y el guard acepta cookie o `Authorization: Bearer`. CORS con `credentials`.
+- `POST /api/admin/curated-profiles/preview`: resuelve un perfil curado en borrador sin persistir ni registrar visitas, con el mismo cuerpo que la ruta pública. Para lograrlo se extrajo `CuratedProfileComposer` (pasos 3-5 y 7 del núcleo) de `ResolveCuratedProfileUseCase`, que ahora conserva visibilidad, token y registro de visita.
+- `GET /api/admin/themes`: catálogo de temas para el customizador (`findAll()` en `ThemeRepository`).
+- Contrato: `endDate`, `techFocus`, `themeId` y `accessToken` se declaraban como `object` en OpenAPI por un `@ApiPropertyOptional({ nullable: true })` sin `type`; ahora son `string`.
+
+### Frontend (`frontend/`)
+- Panel `/admin` en un chunk aparte (`React.lazy`): login, dashboard, experiencias, skills, perfiles curados.
+- Dashboard de visitas con rango de fechas y gráficos propios (sin librería de charts).
+- CRUD visual con campos bilingües (`LocalizedField`), listas de chips (`ChipListField`), confirmaciones y avisos (`sonner`).
+- Constructor con preview en vivo (retardo de 400 ms, tokens del tema fuera de la clave), selección por tags del universo real, include/exclude por experiencia, orden y ocultamiento de secciones, visibilidad, token y link público con copiar y abrir.
+- Customizador de tema en tiempo real: 8 colores con selector y hexadecimal, tipografía, modo, densidad y radio; guarda solo las diferencias contra el tema base.
+- Tests: 118 en el frontend (eran 56) y 182 + 91 en el backend (eran 168 + 73).
+
+### Datos
+- Sin cambios en `cv-data.json` ni en el schema. El perfil `verificacion-fase5`, creado durante la verificación, se borró al terminar.
+
 ## Update — Septiembre 2026 (Fase 4 — change OpenSpec `add-public-frontend-theming`)
 
 Frontend público + motor de theming bajo SDD (propuesta aprobada por Human Gate, commit `62a49d6`).

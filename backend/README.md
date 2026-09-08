@@ -93,6 +93,20 @@ Reglas: cuerpos validados con `class-validator`; campos desconocidos → 400; `P
 | `npm run admin:bootstrap` | Crear/actualizar el administrador (hash argon2id, upsert por email) |
 | `npm run openapi:export` | Escribe `backend/openapi.json` (mismo documento que `/api/docs-json`) sin levantar servidor ni conectar a la base; el frontend genera sus tipos desde él (`npm run api:types`). Se versiona: correrlo cuando cambie el contrato |
 
+## Sesión del backoffice (Fase 5)
+
+`POST /api/auth/login` devuelve el JWT en el cuerpo **y** lo emite como cookie `portfolio_session` (`HttpOnly`, `SameSite=Lax`, `Path=/`, `Secure` solo en producción, caducidad igual a `JWT_EXPIRES_IN`). El guard de `/api/admin/*` y `GET /api/auth/me` aceptan el token por header `Authorization: Bearer` (prioridad) o por esa cookie, así que `curl`, Swagger y los e2e siguen funcionando igual. `POST /api/auth/logout` borra la cookie y responde 204.
+
+En desarrollo el navegador ve un único origen gracias al proxy de Vite (`localhost:5173` → `3300`), por eso `SameSite=Lax` alcanza. Un despliegue con dominios distintos necesitará `SameSite=None; Secure` o un proxy que los unifique (Fase 6, junto con CSRF y rate limiting del login).
+
+## Endpoints del backoffice agregados en la Fase 5
+
+| Endpoint | Qué hace |
+|---|---|
+| `POST /api/auth/logout` | Cierra la sesión borrando la cookie |
+| `POST /api/admin/curated-profiles/preview` | Resuelve un perfil curado **en borrador** (sin guardarlo y sin registrar visitas) y devuelve el mismo cuerpo que `GET /api/curated-profiles/{slug}`. Comparte el pipeline con la ruta pública mediante `CuratedProfileComposer`, así el preview del constructor no puede divergir de lo que verá el visitante |
+| `GET /api/admin/themes` | Catálogo de temas (`id`, `slug`, `name`, `isPreset`, `tokens`) para el customizador |
+
 ## Estructura (módulo de referencia)
 
 ```
