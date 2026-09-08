@@ -42,3 +42,21 @@ if (typeof window !== 'undefined' && !('IntersectionObserver' in window)) {
 
 // jsdom reporta `en-US`; el locale por defecto del producto es `es` (los tests con ?lang=en lo sobreescriben).
 Object.defineProperty(window.navigator, 'language', { value: 'es-ES', configurable: true });
+
+// Radix (Select, DropdownMenu) usa APIs de puntero y scroll que jsdom no implementa.
+if (typeof Element !== 'undefined') {
+  Element.prototype.hasPointerCapture ??= () => false;
+  Element.prototype.setPointerCapture ??= () => undefined;
+  Element.prototype.releasePointerCapture ??= () => undefined;
+  Element.prototype.scrollIntoView ??= () => undefined;
+}
+
+// jsdom no implementa ResizeObserver (lo usa Radix para medir el Switch y los popovers).
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  class ResizeObserverStub {
+    observe(): void {}
+    unobserve(): void {}
+    disconnect(): void {}
+  }
+  globalThis.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver;
+}

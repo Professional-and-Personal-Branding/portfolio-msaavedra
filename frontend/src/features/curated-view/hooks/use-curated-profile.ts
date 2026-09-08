@@ -1,19 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import type { Locale } from '@/shared/i18n/locale';
-import { api } from '@/shared/lib/api-client';
+import { api, HttpError, unwrap } from '@/shared/lib/api-client';
 import type { CuratedProfile, CuratedProfileSummary } from '@/shared/types/portfolio';
 
-/** Error HTTP con el status, para distinguir 401/404 de fallos de red. */
-export class HttpError extends Error {
-  readonly status: number;
-
-  constructor(status: number, message: string) {
-    super(message);
-    this.name = 'HttpError';
-    this.status = status;
-  }
-}
+export { HttpError } from '@/shared/lib/api-client';
 
 export type CuratedProfileState =
   | { status: 'loading' }
@@ -32,23 +23,19 @@ export async function fetchCuratedProfile(
   locale: Locale,
   token: string | null,
 ): Promise<CuratedProfile> {
-  const { data, error, response } = await api.GET('/api/curated-profiles/{slug}', {
-    params: {
-      path: { slug },
-      query: { locale },
-      ...(token ? { header: { 'X-Access-Token': token } } : {}),
-    },
-  });
-  if (data) return data;
-  throw new HttpError(response.status, messageOf(error) ?? response.statusText);
+  return unwrap(
+    await api.GET('/api/curated-profiles/{slug}', {
+      params: {
+        path: { slug },
+        query: { locale },
+        ...(token ? { header: { 'X-Access-Token': token } } : {}),
+      },
+    }),
+  );
 }
 
 export async function fetchCuratedProfiles(locale: Locale): Promise<CuratedProfileSummary[]> {
-  const { data, error, response } = await api.GET('/api/curated-profiles', {
-    params: { query: { locale } },
-  });
-  if (data) return data;
-  throw new HttpError(response.status, messageOf(error) ?? response.statusText);
+  return unwrap(await api.GET('/api/curated-profiles', { params: { query: { locale } } }));
 }
 
 /** Estado de vista del perfil curado (decisión D7). */
@@ -77,13 +64,4 @@ export function useCuratedProfiles(locale: Locale) {
     queryKey: ['curated-profiles', locale],
     queryFn: () => fetchCuratedProfiles(locale),
   });
-}
-
-function messageOf(error: unknown): string | undefined {
-  if (error && typeof error === 'object' && 'message' in error) {
-    const message = (error as { message?: unknown }).message;
-    if (typeof message === 'string') return message;
-    if (Array.isArray(message)) return message.join(', ');
-  }
-  return undefined;
 }

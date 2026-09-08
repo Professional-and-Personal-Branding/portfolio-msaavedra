@@ -1,0 +1,215 @@
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { api, apiErrorMessage, unwrap } from '@/shared/lib/api-client';
+import type {
+  AdminCuratedProfile,
+  AdminExperience,
+  AdminSkillCategory,
+  AdminTheme,
+  CreateCuratedProfileBody,
+  CreateExperienceBody,
+  CreateSkillBody,
+  CreateSkillCategoryBody,
+  ProfileViews,
+  UpdateCuratedProfileBody,
+  UpdateExperienceBody,
+} from './admin-types';
+
+export const adminKeys = {
+  experiences: ['admin', 'experiences'] as const,
+  skillCategories: ['admin', 'skill-categories'] as const,
+  curatedProfiles: ['admin', 'curated-profiles'] as const,
+  themes: ['admin', 'themes'] as const,
+  analytics: (from: string, to: string) => ['admin', 'analytics', from, to] as const,
+  preview: (draftKey: string) => ['admin', 'preview', draftKey] as const,
+};
+
+/** Aviso de éxito o de error para cada escritura (spec `admin-content-management`). */
+export function notifySuccess(message: string): void {
+  toast.success(message);
+}
+
+export function notifyError(error: unknown, fallback = 'No se pudo guardar'): void {
+  toast.error(apiErrorMessage(error) ?? (error instanceof Error ? error.message : fallback));
+}
+
+function invalidate(client: QueryClient, key: readonly unknown[]): void {
+  void client.invalidateQueries({ queryKey: key });
+}
+
+// ── Experiencias ────────────────────────────────────────────────────────────
+export function useExperiences() {
+  return useQuery({
+    queryKey: adminKeys.experiences,
+    queryFn: async (): Promise<AdminExperience[]> =>
+      unwrap(await api.GET('/api/admin/experiences')),
+  });
+}
+
+export function useSaveExperience() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      id?: string;
+      body: CreateExperienceBody | UpdateExperienceBody;
+    }) =>
+      input.id
+        ? unwrap(
+            await api.PATCH('/api/admin/experiences/{id}', {
+              params: { path: { id: input.id } },
+              body: input.body as UpdateExperienceBody,
+            }),
+          )
+        : unwrap(
+            await api.POST('/api/admin/experiences', {
+              body: input.body as CreateExperienceBody,
+            }),
+          ),
+    onSuccess: () => invalidate(client, adminKeys.experiences),
+  });
+}
+
+export function useDeleteExperience() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const result = await api.DELETE('/api/admin/experiences/{id}', {
+        params: { path: { id } },
+      });
+      if (result.error) throw new Error(apiErrorMessage(result.error) ?? 'No se pudo borrar');
+    },
+    onSuccess: () => invalidate(client, adminKeys.experiences),
+  });
+}
+
+// ── Skills ──────────────────────────────────────────────────────────────────
+export function useSkillCategories() {
+  return useQuery({
+    queryKey: adminKeys.skillCategories,
+    queryFn: async (): Promise<AdminSkillCategory[]> =>
+      unwrap(await api.GET('/api/admin/skill-categories')),
+  });
+}
+
+export function useSaveSkillCategory() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id?: string; body: CreateSkillCategoryBody }) =>
+      input.id
+        ? unwrap(
+            await api.PATCH('/api/admin/skill-categories/{id}', {
+              params: { path: { id: input.id } },
+              body: input.body,
+            }),
+          )
+        : unwrap(await api.POST('/api/admin/skill-categories', { body: input.body })),
+    onSuccess: () => invalidate(client, adminKeys.skillCategories),
+  });
+}
+
+export function useDeleteSkillCategory() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const result = await api.DELETE('/api/admin/skill-categories/{id}', {
+        params: { path: { id } },
+      });
+      if (result.error) throw new Error(apiErrorMessage(result.error) ?? 'No se pudo borrar');
+    },
+    onSuccess: () => invalidate(client, adminKeys.skillCategories),
+  });
+}
+
+export function useSaveSkill() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id?: string; categoryId: string; body: CreateSkillBody }) =>
+      input.id
+        ? unwrap(
+            await api.PATCH('/api/admin/skills/{id}', {
+              params: { path: { id: input.id } },
+              body: input.body,
+            }),
+          )
+        : unwrap(
+            await api.POST('/api/admin/skill-categories/{categoryId}/skills', {
+              params: { path: { categoryId: input.categoryId } },
+              body: input.body,
+            }),
+          ),
+    onSuccess: () => invalidate(client, adminKeys.skillCategories),
+  });
+}
+
+export function useDeleteSkill() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const result = await api.DELETE('/api/admin/skills/{id}', { params: { path: { id } } });
+      if (result.error) throw new Error(apiErrorMessage(result.error) ?? 'No se pudo borrar');
+    },
+    onSuccess: () => invalidate(client, adminKeys.skillCategories),
+  });
+}
+
+// ── Perfiles curados ────────────────────────────────────────────────────────
+export function useCuratedProfilesAdmin() {
+  return useQuery({
+    queryKey: adminKeys.curatedProfiles,
+    queryFn: async (): Promise<AdminCuratedProfile[]> =>
+      unwrap(await api.GET('/api/admin/curated-profiles')),
+  });
+}
+
+export function useSaveCuratedProfile() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      id?: string;
+      body: CreateCuratedProfileBody | UpdateCuratedProfileBody;
+    }) =>
+      input.id
+        ? unwrap(
+            await api.PATCH('/api/admin/curated-profiles/{id}', {
+              params: { path: { id: input.id } },
+              body: input.body as UpdateCuratedProfileBody,
+            }),
+          )
+        : unwrap(
+            await api.POST('/api/admin/curated-profiles', {
+              body: input.body as CreateCuratedProfileBody,
+            }),
+          ),
+    onSuccess: () => invalidate(client, adminKeys.curatedProfiles),
+  });
+}
+
+export function useDeleteCuratedProfile() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const result = await api.DELETE('/api/admin/curated-profiles/{id}', {
+        params: { path: { id } },
+      });
+      if (result.error) throw new Error(apiErrorMessage(result.error) ?? 'No se pudo borrar');
+    },
+    onSuccess: () => invalidate(client, adminKeys.curatedProfiles),
+  });
+}
+
+// ── Temas y analítica ───────────────────────────────────────────────────────
+export function useThemes() {
+  return useQuery({
+    queryKey: adminKeys.themes,
+    queryFn: async (): Promise<AdminTheme[]> => unwrap(await api.GET('/api/admin/themes')),
+    staleTime: 30 * 60 * 1000,
+  });
+}
+
+export function useAnalytics(from: string, to: string) {
+  return useQuery({
+    queryKey: adminKeys.analytics(from, to),
+    queryFn: async (): Promise<ProfileViews> =>
+      unwrap(await api.GET('/api/admin/analytics/views', { params: { query: { from, to } } })),
+  });
+}

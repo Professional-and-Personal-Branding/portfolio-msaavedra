@@ -1,0 +1,125 @@
+import { describe, expect, it } from 'vitest';
+import type { AdminExperience, AdminSkillCategory } from '../shared/admin-types';
+import {
+  allSections,
+  EMPTY_DRAFT,
+  moveSection,
+  previewKey,
+  tagUniverse,
+  toProfileBody,
+  validateDraft,
+  type ProfileDraft,
+} from './profile-draft';
+
+const draft = (overrides: Partial<ProfileDraft> = {}): ProfileDraft => ({
+  ...EMPTY_DRAFT,
+  slug: 'acme-backend',
+  title: { es: 'Backend', en: 'Backend' },
+  headline: { es: 'Titular', en: '' },
+  ...overrides,
+});
+
+describe('validateDraft', () => {
+  it('exige slug kebab-case, título y titular en español', () => {
+    expect(validateDraft(draft())).toEqual({});
+    expect(validateDraft(draft({ slug: '' })).slug).toBe('El slug es obligatorio');
+    expect(validateDraft(draft({ slug: 'No Kebab' })).slug).toMatch(/kebab-case/);
+    expect(validateDraft(draft({ title: { es: '  ', en: 'x' } })).title).toBeDefined();
+    expect(validateDraft(draft({ headline: { es: '', en: '' } })).headline).toBeDefined();
+  });
+
+  it('un perfil PROTECTED necesita token; los demás no', () => {
+    expect(validateDraft(draft({ visibility: 'PROTECTED' })).accessToken).toBeDefined();
+    expect(
+      validateDraft(draft({ visibility: 'PROTECTED', accessToken: 'secreto' })).accessToken,
+    ).toBeUndefined();
+    expect(validateDraft(draft({ visibility: 'PRIVATE' })).accessToken).toBeUndefined();
+  });
+});
+
+describe('toProfileBody', () => {
+  it('convierte textos vacíos en null y omite el inglés vacío', () => {
+    const body = toProfileBody(draft());
+    expect(body.description).toBeNull();
+    expect(body.roleType).toBeNull();
+    expect(body.techFocus).toBeNull();
+    expect(body.headline).toEqual({ es: 'Titular' });
+    expect(body.title).toEqual({ es: 'Backend', en: 'Backend' });
+  });
+
+  it('el token solo viaja cuando el perfil es PROTECTED', () => {
+    expect(toProfileBody(draft({ accessToken: 'x' })).accessToken).toBeNull();
+    expect(toProfileBody(draft({ visibility: 'PROTECTED', accessToken: ' x ' })).accessToken).toBe(
+      'x',
+    );
+  });
+});
+
+describe('previewKey', () => {
+  it('cambia con los criterios de selección', () => {
+    const base = previewKey(draft());
+    expect(previewKey(draft({ filterTags: ['java'] }))).not.toBe(base);
+    expect(previewKey(draft({ excludeIds: ['e1'] }))).not.toBe(base);
+    expect(previewKey(draft({ layout: 'sidebar' }))).not.toBe(base);
+    expect(previewKey(draft({ sectionsHidden: ['stats'] }))).not.toBe(base);
+  });
+
+  it('no cambia con los tokens del tema (los aplica el cliente)', () => {
+    const base = previewKey(draft());
+    expect(previewKey(draft({ themeOverrides: { colors: { accent: '#f00' } } }))).toBe(base);
+    expect(previewKey(draft({ accentColor: '#00ff00' }))).toBe(base);
+  });
+
+  it('no depende del orden en que se agregaron los tags', () => {
+    expect(previewKey(draft({ filterTags: ['java', 'aws'] }))).toBe(
+      previewKey(draft({ filterTags: ['aws', 'java'] })),
+    );
+  });
+});
+
+describe('tagUniverse', () => {
+  const experiences = [
+    { tags: ['java', 'aws'] },
+    { tags: ['dotnet', 'java'] },
+  ] as AdminExperience[];
+  const categories = [
+    { skills: [{ tags: ['leadership'] }, { tags: ['java'] }] },
+  ] as AdminSkillCategory[];
+
+  it('reúne los tags de experiencias y skills, sin repetir y ordenados', () => {
+    expect(tagUniverse(experiences, categories)).toEqual(['aws', 'dotnet', 'java', 'leadership']);
+  });
+
+  it('incluye los tags extra ya elegidos aunque no existan en los datos', () => {
+    expect(tagUniverse([], [], ['nuevo'])).toEqual(['nuevo']);
+    expect(tagUniverse()).toEqual([]);
+  });
+});
+
+describe('moveSection', () => {
+  it('mueve arriba y abajo', () => {
+    expect(moveSection(['a', 'b', 'c'], 1, -1)).toEqual(['b', 'a', 'c']);
+    expect(moveSection(['a', 'b', 'c'], 1, 1)).toEqual(['a', 'c', 'b']);
+  });
+
+  it('en los extremos no hace nada y no muta el original', () => {
+    const original = ['a', 'b'];
+    expect(moveSection(original, 0, -1)).toEqual(['a', 'b']);
+    expect(moveSection(original, 1, 1)).toEqual(['a', 'b']);
+    expect(original).toEqual(['a', 'b']);
+  });
+});
+
+describe('allSections', () => {
+  it('respeta el orden del perfil y agrega al final las conocidas que faltan', () => {
+    const result = allSections(['hero', 'skills']);
+    expect(result.slice(0, 2)).toEqual(['hero', 'skills']);
+    expect(result).toContain('projects');
+    expect(result).toContain('presence');
+    expect(new Set(result).size).toBe(result.length);
+  });
+
+  it('descarta secciones desconocidas', () => {
+    expect(allSections(['hero', 'timeline-3d'])).not.toContain('timeline-3d');
+  });
+});

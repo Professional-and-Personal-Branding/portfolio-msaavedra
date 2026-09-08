@@ -49,7 +49,7 @@ export class CreateCuratedProfileDto {
   @Type(() => LocalizedTextDto)
   roleType?: LocalizedTextDto | null;
 
-  @ApiPropertyOptional({ nullable: true, example: '.NET' })
+  @ApiPropertyOptional({ nullable: true, type: String, example: '.NET' })
   @IsOptional()
   @IsString()
   techFocus?: string | null;
@@ -77,7 +77,7 @@ export class CreateCuratedProfileDto {
   @Matches(HEX_COLOR_REGEX, { message: 'accentColor must be #RRGGBB' })
   accentColor?: string;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Id de Theme existente' })
+  @ApiPropertyOptional({ nullable: true, type: String, description: 'Id de Theme existente' })
   @IsOptional()
   @IsString()
   themeId?: string | null;
@@ -110,7 +110,11 @@ export class CreateCuratedProfileDto {
   @IsIn(CURATED_VISIBILITIES)
   visibility?: CuratedVisibility;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Obligatorio si visibility = PROTECTED' })
+  @ApiPropertyOptional({
+    nullable: true,
+    type: String,
+    description: 'Obligatorio si visibility = PROTECTED',
+  })
   @IsOptional()
   @IsString()
   accessToken?: string | null;

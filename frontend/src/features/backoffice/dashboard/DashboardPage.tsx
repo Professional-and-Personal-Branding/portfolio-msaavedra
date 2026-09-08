@@ -1,0 +1,190 @@
+import { Eye, Globe, Users } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select';
+import { profilePath } from '@/shared/lib/profile-link';
+import { PageHeader } from '../shared/PageHeader';
+import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
+import { useAnalytics, useCuratedProfilesAdmin } from '../shared/use-admin-api';
+import { DEFAULT_RANGE_DAYS, formatDay, RANGE_OPTIONS, rangeOfDays } from './ranges';
+
+/** Dashboard de visitas (spec `admin-analytics-dashboard`). Gráficos propios, sin librería. */
+export function DashboardPage() {
+  const [days, setDays] = useState<string>(DEFAULT_RANGE_DAYS);
+  const range = useMemo(() => rangeOfDays(Number(days)), [days]);
+  const analytics = useAnalytics(range.from, range.to);
+  const profiles = useCuratedProfilesAdmin();
+
+  const idBySlug = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const profile of profiles.data ?? []) map.set(profile.slug, profile.id);
+    return map;
+  }, [profiles.data]);
+
+  return (
+    <>
+      <PageHeader
+        title="Dashboard"
+        description="Visitas registradas en las vistas públicas de los perfiles curados."
+        actions={
+          <Select value={days} onValueChange={setDays}>
+            <SelectTrigger className="w-48" aria-label="Rango de fechas">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {RANGE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        }
+      />
+
+      {analytics.isPending && <LoadingRows rows={3} />}
+      {analytics.isError && (
+        <ErrorPanel message={analytics.error.message} onRetry={() => void analytics.refetch()} />
+      )}
+
+      {analytics.data && (
+        <div className="flex flex-col gap-6">
+          <section aria-label="Totales" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <StatCard icon={Eye} label="Visitas en el rango" value={analytics.data.total} />
+            <StatCard
+              icon={Users}
+              label="Perfiles vistos"
+              value={analytics.data.byProfile.length}
+            />
+            <StatCard icon={Globe} label="Idiomas" value={analytics.data.byLocale.length} />
+          </section>
+
+          {analytics.data.total === 0 ? (
+            <EmptyState
+              title="Todavía no hay visitas"
+              description="Cuando alguien abra un perfil curado en el rango elegido, aparecerá acá."
+            />
+          ) : (
+            <>
+              <section aria-labelledby="por-dia" className="surface p-card">
+                <h2 id="por-dia" className="mb-4 font-semibold">
+                  Visitas por día
+                </h2>
+                <DayBars data={analytics.data.byDay} />
+              </section>
+
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <section aria-labelledby="por-perfil" className="surface p-card">
+                  <h2 id="por-perfil" className="mb-4 font-semibold">
+                    Por perfil
+                  </h2>
+                  <ol className="flex flex-col gap-2">
+                    {[...analytics.data.byProfile]
+                      .sort((a, b) => b.views - a.views)
+                      .map((row) => {
+                        const id = idBySlug.get(row.slug);
+                        return (
+                          <li key={row.slug} className="flex items-center gap-3">
+                            <span className="min-w-0 flex-1 truncate text-sm">
+                              {id ? (
+                                <Link
+                                  to={`/admin/perfiles/${id}`}
+                                  className="hover:text-brand hover:underline"
+                                >
+                                  {row.slug}
+                                </Link>
+                              ) : (
+                                row.slug
+                              )}
+                            </span>
+                            <Link
+                              to={profilePath(row.slug)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs text-text-dim hover:text-brand"
+                            >
+                              ver
+                            </Link>
+                            <span className="w-10 text-right text-sm font-semibold tabular-nums">
+                              {row.views}
+                            </span>
+                          </li>
+                        );
+                      })}
+                  </ol>
+                </section>
+
+                <section aria-labelledby="por-idioma" className="surface p-card">
+                  <h2 id="por-idioma" className="mb-4 font-semibold">
+                    Por idioma
+                  </h2>
+                  <ul className="flex flex-col gap-2">
+                    {analytics.data.byLocale.map((row) => (
+                      <li key={row.locale} className="flex items-center gap-3">
+                        <span className="flex-1 text-sm uppercase">{row.locale}</span>
+                        <span className="text-sm font-semibold tabular-nums">{row.views}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Eye;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="surface flex items-center gap-4 p-card">
+      <span className="grid size-10 shrink-0 place-items-center rounded-theme-sm bg-bg-soft text-brand">
+        <Icon className="size-5" aria-hidden />
+      </span>
+      <div>
+        <p className="text-2xl font-extrabold text-gradient">{value}</p>
+        <p className="text-xs text-text-dim">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+/** Barras verticales con la cifra siempre disponible como texto (accesibilidad). */
+function DayBars({ data }: { data: { day: string; views: number }[] }) {
+  const max = Math.max(1, ...data.map((d) => d.views));
+  return (
+    <ol className="flex h-40 items-end gap-1 overflow-x-auto pb-1">
+      {data.map((row) => (
+        <li
+          key={row.day}
+          className="flex min-w-4 flex-1 flex-col items-center justify-end gap-1"
+          title={`${formatDay(row.day)}: ${row.views}`}
+        >
+          <span className="text-[10px] text-text-dim tabular-nums">{row.views}</span>
+          <div
+            role="img"
+            aria-label={`${formatDay(row.day)}: ${row.views} visitas`}
+            className="w-full rounded-t-sm bg-brand-gradient"
+            style={{ height: `${Math.max(4, (row.views / max) * 100)}%` }}
+          />
+          <span className="text-[10px] whitespace-nowrap text-text-dim">{formatDay(row.day)}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}

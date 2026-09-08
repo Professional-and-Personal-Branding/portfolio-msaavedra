@@ -2357,7 +2357,7 @@
             "description": "YYYY-MM"
           },
           "endDate": {
-            "type": "object",
+            "type": "string",
             "example": "2025-12",
             "description": "YYYY-MM; omitir o null si es actual",
             "nullable": true
@@ -2432,7 +2432,7 @@
             "description": "YYYY-MM"
           },
           "endDate": {
-            "type": "object",
+            "type": "string",
             "example": "2025-12",
             "description": "YYYY-MM; omitir o null si es actual",
             "nullable": true
@@ -2957,7 +2957,7 @@
             ]
           },
           "techFocus": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": ".NET"
           },
@@ -2988,7 +2988,7 @@
             "example": "#5B2C87"
           },
           "themeId": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Id de Theme existente"
           },
@@ -3025,7 +3025,7 @@
             "default": "PUBLIC"
           },
           "accessToken": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Obligatorio si visibility = PROTECTED"
           }
@@ -3197,7 +3197,7 @@
             ]
           },
           "techFocus": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": ".NET"
           },
@@ -3228,7 +3228,7 @@
             "example": "#5B2C87"
           },
           "themeId": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Id de Theme existente"
           },
@@ -3265,7 +3265,7 @@
             "default": "PUBLIC"
           },
           "accessToken": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Obligatorio si visibility = PROTECTED"
           }
@@ -3309,7 +3309,7 @@
             ]
           },
           "techFocus": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": ".NET"
           },
@@ -3340,7 +3340,7 @@
             "example": "#5B2C87"
           },
           "themeId": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Id de Theme existente"
           },
@@ -3377,7 +3377,7 @@
             "default": "PUBLIC"
           },
           "accessToken": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Obligatorio si visibility = PROTECTED"
           }

@@ -39,6 +39,7 @@ export class CreateExperienceDto {
     example: '2025-12',
     description: 'YYYY-MM; omitir o null si es actual',
     nullable: true,
+    type: String,
   })
   @IsOptional()
   @Matches(YEAR_MONTH_REGEX, { message: 'endDate must be YYYY-MM' })

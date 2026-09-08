@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 8943d88338bc33c267f1a08d7ba5657c0ac1b7cacff6d35cadc93aafca665a0c
+// openapi-sha256: df0e5ef2067383e1b24a45c84b385b2c5f19817090d5c1bb02fcc590228aacde
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -544,7 +544,7 @@ export interface components {
              */
             accentColor: string;
             /** @description Obligatorio si visibility = PROTECTED */
-            accessToken?: Record<string, never> | null;
+            accessToken?: string | null;
             description?: components["schemas"]["LocalizedTextDto"] | null;
             /** @default [] */
             excludeIds: string[];
@@ -566,9 +566,9 @@ export interface components {
              */
             slug: string;
             /** @example .NET */
-            techFocus?: Record<string, never> | null;
+            techFocus?: string | null;
             /** @description Id de Theme existente */
-            themeId?: Record<string, never> | null;
+            themeId?: string | null;
             themeOverrides?: {
                 [key: string]: unknown;
             } | null;
@@ -588,7 +588,7 @@ export interface components {
              * @description YYYY-MM; omitir o null si es actual
              * @example 2025-12
              */
-            endDate?: Record<string, never> | null;
+            endDate?: string | null;
             highlights?: components["schemas"]["LocalizedListDto"];
             /** @example Santa Cruz, Bolivia · Remoto */
             location: string;
@@ -840,7 +840,7 @@ export interface components {
              */
             accentColor: string;
             /** @description Obligatorio si visibility = PROTECTED */
-            accessToken?: Record<string, never> | null;
+            accessToken?: string | null;
             description?: components["schemas"]["LocalizedTextDto"] | null;
             /** @default [] */
             excludeIds: string[];
@@ -862,9 +862,9 @@ export interface components {
              */
             slug?: string;
             /** @example .NET */
-            techFocus?: Record<string, never> | null;
+            techFocus?: string | null;
             /** @description Id de Theme existente */
-            themeId?: Record<string, never> | null;
+            themeId?: string | null;
             themeOverrides?: {
                 [key: string]: unknown;
             } | null;
@@ -1015,7 +1015,7 @@ export interface components {
              */
             accentColor: string;
             /** @description Obligatorio si visibility = PROTECTED */
-            accessToken?: Record<string, never> | null;
+            accessToken?: string | null;
             description?: components["schemas"]["LocalizedTextDto"] | null;
             /** @default [] */
             excludeIds: string[];
@@ -1037,9 +1037,9 @@ export interface components {
              */
             slug?: string;
             /** @example .NET */
-            techFocus?: Record<string, never> | null;
+            techFocus?: string | null;
             /** @description Id de Theme existente */
-            themeId?: Record<string, never> | null;
+            themeId?: string | null;
             themeOverrides?: {
                 [key: string]: unknown;
             } | null;
@@ -1059,7 +1059,7 @@ export interface components {
              * @description YYYY-MM; omitir o null si es actual
              * @example 2025-12
              */
-            endDate?: Record<string, never> | null;
+            endDate?: string | null;
             highlights?: components["schemas"]["LocalizedListDto"];
             /** @example Santa Cruz, Bolivia · Remoto */
             location?: string;
