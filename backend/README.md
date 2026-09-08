@@ -91,6 +91,7 @@ Reglas: cuerpos validados con `class-validator`; campos desconocidos → 400; `P
 | `npm run prisma:migrate` / `prisma:status` | Migración `init` / estado de migraciones |
 | `npm run seed` / `seed:verify` | Cargar / verificar datos (el seed no toca `AdminUser`) |
 | `npm run admin:bootstrap` | Crear/actualizar el administrador (hash argon2id, upsert por email) |
+| `npm run openapi:export` | Escribe `backend/openapi.json` (mismo documento que `/api/docs-json`) sin levantar servidor ni conectar a la base; el frontend genera sus tipos desde él (`npm run api:types`). Se versiona: correrlo cuando cambie el contrato |
 
 ## Estructura (módulo de referencia)
 

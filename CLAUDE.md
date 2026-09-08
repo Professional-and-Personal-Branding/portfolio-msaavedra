@@ -114,12 +114,14 @@ npm run prisma:generate  # prisma generate
 npm run seed             # carga docs/cv-data.json
 npm run seed:verify      # compara conteos DB vs cv-data.json
 npm run admin:bootstrap  # crea/actualiza el administrador (ADMIN_EMAIL/ADMIN_PASSWORD/ADMIN_NAME, argon2id)
+npm run openapi:export   # escribe backend/openapi.json (fuente de los tipos del frontend; sin servidor ni DB)
 npm run test             # jest
 
 # Frontend
-npm run dev              # vite
-npm run build
+npm run dev              # vite (proxy /api → backend en 3300)
+npm run build            # tsc -b + vite build
 npm run test             # vitest
+npm run api:types        # regenera src/shared/types/api.d.ts desde ../backend/openapi.json
 ```
 
 ---
@@ -132,7 +134,7 @@ npm run test             # vitest
 - [x] Fase 1 — Backend base (profile, experience) + Prisma + seed + Swagger — change `add-backend-base` (ver `openspec/changes/archive/`)
 - [x] Fase 2 — curated-profile (ResolveCuratedProfile) — change `add-curated-profile-resolution`
 - [x] Fase 3 — auth JWT + backoffice API (CRUD) — change `add-auth-and-crud`
-- [ ] Fase 4 — frontend público + motor de theming
+- [x] Fase 4 — frontend público + motor de theming — change `add-public-frontend-theming`
 - [ ] Fase 5 — frontend backoffice + customizador visual
 - [ ] Fase 6 — hardening para producción (ver `docs/RELEASE-1.0.0-CHECKLIST.md`) → deploy 1.0.0
 
@@ -144,7 +146,8 @@ npm run test             # vitest
 - Theming basado en design tokens + CSS variables en runtime (sin rebuild al cambiar tema).
 - Monolito modular (no microservicios) para el MVP.
 - Dos carpetas independientes (backend / frontend); considerar monorepo (Turborepo/Nx) solo si se necesita compartir tipos intensivamente.
-- Tipos del frontend: generar desde el OpenAPI del backend (openapi-typescript) para contrato único.
+- Tipos del frontend: generar desde el OpenAPI del backend (openapi-typescript) para contrato único. Implementado en Fase 4: `backend/openapi.json` y `frontend/src/shared/types/api.d.ts` se versionan; un test del frontend detecta la deriva.
+- Frontend (Fase 4): los tokens se aplican como `--t-*` en un contenedor raíz (no en `documentElement`); Tailwind 4 los expone con `@theme inline` (`bg-bg`, `bg-brand`, `rounded-theme`, …) y las variables de shadcn/ui derivan de ellos. Idioma, preset, layout y token viven en la URL (`?lang= ?theme= ?layout= ?token=`), sin `localStorage`. La home es el perfil curado `all`. Secciones conocidas con datos que no figuran en `sectionsOrder` se agregan al final.
 
 ---
 

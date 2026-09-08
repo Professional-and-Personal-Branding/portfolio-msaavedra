@@ -1,0 +1,149 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Motor de theming (spec `runtime-theming`, decisión D4).
+ * El ThemeProvider inyecta `--t-*` en el contenedor raíz (`[data-theme]`).
+ * Aquí se derivan (1) las utilidades de Tailwind vía `@theme inline` y
+ * (2) las variables que esperan los componentes de shadcn/ui.
+ * Nunca se escriben colores literales fuera de `presets/`.
+ */
+@theme inline {
+  --color-bg: var(--t-bg);
+  --color-bg-soft: var(--t-bg-soft);
+  --color-card: var(--t-card);
+  --color-border: var(--t-border);
+  --color-text: var(--t-text);
+  --color-text-muted: var(--t-text-muted);
+  --color-text-dim: color-mix(in srgb, var(--t-text-muted) 70%, var(--t-bg));
+  --color-brand: var(--t-accent);
+  --color-brand-2: var(--t-accent2);
+  --color-brand-foreground: var(--t-accent-foreground);
+
+  /* shadcn/ui */
+  --color-background: var(--t-bg);
+  --color-foreground: var(--t-text);
+  --color-card-foreground: var(--t-text);
+  --color-popover: var(--t-card);
+  --color-popover-foreground: var(--t-text);
+  --color-primary: var(--t-accent);
+  --color-primary-foreground: var(--t-accent-foreground);
+  --color-secondary: var(--t-bg-soft);
+  --color-secondary-foreground: var(--t-text);
+  --color-muted: var(--t-bg-soft);
+  --color-muted-foreground: var(--t-text-muted);
+  --color-accent: color-mix(in srgb, var(--t-accent) 14%, var(--t-card));
+  --color-accent-foreground: var(--t-text);
+  --color-destructive: #dc2626;
+  --color-input: var(--t-border);
+  --color-ring: var(--t-accent);
+
+  --radius-theme: var(--t-radius);
+  --radius-theme-sm: calc(var(--t-radius) * 0.6);
+  --radius-lg: var(--t-radius);
+  --radius-md: calc(var(--t-radius) - 2px);
+  --radius-sm: calc(var(--t-radius) - 4px);
+  --radius-xl: calc(var(--t-radius) + 4px);
+
+  --font-sans: var(--t-font-sans);
+  --font-heading: var(--t-font-heading);
+
+  --spacing-section: calc(var(--t-space) * 4.5);
+  --spacing-card: calc(var(--t-space) * 1.75);
+  --container-theme: var(--t-max-width);
+}
+
+/* Defaults = preset modern-dark: la app pinta bien incluso antes de que el provider aplique tokens. */
+:root {
+  --t-bg: #0a0e1a;
+  --t-bg-soft: #111827;
+  --t-card: #161d2e;
+  --t-border: #252d42;
+  --t-text: #e8edf5;
+  --t-text-muted: #94a3b8;
+  --t-accent: #38bdf8;
+  --t-accent2: #818cf8;
+  --t-accent-foreground: #0a0e1a;
+  --t-radius: 16px;
+  --t-max-width: 1080px;
+  --t-space: 1rem;
+  --t-density: 1;
+  --t-scale: 1;
+  --t-font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --t-font-heading: Inter, ui-sans-serif, system-ui, sans-serif;
+  --t-glass: 1;
+  --t-motion: 1;
+
+  /* shadcn (los componentes leen `--radius`) */
+  --radius: var(--t-radius);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-bg font-sans text-text antialiased;
+    font-size: calc(1rem * var(--t-scale));
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading;
+  }
+}
+
+@utility surface {
+  @apply rounded-theme border border-border bg-card;
+}
+
+@utility text-gradient {
+  background-image: linear-gradient(135deg, var(--t-accent), var(--t-accent2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-brand-gradient {
+  background-image: linear-gradient(135deg, var(--t-accent), var(--t-accent2));
+}
+
+@utility glow-brand {
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--t-accent) 15%, transparent);
+}
+
+@utility glass {
+  background: color-mix(in srgb, var(--t-bg) 80%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+@utility bg-glow {
+  background-image:
+    radial-gradient(
+      800px circle at 10% 10%,
+      color-mix(in srgb, var(--t-accent) 7%, transparent),
+      transparent 40%
+    ),
+    radial-gradient(
+      900px circle at 90% 30%,
+      color-mix(in srgb, var(--t-accent2) 7%, transparent),
+      transparent 40%
+    ),
+    radial-gradient(
+      700px circle at 50% 90%,
+      color-mix(in srgb, var(--t-accent) 4%, transparent),
+      transparent 40%
+    );
+}
+
+@utility chip {
+  @apply inline-flex items-center rounded-theme-sm border border-border bg-bg-soft px-2.5 py-1 text-xs text-text-muted transition-colors;
+}

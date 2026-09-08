@@ -27,7 +27,8 @@
     "prisma:studio": "prisma studio",
     "seed": "tsx scripts/seed.ts",
     "seed:verify": "tsx scripts/verify-seed.ts",
-    "admin:bootstrap": "tsx scripts/bootstrap-admin.ts"
+    "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
+    "openapi:export": "ts-node --transpile-only -P tsconfig.json scripts/export-openapi.ts"
   },
   "prisma": {
     "seed": "tsx scripts/seed.ts"

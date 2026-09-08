@@ -1,0 +1,3361 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "description": "Devuelve un JWT Bearer.",
+        "operationId": "AuthController_doLogin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cuerpo inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciales incorrectas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Login del backoffice",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Administrador autenticado",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/profile": {
+      "get": {
+        "description": "Campos traducibles resueltos al locale negociado.",
+        "operationId": "ProfileController_find",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "headers": {
+              "Content-Language": {
+                "description": "Locale servido",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No hay perfil cargado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Perfil profesional base",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/experiences": {
+      "get": {
+        "description": "Ordenadas por `order` ascendente y `startDate` descendente. Campos traducibles resueltos al locale negociado.",
+        "operationId": "ExperienceController_list",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "headers": {
+              "Content-Language": {
+                "description": "Locale servido",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExperienceResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Experiencias laborales visibles",
+        "tags": [
+          "experiences"
+        ]
+      }
+    },
+    "/api/experiences/{id}": {
+      "get": {
+        "operationId": "ExperienceController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Id de la experiencia",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "headers": {
+              "Content-Language": {
+                "description": "Locale servido",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperienceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe o no es visible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Detalle de una experiencia visible",
+        "tags": [
+          "experiences"
+        ]
+      }
+    },
+    "/api/admin/experiences": {
+      "get": {
+        "operationId": "AdminExperienceController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminExperienceResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar experiencias (incluye ocultas, datos bilingües crudos)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminExperienceController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExperienceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminExperienceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear experiencia",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/experiences/{id}": {
+      "get": {
+        "operationId": "AdminExperienceController_find",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminExperienceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ver experiencia",
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminExperienceController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExperienceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminExperienceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar experiencia (parcial)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminExperienceController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Borrar experiencia",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/curated-profiles": {
+      "get": {
+        "description": "Listado para el menú de navegación (solo PUBLIC), agrupable por `roleType`.",
+        "operationId": "CuratedProfileController_list",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "headers": {
+              "Content-Language": {
+                "description": "Locale servido",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CuratedProfileSummaryResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Perfiles curados públicos",
+        "tags": [
+          "curated-profiles"
+        ]
+      }
+    },
+    "/api/curated-profiles/{slug}": {
+      "get": {
+        "description": "Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash).",
+        "operationId": "CuratedProfileController_findBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "tech-lead-dotnet",
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "token",
+            "required": false,
+            "in": "query",
+            "description": "Token de acceso para perfiles PROTECTED (alternativa al header `X-Access-Token`, que tiene prioridad).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Access-Token",
+            "in": "header",
+            "description": "Token de acceso para perfiles PROTECTED (prioridad sobre `?token=`).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "headers": {
+              "Content-Language": {
+                "description": "Locale servido",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuratedProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "PROTECTED sin token válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Slug inexistente o perfil PRIVATE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Perfil curado resuelto",
+        "tags": [
+          "curated-profiles"
+        ]
+      }
+    },
+    "/api/admin/curated-profiles": {
+      "get": {
+        "operationId": "AdminCuratedProfileController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminCuratedProfileResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar perfiles curados (cualquier visibilidad, datos crudos)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminCuratedProfileController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCuratedProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCuratedProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Slug ya existe",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear perfil curado",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/curated-profiles/{id}": {
+      "get": {
+        "operationId": "AdminCuratedProfileController_find",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCuratedProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ver perfil curado",
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminCuratedProfileController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCuratedProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCuratedProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar perfil curado (parcial)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminCuratedProfileController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Borrar perfil curado (y sus visitas)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/skill-categories": {
+      "get": {
+        "operationId": "AdminSkillController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminSkillCategoryResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar categorías con sus skills (datos crudos)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminSkillController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSkillCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSkillCategoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear categoría",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/skill-categories/{id}": {
+      "patch": {
+        "operationId": "AdminSkillController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSkillCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSkillCategoryResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar categoría (parcial)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminSkillController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Borrar categoría y sus skills",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/skill-categories/{categoryId}/skills": {
+      "post": {
+        "operationId": "AdminSkillController_addSkill",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSkillDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSkillResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Categoría inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear skill en una categoría",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/skills/{id}": {
+      "patch": {
+        "operationId": "AdminSkillController_editSkill",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSkillDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSkillResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar skill (nombre, tags, orden, categoría)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminSkillController_removeSkill",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Borrar skill",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/analytics/views": {
+      "get": {
+        "operationId": "AdminAnalyticsController_views",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601; default: hace 30 días",
+            "schema": {
+              "example": "2026-08-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601; default: ahora",
+            "schema": {
+              "example": "2026-09-07",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileViewsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Visitas agregadas por perfil, idioma y día",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/education": {
+      "get": {
+        "operationId": "EducationController_education",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "headers": {
+              "Content-Language": {
+                "description": "Locale servido",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EducationResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Formación académica visible",
+        "tags": [
+          "sections"
+        ]
+      }
+    },
+    "/api/certifications": {
+      "get": {
+        "operationId": "EducationController_certifications",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "headers": {
+              "Content-Language": {
+                "description": "Locale servido",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CertificationResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Certificaciones visibles",
+        "tags": [
+          "sections"
+        ]
+      }
+    },
+    "/api/projects": {
+      "get": {
+        "operationId": "ProjectController_list",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "headers": {
+              "Content-Language": {
+                "description": "Locale servido",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Proyectos destacados visibles",
+        "tags": [
+          "sections"
+        ]
+      }
+    },
+    "/api/social-links": {
+      "get": {
+        "operationId": "SocialLinkController_list",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "headers": {
+              "Content-Language": {
+                "description": "Locale servido",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SocialLinkResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Presencia pública (GitHub, LinkedIn, YouTube…) visible",
+        "tags": [
+          "sections"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Portafolio Administrable — API",
+    "description": "API pública del portafolio profesional de Manuel Saavedra. Todas las respuestas se sirven en el idioma negociado: `?locale=` > `?lang=` > `Accept-Language` > `es`.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "profile",
+      "description": "Perfil profesional base"
+    },
+    {
+      "name": "experiences",
+      "description": "Trayectoria laboral"
+    },
+    {
+      "name": "curated-profiles",
+      "description": "Perfiles curados (núcleo del producto)"
+    },
+    {
+      "name": "sections",
+      "description": "Secciones del portafolio: educación, certificaciones, proyectos, presencia pública"
+    },
+    {
+      "name": "auth",
+      "description": "Autenticación del backoffice"
+    },
+    {
+      "name": "admin",
+      "description": "Backoffice (requiere Bearer JWT)"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "contraseña-segura"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "AdminResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx0admin"
+          },
+          "email": {
+            "type": "string",
+            "example": "admin@example.com"
+          },
+          "name": {
+            "type": "string",
+            "example": "Manuel Saavedra"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name"
+        ]
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "JWT HS256"
+          },
+          "tokenType": {
+            "type": "string",
+            "enum": [
+              "Bearer"
+            ],
+            "example": "Bearer"
+          },
+          "expiresIn": {
+            "type": "number",
+            "description": "Segundos hasta la expiración",
+            "example": 86400
+          },
+          "user": {
+            "$ref": "#/components/schemas/AdminResponse"
+          }
+        },
+        "required": [
+          "accessToken",
+          "tokenType",
+          "expiresIn",
+          "user"
+        ]
+      },
+      "ErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 404
+          },
+          "message": {
+            "type": "string",
+            "example": "Experiencia con id \"abc\" no encontrado"
+          },
+          "error": {
+            "type": "string",
+            "example": "Not Found"
+          }
+        },
+        "required": [
+          "statusCode",
+          "message",
+          "error"
+        ]
+      },
+      "AvailabilityResponse": {
+        "type": "object",
+        "properties": {
+          "modality": {
+            "type": "string",
+            "example": "Remoto / Presencial (Santa Cruz)"
+          },
+          "contractType": {
+            "type": "string",
+            "example": "Relación de dependencia · Freelance / Contractor"
+          },
+          "startDate": {
+            "type": "string",
+            "example": "Inmediata"
+          }
+        },
+        "required": [
+          "modality",
+          "contractType",
+          "startDate"
+        ]
+      },
+      "LanguageResponse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Español"
+          },
+          "level": {
+            "type": "string",
+            "example": "Nativo"
+          },
+          "detail": {
+            "type": "string",
+            "example": "Oral, escrito y lectura avanzados"
+          }
+        },
+        "required": [
+          "name",
+          "level",
+          "detail"
+        ]
+      },
+      "ProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx0abc123"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Manuel Joaquín Saavedra Severiche"
+          },
+          "headline": {
+            "type": "string",
+            "description": "Resuelto al locale del request.",
+            "example": "Senior Software Engineer · Backend & Cloud"
+          },
+          "location": {
+            "type": "string",
+            "example": "Santa Cruz de la Sierra, Bolivia"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "GMT-4"
+          },
+          "email": {
+            "type": "string",
+            "example": "correo@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "example": "+591 70000000"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Resuelto al locale del request."
+          },
+          "yearsOfExperience": {
+            "type": "number",
+            "example": 10
+          },
+          "availability": {
+            "$ref": "#/components/schemas/AvailabilityResponse"
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LanguageResponse"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "fullName",
+          "headline",
+          "location",
+          "timezone",
+          "email",
+          "phone",
+          "summary",
+          "yearsOfExperience",
+          "availability",
+          "languages"
+        ]
+      },
+      "ExperienceResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx0abc123"
+          },
+          "company": {
+            "type": "string",
+            "example": "Novacomp"
+          },
+          "role": {
+            "type": "string",
+            "description": "Resuelto al locale del request.",
+            "example": "Senior Fullstack Developer · Fintech"
+          },
+          "startDate": {
+            "type": "string",
+            "description": "YYYY-MM",
+            "example": "2026-03"
+          },
+          "endDate": {
+            "type": "string",
+            "description": "YYYY-MM; null si es la posición actual",
+            "nullable": true,
+            "example": "2026-08"
+          },
+          "current": {
+            "type": "boolean",
+            "example": false
+          },
+          "location": {
+            "type": "string",
+            "example": "Santa Cruz, Bolivia · Remoto"
+          },
+          "sector": {
+            "example": [
+              "fintech",
+              "payments"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "summary": {
+            "type": "string",
+            "description": "Resuelto al locale del request."
+          },
+          "highlights": {
+            "description": "Logros, resueltos al locale del request.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "technologies": {
+            "example": [
+              "Java",
+              "Spring Boot"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "description": "Tags para el filtrado de perfiles curados.",
+            "example": [
+              "java",
+              "fintech"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "id",
+          "company",
+          "role",
+          "startDate",
+          "endDate",
+          "current",
+          "location",
+          "sector",
+          "summary",
+          "highlights",
+          "technologies",
+          "tags",
+          "order"
+        ]
+      },
+      "LocalizedTextDto": {
+        "type": "object",
+        "properties": {
+          "es": {
+            "type": "string",
+            "example": "Ingeniero de Software Senior"
+          },
+          "en": {
+            "type": "string",
+            "example": "Senior Software Engineer"
+          }
+        },
+        "required": [
+          "es"
+        ]
+      },
+      "LocalizedListDto": {
+        "type": "object",
+        "properties": {
+          "es": {
+            "example": [
+              "Diseño del microservicio de tokenización"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "en": {
+            "example": [
+              "Design of the tokenization microservice"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "es"
+        ]
+      },
+      "AdminExperienceResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "startDate": {
+            "type": "string",
+            "example": "2025-01"
+          },
+          "endDate": {
+            "type": "string",
+            "nullable": true
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "location": {
+            "type": "string"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "highlights": {
+            "$ref": "#/components/schemas/LocalizedListDto"
+          },
+          "technologies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sector": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "number"
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "company",
+          "role",
+          "startDate",
+          "endDate",
+          "current",
+          "location",
+          "summary",
+          "highlights",
+          "technologies",
+          "tags",
+          "sector",
+          "order",
+          "visible",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateExperienceDto": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "type": "string",
+            "example": "ACME Corp"
+          },
+          "role": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "startDate": {
+            "type": "string",
+            "example": "2025-01",
+            "description": "YYYY-MM"
+          },
+          "endDate": {
+            "type": "object",
+            "example": "2025-12",
+            "description": "YYYY-MM; omitir o null si es actual",
+            "nullable": true
+          },
+          "current": {
+            "type": "boolean",
+            "default": false
+          },
+          "location": {
+            "type": "string",
+            "example": "Santa Cruz, Bolivia · Remoto"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "highlights": {
+            "$ref": "#/components/schemas/LocalizedListDto"
+          },
+          "technologies": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "default": [],
+            "description": "Tags para el filtrado de perfiles curados",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sector": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "company",
+          "role",
+          "startDate",
+          "location",
+          "summary"
+        ]
+      },
+      "UpdateExperienceDto": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "type": "string",
+            "example": "ACME Corp"
+          },
+          "role": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "startDate": {
+            "type": "string",
+            "example": "2025-01",
+            "description": "YYYY-MM"
+          },
+          "endDate": {
+            "type": "object",
+            "example": "2025-12",
+            "description": "YYYY-MM; omitir o null si es actual",
+            "nullable": true
+          },
+          "current": {
+            "type": "boolean",
+            "default": false
+          },
+          "location": {
+            "type": "string",
+            "example": "Santa Cruz, Bolivia · Remoto"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "highlights": {
+            "$ref": "#/components/schemas/LocalizedListDto"
+          },
+          "technologies": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "default": [],
+            "description": "Tags para el filtrado de perfiles curados",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sector": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "CuratedProfileSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "tech-lead-dotnet"
+          },
+          "title": {
+            "type": "string",
+            "description": "Resuelto al locale.",
+            "example": "Tech Lead · .NET"
+          },
+          "headline": {
+            "type": "string",
+            "description": "Resuelto al locale."
+          },
+          "description": {
+            "type": "string",
+            "description": "Resuelto al locale."
+          },
+          "roleType": {
+            "type": "string",
+            "description": "Tipo de rol para agrupar el menú. Resuelto al locale.",
+            "example": "Tech Lead"
+          },
+          "techFocus": {
+            "type": "string",
+            "nullable": true,
+            "example": ".NET"
+          },
+          "accentColor": {
+            "type": "string",
+            "example": "#5B2C87"
+          },
+          "layout": {
+            "type": "string",
+            "example": "classic"
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "headline",
+          "description",
+          "roleType",
+          "techFocus",
+          "accentColor",
+          "layout"
+        ]
+      },
+      "ResolvedThemeResponse": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "modern-dark"
+          },
+          "name": {
+            "type": "string",
+            "example": "Modern Dark"
+          },
+          "isPreset": {
+            "type": "boolean",
+            "example": true
+          },
+          "tokens": {
+            "type": "object",
+            "description": "Design tokens ya combinados (tema base + overrides del perfil).",
+            "additionalProperties": true,
+            "example": {
+              "mode": "dark",
+              "colors": {
+                "bg": "#0a0e1a",
+                "accent": "#38bdf8"
+              }
+            }
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "isPreset",
+          "tokens"
+        ]
+      },
+      "SkillCategoryResponse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Resuelto al locale.",
+            "example": "Lenguajes"
+          },
+          "skills": {
+            "example": [
+              "Java (8-21)",
+              "TypeScript"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "skills"
+        ]
+      },
+      "ProjectResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "Portafolio Web Administrable"
+          },
+          "role": {
+            "type": "string",
+            "description": "Resuelto al locale."
+          },
+          "period": {
+            "type": "string",
+            "example": "2026"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Resuelto al locale."
+          },
+          "technologies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "description": "Tags para el filtrado de perfiles curados",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "order": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "role",
+          "period",
+          "summary",
+          "technologies",
+          "tags",
+          "url",
+          "order"
+        ]
+      },
+      "EducationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "degree": {
+            "type": "string",
+            "description": "Resuelto al locale.",
+            "example": "Doctorado en Ciencias de la Computación"
+          },
+          "institution": {
+            "type": "string",
+            "example": "UAGRM School of Engineering"
+          },
+          "startDate": {
+            "type": "string",
+            "example": "2024-02"
+          },
+          "endDate": {
+            "type": "string",
+            "nullable": true
+          },
+          "inProgress": {
+            "type": "boolean"
+          },
+          "order": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "degree",
+          "institution",
+          "startDate",
+          "endDate",
+          "inProgress",
+          "order"
+        ]
+      },
+      "CertificationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Resuelto al locale.",
+            "example": "Scrum Foundation Professional Certificate"
+          },
+          "issuer": {
+            "type": "string",
+            "example": "CertifPro"
+          },
+          "year": {
+            "type": "string",
+            "nullable": true,
+            "example": "2021"
+          },
+          "order": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "issuer",
+          "year",
+          "order"
+        ]
+      },
+      "SocialLinkResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string",
+            "example": "github"
+          },
+          "handle": {
+            "type": "string",
+            "example": "manuXD270516"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://github.com/manuXD270516"
+          },
+          "label": {
+            "type": "string",
+            "description": "Resuelto al locale."
+          },
+          "description": {
+            "type": "string",
+            "description": "Resuelto al locale; vacío si no hay."
+          },
+          "stats": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "example": {
+              "repos": 67,
+              "achievements": [
+                "Pull Shark"
+              ]
+            }
+          },
+          "featured": {
+            "type": "boolean"
+          },
+          "order": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "platform",
+          "handle",
+          "url",
+          "label",
+          "description",
+          "stats",
+          "featured",
+          "order"
+        ]
+      },
+      "CuratedProfileResponse": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "tech-lead-dotnet"
+          },
+          "title": {
+            "type": "string",
+            "description": "Resuelto al locale.",
+            "example": "Tech Lead · .NET"
+          },
+          "headline": {
+            "type": "string",
+            "description": "Resuelto al locale."
+          },
+          "description": {
+            "type": "string",
+            "description": "Resuelto al locale."
+          },
+          "roleType": {
+            "type": "string",
+            "description": "Tipo de rol para agrupar el menú. Resuelto al locale.",
+            "example": "Tech Lead"
+          },
+          "techFocus": {
+            "type": "string",
+            "nullable": true,
+            "example": ".NET"
+          },
+          "accentColor": {
+            "type": "string",
+            "example": "#5B2C87"
+          },
+          "layout": {
+            "type": "string",
+            "example": "classic"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE",
+              "PROTECTED"
+            ],
+            "example": "PUBLIC"
+          },
+          "sections": {
+            "example": [
+              "hero",
+              "stats",
+              "experience",
+              "skills",
+              "contact"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "hiddenSections": {
+            "example": [
+              "education"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "theme": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ResolvedThemeResponse"
+              }
+            ]
+          },
+          "profile": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProfileResponse"
+              }
+            ]
+          },
+          "experiences": {
+            "description": "Filtradas por tags/overrides, orden cronológico.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExperienceResponse"
+            }
+          },
+          "skillCategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillCategoryResponse"
+            }
+          },
+          "projects": {
+            "description": "Seleccionados por tags/overrides.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectResponse"
+            }
+          },
+          "education": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EducationResponse"
+            }
+          },
+          "certifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CertificationResponse"
+            }
+          },
+          "socialLinks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SocialLinkResponse"
+            }
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "headline",
+          "description",
+          "roleType",
+          "techFocus",
+          "accentColor",
+          "layout",
+          "visibility",
+          "sections",
+          "hiddenSections",
+          "theme",
+          "profile",
+          "experiences",
+          "skillCategories",
+          "projects",
+          "education",
+          "certifications",
+          "socialLinks"
+        ]
+      },
+      "AdminCuratedProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "example": "tech-lead-dotnet"
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "headline": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "roleType": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "techFocus": {
+            "type": "string",
+            "nullable": true
+          },
+          "filterTags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "includeIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "excludeIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "accentColor": {
+            "type": "string",
+            "example": "#5B2C87"
+          },
+          "themeId": {
+            "type": "string",
+            "nullable": true
+          },
+          "themeOverrides": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "layout": {
+            "type": "string",
+            "example": "classic"
+          },
+          "sectionsOrder": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sectionsHidden": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE",
+              "PROTECTED"
+            ]
+          },
+          "accessToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "views": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "headline",
+          "description",
+          "roleType",
+          "techFocus",
+          "filterTags",
+          "includeIds",
+          "excludeIds",
+          "accentColor",
+          "themeId",
+          "themeOverrides",
+          "layout",
+          "sectionsOrder",
+          "sectionsHidden",
+          "visibility",
+          "accessToken",
+          "views",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateCuratedProfileDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "qa-lead",
+            "description": "kebab-case, único"
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "headline": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "roleType": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "techFocus": {
+            "type": "object",
+            "nullable": true,
+            "example": ".NET"
+          },
+          "filterTags": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "includeIds": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "excludeIds": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "accentColor": {
+            "type": "string",
+            "default": "#1A365D",
+            "example": "#5B2C87"
+          },
+          "themeId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Id de Theme existente"
+          },
+          "themeOverrides": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "layout": {
+            "type": "string",
+            "default": "classic"
+          },
+          "sectionsOrder": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sectionsHidden": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE",
+              "PROTECTED"
+            ],
+            "default": "PUBLIC"
+          },
+          "accessToken": {
+            "type": "object",
+            "nullable": true,
+            "description": "Obligatorio si visibility = PROTECTED"
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "headline"
+        ]
+      },
+      "UpdateCuratedProfileDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "qa-lead",
+            "description": "kebab-case, único"
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "headline": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "roleType": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "techFocus": {
+            "type": "object",
+            "nullable": true,
+            "example": ".NET"
+          },
+          "filterTags": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "includeIds": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "excludeIds": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "accentColor": {
+            "type": "string",
+            "default": "#1A365D",
+            "example": "#5B2C87"
+          },
+          "themeId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Id de Theme existente"
+          },
+          "themeOverrides": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "layout": {
+            "type": "string",
+            "default": "classic"
+          },
+          "sectionsOrder": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sectionsHidden": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE",
+              "PROTECTED"
+            ],
+            "default": "PUBLIC"
+          },
+          "accessToken": {
+            "type": "object",
+            "nullable": true,
+            "description": "Obligatorio si visibility = PROTECTED"
+          }
+        }
+      },
+      "AdminSkillResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "Kafka Streams"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "number"
+          },
+          "categoryId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "tags",
+          "order",
+          "categoryId"
+        ]
+      },
+      "AdminSkillCategoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "order": {
+            "type": "number"
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminSkillResponse"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "order",
+          "skills"
+        ]
+      },
+      "CreateSkillCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateSkillCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          }
+        }
+      },
+      "CreateSkillDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Kafka Streams"
+          },
+          "tags": {
+            "default": [],
+            "description": "Tags para el filtrado",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateSkillDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Kafka Streams"
+          },
+          "tags": {
+            "default": [],
+            "description": "Tags para el filtrado",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "categoryId": {
+            "type": "string",
+            "description": "Mover a otra categoría"
+          }
+        }
+      },
+      "CountBySlug": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "views": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "slug",
+          "views"
+        ]
+      },
+      "CountByLocale": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "views": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "locale",
+          "views"
+        ]
+      },
+      "CountByDay": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "example": "2026-09-07"
+          },
+          "views": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "day",
+          "views"
+        ]
+      },
+      "ProfileViewsResponse": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "total": {
+            "type": "number"
+          },
+          "byProfile": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountBySlug"
+            }
+          },
+          "byLocale": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountByLocale"
+            }
+          },
+          "byDay": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountByDay"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "total",
+          "byProfile",
+          "byLocale",
+          "byDay"
+        ]
+      }
+    }
+  }
+}

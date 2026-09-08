@@ -1,11 +1,16 @@
 import { INestApplication } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 
 export const SWAGGER_PATH = 'api/docs';
 export const SWAGGER_JSON_PATH = 'api/docs-json';
 
-/** Publica la UI en /api/docs y el documento OpenAPI en /api/docs-json (spec `api-platform`). */
-export function setupSwagger(app: INestApplication): void {
+/**
+ * Construye el documento OpenAPI a partir de la app (sin publicarlo). Lo usan
+ * `setupSwagger` y `scripts/export-openapi.ts`, así el JSON versionado en
+ * `backend/openapi.json` es idéntico al servido en `/api/docs-json`
+ * (spec `api-contract-types`).
+ */
+export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
   const config = new DocumentBuilder()
     .setTitle('Portafolio Administrable — API')
     .setDescription(
@@ -25,7 +30,12 @@ export function setupSwagger(app: INestApplication): void {
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  return SwaggerModule.createDocument(app, config);
+}
+
+/** Publica la UI en /api/docs y el documento OpenAPI en /api/docs-json (spec `api-platform`). */
+export function setupSwagger(app: INestApplication): void {
+  const document = buildOpenApiDocument(app);
   SwaggerModule.setup(SWAGGER_PATH, app, document, {
     jsonDocumentUrl: SWAGGER_JSON_PATH,
     customSiteTitle: 'Portafolio API — Docs',

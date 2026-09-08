@@ -1,5 +1,23 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Septiembre 2026 (Fase 4 — change OpenSpec `add-public-frontend-theming`)
+
+Frontend público + motor de theming bajo SDD (propuesta aprobada por Human Gate, commit `62a49d6`).
+
+### Backend (`backend/`)
+- Script `npm run openapi:export` (`scripts/export-openapi.ts`): escribe `backend/openapi.json` con el mismo documento de `/api/docs-json`, sin abrir puerto ni conectar a la base; `swagger.ts` expone `buildOpenApiDocument`. `openapi.json` se versiona.
+
+### Frontend (`frontend/`, nuevo)
+- SPA React 19 + Vite 8 + TypeScript 5.9 estricto + Tailwind 4 + shadcn/ui + Motion + TanStack Query + react-router 8 + Zustand + Zod. Tipos generados con `openapi-typescript` (`npm run api:types` → `src/shared/types/api.d.ts`, versionado, test de deriva por hash) y cliente `openapi-fetch`.
+- Motor de theming: `ThemeTokens` (zod) compatible con `Theme.tokens` del seed, 5 presets, `tokensToCssVars` → `--t-*` aplicadas por `ThemeProvider` en el contenedor raíz; Tailwind `@theme inline` y variables de shadcn derivadas. Selector de presets (`?theme=`), modo, densidad, radio, tipografía y animaciones (respeta `prefers-reduced-motion`).
+- Layouts `classic` y `sidebar` (`?layout=`), orden de secciones de la API + conocidas faltantes al final, ocultas/vacías omitidas, `stats` derivadas.
+- Home = perfil curado `all`; `/:slug`; menú agrupado por `roleType` (dropdown/panel lateral); estados de carga, error con reintento, 404 propia y formulario de token para PROTECTED (`X-Access-Token`, `?token=`).
+- Bilingüe: `?lang=` > `navigator.language`; diccionario `es`/`en` con fallback; toda petición envía `?locale=`.
+- Tests Vitest (12 archivos, 56 tests) con Testing Library + MSW; verificación visual con capturas en `openspec/changes/archive/…/verification/`.
+
+### Datos
+- Sin cambios en `cv-data.json` ni en el schema. Nota: el perfil `all` no tiene `roleType`; el menú lo muestra como grupo "Perfil completo".
+
 ## Update — Septiembre 2026 (change OpenSpec `add-portfolio-sections-api`, previo a Fase 4)
 
 Cierra el hueco de datos para el frontend público (propuesta aprobada por Human Gate, commit `145d4df`).

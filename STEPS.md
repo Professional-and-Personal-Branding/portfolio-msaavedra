@@ -87,9 +87,21 @@ npm run start:dev
 
 ---
 
-## Paso 6 — FASE 4: Frontend público + motor de theming
+## Paso 6 — ✅ FASE 4: Frontend público + motor de theming (change `add-public-frontend-theming`)
 
 > "Inicializa el frontend en frontend/ con React + Vite + TypeScript + Tailwind + shadcn/ui + TanStack Query. Implementa el ThemeProvider que inyecta design tokens como CSS variables en runtime, los 5 presets de tema, la vista pública (home) y la vista de perfil curado por slug. Consume la API del backend."
+
+Hecho. Para levantarlo:
+
+```bash
+cd backend && npm run openapi:export   # solo si cambió el contrato de la API
+cd ../frontend
+cp .env.example .env.local && npm install
+npm run api:types                      # solo si cambió backend/openapi.json
+npm run dev                            # http://localhost:5173 (proxy /api → backend en 3300)
+```
+
+Prueba: `/` (perfil `all`), `/tech-lead-dotnet`, `?theme=elegant`, `?layout=sidebar`, `?lang=en`, `?token=` en un perfil PROTECTED. Ver `frontend/README.md`.
 
 ---
 
@@ -137,6 +149,8 @@ portfolio/
     ├── scripts/
     │   └── seed.ts                # carga cv-data.json
     └── .env.example               # variables de entorno (copiar a .env)
+├── frontend/                      # SPA React + Vite (Fase 4): ver frontend/README.md
+└── openspec/                      # specs, changes y archivo (SDD)
 ```
 
-El directorio `frontend/` y el resto de `backend/src/` los generará Claude Code en las fases correspondientes.
+`backend/src/` y `frontend/src/` se construyeron en las Fases 1–4; el backoffice web llega en la Fase 5.

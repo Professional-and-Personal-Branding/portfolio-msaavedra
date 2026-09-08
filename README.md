@@ -33,7 +33,8 @@ portfolio/
 
 1. **Revisa la dirección estética:** abre `docs/demo.html` en el navegador. Cambia entre perfiles en la barra superior para ver el concepto de vistas curadas en acción.
 2. **Lee la arquitectura:** `docs/ARCHITECTURE.md` contiene el roadmap completo por fases.
-3. **Continúa con Claude Code:** abre este directorio y sigue el roadmap fase por fase.
+3. **Levanta el producto:** `docker compose up -d` → `backend/` (`npm install && npm run prisma:migrate && npm run seed && npm run start:dev`) → `frontend/` (`npm install && npm run dev`) y abre http://localhost:5173. Detalles en `backend/README.md` y `frontend/README.md`.
+4. **Continúa con Claude Code:** abre este directorio y sigue el roadmap fase por fase.
 
 ## Roadmap resumido
 
@@ -41,7 +42,7 @@ portfolio/
 - [x] **Fase 1** — Backend NestJS base (módulos profile, experience) + Prisma + seed
 - [x] **Fase 2** — Núcleo curated-profile (resolución por tags + overrides)
 - [x] **Fase 3** — Auth JWT + Backoffice API (CRUD)
-- [ ] **Fase 4** — Frontend público (home + vista curada + temas)
+- [x] **Fase 4** — Frontend público (home + vista curada + temas + layouts, bilingüe) — change `add-public-frontend-theming`
 - [ ] **Fase 5** — Frontend backoffice (constructor de perfiles)
 - [ ] **Fase 6** — Pulido (SEO, export PDF, deploy)
 

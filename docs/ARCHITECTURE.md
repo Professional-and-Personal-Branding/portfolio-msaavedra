@@ -98,35 +98,43 @@ El módulo `curated-profile` es el corazón. Un `CuratedProfile`:
 
 ## 4. Arquitectura del Frontend
 
+Implementado en la Fase 4 (change OpenSpec `add-public-frontend-theming`); `backoffice/` llega en la Fase 5.
+
 ```
 frontend/src/
-├── app/                      # Configuración de la app, providers, router
-├── features/                 # Features por dominio (screaming architecture)
-│   ├── portfolio-public/     # Vista pública del portafolio
-│   ├── curated-view/         # Renderizado de un perfil curado por slug
-│   └── backoffice/           # Panel de administración
-│       ├── experiences/
-│       ├── skills/
-│       ├── curated-profiles/
-│       └── dashboard/
-├── shared/                   # Componentes, hooks, utils transversales
-│   ├── components/ui/        # shadcn/ui components
-│   ├── components/portfolio/ # Componentes específicos del portafolio
-│   ├── hooks/
-│   ├── lib/                  # api client, query client, utils
-│   └── types/                # Tipos compartidos (idealmente generados del backend)
-├── themes/                   # ⭐ Motor de plantillas / temas conmutables
-│   ├── minimal/
-│   ├── modern/
-│   └── elegant/
-└── main.tsx
+├── main.tsx · app/{App, providers, router, query-client}
+├── features/
+│   ├── portfolio-public/     HomePage → perfil curado `all`
+│   ├── curated-view/         CuratedProfilePage · CuratedProfileView (orquesta URL → API → layout) · hooks/use-curated-profile · components/{AccessTokenForm, NotFound, ErrorState, LoadingSkeleton}
+│   ├── navigation/           TopBar · ProfileMenu (agrupado por roleType) · ThemeSwitcher · LayoutSwitcher · LocaleSwitcher
+│   └── backoffice/           (Fase 5)
+├── shared/
+│   ├── components/ui/        shadcn/ui (generados por el CLI, sin modificar)
+│   ├── components/portfolio/ Hero · Stats · ExperienceTimeline · SkillsGrid · Projects · Education · Certifications · Presence · Contact
+│   ├── lib/                  api-client (openapi-fetch) · url-state (lang/theme/layout/token) · profile-link · stats · format · utils
+│   ├── i18n/                 locale · messages (es/en, fallback es) · use-locale
+│   ├── stores/               ui.store (Zustand: solo estado efímero)
+│   └── types/                api.d.ts (generado de backend/openapi.json) · portfolio.ts (aliases)
+└── themes/                   ⭐ Motor de theming y layouts
+    ├── tokens.ts             ThemeTokens (zod) · DEFAULT_TOKENS (modern-dark) · mergeTokens · parseThemeTokens
+    ├── presets/              modern-dark · modern-light · minimal · elegant · corporate
+    ├── css-vars.ts           tokens → `--t-*`
+    ├── theme.css             Tailwind `@theme inline` + variables shadcn derivadas + utilidades
+    ├── theme-provider.tsx    aplica `--t-*` al contenedor raíz · use-theme · motion-section
+    └── layouts/              ClassicLayout · SidebarLayout · sections.ts (orden/ocultas/vacías) · section-registry
 ```
 
-### Motor de plantillas (temas)
-Cada `CuratedProfile` puede elegir un **tema visual**. Los temas son componentes React que reciben los mismos datos y los renderizan con estéticas distintas. Esto da el "design profesional para UX regia" solicitado:
-- **minimal** — limpio, tipográfico, foco en contenido
-- **modern** — gradientes sutiles, glassmorphism, animaciones Framer Motion
-- **elegant** — serif + sans, espaciado generoso, tono corporativo
+### Contrato de tipos
+`backend: npm run openapi:export` → `backend/openapi.json` (sin servidor ni DB) → `frontend: npm run api:types` → `src/shared/types/api.d.ts`. Ambos versionados; `api-types.spec.ts` detecta la deriva por hash. El cliente `openapi-fetch` hace que una ruta o campo inexistente no compile.
+
+### Motor de theming
+Un `Theme` son design tokens (ver §8.1). `ThemeProvider` recibe `theme.tokens` del perfil curado y el preset elegido por el visitante (`?theme=`), completa los tokens parciales con `modern-dark` y los aplica como CSS variables `--t-*` en un contenedor raíz (no en `documentElement`, para que en Fase 5 convivan varios previews). Tailwind 4 los expone con `@theme inline` y las variables de shadcn/ui derivan de ellos, así los componentes de librería siguen el tema sin tocar su código. `mode` alterna paleta, `layout.density` escala el espaciado, `effects.animations`/`prefers-reduced-motion` gobiernan las animaciones (Motion).
+
+### Motor de layouts
+Los layouts son componentes que reciben los mismos datos: `classic` (una columna, hero arriba) y `sidebar` (identidad + contacto fijos a la izquierda). El layout activo es el del perfil curado; `?layout=` lo sobrescribe; desconocido → `classic`. Las secciones se renderizan en el orden de `sections` de la API; las conocidas con datos no listadas se agregan al final; ocultas y vacías no se renderizan. `stats` se deriva de los datos.
+
+### Estado en la URL
+`?lang=`, `?theme=`, `?layout=` y `?token=` (perfiles PROTECTED) viven en la URL: enlaces compartibles y nada en `localStorage`.
 
 ---
 
@@ -251,12 +259,13 @@ model ProfileView { /* analítica: slug, timestamp, referrer */ }
 2. CRUD completo de experiencias, skills, perfiles curados.
 3. Analítica de visitas.
 
-### Fase 4 — Frontend público + Motor de Theming
-1. Setup React + Vite + Tailwind (configurado para leer CSS variables) + shadcn/ui + React Query.
-2. `ThemeProvider` que inyecta design tokens como CSS variables en runtime.
-3. Implementar los 5 presets de tema (modern-dark, modern-light, minimal, elegant, corporate).
-4. Vista pública general (home) y vista de perfil curado por slug, ambas theme-aware.
-5. Motor de layouts: al menos ClassicLayout + un segundo layout estructural.
+### ✅ Fase 4 — Frontend público + Motor de Theming (change OpenSpec `add-public-frontend-theming`, sept. 2026)
+1. ✅ React 19 + Vite 8 + TypeScript 5.9 + Tailwind 4 (`@theme inline` sobre `--t-*`) + shadcn/ui + TanStack Query + react-router 8 + Motion.
+2. ✅ `ThemeProvider` que inyecta design tokens como CSS variables en runtime (contenedor raíz).
+3. ✅ Los 5 presets (modern-dark, modern-light, minimal, elegant, corporate) con selector en la barra (`?theme=`).
+4. ✅ Home (perfil curado `all`) y vista por slug, bilingües (`?lang=`), con estados de carga/error/404/token.
+5. ✅ Layouts `classic` + `sidebar` (`?layout=`), orden/ocultamiento de secciones y stats derivadas.
+6. ✅ Tipos generados del OpenAPI (`openapi:export` + `api:types`, versionados).
 
 ### Fase 5 — Frontend backoffice + Customizador visual
 1. Login.
@@ -291,7 +300,7 @@ El portafolio debe ser **customizable a nivel visual sin tocar código**, admini
 **Modelo de theming basado en design tokens:**
 - Un `Theme` es un conjunto de **design tokens** (colores, tipografía, radios, espaciado, modo claro/oscuro) almacenado como JSON en la base de datos.
 - El frontend consume los tokens y los aplica vía **CSS Custom Properties** en runtime (`:root { --color-accent: ... }`), de modo que cambiar un tema no requiere rebuild.
-- Tailwind se configura para leer de esas CSS variables (`colors: { accent: 'var(--color-accent)' }`), permitiendo que las utilidades respondan al tema activo.
+- Tailwind se configura para leer de esas CSS variables, permitiendo que las utilidades respondan al tema activo. Implementación (Fase 4): Tailwind 4 con `@theme inline { --color-brand: var(--t-accent); … }` en `frontend/src/themes/theme.css`; el acento se llama `brand` en Tailwind para no colisionar con el `accent` de shadcn/ui, cuyas variables (`--primary`, `--card`, `--muted`, …) también derivan de `--t-*`.
 
 **Tokens mínimos del Theme (JSON):**
 ```json
