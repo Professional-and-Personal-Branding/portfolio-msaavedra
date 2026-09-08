@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
@@ -22,11 +23,15 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Locale } from '../../../../shared/domain/i18n';
 import { adminValidationPipe } from '../../../../shared/infrastructure/http/admin-validation.pipe';
 import { toHttpException } from '../../../../shared/infrastructure/http/domain-error.mapper';
 import { ErrorResponseDto } from '../../../../shared/infrastructure/http/error-response.dto';
+import { LocaleQueryDto } from '../../../../shared/infrastructure/http/locale-query.dto';
+import { RequestLocale } from '../../../../shared/infrastructure/http/request-locale.decorator';
 import { JwtAuthGuard } from '../../../auth/infrastructure/security/jwt-auth.guard';
 import { AdminCuratedProfileOutput } from '../../application/dto/curated-profile.admin-output';
+import { CuratedProfileOutput } from '../../application/dto/curated-profile.output';
 import {
   CreateCuratedProfileUseCase,
   DeleteCuratedProfileUseCase,
@@ -34,10 +39,14 @@ import {
   ListAllCuratedProfilesUseCase,
   UpdateCuratedProfileUseCase,
 } from '../../application/use-cases/admin/curated-profile-admin.use-cases';
+import { PreviewCuratedProfileUseCase } from '../../application/use-cases/admin/preview-curated-profile.use-case';
 import { AdminCuratedProfileResponse } from './docs/admin-curated-profile.response';
+import { CuratedProfileResponse } from './docs/curated-profile.response';
 import {
   CreateCuratedProfileDto,
+  PreviewCuratedProfileDto,
   toCuratedProfileChanges,
+  toDraftCuratedProfileProps,
   toNewCuratedProfileProps,
   UpdateCuratedProfileDto,
 } from './dto/curated-profile.dto';
@@ -55,7 +64,28 @@ export class AdminCuratedProfileController {
     private readonly createOne: CreateCuratedProfileUseCase,
     private readonly updateOne: UpdateCuratedProfileUseCase,
     private readonly deleteOne: DeleteCuratedProfileUseCase,
+    private readonly preview: PreviewCuratedProfileUseCase,
   ) {}
+
+  @Post('preview')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Previsualizar un borrador (no persiste)',
+    description:
+      'Resuelve un perfil curado sin guardarlo, con el mismo pipeline que la ruta pública: ' +
+      'misma selección por tags, mismo tema mergeado, mismas secciones y el mismo cuerpo de respuesta. ' +
+      'No registra visitas y no evalúa la visibilidad.',
+  })
+  @ApiOkResponse({ type: CuratedProfileResponse })
+  @ApiBadRequestResponse({ type: ErrorResponseDto })
+  async previewDraft(
+    @Body() dto: PreviewCuratedProfileDto,
+    @Query() _query: LocaleQueryDto,
+    @RequestLocale() locale: Locale,
+  ): Promise<CuratedProfileOutput> {
+    const result = await this.preview.execute({ draft: toDraftCuratedProfileProps(dto), locale });
+    return result.value;
+  }
 
   @Get()
   @ApiOperation({ summary: 'Listar perfiles curados (cualquier visibilidad, datos crudos)' })

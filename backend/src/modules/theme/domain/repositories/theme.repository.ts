@@ -8,4 +8,6 @@ export const DEFAULT_THEME_SLUG = 'modern-dark';
 export interface ThemeRepository {
   findById(id: string): Promise<Theme | null>;
   findBySlug(slug: string): Promise<Theme | null>;
+  /** Catálogo para el backoffice: presets primero, luego por nombre. */
+  findAll(): Promise<Theme[]>;
 }

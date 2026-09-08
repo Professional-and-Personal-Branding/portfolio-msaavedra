@@ -4,14 +4,14 @@
 
 ## 1. Backend — sesión por cookie (D1)
 
-- [ ] 1.1 `cookie-parser` en `main.ts`, `credentials: true` en `buildCorsOptions`, cookie `portfolio_session` en el login, `POST /api/auth/logout`, extracción del JWT desde cookie o header en `JwtStrategy`. Verificar: e2e `auth.e2e-spec` amplía a login emite `Set-Cookie` con `HttpOnly`/`SameSite=Lax`, la cookie autentica `/api/auth/me` y `/api/admin/*`, cookie inválida → 401, `Bearer` sigue funcionando, logout borra y deja 401.
+- [x] 1.1 `cookie-parser` en `main.ts`, `credentials: true` en `buildCorsOptions`, cookie `portfolio_session` en el login, `POST /api/auth/logout`, extracción del JWT desde cookie o header en `JwtStrategy`. Verificar: e2e `auth.e2e-spec` amplía a login emite `Set-Cookie` con `HttpOnly`/`SameSite=Lax`, la cookie autentica `/api/auth/me` y `/api/admin/*`, cookie inválida → 401, `Bearer` sigue funcionando, logout borra y deja 401.
 
 ## 2. Backend — preview y catálogo de temas (D2)
 
-- [ ] 2.1 Extraer `CuratedProfileComposer` (pasos 3-5 y 7) de `ResolveCuratedProfileUseCase` sin cambiar comportamiento. Verificar: `npm test` y `npm run test:e2e` en verde sin tocar los tests existentes.
-- [ ] 2.2 `PreviewCuratedProfileUseCase` + `POST /api/admin/curated-profiles/preview` con su DTO y documentación Swagger. Verificar: unitarios (selección, overrides, `PRIVATE`/`PROTECTED` sin token) y e2e (200 con sesión, 401 sin ella, `CuratedProfile` y `ProfileView` sin cambios, cuerpo igual al de la ruta pública con los mismos criterios).
-- [ ] 2.3 `findAll()` en `ThemeRepository` + adaptador Prisma + `ListThemesUseCase` + `GET /api/admin/themes`. Verificar: e2e devuelve los 5 presets con `id` y `tokens`; 401 sin sesión.
-- [ ] 2.4 `npm run openapi:export` y, en el frontend, `npm run api:types`. Verificar: `api-types.spec` en verde; el contrato incluye las tres rutas nuevas.
+- [x] 2.1 Extraer `CuratedProfileComposer` (pasos 3-5 y 7) de `ResolveCuratedProfileUseCase` sin cambiar comportamiento. Verificar: `npm test` y `npm run test:e2e` en verde sin tocar los tests existentes.
+- [x] 2.2 `PreviewCuratedProfileUseCase` + `POST /api/admin/curated-profiles/preview` con su DTO y documentación Swagger. Verificar: unitarios (selección, overrides, `PRIVATE`/`PROTECTED` sin token) y e2e (200 con sesión, 401 sin ella, `CuratedProfile` y `ProfileView` sin cambios, cuerpo igual al de la ruta pública con los mismos criterios).
+- [x] 2.3 `findAll()` en `ThemeRepository` + adaptador Prisma + `ListThemesUseCase` + `GET /api/admin/themes`. Verificar: e2e devuelve los 5 presets con `id` y `tokens`; 401 sin sesión.
+- [x] 2.4 `npm run openapi:export` y, en el frontend, `npm run api:types`. Verificar: `api-types.spec` en verde; el contrato incluye las tres rutas nuevas.
 
 ## 3. Frontend — esqueleto del panel (D3, D4)
 

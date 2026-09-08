@@ -5,6 +5,8 @@ import type { CorsOptions } from '@nestjs/common/interfaces/external/cors-option
  * Se usa una función en lugar de un string para que un origen NO permitido no
  * reciba `Access-Control-Allow-Origin` (con string, el middleware siempre lo emite).
  * Métodos de escritura y `Authorization` habilitados para el backoffice (Fase 3).
+ * `credentials` habilitado para la cookie de sesión del panel (Fase 5): por eso
+ * el origen debe ser siempre exacto y nunca `*`.
  */
 export function buildCorsOptions(allowedOrigin: string): CorsOptions {
   return {
@@ -13,6 +15,7 @@ export function buildCorsOptions(allowedOrigin: string): CorsOptions {
       if (!requestOrigin) return callback(null, false);
       callback(null, requestOrigin === allowedOrigin);
     },
+    credentials: true,
     methods: ['GET', 'HEAD', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
       'Content-Type',

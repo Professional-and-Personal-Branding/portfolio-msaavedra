@@ -4,10 +4,12 @@
  */
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { GLOBAL_PREFIX } from '../src/app.constants';
 import { AppModule } from '../src/app.module';
 import { Argon2PasswordHasher } from '../src/modules/auth/infrastructure/security/argon2-password-hasher';
+import { SESSION_COOKIE_NAME } from '../src/modules/auth/infrastructure/security/session-cookie';
 import { buildCorsOptions } from '../src/shared/infrastructure/http/cors.options';
 import { PrismaService } from '../src/shared/infrastructure/persistence/prisma.service';
 import { setupSwagger } from '../src/swagger';
@@ -23,6 +25,7 @@ export async function createTestApp(): Promise<{ app: INestApplication; prisma: 
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
   const app = moduleRef.createNestApplication();
   app.setGlobalPrefix(GLOBAL_PREFIX);
+  app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.enableCors(buildCorsOptions(FRONTEND_URL));
   setupSwagger(app);
@@ -59,6 +62,24 @@ export async function login(
   const res = await request(app.getHttpServer()).post('/api/auth/login').send({ email, password });
   if (res.status !== 200) throw new Error(`login falló: ${res.status} ${JSON.stringify(res.body)}`);
   return res.body.accessToken as string;
+}
+
+/** Cookie de sesión emitida por el login, lista para `.set('Cookie', ...)`. */
+export async function loginCookie(
+  app: INestApplication,
+  email = E2E_ADMIN.email,
+  password = E2E_ADMIN.password,
+): Promise<string> {
+  const res = await request(app.getHttpServer()).post('/api/auth/login').send({ email, password });
+  if (res.status !== 200) throw new Error(`login falló: ${res.status} ${JSON.stringify(res.body)}`);
+  const cookie = sessionCookieOf(res.get('Set-Cookie'));
+  if (!cookie) throw new Error('el login no emitió la cookie de sesión');
+  return cookie.split(';')[0];
+}
+
+/** Devuelve el `Set-Cookie` completo de la cookie de sesión, o undefined. */
+export function sessionCookieOf(setCookie: string[] | undefined): string | undefined {
+  return setCookie?.find((c) => c.startsWith(`${SESSION_COOKIE_NAME}=`));
 }
 
 /** Borra restos de corridas anteriores abortadas (nunca datos del seed). */

@@ -3,6 +3,7 @@ import { Certification } from '../../../education/domain/entities/certification.
 import { Education } from '../../../education/domain/entities/education.entity';
 import { Project } from '../../../project/domain/entities/project.entity';
 import { SocialLink } from '../../../social-link/domain/entities/social-link.entity';
+import { CuratedProfileComposer } from '../services/curated-profile.composer';
 import { PortfolioSectionsLoader } from '../services/portfolio-sections.loader';
 import { Experience } from '../../../experience/domain/entities/experience.entity';
 import { ExperienceRepository } from '../../../experience/domain/repositories/experience.repository';
@@ -14,11 +15,16 @@ import { Skill } from '../../../skill/domain/entities/skill.entity';
 import { SkillCategoryRepository } from '../../../skill/domain/repositories/skill-category.repository';
 import { Theme } from '../../../theme/domain/entities/theme.entity';
 import { ThemeRepository } from '../../../theme/domain/repositories/theme.repository';
-import { CuratedProfile, CuratedProfileProps } from '../../domain/entities/curated-profile.entity';
+import {
+  CuratedProfile,
+  CuratedProfileProps,
+  NewCuratedProfileProps,
+} from '../../domain/entities/curated-profile.entity';
 import { CuratedProfileAccessDeniedError } from '../../domain/errors/curated-profile-access-denied.error';
 import { CuratedProfileNotFoundError } from '../../domain/errors/curated-profile-not-found.error';
 import { CuratedProfileRepository } from '../../domain/repositories/curated-profile.repository';
 import { AccessToken } from '../../domain/value-objects/access-token.vo';
+import { PreviewCuratedProfileUseCase } from './admin/preview-curated-profile.use-case';
 import { ListCuratedProfilesUseCase } from './list-curated-profiles.use-case';
 import { ResolveCuratedProfileUseCase } from './resolve-curated-profile.use-case';
 
@@ -237,6 +243,7 @@ function build(deps: Deps = {}) {
       .mockImplementation((slug: string) =>
         Promise.resolve(themes.find((t) => t.slug === slug) ?? null),
       ),
+    findAll: jest.fn().mockResolvedValue(themes),
   };
   const record = deps.record ?? jest.fn().mockResolvedValue(undefined);
   const viewsRepo: ProfileViewRepository = { record, aggregate: jest.fn() };
@@ -248,16 +255,15 @@ function build(deps: Deps = {}) {
       socialLinks: SOCIAL_LINKS,
     }),
   } as unknown as PortfolioSectionsLoader;
-  const useCase = new ResolveCuratedProfileUseCase(
-    curatedRepo,
+  const composer = new CuratedProfileComposer(
     profileRepo,
     experienceRepo,
     skillRepo,
     themeRepo,
-    viewsRepo,
     loader,
   );
-  return { useCase, record, loader };
+  const useCase = new ResolveCuratedProfileUseCase(curatedRepo, viewsRepo, composer);
+  return { useCase, record, loader, composer, curatedRepo };
 }
 
 async function resolveOk(useCase: ResolveCuratedProfileUseCase, input = {}) {
@@ -528,6 +534,85 @@ describe('secciones del portafolio', () => {
     });
     expect(out.projects[0].role).toBe('Lead');
     expect(JSON.stringify(out)).not.toMatch(/"es":/);
+  });
+});
+
+// ── PreviewCuratedProfileUseCase (spec `admin-curated-profile-preview`) ──────
+describe('PreviewCuratedProfileUseCase', () => {
+  /** Borrador equivalente al perfil de las fixtures, sin id ni vistas. */
+  function draft(overrides: Partial<NewCuratedProfileProps> = {}): NewCuratedProfileProps {
+    const { id: _id, views: _views, ...props } = curated().toProps();
+    return { ...props, ...overrides };
+  }
+
+  it('resuelve el borrador con la misma selección que la ruta pública', async () => {
+    const { composer, useCase, curatedRepo } = build();
+    const preview = await new PreviewCuratedProfileUseCase(composer).execute({
+      draft: draft(),
+      locale: 'es',
+    });
+    const publico = await resolveOk(useCase);
+
+    expect(preview.value.experiences.map((e) => e.id)).toEqual(['novacomp', 'vidoomy']);
+    expect(preview.value).toEqual(publico);
+    // el preview no necesitó buscar el perfil por slug
+    expect(curatedRepo.findBySlug).toHaveBeenCalledTimes(1); // solo la ruta pública
+  });
+
+  it('aplica includeIds y excludeIds del borrador', async () => {
+    const { composer } = build();
+    const result = await new PreviewCuratedProfileUseCase(composer).execute({
+      draft: draft({ filterTags: ['java'], excludeIds: ['vidoomy'], includeIds: ['ypfb'] }),
+      locale: 'es',
+    });
+    const ids = result.value.experiences.map((e) => e.id);
+    expect(ids).not.toContain('vidoomy');
+    expect(ids).toContain('ypfb');
+  });
+
+  it('no registra visitas ni escribe en el repositorio de perfiles', async () => {
+    const { composer, record, curatedRepo } = build();
+    await new PreviewCuratedProfileUseCase(composer).execute({ draft: draft(), locale: 'es' });
+
+    expect(record).not.toHaveBeenCalled();
+    expect(curatedRepo.create).not.toHaveBeenCalled();
+    expect(curatedRepo.update).not.toHaveBeenCalled();
+  });
+
+  it('resuelve borradores PRIVATE y PROTECTED sin exigir token', async () => {
+    const { composer } = build();
+    const preview = new PreviewCuratedProfileUseCase(composer);
+
+    const privado = await preview.execute({
+      draft: draft({ visibility: 'PRIVATE' }),
+      locale: 'es',
+    });
+    const protegido = await preview.execute({
+      draft: draft({ visibility: 'PROTECTED', accessToken: AccessToken.create('secreto') }),
+      locale: 'es',
+    });
+
+    expect(privado.value.experiences).toHaveLength(2);
+    expect(protegido.value.experiences).toHaveLength(2);
+  });
+
+  it('aplica el tema del borrador con sus overrides', async () => {
+    const { composer } = build();
+    const result = await new PreviewCuratedProfileUseCase(composer).execute({
+      draft: draft({ themeId: 't-el', themeOverrides: { colors: { accent: '#ff0000' } } }),
+      locale: 'es',
+    });
+    expect(result.value.theme?.slug).toBe('elegant');
+    expect((result.value.theme?.tokens.colors as Record<string, string>).accent).toBe('#ff0000');
+  });
+
+  it('resuelve al locale pedido', async () => {
+    const { composer } = build();
+    const result = await new PreviewCuratedProfileUseCase(composer).execute({
+      draft: draft(),
+      locale: 'en',
+    });
+    expect(result.value.title).toBe('Senior Java');
   });
 });
 

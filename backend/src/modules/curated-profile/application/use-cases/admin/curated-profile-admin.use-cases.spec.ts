@@ -75,6 +75,7 @@ function build(existing: CuratedProfile[] = []) {
       .fn()
       .mockImplementation((id: string) => Promise.resolve(id === 't1' ? THEME : null)),
     findBySlug: jest.fn(),
+    findAll: jest.fn().mockResolvedValue([THEME]),
   };
   return { repo, themes, store };
 }

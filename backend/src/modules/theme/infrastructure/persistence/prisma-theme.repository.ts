@@ -17,4 +17,11 @@ export class PrismaThemeRepository implements ThemeRepository {
     const record = await this.prisma.theme.findUnique({ where: { slug } });
     return record ? toThemeEntity(record) : null;
   }
+
+  async findAll(): Promise<Theme[]> {
+    const records = await this.prisma.theme.findMany({
+      orderBy: [{ isPreset: 'desc' }, { name: 'asc' }],
+    });
+    return records.map(toThemeEntity);
+  }
 }

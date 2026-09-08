@@ -5,6 +5,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { APP_CONFIG, AppConfig } from '../../../../config/configuration';
 import { AdminOutput } from '../../application/dto/auth.output';
 import { GetCurrentAdminUseCase } from '../../application/use-cases/get-current-admin.use-case';
+import { extractJwtFromSessionCookie } from './session-cookie';
 
 export interface JwtPayload {
   sub: string;
@@ -15,8 +16,10 @@ export interface JwtPayload {
 }
 
 /**
- * Estrategia Bearer: valida firma y expiración (passport-jwt) y luego confirma
- * que el administrador siga existiendo. Lo devuelto queda en `req.user`.
+ * Valida firma y expiración (passport-jwt) y luego confirma que el
+ * administrador siga existiendo. Lo devuelto queda en `req.user`.
+ * El token se toma del header `Authorization: Bearer` y, si no viene, de la
+ * cookie de sesión del backoffice (spec `admin-authentication`).
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -25,7 +28,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     private readonly getCurrentAdmin: GetCurrentAdminUseCase,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        extractJwtFromSessionCookie,
+      ]),
       ignoreExpiration: false,
       secretOrKey: config.getOrThrow<AppConfig>(APP_CONFIG).jwt.secret,
       algorithms: ['HS256'],

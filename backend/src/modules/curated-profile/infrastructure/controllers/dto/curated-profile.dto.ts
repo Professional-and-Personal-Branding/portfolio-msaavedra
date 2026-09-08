@@ -118,11 +118,40 @@ export class CreateCuratedProfileDto {
 
 export class UpdateCuratedProfileDto extends PartialType(CreateCuratedProfileDto) {}
 
+/**
+ * Borrador para el preview del backoffice: todo opcional, porque un perfil en
+ * construcción todavía no tiene slug ni textos (spec `admin-curated-profile-preview`).
+ */
+export class PreviewCuratedProfileDto extends PartialType(CreateCuratedProfileDto) {}
+
 export function toNewCuratedProfileProps(dto: CreateCuratedProfileDto): NewCuratedProfileProps {
   return {
     slug: dto.slug,
     title: toLocalizedText(dto.title),
     headline: toLocalizedText(dto.headline),
+    description: dto.description ? toLocalizedText(dto.description) : null,
+    roleType: dto.roleType ? toLocalizedText(dto.roleType) : null,
+    techFocus: dto.techFocus ?? null,
+    filterTags: dto.filterTags ?? [],
+    includeIds: dto.includeIds ?? [],
+    excludeIds: dto.excludeIds ?? [],
+    accentColor: dto.accentColor ?? '#1A365D',
+    themeId: dto.themeId ?? null,
+    themeOverrides: dto.themeOverrides ?? null,
+    layout: dto.layout ?? 'classic',
+    sectionsOrder: dto.sectionsOrder ?? [],
+    sectionsHidden: dto.sectionsHidden ?? [],
+    visibility: dto.visibility ?? 'PUBLIC',
+    accessToken: AccessToken.create(dto.accessToken),
+  };
+}
+
+/** Valores por defecto para los campos que un borrador puede no traer todavía. */
+export function toDraftCuratedProfileProps(dto: PreviewCuratedProfileDto): NewCuratedProfileProps {
+  return {
+    slug: dto.slug ?? 'preview',
+    title: dto.title ? toLocalizedText(dto.title) : '',
+    headline: dto.headline ? toLocalizedText(dto.headline) : '',
     description: dto.description ? toLocalizedText(dto.description) : null,
     roleType: dto.roleType ? toLocalizedText(dto.roleType) : null,
     techFocus: dto.techFocus ?? null,

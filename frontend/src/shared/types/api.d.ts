@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: ef594e9c159608bc0ea3ce938bee543411532462ea55945c754e126ba9c3cc8a
+// openapi-sha256: 8943d88338bc33c267f1a08d7ba5657c0ac1b7cacff6d35cadc93aafca665a0c
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -54,6 +54,26 @@ export interface paths {
         head?: never;
         /** Editar perfil curado (parcial) */
         patch: operations["AdminCuratedProfileController_update"];
+        trace?: never;
+    };
+    "/api/admin/curated-profiles/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Previsualizar un borrador (no persiste)
+         * @description Resuelve un perfil curado sin guardarlo, con el mismo pipeline que la ruta pública: misma selección por tags, mismo tema mergeado, mismas secciones y el mismo cuerpo de respuesta. No registra visitas y no evalúa la visibilidad.
+         */
+        post: operations["AdminCuratedProfileController_previewDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/admin/experiences": {
@@ -164,6 +184,26 @@ export interface paths {
         patch: operations["AdminSkillController_editSkill"];
         trace?: never;
     };
+    "/api/admin/themes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar temas disponibles
+         * @description Catálogo para el customizador: los `id` son los que acepta `themeId` en el CRUD de perfiles curados y en el preview.
+         */
+        get: operations["AdminThemeController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -175,9 +215,29 @@ export interface paths {
         put?: never;
         /**
          * Login del backoffice
-         * @description Devuelve un JWT Bearer.
+         * @description Devuelve un JWT Bearer y lo emite además como cookie de sesión `portfolio_session` (httpOnly), que usa el panel de administración.
          */
         post: operations["AuthController_doLogin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cierre de sesión del backoffice
+         * @description Borra la cookie de sesión. No requiere una sesión válida.
+         */
+        post: operations["AuthController_doLogout"];
         delete?: never;
         options?: never;
         head?: never;
@@ -191,7 +251,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Administrador autenticado */
+        /**
+         * Administrador autenticado
+         * @description Acepta el JWT por header `Authorization: Bearer` o por la cookie de sesión.
+         */
         get: operations["AuthController_me"];
         put?: never;
         post?: never;
@@ -770,6 +833,48 @@ export interface components {
             tokenType: "Bearer";
             user: components["schemas"]["AdminResponse"];
         };
+        PreviewCuratedProfileDto: {
+            /**
+             * @default #1A365D
+             * @example #5B2C87
+             */
+            accentColor: string;
+            /** @description Obligatorio si visibility = PROTECTED */
+            accessToken?: Record<string, never> | null;
+            description?: components["schemas"]["LocalizedTextDto"] | null;
+            /** @default [] */
+            excludeIds: string[];
+            /** @default [] */
+            filterTags: string[];
+            headline?: components["schemas"]["LocalizedTextDto"];
+            /** @default [] */
+            includeIds: string[];
+            /** @default classic */
+            layout: string;
+            roleType?: components["schemas"]["LocalizedTextDto"] | null;
+            /** @default [] */
+            sectionsHidden: string[];
+            /** @default [] */
+            sectionsOrder: string[];
+            /**
+             * @description kebab-case, único
+             * @example qa-lead
+             */
+            slug?: string;
+            /** @example .NET */
+            techFocus?: Record<string, never> | null;
+            /** @description Id de Theme existente */
+            themeId?: Record<string, never> | null;
+            themeOverrides?: {
+                [key: string]: unknown;
+            } | null;
+            title?: components["schemas"]["LocalizedTextDto"];
+            /**
+             * @default PUBLIC
+             * @enum {string}
+             */
+            visibility: "PUBLIC" | "PRIVATE" | "PROTECTED";
+        };
         ProfileResponse: {
             availability: components["schemas"]["AvailabilityResponse"];
             /** @example correo@example.com */
@@ -879,6 +984,29 @@ export interface components {
             } | null;
             /** @example https://github.com/manuXD270516 */
             url: string;
+        };
+        ThemeResponse: {
+            /** @example clx0theme1 */
+            id: string;
+            /** @example true */
+            isPreset: boolean;
+            /** @example Modern Dark */
+            name: string;
+            /** @example modern-dark */
+            slug: string;
+            /**
+             * @description Design tokens del tema base, sin overrides.
+             * @example {
+             *       "mode": "dark",
+             *       "colors": {
+             *         "bg": "#0a0e1a",
+             *         "accent": "#38bdf8"
+             *       }
+             *     }
+             */
+            tokens: {
+                [key: string]: unknown;
+            };
         };
         UpdateCuratedProfileDto: {
             /**
@@ -1223,6 +1351,51 @@ export interface operations {
                 };
             };
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminCuratedProfileController_previewDraft: {
+        parameters: {
+            query?: {
+                /** @description Alias de `locale`. */
+                lang?: "es" | "en";
+                /** @description Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`). */
+                locale?: "es" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewCuratedProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuratedProfileResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1691,6 +1864,34 @@ export interface operations {
             };
         };
     };
+    AdminThemeController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThemeResponse"][];
+                };
+            };
+            /** @description Sin sesión válida */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
     AuthController_doLogin: {
         parameters: {
             query?: never;
@@ -1729,6 +1930,24 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ErrorResponseDto"];
                 };
+            };
+        };
+    };
+    AuthController_doLogout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cookie borrada */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

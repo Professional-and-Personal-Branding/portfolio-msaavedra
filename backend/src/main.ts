@@ -1,6 +1,7 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { APP_CONFIG, AppConfig } from './config/configuration';
 import { GLOBAL_PREFIX } from './app.constants';
@@ -15,6 +16,8 @@ async function bootstrap(): Promise<void> {
   const config = app.get(ConfigService).getOrThrow<AppConfig>(APP_CONFIG);
 
   app.setGlobalPrefix(GLOBAL_PREFIX);
+  // Cookie de sesión del backoffice (spec `admin-authentication`).
+  app.use(cookieParser());
   // Global: solo transform. El whitelist/forbidNonWhitelisted vive en los controllers con cuerpo
   // (adminValidationPipe): un pipe global con whitelist correría antes y borraría los campos
   // desconocidos sin dar 400.

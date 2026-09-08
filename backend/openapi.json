@@ -3,7 +3,7 @@
   "paths": {
     "/api/auth/login": {
       "post": {
-        "description": "Devuelve un JWT Bearer.",
+        "description": "Devuelve un JWT Bearer y lo emite además como cookie de sesión `portfolio_session` (httpOnly), que usa el panel de administración.",
         "operationId": "AuthController_doLogin",
         "parameters": [],
         "requestBody": {
@@ -54,8 +54,25 @@
         ]
       }
     },
+    "/api/auth/logout": {
+      "post": {
+        "description": "Borra la cookie de sesión. No requiere una sesión válida.",
+        "operationId": "AuthController_doLogout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Cookie borrada"
+          }
+        },
+        "summary": "Cierre de sesión del backoffice",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/auth/me": {
       "get": {
+        "description": "Acepta el JWT por header `Authorization: Bearer` o por la cookie de sesión.",
         "operationId": "AuthController_me",
         "parameters": [],
         "responses": {
@@ -739,6 +756,92 @@
         ]
       }
     },
+    "/api/admin/curated-profiles/preview": {
+      "post": {
+        "description": "Resuelve un perfil curado sin guardarlo, con el mismo pipeline que la ruta pública: misma selección por tags, mismo tema mergeado, mismas secciones y el mismo cuerpo de respuesta. No registra visitas y no evalúa la visibilidad.",
+        "operationId": "AdminCuratedProfileController_previewDraft",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewCuratedProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuratedProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Previsualizar un borrador (no persiste)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/admin/curated-profiles": {
       "get": {
         "operationId": "AdminCuratedProfileController_list",
@@ -1413,6 +1516,47 @@
           }
         ],
         "summary": "Borrar skill",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/themes": {
+      "get": {
+        "description": "Catálogo para el customizador: los `id` son los que acepta `themeId` en el CRUD de perfiles curados y en el preview.",
+        "operationId": "AdminThemeController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ThemeResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión válida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar temas disponibles",
         "tags": [
           "admin"
         ]
@@ -2780,6 +2924,113 @@
           "socialLinks"
         ]
       },
+      "PreviewCuratedProfileDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "qa-lead",
+            "description": "kebab-case, único"
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "headline": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "roleType": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "techFocus": {
+            "type": "object",
+            "nullable": true,
+            "example": ".NET"
+          },
+          "filterTags": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "includeIds": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "excludeIds": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "accentColor": {
+            "type": "string",
+            "default": "#1A365D",
+            "example": "#5B2C87"
+          },
+          "themeId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Id de Theme existente"
+          },
+          "themeOverrides": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "layout": {
+            "type": "string",
+            "default": "classic"
+          },
+          "sectionsOrder": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sectionsHidden": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE",
+              "PROTECTED"
+            ],
+            "default": "PUBLIC"
+          },
+          "accessToken": {
+            "type": "object",
+            "nullable": true,
+            "description": "Obligatorio si visibility = PROTECTED"
+          }
+        }
+      },
       "AdminCuratedProfileResponse": {
         "type": "object",
         "properties": {
@@ -3269,6 +3520,46 @@
             "description": "Mover a otra categoría"
           }
         }
+      },
+      "ThemeResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx0theme1"
+          },
+          "slug": {
+            "type": "string",
+            "example": "modern-dark"
+          },
+          "name": {
+            "type": "string",
+            "example": "Modern Dark"
+          },
+          "isPreset": {
+            "type": "boolean",
+            "example": true
+          },
+          "tokens": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Design tokens del tema base, sin overrides.",
+            "example": {
+              "mode": "dark",
+              "colors": {
+                "bg": "#0a0e1a",
+                "accent": "#38bdf8"
+              }
+            }
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "isPreset",
+          "tokens"
+        ]
       },
       "CountBySlug": {
         "type": "object",
