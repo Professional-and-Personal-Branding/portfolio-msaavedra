@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { getRequestId, REQUEST_ID_HEADER, RequestIdMiddleware } from './request-id';
+import { getRequestId, REQUEST_ID_HEADER, requestIdMiddleware } from './request-id';
 
 function run(headers: Record<string, string | string[]> = {}) {
   const req = { headers } as unknown as Request;
@@ -7,11 +7,11 @@ function run(headers: Record<string, string | string[]> = {}) {
   const res = { setHeader } as unknown as Response;
   const next = jest.fn() as unknown as NextFunction;
 
-  new RequestIdMiddleware().use(req, res, next);
+  requestIdMiddleware(req, res, next);
   return { req, setHeader, next };
 }
 
-describe('RequestIdMiddleware', () => {
+describe('requestIdMiddleware', () => {
   it('genera un id cuando el cliente no lo envía y lo devuelve en la cabecera', () => {
     const { req, setHeader, next } = run();
     const id = getRequestId(req);

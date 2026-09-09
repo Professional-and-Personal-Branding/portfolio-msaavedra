@@ -2,6 +2,11 @@ import { useEffect } from 'react';
 import { TopBar } from '@/features/navigation/TopBar';
 import { Footer } from '@/shared/components/portfolio/Footer';
 import { useLocale } from '@/shared/i18n/use-locale';
+import {
+  applyDocumentMeta,
+  metaFromProfile,
+  restoreDocumentMeta,
+} from '@/shared/lib/document-meta';
 import { useUrlState } from '@/shared/lib/url-state';
 import { resolveLayoutName } from '@/themes/layouts';
 import { ProfileLayout } from '@/themes/layouts/ProfileLayout';
@@ -20,16 +25,18 @@ interface CuratedProfileViewProps {
 /** Orquesta URL → locale/tema/layout/token → API → layout con secciones (decisión D7). */
 export function CuratedProfileView({ slug }: CuratedProfileViewProps) {
   const [url, setUrl] = useUrlState();
-  const { locale, t } = useLocale();
+  const { locale } = useLocale();
   const state = useCuratedProfile(slug, { locale, token: url.token });
   const data = state.status === 'success' ? state.data : null;
 
   const layoutName = resolveLayoutName(url.layout ?? data?.layout);
 
+  // Metadatos para buscadores y para las vistas previas de los links (spec `public-seo`).
   useEffect(() => {
-    const parts = [data?.title, data?.profile?.fullName ?? t('app.title')].filter(Boolean);
-    document.title = parts.join(' · ');
-  }, [data?.title, data?.profile?.fullName, t]);
+    if (!data) return;
+    applyDocumentMeta(metaFromProfile(data, locale, globalThis.location?.origin ?? ''));
+    return () => restoreDocumentMeta();
+  }, [data, locale]);
 
   let content;
   switch (state.status) {

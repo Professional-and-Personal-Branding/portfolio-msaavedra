@@ -7,7 +7,7 @@ import {
   Sparkles,
   Wrench,
 } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import { Button } from '@/shared/components/ui/button';
 import {
@@ -19,6 +19,7 @@ import {
   SheetTrigger,
 } from '@/shared/components/ui/sheet';
 import { Toaster } from '@/shared/components/ui/sonner';
+import { applyDocumentMeta, restoreDocumentMeta } from '@/shared/lib/document-meta';
 import { cn } from '@/shared/lib/utils';
 import { ThemeProvider } from '@/themes/theme-provider';
 import { useLogout, useSession } from '../auth/use-session';
@@ -36,6 +37,18 @@ const NAV = [
  * customizador (decisión D4).
  */
 export function AdminShell({ children }: { children: ReactNode }) {
+  // El backoffice nunca se indexa (spec `public-seo`).
+  useEffect(() => {
+    applyDocumentMeta({
+      title: 'Backoffice · Portafolio',
+      description: 'Panel de administración del portafolio.',
+      canonical: `${globalThis.location?.origin ?? ''}/admin`,
+      locale: 'es',
+      noindex: true,
+    });
+    return () => restoreDocumentMeta();
+  }, []);
+
   return (
     <ThemeProvider presetSlug="modern-dark">
       <div className="flex min-h-screen flex-col">{children}</div>

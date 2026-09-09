@@ -62,3 +62,37 @@ describe('Secretos (bloqueante del release)', () => {
     expect(example).toContain('cambiar');
   });
 });
+
+describe('Orden del identificador de petición (api-observability)', () => {
+  const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf-8');
+
+  /**
+   * Regresión: `pino-http` genera su propio id si `req.id` no existe todavía.
+   * Si el middleware corriera después del logger, el log llevaría un id y la
+   * respuesta otro, y no se podrían cruzar al diagnosticar un incidente.
+   */
+  it('el middleware se registra antes que cualquier otro', () => {
+    const requestId = main.indexOf('app.use(requestIdMiddleware)');
+    const helmet = main.indexOf('app.use(buildHelmet');
+    const cookies = main.indexOf('app.use(cookieParser())');
+
+    expect(requestId).toBeGreaterThan(-1);
+    expect(requestId).toBeLessThan(helmet);
+    expect(requestId).toBeLessThan(cookies);
+  });
+
+  it('no se registra como middleware de módulo, que correría después del logger', () => {
+    const appModule = fs.readFileSync(path.join(SRC, 'app.module.ts'), 'utf-8');
+    expect(appModule).not.toContain('RequestIdMiddleware');
+    expect(appModule).not.toContain('requestIdMiddleware');
+  });
+
+  it('el logger reutiliza el id de la petición en lugar de inventar otro', () => {
+    const options = fs.readFileSync(
+      path.join(SRC, 'shared/infrastructure/http/logger.options.ts'),
+      'utf-8',
+    );
+    expect(options).toContain('genReqId');
+    expect(options).toMatch(/existing\s*===?\s*'string'|typeof existing === 'string'/);
+  });
+});

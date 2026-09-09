@@ -1,5 +1,29 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Septiembre 2026 (Fase 6 — change OpenSpec `add-production-hardening`)
+
+Hardening para el release 1.0.0 (propuesta aprobada por Human Gate, commit `33029cc`). Cierra los 6 bloqueantes del checklist y 5 de los 6 importantes; el sexto (backups) no es código.
+
+### Backend (`backend/`)
+- `AllExceptionsFilter` global: todo error sale como `{ statusCode, message, error, requestId, timestamp }`, sin stack traces, SQL ni códigos de Prisma; el detalle va al log.
+- `GET /health` (200 / 503 según la base, con timeout de 2 s) y `GET /health/live`, fuera del prefijo `/api`, sin autenticación y exentos del rate limiting.
+- Arranque seguro: con `NODE_ENV=production` la API no levanta con el `JWT_SECRET` de ejemplo, con menos de 32 caracteres, con `ANALYTICS_SALT` repetida o con `FRONTEND_URL` sin https. Swagger solo se publica con `ENABLE_API_DOCS=true`.
+- Rate limiting: global por IP (`@nestjs/throttler`) y un guard propio para el login con 429 y `Retry-After`.
+- Helmet ajustado a una API JSON, HSTS y redirección 301 a https por `X-Forwarded-Proto` en producción, `SESSION_COOKIE_SAMESITE` configurable (`none` fuerza `Secure`).
+- Logs estructurados con pino: JSON en producción, `LOG_LEVEL`, `requestId` por petición (cabecera, cuerpo de error y log) y redacción de credenciales; el `?token=` de los perfiles protegidos se censura.
+- `GET /robots.txt` y `GET /sitemap.xml` con los perfiles `PUBLIC` sobre `FRONTEND_URL`.
+- Scripts: `prisma:deploy`. Variables nuevas documentadas en `.env.example`.
+
+### Frontend (`frontend/`)
+- Metadatos por perfil y por idioma: título, descripción, canonical, OpenGraph, Twitter Card y JSON-LD `Person`; `noindex` en perfiles no públicos y en `/admin`. `index.html` trae metadatos base para rastreadores sin JavaScript.
+
+### Documentación
+- **`docs/DEPLOY.md` (nuevo)**: runbook de producción con variables por entorno, generación de secretos, orden de arranque, healthcheck del proveedor, verificación posterior, rollback y backups con su prueba de restauración.
+- `docs/RELEASE-1.0.0-CHECKLIST.md` reescrito con el estado real de los 18 ítems.
+
+### Datos
+- Sin cambios en `cv-data.json` ni en el schema.
+
 ## Update — Septiembre 2026 (Fase 5 — change OpenSpec `add-admin-backoffice`)
 
 Backoffice visual bajo SDD (propuesta aprobada por Human Gate, commit `379bf46`).

@@ -114,6 +114,14 @@ Ocho colores con selector y campo hexadecimal, tipografía, modo claro/oscuro, d
 
 El panel usa siempre el preset `modern-dark` para su propia interfaz: cambiar el tema del perfil no altera los colores del panel, porque cada `ThemeProvider` aplica sus variables a su contenedor.
 
+## SEO (spec `public-seo`)
+
+Al resolver un perfil, la vista pública escribe en el documento el título, la descripción, el `canonical`, las etiquetas OpenGraph y Twitter Card y un bloque JSON-LD `Person` (`shared/lib/document-meta.ts`). Cambian con el perfil y con el idioma, y se restauran al salir. Los perfiles `PRIVATE`/`PROTECTED` y todo `/admin` van con `noindex`.
+
+`robots.txt` y `sitemap.xml` los sirve el **backend**, que es quien conoce los perfiles públicos.
+
+> **Limitación conocida:** los metadatos se escriben en el cliente. Google los ve porque ejecuta JavaScript; LinkedIn, WhatsApp y Slack no, así que sus vistas previas muestran los datos genéricos de `index.html`, no los del perfil concreto. Resolverlo pide renderizado en servidor o prerender por bot; está propuesto para 1.1.
+
 ## Tests
 
 `npm run test`: motor de theming (tokens, presets, css-vars, ThemeProvider), orden de secciones, stats, estado de URL, diccionario, menú de perfiles, layouts y la página completa con MSW (carga, `?lang=`, 401 → token → 200, 404, error → reintentar). Los datos de prueba viven en `src/test/fixtures/` (ficticios).

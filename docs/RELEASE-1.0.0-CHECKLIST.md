@@ -1,59 +1,56 @@
 # Checklist de Release 1.0.0 — Hardening para Producción
 
-> Este documento recoge lo que separa un "funciona en mi máquina" de un **release 1.0.0 sano** desplegable a producción. Está pensado para trabajarse con Claude Code durante la fase de implementación, **después** de que el código de aplicación (backend NestJS + frontend React) esté funcionando, y **antes** del deploy real.
+> Este documento recoge lo que separa un "funciona en mi máquina" de un **release 1.0.0 sano** desplegable a producción.
 >
-> Marcá cada ítem a medida que lo cierres. El deploy a producción es el último paso, una vez que los bloqueantes e importantes estén en verde.
+> **Estado: cerrado en código por la Fase 6** (change OpenSpec `add-production-hardening`, sept. 2026). Cada ítem indica dónde quedó resuelto, qué falta hacer en la infraestructura o por qué se difirió. El runbook de despliegue está en `docs/DEPLOY.md`; la evidencia, en `openspec/changes/archive/…-add-production-hardening/verification.md`.
+
+**Leyenda:** ✅ hecho en código · ⏳ pendiente de infraestructura (lo hace Manuel al desplegar) · ⏸️ diferido con justificación
 
 ---
 
 ## 🔴 Bloqueantes — sin esto NO se despliega a producción
 
-Riesgo concreto, no teórico. Cada uno de estos, omitido, abre una vulnerabilidad real o puede tumbar la app.
-
-- [ ] **Secretos fuertes.** Generar un `JWT_SECRET` aleatorio y largo (p. ej. `openssl rand -base64 48`); nunca usar el valor de `.env.example`. Cambiar `ADMIN_PASSWORD` en el primer arranque. Confirmar que `.env` está en `.gitignore` (ya lo está) y que ningún secreto quedó commiteado en el historial de git.
-- [ ] **Migraciones Prisma en producción.** Usar `prisma migrate deploy` (aplica migraciones versionadas), nunca `prisma db push` (que puede provocar pérdida de datos). Generar la primera migración con `prisma migrate dev --name init` en desarrollo y versionarla.
-- [ ] **CORS estricto.** Configurar CORS para permitir únicamente el dominio real del frontend (vía `FRONTEND_URL`), no `*`. Limitar métodos y headers a los necesarios.
-- [ ] **Validación de inputs.** DTOs con `class-validator` + `ValidationPipe` global (whitelist + forbidNonWhitelisted) en cada endpoint que reciba datos. Nada llega a la capa de dominio sin validar.
-- [ ] **Manejo global de errores.** Filtro de excepciones global de NestJS que devuelva errores limpios y consistentes al cliente. Nunca exponer stack traces, rutas internas ni detalles de la DB en las respuestas.
-- [ ] **Healthcheck.** Endpoint `/health` (y opcionalmente `/health/ready` y `/health/live`) que el orquestador (Railway/Render) consulte para liveness/readiness. Idealmente verifica conectividad con la DB.
+- [x] ✅ **Secretos fuertes.** El historial de git no contiene secretos y `.env` está ignorado (verificado y blindado con `backend/test/security.spec.ts`). Además, **la API no arranca en producción** si `JWT_SECRET` es el de `.env.example`, tiene menos de 32 caracteres o coincide con `ANALYTICS_SALT`, o si `FRONTEND_URL` no usa https (`src/config/env.validation.ts`). Cómo generarlos: `docs/DEPLOY.md` § 1.
+- [x] ✅ **Migraciones Prisma en producción.** `npm run prisma:deploy` (`prisma migrate deploy`) con la migración `init` versionada. `db push` queda prohibido y así se documenta en `docs/DEPLOY.md` § 3.
+- [x] ✅ **CORS estricto.** Solo el origen exacto de `FRONTEND_URL`, con métodos y cabeceras acotados y `credentials` para la cookie del panel (`src/shared/infrastructure/http/cors.options.ts`). Un origen ajeno no recibe `Access-Control-Allow-Origin`.
+- [x] ✅ **Validación de inputs.** DTOs con `class-validator` y `adminValidationPipe` (whitelist + forbidNonWhitelisted) en todos los endpoints que reciben cuerpo. Un test estático falla si se agrega uno sin el pipe.
+- [x] ✅ **Manejo global de errores.** `AllExceptionsFilter` unifica el cuerpo (`statusCode`, `message`, `error`, `requestId`, `timestamp`) y nunca expone stack traces, SQL, códigos de Prisma ni rutas del servidor; el detalle va al log.
+- [x] ✅ **Healthcheck.** `GET /health` (200 / **503** según la base) y `GET /health/live`, fuera del prefijo `/api`, sin autenticación y exentos del rate limiting. Configurarlo en el proveedor: `docs/DEPLOY.md` § 3.
 
 ---
 
 ## 🟡 Importantes — deberían entrar en 1.0.0
 
-No bloquean el arranque, pero un release que se precie de "1.0.0" los incluye.
-
-- [ ] **Rate limiting.** `@nestjs/throttler` a nivel global, con un límite más estricto en el login del backoffice para frenar fuerza bruta.
-- [ ] **Security headers.** Integrar Helmet. Forzar HTTPS en producción. Cookies de sesión/refresh con `httpOnly`, `secure` y `sameSite`.
-- [ ] **Logging estructurado.** Logger con niveles (info/warn/error), request id por petición, y reglas para no loguear datos sensibles (passwords, tokens, PII). Útil para diagnosticar incidentes en producción.
-- [ ] **Tests mínimos.** No se busca 95% de cobertura para 1.0.0, sino cubrir lo que más duele si se rompe:
-  - Caso de uso `ResolveCuratedProfile` (que un perfil resuelve bien sus experiencias por tags).
-  - Fallback de i18n (si falta una traducción, devuelve el idioma por defecto sin romper).
-  - Al menos un test e2e del endpoint público de perfil.
-- [ ] **SEO + OpenGraph.** Meta tags por perfil curado (title, description) y tags OpenGraph/Twitter Card para que los links compartidos a empresas se vean bien. Sitemap básico.
-- [ ] **Backup de DB.** Activar los respaldos automáticos del Postgres gestionado (Railway/Render/Neon/Supabase suelen ofrecerlos). Verificar que se puede restaurar.
+- [x] ✅ **Rate limiting.** Límite global por IP configurable (120/min por defecto) y un guard propio para `POST /api/auth/login` (5/min), con 429 y `Retry-After`. El healthcheck nunca se limita.
+  - Nota: el contador es en memoria, o sea por instancia. Con varias instancias hay que moverlo a un almacén compartido (`docs/DEPLOY.md` § 8).
+- [x] ✅ **Security headers.** Helmet ajustado a una API JSON (`nosniff`, `frame-ancestors none`, `no-referrer`, sin `x-powered-by`), HSTS y redirección a HTTPS por `X-Forwarded-Proto` solo en producción. La cookie de sesión ya era `httpOnly`; ahora su `SameSite` se elige por configuración y `none` fuerza `Secure`.
+- [x] ✅ **Logging estructurado.** Pino: JSON en producción y salida legible en desarrollo, `LOG_LEVEL` configurable, `requestId` por petición (cabecera `X-Request-Id`, cuerpo de error y log) y **redacción** de credenciales: de la petición solo se registran id, método y URL, con el `?token=` censurado.
+- [x] ✅ **Tests mínimos.** Superados con holgura: `ResolveCuratedProfile` con 64 unitarios, `resolve-locale.spec` para el fallback de i18n y 7 suites e2e (109 tests) sobre los endpoints públicos y de administración.
+- [x] ✅ **SEO + OpenGraph.** Título, descripción, canonical, OpenGraph, Twitter Card y JSON-LD `Person` por perfil y por idioma; `noindex` en perfiles no públicos y en `/admin`; `robots.txt` y `sitemap.xml` generados por el backend con los perfiles públicos.
+  - ⏸️ **Limitación conocida:** los scrapers que no ejecutan JavaScript (LinkedIn, WhatsApp, Slack) verán la vista previa genérica del portafolio, no la del perfil. Requiere SSR o prerender; propuesto para 1.1.
+- [ ] ⏳ **Backup de DB.** Sin código que escribir. Activar los respaldos del Postgres gestionado y **probar una restauración** siguiendo `docs/DEPLOY.md` § 7. Anotar acá la fecha de la última prueba: `________`.
 
 ---
 
 ## 🔵 Deseables — 1.0.x o post-lanzamiento
 
-Mejoras de valor que no justifican retrasar el lanzamiento.
-
-- [ ] **Export PDF de perfil.** Generar un PDF del perfil curado, cerrando el círculo con la biblioteca de CVs. (Reutilizable: el mismo concepto de "perfil filtrado por tags" que alimenta la web.)
-- [ ] **Accesibilidad (a11y).** Foco visible, contraste suficiente, navegación por teclado, roles ARIA, alt en imágenes. Auditar con axe o Lighthouse.
-- [ ] **Caché / performance.** Cache de los perfiles públicos (que cambian poco), lazy-loading de imágenes, score de Lighthouse > 90 en performance.
-- [ ] **Dashboard de analítica.** Ya existe el modelo `ProfileView` (con campo `locale`); falta una vista en el backoffice que muestre visitas por perfil, idioma y fecha.
-- [ ] **CI/CD.** Pipeline (GitHub Actions) que en cada push corra lint + tests + build, y opcionalmente despliegue automático al hacer merge a main.
-- [ ] **Repositorios destacados reales.** Curaduría manual pendiente (de Manuel): definir qué repos profesionales mostrar en `featuredRepositories` y completar el placeholder en `cv-data.json`. Ver `docs/DATA-POPULATION.md` sección 10.
+- [ ] **Export PDF de perfil.** Generar un PDF del perfil curado.
+- [ ] **Accesibilidad (a11y).** Auditar con axe o Lighthouse. La base está: roles, `aria-label` en los controles y navegación por teclado en el panel.
+- [ ] **Caché / performance.** Cache de los perfiles públicos, lazy-loading de imágenes, Lighthouse > 90.
+- [x] ✅ **Dashboard de analítica.** Entregado en la Fase 5: visitas por perfil, idioma y día, con rango de fechas.
+- [ ] **CI/CD.** Pipeline que corra lint + tests + build en cada push.
+- [ ] **Repositorios destacados reales.** Curaduría manual pendiente (de Manuel): completar `featuredRepositories` en `docs/cv-data.json`. Ver `docs/DATA-POPULATION.md` § 10.
+- [ ] ⏸️ **Token CSRF.** Diferido: la cookie es `SameSite` estricto y los endpoints de escritura solo aceptan JSON, así que un formulario cross-site no puede provocar una escritura. Revisar si alguna vez se sirve el frontend desde un subdominio no confiable.
 
 ---
 
-## Orden sugerido de trabajo
+## Estado del release
 
-1. Completar el código de aplicación según el roadmap (Fases 1–5 de `ARCHITECTURE.md`).
-2. Cerrar todos los **🔴 bloqueantes**.
-3. Cerrar los **🟡 importantes** (al menos rate limiting, security headers, logging, tests mínimos y backup).
-4. Hacer el **deploy** a producción (backend en Railway/Render, frontend en Vercel, Postgres gestionado).
-5. Iterar los **🔵 deseables** en releases 1.0.x posteriores.
+**Los 6 bloqueantes están cerrados en código.** De los importantes, 5 de 6 también; el sexto (backups) no es código y se cierra al desplegar. Lo que queda para el 1.0.0:
 
-> Regla de oro: el deploy real es el último paso, no el primero. Un 1.0.0 con los bloqueantes e importantes en verde es un lanzamiento del que no te vas a arrepentir.
+1. Seguir `docs/DEPLOY.md` de arriba abajo.
+2. Activar backups y **probar una restauración** (§ 7), y anotar la fecha en este documento.
+3. Correr la verificación posterior al despliegue (§ 5).
+4. Recién entonces, etiquetar `v1.0.0`.
+
+> Regla de oro: el deploy real es el último paso, no el primero.

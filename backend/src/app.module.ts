@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -16,7 +16,6 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { AllExceptionsFilter } from './shared/infrastructure/http/all-exceptions.filter';
 import { buildLoggerOptions } from './shared/infrastructure/http/logger.options';
 import { ContentLanguageInterceptor } from './shared/infrastructure/http/content-language.interceptor';
-import { RequestIdMiddleware } from './shared/infrastructure/http/request-id';
 import { PrismaModule } from './shared/infrastructure/persistence/prisma.module';
 
 @Module({
@@ -60,9 +59,4 @@ import { PrismaModule } from './shared/infrastructure/persistence/prisma.module'
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer): void {
-    // Antes que todo: el id de la petición lo usan el logger y el filtro de errores.
-    consumer.apply(RequestIdMiddleware).forRoutes('*');
-  }
-}
+export class AppModule {}

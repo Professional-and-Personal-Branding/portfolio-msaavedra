@@ -25,6 +25,8 @@ portfolio/
 ├── frontend/     # SPA React + Vite
 └── docs/
     ├── ARCHITECTURE.md   # ⭐ Fuente de verdad de la arquitectura y roadmap
+    ├── DEPLOY.md         # Runbook de producción (variables, arranque, backups)
+    ├── RELEASE-1.0.0-CHECKLIST.md  # Estado de cada ítem del release
     ├── cv-data.json      # Datos consolidados de toda la trayectoria (seed)
     └── demo.html         # Demo estático para validar dirección estética
 ```
@@ -44,6 +46,7 @@ portfolio/
 - [x] **Fase 3** — Auth JWT + Backoffice API (CRUD)
 - [x] **Fase 4** — Frontend público (home + vista curada + temas + layouts, bilingüe) — change `add-public-frontend-theming`
 - [x] **Fase 5** — Frontend backoffice (login, dashboard, CRUD, constructor y customizador) — change `add-admin-backoffice`
-- [ ] **Fase 6** — Pulido (SEO, export PDF, deploy)
+- [x] **Fase 6** — Hardening para producción (errores, health, límites, cabeceras, logs, SEO) — change `add-production-hardening`
+- [ ] **Deploy 1.0.0** — seguir `docs/DEPLOY.md` y cerrar los backups
 
 Ver `docs/ARCHITECTURE.md` para el detalle completo.

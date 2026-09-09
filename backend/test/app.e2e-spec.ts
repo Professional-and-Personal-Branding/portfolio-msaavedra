@@ -3,16 +3,12 @@
  * Requiere Postgres arriba (docker compose) y la base migrada + seedeada.
  * Las aserciones de contenido se derivan de docs/cv-data.json en runtime.
  */
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { GLOBAL_PREFIX } from '../src/app.constants';
-import { buildCorsOptions } from '../src/shared/infrastructure/http/cors.options';
 import { PrismaService } from '../src/shared/infrastructure/persistence/prisma.service';
-import { setupSwagger } from '../src/swagger';
+import { createTestApp } from './e2e-helpers';
 
 interface Localized {
   es: string;
@@ -51,14 +47,8 @@ describe('API pública (e2e)', () => {
       fs.readFileSync(path.resolve(__dirname, '../../docs/cv-data.json'), 'utf-8'),
     ) as CvData;
 
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    app = moduleRef.createNestApplication();
-    app.setGlobalPrefix(GLOBAL_PREFIX);
-    app.useGlobalPipes(new ValidationPipe({ transform: true }));
-    app.enableCors(buildCorsOptions(FRONTEND_URL));
-    setupSwagger(app);
-    await app.init();
-    prisma = app.get(PrismaService);
+    // Mismo montaje que `main.ts`: evita que este suite se desalinee del arranque real.
+    ({ app, prisma } = await createTestApp());
   });
 
   afterAll(async () => {

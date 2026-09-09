@@ -115,6 +115,7 @@ npm run seed             # carga docs/cv-data.json
 npm run seed:verify      # compara conteos DB vs cv-data.json
 npm run admin:bootstrap  # crea/actualiza el administrador (ADMIN_EMAIL/ADMIN_PASSWORD/ADMIN_NAME, argon2id)
 npm run openapi:export   # escribe backend/openapi.json (fuente de los tipos del frontend; sin servidor ni DB)
+npm run prisma:deploy    # aplica migraciones en producción (NUNCA prisma db push)
 # El backoffice vive en el frontend: http://localhost:5173/admin
 npm run test             # jest
 
@@ -137,7 +138,7 @@ npm run api:types        # regenera src/shared/types/api.d.ts desde ../backend/o
 - [x] Fase 3 — auth JWT + backoffice API (CRUD) — change `add-auth-and-crud`
 - [x] Fase 4 — frontend público + motor de theming — change `add-public-frontend-theming`
 - [x] Fase 5 — frontend backoffice + customizador visual — change `add-admin-backoffice`
-- [ ] Fase 6 — hardening para producción (ver `docs/RELEASE-1.0.0-CHECKLIST.md`) → deploy 1.0.0
+- [x] Fase 6 — hardening para producción — change `add-production-hardening`; falta el deploy en sí (ver `docs/DEPLOY.md`)
 
 ---
 
@@ -150,6 +151,7 @@ npm run api:types        # regenera src/shared/types/api.d.ts desde ../backend/o
 - Tipos del frontend: generar desde el OpenAPI del backend (openapi-typescript) para contrato único. Implementado en Fase 4: `backend/openapi.json` y `frontend/src/shared/types/api.d.ts` se versionan; un test del frontend detecta la deriva.
 - Frontend (Fase 4): los tokens se aplican como `--t-*` en un contenedor raíz (no en `documentElement`); Tailwind 4 los expone con `@theme inline` (`bg-bg`, `bg-brand`, `rounded-theme`, …) y las variables de shadcn/ui derivan de ellos. Idioma, preset, layout y token viven en la URL (`?lang= ?theme= ?layout= ?token=`), sin `localStorage`. La home es el perfil curado `all`. Secciones conocidas con datos que no figuran en `sectionsOrder` se agregan al final.
 - Backoffice (Fase 5): panel en `/admin` dentro del mismo frontend, en un chunk aparte (`React.lazy`). La sesión es una **cookie httpOnly** (`portfolio_session`) que emite el login; el guard acepta cookie o `Authorization: Bearer`, y el cliente nunca guarda el JWT: la sesión se deriva de `GET /api/auth/me`. El preview del constructor lo resuelve el backend (`POST /api/admin/curated-profiles/preview`) reusando `CuratedProfileComposer`, el mismo servicio que la ruta pública, para que no puedan divergir. El customizador aplica los tokens en el cliente y guarda solo las diferencias en `themeOverrides`.
+- Hardening (Fase 6): `AllExceptionsFilter` global (ningún error expone stack ni detalles de la base), `GET /health` y `/health/live` fuera de `/api`, límite de peticiones global y reforzado en el login, Helmet + HTTPS por `X-Forwarded-Proto`, logs JSON con `requestId` y redacción de credenciales, y `robots.txt`/`sitemap.xml`. **En producción la API no arranca con secretos débiles** y Swagger queda cerrado salvo `ENABLE_API_DOCS=true`. Runbook: `docs/DEPLOY.md`.
 
 ---
 

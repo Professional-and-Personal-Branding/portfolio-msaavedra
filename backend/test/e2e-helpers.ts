@@ -12,6 +12,7 @@ import { AppModule } from '../src/app.module';
 import { Argon2PasswordHasher } from '../src/modules/auth/infrastructure/security/argon2-password-hasher';
 import { SESSION_COOKIE_NAME } from '../src/modules/auth/infrastructure/security/session-cookie';
 import { buildCorsOptions } from '../src/shared/infrastructure/http/cors.options';
+import { requestIdMiddleware } from '../src/shared/infrastructure/http/request-id';
 import { buildHelmet, httpsRedirect } from '../src/shared/infrastructure/http/security.middleware';
 import { PrismaService } from '../src/shared/infrastructure/persistence/prisma.service';
 import { setupSwagger, shouldPublishDocs } from '../src/swagger';
@@ -32,6 +33,7 @@ export async function createTestApp(): Promise<{ app: INestApplication; prisma: 
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
   const app = moduleRef.createNestApplication();
   app.setGlobalPrefix(GLOBAL_PREFIX, { exclude: PREFIX_EXCLUDED_ROUTES });
+  app.use(requestIdMiddleware);
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.enableCors(buildCorsOptions(FRONTEND_URL));
@@ -68,6 +70,7 @@ export async function createHardenedTestApp(
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     const app = moduleRef.createNestApplication<NestExpressApplication>();
     app.setGlobalPrefix(GLOBAL_PREFIX, { exclude: PREFIX_EXCLUDED_ROUTES });
+    app.use(requestIdMiddleware);
     app.set('trust proxy', 1);
     app.use(httpsRedirect(options.production === true));
     app.use(buildHelmet(options.production === true));

@@ -8,6 +8,7 @@ import { AppModule } from './app.module';
 import { APP_CONFIG, AppConfig } from './config/configuration';
 import { GLOBAL_PREFIX, PREFIX_EXCLUDED_ROUTES } from './app.constants';
 import { buildCorsOptions } from './shared/infrastructure/http/cors.options';
+import { requestIdMiddleware } from './shared/infrastructure/http/request-id';
 import { buildHelmet, httpsRedirect } from './shared/infrastructure/http/security.middleware';
 import { setupSwagger, shouldPublishDocs } from './swagger';
 
@@ -18,6 +19,8 @@ async function bootstrap(): Promise<void> {
 
   const config = app.get(ConfigService).getOrThrow<AppConfig>(APP_CONFIG);
 
+  // Primero de todo: el id lo usan el logger de peticiones y el filtro de errores.
+  app.use(requestIdMiddleware);
   // Detrás del proxy del proveedor: habilita X-Forwarded-Proto y la IP real del cliente.
   app.set('trust proxy', 1);
   app.use(httpsRedirect(config.isProduction));

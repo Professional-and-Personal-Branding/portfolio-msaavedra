@@ -279,7 +279,16 @@ model ProfileView { /* analítica: slug, timestamp, referrer */ }
 4. ✅ Constructor de perfiles curados: tags del universo real, include/exclude por experiencia, preview en vivo resuelto por el backend, tema y layout, orden y ocultamiento de secciones, visibilidad y link público.
 5. ✅ Customizador de tema en tiempo real (8 colores, tipografía, modo, densidad, radio) que guarda solo las diferencias como `themeOverrides`.
 
-### Fase 6 — Hardening para producción (release 1.0.0)
+### ✅ Fase 6 — Hardening para producción (change OpenSpec `add-production-hardening`, sept. 2026)
+1. ✅ Manejo global de errores: cuerpo uniforme con `requestId`, sin stack ni detalles de la base.
+2. ✅ Healthcheck `/health` (503 si la base no responde) y `/health/live`, fuera de `/api`.
+3. ✅ Arranque seguro: en producción la API no levanta con secretos débiles ni `FRONTEND_URL` sin https; Swagger cerrado salvo `ENABLE_API_DOCS`.
+4. ✅ Rate limiting global y reforzado en el login; Helmet y redirección a HTTPS por `X-Forwarded-Proto`.
+5. ✅ Logs JSON con `requestId` y redacción de credenciales (pino).
+6. ✅ SEO: metadatos y JSON-LD por perfil, `robots.txt` y `sitemap.xml`.
+7. ⏳ Deploy y backups: preparados en `docs/DEPLOY.md`, los ejecuta Manuel.
+
+### Fase 6 — detalle original del checklist
 
 Esta fase prepara el proyecto para un despliegue serio. El detalle completo, priorizado en bloqueantes / importantes / deseables, está en **`docs/RELEASE-1.0.0-CHECKLIST.md`** — trabajarlo como checklist explícito.
 

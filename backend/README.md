@@ -88,10 +88,26 @@ Reglas: cuerpos validados con `class-validator`; campos desconocidos → 400; `P
 | `npm test` | Unitarios + test de arquitectura (regla de dependencia) |
 | `npm run test:e2e` | E2E con supertest contra la base seedeada |
 | `npm run test:all` | Ambos |
-| `npm run prisma:migrate` / `prisma:status` | Migración `init` / estado de migraciones |
+| `npm run prisma:migrate` / `prisma:status` | Migración `init` / estado de migraciones (desarrollo) |
+| `npm run prisma:deploy` | `prisma migrate deploy`: aplica migraciones en producción. **Nunca usar `db push`** |
 | `npm run seed` / `seed:verify` | Cargar / verificar datos (el seed no toca `AdminUser`) |
 | `npm run admin:bootstrap` | Crear/actualizar el administrador (hash argon2id, upsert por email) |
 | `npm run openapi:export` | Escribe `backend/openapi.json` (mismo documento que `/api/docs-json`) sin levantar servidor ni conectar a la base; el frontend genera sus tipos desde él (`npm run api:types`). Se versiona: correrlo cuando cambie el contrato |
+
+## Producción (Fase 6)
+
+| Tema | Cómo queda |
+|---|---|
+| Errores | `AllExceptionsFilter` global: todo error sale como `{ statusCode, message, error, requestId, timestamp }`, sin stack, SQL ni detalles de Prisma; el detalle va al log |
+| Healthcheck | `GET /health` (200, o **503** si la base no responde) y `GET /health/live` (200 mientras viva el proceso). Fuera de `/api`, sin autenticación y sin límite de peticiones |
+| Límite de peticiones | Global por IP (`THROTTLE_TTL`/`THROTTLE_LIMIT`, 120/min) y reforzado en `POST /api/auth/login` (`THROTTLE_LOGIN_LIMIT`, 5/min) con 429 y `Retry-After`. Contador en memoria: por instancia |
+| Cabeceras | Helmet para API JSON (`nosniff`, `DENY`, `no-referrer`, sin `x-powered-by`); en producción HSTS y redirección 301 a https según `X-Forwarded-Proto` |
+| Logs | Pino: JSON en producción, legible en desarrollo (`LOG_LEVEL`). Cada petición lleva `requestId`, que vuelve en `X-Request-Id` y en el cuerpo de error. De la petición solo se registran id, método y URL, con `?token=` censurado |
+| Arranque | Con `NODE_ENV=production` la API **no arranca** si `JWT_SECRET` es el del ejemplo, tiene menos de 32 caracteres o coincide con `ANALYTICS_SALT`, o si `FRONTEND_URL` no usa https |
+| Swagger | Publicado en desarrollo; en producción solo con `ENABLE_API_DOCS=true` |
+| SEO | `GET /robots.txt` y `GET /sitemap.xml` (solo perfiles `PUBLIC`, URLs sobre `FRONTEND_URL`) |
+
+Despliegue paso a paso: **`docs/DEPLOY.md`**.
 
 ## Sesión del backoffice (Fase 5)
 

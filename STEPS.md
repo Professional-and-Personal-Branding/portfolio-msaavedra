@@ -122,9 +122,13 @@ Flujo típico: **Perfiles curados → Nuevo perfil →** poné slug, título y t
 
 ---
 
-## Paso 8 — FASE 6: Pulido y deploy
+## Paso 8 — ✅ FASE 6: Hardening para producción (change `add-production-hardening`)
 
 > "Agrega SEO y OpenGraph para compartir links, exportación de un perfil curado a PDF, optimización responsive y de accesibilidad. Prepara configuración de deploy (backend en Railway/Render, frontend en Vercel, Postgres gestionada)."
+
+Hecho el hardening: manejo global de errores, healthcheck, rate limiting, cabeceras de seguridad, logs estructurados y SEO. El export a PDF quedó como deseable de 1.0.x.
+
+**El deploy es tuyo**: seguí `docs/DEPLOY.md` de arriba abajo (variables, `prisma migrate deploy`, healthcheck del proveedor, backups y su prueba de restauración) y después la verificación posterior de la § 5. El estado de cada ítem del release está en `docs/RELEASE-1.0.0-CHECKLIST.md`.
 
 ---
 

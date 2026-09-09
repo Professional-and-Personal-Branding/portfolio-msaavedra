@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: df0e5ef2067383e1b24a45c84b385b2c5f19817090d5c1bb02fcc590228aacde
+// openapi-sha256: a8270c9fa914f151dbd1aa1e61b87f125a65b6dd1ecfa1e9f075632c13be026b
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -728,8 +728,15 @@ export interface components {
             error: string;
             /** @example Experiencia con id "abc" no encontrado */
             message: string;
+            /**
+             * @description Identificador de la petición; coincide con la cabecera `X-Request-Id` y con el log.
+             * @example 3f1c9a2e-5b7d-4c8e-9a10-2b3c4d5e6f70
+             */
+            requestId?: string;
             /** @example 404 */
             statusCode: number;
+            /** @example 2026-09-08T18:45:02.446Z */
+            timestamp: string;
         };
         ExperienceResponse: {
             /** @example Novacomp */
@@ -1924,6 +1931,15 @@ export interface operations {
             };
             /** @description Credenciales incorrectas */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Demasiados intentos */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
