@@ -86,8 +86,12 @@ describe('API pública (e2e)', () => {
         statusCode: 404,
         message: expect.any(String) as string,
         error: 'Not Found',
+        // Fase 6: todo error lleva el id de la petición y su marca de tiempo.
+        requestId: expect.any(String) as string,
+        timestamp: expect.any(String) as string,
       });
       expect(res.body).not.toHaveProperty('stack');
+      expect(res.get('X-Request-Id')).toBe(res.body.requestId);
     });
 
     it('CORS: origen permitido recibe Access-Control-Allow-Origin', async () => {

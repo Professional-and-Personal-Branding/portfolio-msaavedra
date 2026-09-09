@@ -46,6 +46,16 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "Demasiados intentos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "summary": "Login del backoffice",
@@ -2000,12 +2010,22 @@
           "error": {
             "type": "string",
             "example": "Not Found"
+          },
+          "requestId": {
+            "type": "string",
+            "example": "3f1c9a2e-5b7d-4c8e-9a10-2b3c4d5e6f70",
+            "description": "Identificador de la petición; coincide con la cabecera `X-Request-Id` y con el log."
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "2026-09-08T18:45:02.446Z"
           }
         },
         "required": [
           "statusCode",
           "message",
-          "error"
+          "error",
+          "timestamp"
         ]
       },
       "AvailabilityResponse": {

@@ -14,6 +14,7 @@ import { Argon2PasswordHasher } from './infrastructure/security/argon2-password-
 import { JwtAuthGuard } from './infrastructure/security/jwt-auth.guard';
 import { JwtTokenSigner } from './infrastructure/security/jwt-token-signer';
 import { JwtStrategy } from './infrastructure/security/jwt.strategy';
+import { LoginRateLimitGuard } from './infrastructure/security/login-rate-limit.guard';
 
 /**
  * Autenticación del backoffice. La estrategia `jwt` se registra aquí una sola vez;
@@ -42,6 +43,7 @@ import { JwtStrategy } from './infrastructure/security/jwt.strategy';
     LoginUseCase,
     GetCurrentAdminUseCase,
     JwtStrategy,
+    LoginRateLimitGuard,
     JwtAuthGuard,
   ],
   exports: [JwtAuthGuard, PASSWORD_HASHER, ADMIN_USER_REPOSITORY],

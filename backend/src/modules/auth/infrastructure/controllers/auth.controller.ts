@@ -7,6 +7,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
@@ -19,6 +20,7 @@ import { AdminOutput, LoginOutput } from '../../application/dto/auth.output';
 import { LoginUseCase } from '../../application/use-cases/login.use-case';
 import { CurrentAdmin } from '../security/current-admin.decorator';
 import { JwtAuthGuard } from '../security/jwt-auth.guard';
+import { LoginRateLimitGuard } from '../security/login-rate-limit.guard';
 import {
   buildClearSessionCookieOptions,
   buildSessionCookieOptions,
@@ -36,12 +38,18 @@ export class AuthController {
     private readonly config: ConfigService,
   ) {}
 
+  private get appConfig(): AppConfig {
+    return this.config.getOrThrow<AppConfig>(APP_CONFIG);
+  }
+
   private get isProduction(): boolean {
-    return this.config.getOrThrow<AppConfig>(APP_CONFIG).nodeEnv === NodeEnv.Production;
+    return this.appConfig.nodeEnv === NodeEnv.Production;
   }
 
   @Post('login')
   @HttpCode(200)
+  // Freno propio contra fuerza bruta (spec `api-rate-limiting`).
+  @UseGuards(LoginRateLimitGuard)
   @ApiOperation({
     summary: 'Login del backoffice',
     description:
@@ -50,6 +58,7 @@ export class AuthController {
   @ApiOkResponse({ type: LoginResponse })
   @ApiBadRequestResponse({ type: ErrorResponseDto, description: 'Cuerpo inválido' })
   @ApiUnauthorizedResponse({ type: ErrorResponseDto, description: 'Credenciales incorrectas' })
+  @ApiTooManyRequestsResponse({ type: ErrorResponseDto, description: 'Demasiados intentos' })
   async doLogin(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -60,7 +69,11 @@ export class AuthController {
     res.cookie(
       SESSION_COOKIE_NAME,
       result.value.accessToken,
-      buildSessionCookieOptions(result.value.expiresIn, this.isProduction),
+      buildSessionCookieOptions(
+        result.value.expiresIn,
+        this.isProduction,
+        this.appConfig.sessionCookieSameSite,
+      ),
     );
     return result.value;
   }
@@ -73,7 +86,10 @@ export class AuthController {
   })
   @ApiNoContentResponse({ description: 'Cookie borrada' })
   doLogout(@Res({ passthrough: true }) res: Response): void {
-    res.clearCookie(SESSION_COOKIE_NAME, buildClearSessionCookieOptions(this.isProduction));
+    res.clearCookie(
+      SESSION_COOKIE_NAME,
+      buildClearSessionCookieOptions(this.isProduction, this.appConfig.sessionCookieSameSite),
+    );
   }
 
   @Get('me')

@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
 import {
   IsEnum,
+  IsIn,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -56,6 +57,64 @@ export class EnvironmentVariables {
   @IsString()
   @MinLength(8)
   ANALYTICS_SALT?: string;
+
+  /** Nivel de log (spec `api-observability`). */
+  @IsOptional()
+  @IsIn(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
+  LOG_LEVEL?: string;
+
+  /** Ventana del límite de peticiones, en segundos (spec `api-rate-limiting`). */
+  @IsInt()
+  @Min(1)
+  THROTTLE_TTL: number = 60;
+
+  /** Peticiones permitidas por ventana e IP. */
+  @IsInt()
+  @Min(1)
+  THROTTLE_LIMIT: number = 120;
+
+  /** Intentos de login permitidos por ventana e IP. */
+  @IsInt()
+  @Min(1)
+  THROTTLE_LOGIN_LIMIT: number = 5;
+
+  /** `SameSite` de la cookie de sesión (spec `api-security-headers`). */
+  @IsOptional()
+  @IsIn(['lax', 'strict', 'none'])
+  SESSION_COOKIE_SAMESITE?: 'lax' | 'strict' | 'none';
+
+  /** Publica Swagger en producción cuando vale `true` (spec `api-platform`). */
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  ENABLE_API_DOCS?: string;
+}
+
+/** Valor de ejemplo del repositorio: jamás debe llegar a producción. */
+export const EXAMPLE_JWT_SECRET = 'cambiar-por-un-secreto-fuerte-en-produccion';
+const PRODUCTION_SECRET_MIN_LENGTH = 32;
+
+/**
+ * Reglas que solo aplican en producción (spec `api-platform` § Arranque seguro).
+ * Los mensajes nombran la variable y NUNCA imprimen su valor.
+ */
+function productionIssues(env: EnvironmentVariables): string[] {
+  if (env.NODE_ENV !== NodeEnv.Production) return [];
+  const issues: string[] = [];
+
+  if (env.JWT_SECRET === EXAMPLE_JWT_SECRET) {
+    issues.push('JWT_SECRET: es el valor de ejemplo del repositorio; generá uno propio');
+  } else if (env.JWT_SECRET.length < PRODUCTION_SECRET_MIN_LENGTH) {
+    issues.push(
+      `JWT_SECRET: en producción debe tener al menos ${PRODUCTION_SECRET_MIN_LENGTH} caracteres`,
+    );
+  }
+  if (env.ANALYTICS_SALT && env.ANALYTICS_SALT === env.JWT_SECRET) {
+    issues.push('ANALYTICS_SALT: debe ser distinto de JWT_SECRET');
+  }
+  if (!env.FRONTEND_URL.startsWith('https://')) {
+    issues.push('FRONTEND_URL: en producción debe usar https');
+  }
+  return issues;
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {
@@ -65,11 +124,14 @@ export function validateEnv(config: Record<string, unknown>): EnvironmentVariabl
   });
   const errors = validateSync(validated, { skipMissingProperties: false, whitelist: true });
 
-  if (errors.length > 0) {
-    const details = errors
-      .map((e) => `${e.property}: ${Object.values(e.constraints ?? {}).join(', ')}`)
-      .join('\n  - ');
-    throw new Error(`Configuración de entorno inválida:\n  - ${details}`);
+  const details = [
+    ...errors.map((e) => `${e.property}: ${Object.values(e.constraints ?? {}).join(', ')}`),
+    // Las reglas de producción solo se evalúan si la forma básica ya es válida.
+    ...(errors.length === 0 ? productionIssues(validated) : []),
+  ];
+
+  if (details.length > 0) {
+    throw new Error(`Configuración de entorno inválida:\n  - ${details.join('\n  - ')}`);
   }
   return validated;
 }

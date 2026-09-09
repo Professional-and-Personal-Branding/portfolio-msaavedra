@@ -9,11 +9,11 @@ import type { CookieOptions, Request } from 'express';
  */
 export const SESSION_COOKIE_NAME = 'portfolio_session';
 
-const BASE_OPTIONS: CookieOptions = {
-  httpOnly: true,
-  sameSite: 'lax',
-  path: '/',
-};
+export type SameSitePolicy = 'lax' | 'strict' | 'none';
+
+function baseOptions(sameSite: SameSitePolicy): CookieOptions {
+  return { httpOnly: true, sameSite, path: '/' };
+}
 
 /**
  * `secure` solo en producción: en desarrollo el navegador ve un único origen
@@ -22,13 +22,22 @@ const BASE_OPTIONS: CookieOptions = {
 export function buildSessionCookieOptions(
   expiresInSeconds: number,
   isProduction: boolean,
+  sameSite: SameSitePolicy = 'lax',
 ): CookieOptions {
-  return { ...BASE_OPTIONS, secure: isProduction, maxAge: expiresInSeconds * 1000 };
+  return {
+    ...baseOptions(sameSite),
+    // `SameSite=None` sin `Secure` lo rechaza el navegador: se fuerza siempre.
+    secure: isProduction || sameSite === 'none',
+    maxAge: expiresInSeconds * 1000,
+  };
 }
 
 /** Opciones para borrar la cookie: deben coincidir con las de emisión salvo la caducidad. */
-export function buildClearSessionCookieOptions(isProduction: boolean): CookieOptions {
-  return { ...BASE_OPTIONS, secure: isProduction };
+export function buildClearSessionCookieOptions(
+  isProduction: boolean,
+  sameSite: SameSitePolicy = 'lax',
+): CookieOptions {
+  return { ...baseOptions(sameSite), secure: isProduction || sameSite === 'none' };
 }
 
 /** Extractor de passport-jwt: lee el token de la cookie de sesión. */

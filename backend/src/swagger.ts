@@ -33,6 +33,14 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
   return SwaggerModule.createDocument(app, config);
 }
 
+/**
+ * ¿Se publica la documentación interactiva? En producción no, salvo que
+ * `ENABLE_API_DOCS=true` lo pida explícitamente (spec `api-platform`).
+ */
+export function shouldPublishDocs(nodeEnv: string, enableApiDocs?: string): boolean {
+  return nodeEnv !== 'production' || enableApiDocs === 'true';
+}
+
 /** Publica la UI en /api/docs y el documento OpenAPI en /api/docs-json (spec `api-platform`). */
 export function setupSwagger(app: INestApplication): void {
   const document = buildOpenApiDocument(app);

@@ -25,11 +25,23 @@ describe('session-cookie', () => {
       expect(buildSessionCookieOptions(60, true).secure).toBe(true);
       expect(buildSessionCookieOptions(60, false).secure).toBe(false);
     });
+
+    it('acepta la política SameSite configurada', () => {
+      expect(buildSessionCookieOptions(60, true, 'strict').sameSite).toBe('strict');
+      expect(buildSessionCookieOptions(60, false, 'lax').sameSite).toBe('lax');
+    });
+
+    it('`SameSite=None` fuerza `Secure` aunque no sea producción', () => {
+      const options = buildSessionCookieOptions(60, false, 'none');
+      expect(options.sameSite).toBe('none');
+      expect(options.secure).toBe(true);
+    });
   });
 
   describe('buildClearSessionCookieOptions', () => {
     it('coincide con las de emisión salvo la caducidad', () => {
       const clear = buildClearSessionCookieOptions(true);
+      expect(buildClearSessionCookieOptions(false, 'strict').sameSite).toBe('strict');
       expect(clear).toEqual({ httpOnly: true, sameSite: 'lax', path: '/', secure: true });
       expect(clear).not.toHaveProperty('maxAge');
     });

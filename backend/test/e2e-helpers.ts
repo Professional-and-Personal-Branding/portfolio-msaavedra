@@ -3,18 +3,25 @@
  * efímero (creado en beforeAll y borrado en afterAll) y login.
  */
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
 import request from 'supertest';
-import { GLOBAL_PREFIX } from '../src/app.constants';
+import { GLOBAL_PREFIX, PREFIX_EXCLUDED_ROUTES } from '../src/app.constants';
 import { AppModule } from '../src/app.module';
 import { Argon2PasswordHasher } from '../src/modules/auth/infrastructure/security/argon2-password-hasher';
 import { SESSION_COOKIE_NAME } from '../src/modules/auth/infrastructure/security/session-cookie';
 import { buildCorsOptions } from '../src/shared/infrastructure/http/cors.options';
+import { buildHelmet, httpsRedirect } from '../src/shared/infrastructure/http/security.middleware';
 import { PrismaService } from '../src/shared/infrastructure/persistence/prisma.service';
-import { setupSwagger } from '../src/swagger';
+import { setupSwagger, shouldPublishDocs } from '../src/swagger';
 
 export const FRONTEND_URL = 'http://localhost:5173';
+
+// Los e2e hacen muchos logins seguidos: sin esto, el límite de la Fase 6 los
+// cortaría. El suite de hardening baja estos valores a propósito.
+process.env.THROTTLE_LIMIT ??= '10000';
+process.env.THROTTLE_LOGIN_LIMIT ??= '1000';
 export const E2E_ADMIN = {
   email: 'e2e-admin@test.local',
   password: 'E2E-pass-123!',
@@ -24,13 +31,56 @@ export const E2E_ADMIN = {
 export async function createTestApp(): Promise<{ app: INestApplication; prisma: PrismaService }> {
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
   const app = moduleRef.createNestApplication();
-  app.setGlobalPrefix(GLOBAL_PREFIX);
+  app.setGlobalPrefix(GLOBAL_PREFIX, { exclude: PREFIX_EXCLUDED_ROUTES });
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.enableCors(buildCorsOptions(FRONTEND_URL));
-  setupSwagger(app);
+  if (shouldPublishDocs(process.env.NODE_ENV ?? 'test', process.env.ENABLE_API_DOCS)) {
+    setupSwagger(app);
+  }
   await app.init();
   return { app, prisma: app.get(PrismaService) };
+}
+
+/**
+ * App de pruebas con la configuración de producción de `main.ts`: helmet,
+ * redirección HTTPS y los límites que se quieran forzar (decisión D10).
+ */
+export async function createHardenedTestApp(
+  options: { production?: boolean; loginLimit?: number } = {},
+): Promise<{ app: INestApplication; prisma: PrismaService }> {
+  const previous = {
+    nodeEnv: process.env.NODE_ENV,
+    loginLimit: process.env.THROTTLE_LOGIN_LIMIT,
+    frontendUrl: process.env.FRONTEND_URL,
+  };
+  if (options.production) {
+    process.env.NODE_ENV = 'production';
+    // Las reglas de producción exigen https y un secreto fuerte.
+    process.env.FRONTEND_URL = 'https://portafolio.test';
+    process.env.JWT_SECRET = 'x'.repeat(48);
+  }
+  if (options.loginLimit !== undefined) {
+    process.env.THROTTLE_LOGIN_LIMIT = String(options.loginLimit);
+  }
+
+  try {
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const app = moduleRef.createNestApplication<NestExpressApplication>();
+    app.setGlobalPrefix(GLOBAL_PREFIX, { exclude: PREFIX_EXCLUDED_ROUTES });
+    app.set('trust proxy', 1);
+    app.use(httpsRedirect(options.production === true));
+    app.use(buildHelmet(options.production === true));
+    app.use(cookieParser());
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    app.enableCors(buildCorsOptions(FRONTEND_URL));
+    await app.init();
+    return { app, prisma: app.get(PrismaService) };
+  } finally {
+    process.env.NODE_ENV = previous.nodeEnv;
+    process.env.THROTTLE_LOGIN_LIMIT = previous.loginLimit;
+    process.env.FRONTEND_URL = previous.frontendUrl;
+  }
 }
 
 export async function createE2eAdmin(
