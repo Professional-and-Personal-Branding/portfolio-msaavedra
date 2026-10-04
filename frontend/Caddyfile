@@ -1,0 +1,57 @@
+# Caddy sirve la SPA y hace de proxy hacia la API.
+#
+# Dos razones para el proxy, no solo comodidad:
+#   1. Un único origen → la cookie de sesión puede ir con SameSite=strict
+#      (la fila más segura de la tabla de docs/DEPLOY.md § 0) y no hay CORS.
+#   2. /robots.txt y /sitemap.xml los genera el backend, y así quedan
+#      en el dominio del sitio, que es donde los buscadores los esperan.
+#
+# Variables que inyecta Railway:
+#   PORT        el puerto en el que tenemos que escuchar.
+#   API_ORIGIN  la API por la red privada, p. ej. http://api.railway.internal:8080
+#
+# Railway termina el TLS en su borde, así que acá no hay certificados que gestionar.
+{
+	admin off
+	auto_https off
+}
+
+:{$PORT:8080} {
+	encode zstd gzip
+
+	# `/health*` también va al proxy: si no, el fallback de la SPA responde 200 con
+	# HTML y la verificación del § 5 del runbook pasaría sin haber tocado la API.
+	@backend path /api/* /health /health/live /robots.txt /sitemap.xml
+	handle @backend {
+		reverse_proxy {$API_ORIGIN} {
+			# Explícito, para que la redirección a https del backend no entre en bucle:
+			# el TLS real lo terminó el borde de Railway antes de llegar hasta acá.
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	handle {
+		root * /srv
+		# El fallback de la SPA: sin esto, /tech-lead-dotnet daría 404.
+		try_files {path} /index.html
+		file_server
+	}
+
+	# Los assets de Vite llevan hash en el nombre: son inmutables.
+	# El HTML no, porque es el que apunta a la revisión nueva de esos assets.
+	header /assets/* Cache-Control "public, max-age=31536000, immutable"
+
+	@noCache not path /assets/*
+	header @noCache Cache-Control "no-cache"
+
+	header {
+		-Server
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}

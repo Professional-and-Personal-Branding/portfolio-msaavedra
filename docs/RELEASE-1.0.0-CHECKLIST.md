@@ -16,6 +16,8 @@
 - [x] ✅ **Validación de inputs.** DTOs con `class-validator` y `adminValidationPipe` (whitelist + forbidNonWhitelisted) en todos los endpoints que reciben cuerpo. Un test estático falla si se agrega uno sin el pipe.
 - [x] ✅ **Manejo global de errores.** `AllExceptionsFilter` unifica el cuerpo (`statusCode`, `message`, `error`, `requestId`, `timestamp`) y nunca expone stack traces, SQL, códigos de Prisma ni rutas del servidor; el detalle va al log.
 - [x] ✅ **Healthcheck.** `GET /health` (200 / **503** según la base) y `GET /health/live`, fuera del prefijo `/api`, sin autenticación y exentos del rate limiting. Configurarlo en el proveedor: `docs/DEPLOY.md` § 3.
+- [x] ✅ **El CLI de Prisma existe en producción.** `prisma` y `tsx` se movieron a `dependencies` en `backend/package.json`: el `preDeployCommand` de Railway corre en un contenedor con la imagen final, donde las `devDependencies` ya no están, y ahí es donde se ejecuta `prisma migrate deploy`. Build y los 254 unitarios verificados después del cambio.
+- [x] ✅ **Configuración de despliegue versionada.** `backend/railway.json` (build, pre-deploy, start, healthcheck), `frontend/railway.json`, `frontend/Dockerfile` y `frontend/Caddyfile` (fallback de la SPA + proxy a la API). El contenedor del frontend se verificó en local: deep link con 200, `/api` y `/sitemap.xml` enrutados al proxy, assets `immutable` y HTML `no-cache`.
 
 ---
 
@@ -46,9 +48,9 @@
 
 ## Estado del release
 
-**Los 6 bloqueantes están cerrados en código.** De los importantes, 5 de 6 también; el sexto (backups) no es código y se cierra al desplegar. Lo que queda para el 1.0.0:
+**Todo lo que es código está cerrado.** Los 6 bloqueantes de hardening, el ajuste de empaquetado del CLI de Prisma y la configuración de despliegue. De los importantes queda uno, backups, que no es código y se cierra al desplegar. **Proveedor elegido: Railway** (`docs/DEPLOY.md` § 9.5). Lo que queda para el 1.0.0:
 
-1. Seguir `docs/DEPLOY.md` de arriba abajo.
+1. Crear el proyecto en Railway y seguir **`docs/DEPLOY-RAILWAY.md`** (la guía corta, con checkboxes). El detalle de cada paso está en `docs/DEPLOY.md`.
 2. Activar backups y **probar una restauración** (§ 7), y anotar la fecha en este documento.
 3. Correr la verificación posterior al despliegue (§ 5).
 4. Recién entonces, etiquetar `v1.0.0`.

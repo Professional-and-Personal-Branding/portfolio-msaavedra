@@ -25,7 +25,8 @@ portfolio/
 ├── frontend/     # SPA React + Vite
 └── docs/
     ├── ARCHITECTURE.md   # ⭐ Fuente de verdad de la arquitectura y roadmap
-    ├── DEPLOY.md         # Runbook de producción (variables, arranque, backups)
+    ├── DEPLOY.md         # Runbook de producción: referencia (variables, arranque, backups, proveedores)
+    ├── DEPLOY-RAILWAY.md # Guía corta para desplegar en Railway, paso a paso
     ├── RELEASE-1.0.0-CHECKLIST.md  # Estado de cada ítem del release
     ├── cv-data.json      # Datos consolidados de toda la trayectoria (seed)
     └── demo.html         # Demo estático para validar dirección estética
