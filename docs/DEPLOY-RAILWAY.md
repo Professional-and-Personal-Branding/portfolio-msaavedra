@@ -155,6 +155,7 @@ dropdb portafolio_restore_test
 
 - [ ] Search Console: dar de alta el dominio y enviar el sitemap. (§ 8)
 - [ ] `git tag v1.0.0 && git push --tags`.
+- [ ] Leer [`MANUAL.md`](MANUAL.md): cómo se usa la plataforma, caso por caso.
 
 ---
 
