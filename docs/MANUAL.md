@@ -1,30 +1,96 @@
-# MANUAL — Uso de la plataforma, caso por caso
+# MANUAL — Uso de la plataforma, paso a paso y con casos de prueba
 
-> Cómo se **usa** el portafolio una vez desplegado: cada caso con sus pasos en el panel y el `curl` equivalente, para poder hacer lo mismo sin interfaz.
+> Guía interactiva: cada funcionalidad está escrita como un **caso de prueba funcional** con precondición, pasos, resultado esperado y evidencia. Se puede leer como manual de uso o ejecutar como suite de regresión manual antes de cada release.
 >
 > Para desplegar: [`DEPLOY-RAILWAY.md`](DEPLOY-RAILWAY.md) (guía corta) y [`DEPLOY.md`](DEPLOY.md) (referencia). Este documento empieza donde terminan esos.
 
+**Leyenda de estado**
+
+| | Significado |
+|---|---|
+| ✅ | Ejecutado y verificado el 4 de octubre de 2026 sobre la base del seed, con captura |
+| 🔍 | Ejecutado y verificado contra la API, con la salida transcrita |
+| 📝 | Documentado paso a paso; la captura queda pendiente (ver § 6) |
+
 ---
 
-## Mapa de la plataforma
+## 0. Preparar el entorno
 
-**Público** — sin autenticación:
+### Local
+
+```bash
+# 1. Base de datos
+docker compose up -d                      # Postgres en 5432 y Adminer en 8080
+
+# 2. Backend
+cd backend
+npm ci
+npm run prisma:migrate                    # solo la primera vez
+npm run seed && npm run seed:verify       # carga docs/cv-data.json
+npm run admin:bootstrap                   # crea el administrador
+npm run start:dev                         # API en http://localhost:3300
+
+# 3. Frontend
+cd ../frontend
+npm ci && npm run dev                     # sitio en http://localhost:5173
+```
+
+> **Si el 5432 está ocupado** por otro proyecto, levantá el Postgres del portafolio en otro puerto reusando su volumen y pasale la URL al backend por variable de entorno, sin tocar tu `.env`:
+>
+> ```bash
+> docker run -d --name portafolio-pg -p 5434:5432 \
+>   -e POSTGRES_USER=portfolio -e POSTGRES_PASSWORD=portfolio -e POSTGRES_DB=portfolio \
+>   -v portfolio-pgdata:/var/lib/postgresql/data postgres:16-alpine
+> # y después, en la misma terminal del backend:
+> # PowerShell: $env:DATABASE_URL = "postgresql://portfolio:portfolio@localhost:5434/portfolio?schema=public"
+> # bash:       export DATABASE_URL="postgresql://portfolio:portfolio@localhost:5434/portfolio?schema=public"
+> ```
+
+Comprobá que todo arrancó:
+
+```bash
+curl -s http://localhost:3300/health | jq
+# {"status":"ok","uptime":16,"checks":{"database":{"status":"up","responseTime":12}}}
+```
+
+### Sesión para los `curl`
+
+El panel usa una cookie httpOnly, pero la API también acepta `Authorization: Bearer`, que es más cómodo en consola:
+
+```bash
+API=http://localhost:3300          # en producción, el dominio del sitio
+
+TOKEN=$(curl -s -X POST $API/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"tu@email.com","password":"tu-password"}' | jq -r '.accessToken')
+
+AUTH="Authorization: Bearer $TOKEN"
+curl -s $API/api/auth/me -H "$AUTH" | jq
+```
+
+> El login está limitado a **5 intentos por minuto y por IP**. Si ves un `429`, mirá el `Retry-After`.
+
+---
+
+## 1. Mapa de la plataforma
+
+**Rutas públicas**
 
 | Ruta | Qué es |
 |---|---|
 | `/` | La home. Es el perfil curado con slug `all` |
-| `/:slug` | Un perfil curado. Ej. `/tech-lead-dotnet`, `/devops-azure` |
+| `/:slug` | Un perfil curado. Ej. `/tech-lead-dotnet` |
 | cualquier otra | 404 propio |
-| `/robots.txt`, `/sitemap.xml` | Los genera el backend con los perfiles `PUBLIC` del momento |
+| `/robots.txt`, `/sitemap.xml` | Los genera el backend con los perfiles `PUBLIC` |
 
-**Parámetros de URL** (viven en la URL, nunca en `localStorage` — se pueden compartir):
+**Parámetros de URL** — viven en la URL, nunca en `localStorage`, así que se comparten:
 
-| Parámetro | Valores | Para qué |
+| Parámetro | Valores | Por defecto |
 |---|---|---|
-| `?lang=` | `es`, `en` | Idioma. La API también acepta `?locale=`, que tiene prioridad. Sin ninguno: `Accept-Language` y después `es` |
-| `?theme=` | `modern-dark`, `modern-light`, `minimal`, `elegant`, `corporate` | Preset visual. Por defecto `modern-dark` |
-| `?layout=` | `classic`, `sidebar` | Estructura. Por defecto `classic` |
-| `?token=` | el token del perfil | Solo para perfiles `PROTECTED` |
+| `?lang=` | `es`, `en` | `Accept-Language` y después `es`. La API también acepta `?locale=`, con prioridad |
+| `?theme=` | `modern-dark`, `modern-light`, `minimal`, `elegant`, `corporate` | `modern-dark` |
+| `?layout=` | `classic`, `sidebar` | `classic` |
+| `?token=` | el token del perfil | — |
 
 **Panel** — en `/admin`, detrás de la cookie de sesión:
 
@@ -35,60 +101,126 @@
 | `/admin/experiencias` | CRUD de experiencias |
 | `/admin/skills` | CRUD de categorías y skills |
 | `/admin/perfiles` | Lista de perfiles curados |
-| `/admin/perfiles/:id` | **El constructor**: filtros, secciones, tema y preview en vivo |
-
-**API** — 32 operaciones. Para explorarlas, `GET /api/docs` (solo si `ENABLE_API_DOCS=true`).
+| `/admin/perfiles/:id` | **El constructor**: Identidad, Selección, Diseño y Publicación, con preview en vivo |
 
 ---
 
-## Preparar la sesión para los `curl`
+## 2. Casos de la vista pública
 
-El panel usa una cookie httpOnly, pero la API también acepta `Authorization: Bearer`. Para la consola conviene el token:
+### TC-01 — La home resuelve el perfil completo ✅
+
+**Precondición:** base seedeada, sitio levantado.
+**Pasos:** abrir `http://localhost:5173/?lang=es`.
+**Resultado esperado:** se renderiza el perfil `all` con el hero, el badge de disponibilidad, los datos de contacto y la fila de métricas. El título del documento es `Perfil Completo · <nombre>`.
+**Verificado:** 15 experiencias, 80 tecnologías, 8 certificaciones.
+
+![Home en español](manual/tc01-home-es.jpg)
+
+### TC-02 — El idioma se negocia y se puede forzar ✅
+
+**Pasos:**
+1. Abrir `/` sin parámetros, con el navegador en inglés.
+2. Abrir `/?lang=es`.
+
+**Resultado esperado:** sin parámetro, el contenido sale en el idioma del `Accept-Language` (acá, inglés) y el selector marca **EN**. Con `?lang=es`, todo pasa a español, incluido el título del documento (`Full Profile` → `Perfil Completo`). Los datos no se duplican: es el mismo registro resuelto en otro idioma.
+
+![Home en inglés](manual/tc02-home-en.jpg)
+
+### TC-03 — Un perfil curado filtra el contenido ✅
+
+**Pasos:** abrir `/tech-lead-dotnet?lang=es`.
+**Resultado esperado:** el titular pasa a ser el del perfil (`Tech Lead · Líder Técnico de Desarrollo · .NET · Microservicios · Modernización Legacy`), se antepone la descripción del perfil al resumen general, y las métricas bajan respecto de la home porque el contenido está filtrado por `filterTags`.
+
+![Perfil curado](manual/tc03-perfil-curado.jpg)
+
+> **Cómo se comprueba el filtro sin mirar:** compará las métricas con las de TC-01. En un perfil con `filterTags: ["dotnet"]` se pasa de 15 experiencias y 80 tecnologías a 7 y 57.
+
+### TC-04 — Tema y layout se cambian desde la URL ✅
+
+**Pasos:** abrir `/tech-lead-dotnet?lang=es&theme=corporate&layout=sidebar`.
+**Resultado esperado:** el preset `corporate` cambia la paleta completa en caliente, sin recargar ni reconstruir, y `sidebar` reorganiza la página en dos columnas con los datos fijos a la izquierda. Lo guardado en el perfil **no** se modifica: es una vista alternativa que se puede compartir.
+
+![Tema corporate con layout sidebar](manual/tc04-tema-layout.jpg)
+
+### TC-05 — El menú ofrece los demás perfiles públicos ✅
+
+**Pasos:** en cualquier vista, abrir el desplegable **Perfiles**.
+**Resultado esperado:** lista todos los perfiles `PUBLIC` agrupados por `roleType` (Perfil Completo, Backend, Fullstack, DevOps…), cada uno con su `techFocus` debajo.
+
+![Menú de perfiles](manual/tc05-menu-perfiles.jpg)
+
+> **Comportamiento a tener en cuenta:** el menú se monta también en `/:slug`, así que quien recibe un link ve los otros perfiles hechos para otras vacantes. Está identificado y resuelto en el change `add-curated-profile-lifecycle` (ver `ROADMAP-1.1.md`).
+
+### TC-06 — Un perfil protegido pide token ✅
+
+**Precondición:** un perfil con `visibility: PROTECTED` y `accessToken`.
+**Pasos:** abrir su slug sin `?token=`.
+**Resultado esperado:** la API responde **401** y la vista muestra el formulario de token, sin filtrar ningún dato del perfil.
+
+![Formulario de token](manual/tc06-token-form.jpg)
+
+### TC-07 — Con el token correcto, el perfil resuelve ✅
+
+**Pasos:** escribir el token y pulsar **Acceder**.
+**Resultado esperado:** el token pasa a la URL como `?token=`, la API responde 200 y el perfil se renderiza. El link con el token es compartible tal cual.
+
+![Perfil protegido resuelto](manual/tc07-token-resuelto.jpg)
+
+### TC-08 — Un slug inexistente o privado da 404 ✅
+
+**Pasos:** abrir `/no-existe`.
+**Resultado esperado:** la API responde **404** y la vista muestra el 404 propio con el enlace al perfil completo. Un perfil `PRIVATE` responde exactamente igual: **a propósito**, para no confirmar que el slug existe.
+
+![404](manual/tc08-404.jpg)
+
+### TC-09 — La vista funciona en móvil ✅
+
+**Pasos:** abrir cualquier perfil con el viewport en 375×812.
+**Resultado esperado:** una sola columna, el menú colapsa en hamburguesa, los selectores de tema e idioma siguen accesibles y no hay scroll horizontal.
+
+![Vista móvil](manual/tc09-movil.jpg)
+
+### TC-10 — Los códigos de estado por visibilidad 🔍
+
+**Pasos y resultado verificado:**
 
 ```bash
-API=https://portafolio.com          # o http://localhost:3300 en desarrollo
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/demo-protegido
+# 401   ← PROTECTED sin token
 
-TOKEN=$(curl -s -X POST $API/api/auth/login \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"tu@email.com","password":"tu-password"}' | jq -r '.accessToken')
+curl -s -o /dev/null -w '%{http_code}\n' "$API/api/curated-profiles/demo-protegido?token=EL-TOKEN"
+# 200   ← PROTECTED con token
 
-AUTH="Authorization: Bearer $TOKEN"
-curl -s $API/api/auth/me -H "$AUTH" | jq    # debe devolver tu usuario
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
+# 404   ← inexistente, y lo mismo devuelve un PRIVATE
 ```
 
-> El login está limitado a 5 intentos por minuto y por IP. Si ves un `429`, mirá el `Retry-After`.
+El token también viaja en la cabecera `X-Access-Token`. En los logs el `?token=` sale **censurado**, y `Referrer-Policy: no-referrer` evita que se filtre al navegar a un enlace externo.
 
 ---
 
-## Caso 1 — Entrar y salir del panel
+## 3. Casos del backoffice
 
-**En el panel:** `/admin` → te redirige a `/admin/login` → email y contraseña → entrás al Dashboard. El botón de salir cierra la sesión y vuelve al login.
+### TC-11 — Entrar al panel ✅
 
-La sesión no se guarda en el navegador: la cookie es httpOnly y el estado se deriva de `GET /api/auth/me`. Si la cookie expira (`JWT_EXPIRES_IN`, por defecto `1d`), el panel te devuelve al login en la siguiente petición.
+**Pasos:** abrir `/admin`.
+**Resultado esperado:** redirige a `/admin/login`. Tras entrar con credenciales válidas, se llega al Dashboard y se vuelve al destino original si se había pedido otra ruta.
 
-```bash
-curl -s -X POST $API/api/auth/logout -H "$AUTH"
-```
+![Login del backoffice](manual/tc10-login.jpg)
 
----
+La sesión es una cookie **httpOnly**: el cliente nunca guarda el JWT y el estado se deriva de `GET /api/auth/me`. Al expirar (`JWT_EXPIRES_IN`, por defecto `1d`), el panel vuelve al login en la siguiente petición.
 
-## Caso 2 — Crear un perfil curado para una vacante concreta
+### TC-12 — Crear un perfil curado para una vacante 📝
 
-El caso estrella. Supongamos una vacante de **Tech Lead .NET en Acme**.
-
-**En el panel:**
-
+**Precondición:** sesión iniciada.
+**Pasos:**
 1. `/admin/perfiles` → **Nuevo perfil**.
-2. Completá la identidad:
-   - **slug** — `acme-tech-lead` (kebab-case, único: es la URL).
-   - **title** — ES y EN. Es el `<title>` y el encabezado.
-   - **headline** — ES y EN. La frase de posicionamiento.
-   - **description** — opcional, ES y EN. Es la meta description y el texto de OpenGraph.
-   - **roleType** — ES y EN. Agrupa el menú de perfiles (ej. "Tech Lead").
-   - **techFocus** — `.NET`. La tecnología destacada que se muestra en el menú.
-3. Guardá. Ya tenés el perfil; los pasos 3 a 7 lo afinan.
+2. Pestaña **Identidad**: `slug` en kebab-case (es la URL, y se valida), `title`, `headline` y `description` en ES y EN, `roleType` (agrupa el menú) y `techFocus`.
+3. Guardar.
 
-**Por API:**
+**Resultado esperado:** el perfil se crea y el constructor queda abierto sobre él. Un slug repetido devuelve **409**.
+
+**Equivalente por API** 🔍:
 
 ```bash
 curl -s -X POST $API/api/admin/curated-profiles -H "$AUTH" \
@@ -100,56 +232,54 @@ curl -s -X POST $API/api/admin/curated-profiles -H "$AUTH" \
   "roleType": { "es": "Tech Lead", "en": "Tech Lead" },
   "techFocus": ".NET",
   "visibility": "PRIVATE"
-}' | jq '{id, slug}'
+}' | jq '{id, slug, visibility}'
 ```
 
-> **Truco:** crealo en `PRIVATE` y pasalo a `PUBLIC` recién cuando esté listo (caso 7). Un `PRIVATE` devuelve 404, así que nadie lo encuentra mientras lo armás.
+> **Recomendado:** crealo `PRIVATE` y pasalo a `PUBLIC` recién cuando esté listo (TC-16). Un `PRIVATE` devuelve 404, así que nadie lo encuentra mientras lo armás.
 
-Los campos que no mandás toman su valor por defecto: `filterTags`, `includeIds`, `excludeIds`, `sectionsOrder` y `sectionsHidden` quedan vacíos, `accentColor` en `#1A365D`, `layout` en `classic`, `visibility` en `PUBLIC`.
+Los campos que no mandás toman su valor por defecto: `filterTags`, `includeIds`, `excludeIds`, `sectionsOrder` y `sectionsHidden` vacíos, `accentColor` en `#1A365D`, `layout` en `classic`, `visibility` en `PUBLIC`.
 
----
+### TC-13 — Elegir qué entra con tags y overrides 📝
 
-## Caso 3 — Elegir qué experiencias, skills y proyectos se muestran
-
-Tres mecanismos, y se aplican en este orden:
+Tres mecanismos, en este orden:
 
 | Mecanismo | Efecto |
 |---|---|
 | `filterTags` | Entra el item que comparta **al menos un** tag. **Vacío = entra todo** |
-| `includeIds` | Fuerza la inclusión de un item, aunque no comparta tags. Solo funciona con items visibles |
+| `includeIds` | Fuerza la inclusión. Solo funciona con items **visibles** |
 | `excludeIds` | Fuerza la exclusión. **Siempre gana**, incluso sobre `includeIds` |
 
-**En el panel**, dentro del constructor: los tags disponibles aparecen como chips — clic para activar o desactivar. Debajo, la lista de experiencias con dos botones por fila, *Incluir* y *Excluir*. El preview de la derecha se actualiza con cada clic.
+**Pasos:** pestaña **Selección** → los tags disponibles aparecen como chips (clic para activar o desactivar) y cada experiencia tiene los botones *Incluir* y *Excluir*. El preview de la derecha se recalcula con cada clic.
 
-**Por API:**
+**Resultado esperado:** el preview refleja el filtro. Varios clics seguidos se acumulan: cada uno parte del estado anterior, no del render inicial.
+
+**Equivalente por API:**
 
 ```bash
-ID=<el id del perfil>
+ID=<id del perfil>
 curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
   -H 'Content-Type: application/json' -d '{
-  "filterTags": ["dotnet", "leadership", "architecture"],
-  "includeIds": ["<id-de-una-experiencia-que-quiero-si-o-si>"],
-  "excludeIds": ["<id-de-algo-que-no-aplica-a-esta-vacante>"]
+  "filterTags": ["dotnet", "leadership"],
+  "includeIds": ["<id de una experiencia que quiero sí o sí>"],
+  "excludeIds": ["<id de algo que no aplica>"]
 }' | jq '{filterTags, includeIds, excludeIds}'
-```
 
-El orden de salida siempre es cronológico: `startDate` descendente, y `order` ascendente como desempate. No se puede reordenar item por item — es deliberado, para que todos los perfiles cuenten la historia en el mismo sentido.
-
-Para ver los tags que existen:
-
-```bash
+# Ver los tags que existen:
 curl -s $API/api/admin/experiences -H "$AUTH" | jq -r '[.[].tags[]] | unique | join(", ")'
 ```
 
----
+El orden de salida siempre es cronológico: `startDate` descendente, `order` ascendente como desempate. No se reordena item por item, a propósito: todos los perfiles cuentan la historia en el mismo sentido.
 
-## Caso 4 — Ordenar y ocultar secciones
+### TC-14 — Ordenar y ocultar secciones 📝
 
 Las nueve secciones conocidas: `hero`, `stats`, `experience`, `skills`, `projects`, `education`, `certifications`, `presence`, `contact`.
 
-**En el panel**, bloque *Secciones*: cada fila tiene un interruptor de visibilidad y las flechas de **Subir** y **Bajar**.
+**Pasos:** pestaña **Diseño**, bloque *Secciones*: cada fila tiene un interruptor de visibilidad y las flechas **Subir** y **Bajar**.
 
-**Por API:**
+**Resultado esperado:** el preview respeta el orden y el ocultado. Dos reglas que conviene conocer:
+
+- Una sección **con datos** que no figure en `sectionsOrder` **se agrega al final**. Para ocultarla hay que ponerla en `sectionsHidden`.
+- Una sección **sin datos** no se renderiza aunque esté en el orden.
 
 ```bash
 curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
@@ -159,58 +289,30 @@ curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
 }' | jq '{sectionsOrder, sectionsHidden}'
 ```
 
-Dos reglas que conviene conocer:
+> El backend declara hoy **7** secciones por defecto y el frontend conoce **9**: `projects` y `presence` entran por la regla de relleno del cliente. Está identificado y resuelto en el change `unify-section-catalog`.
 
-- Una sección **con datos** que no figure en `sectionsOrder` **se agrega al final**. No desaparece por omitirla: para ocultarla hay que ponerla en `sectionsHidden`.
-- Una sección **sin datos** no se renderiza aunque esté en el orden. Si `projects` no tiene proyectos que pasen el filtro, no aparece.
+### TC-15 — Personalizar el tema 📝
 
----
-
-## Caso 5 — Personalizar el tema
-
-Dos niveles: elegir un preset, o ajustarlo token por token.
-
-**En el panel**, bloque *Tema* del constructor:
+**Pasos:** pestaña **Diseño**, bloque *Tema*:
 
 1. **Tema base** — uno de los cinco presets.
-2. **Colores** — ocho controles: Fondo, Fondo suave, Tarjeta, Borde, Texto, Texto tenue, Acento y Acento 2. Aceptan hex.
+2. **Colores** — ocho controles: Fondo, Fondo suave, Tarjeta, Borde, Texto, Texto tenue, Acento y Acento 2.
 3. **Densidad** — Compacta, Cómoda o Amplia.
-4. **Restablecer** — vuelve al preset y borra los ajustes.
+4. **Restablecer** — vuelve al preset y descarta los ajustes.
 
-Los cambios se ven al instante porque los tokens se aplican como variables CSS `--t-*` en el contenedor del preview, no en el documento. Y **solo se guardan las diferencias** contra el tema base, en `themeOverrides`: si mañana cambia el preset, tu perfil hereda la mejora y conserva su ajuste.
-
-**Por API:**
+**Resultado esperado:** el preview cambia al instante, porque los tokens se aplican como variables CSS `--t-*` en el contenedor del preview, no en el documento. Y **solo se guardan las diferencias** contra el tema base, en `themeOverrides`: si mañana cambia el preset, el perfil hereda la mejora y conserva su ajuste.
 
 ```bash
 curl -s $API/api/admin/themes -H "$AUTH" | jq -r '.[] | "\(.id)  \(.slug)"'
 
 curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
   -H 'Content-Type: application/json' -d '{
-  "themeId": "<id-del-tema-base>",
+  "themeId": "<id del tema base>",
   "themeOverrides": { "colors": { "accent": "#5B2C87" }, "density": "compact" }
 }' | jq '{themeId, themeOverrides}'
 ```
 
----
-
-## Caso 6 — Elegir el layout
-
-`classic` (una columna, secciones apiladas) o `sidebar` (navegación lateral fija).
-
-**En el panel:** selector *Layout*, arriba del bloque de secciones.
-
-```bash
-curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
-  -H 'Content-Type: application/json' -d '{"layout": "sidebar"}' | jq .layout
-```
-
-El visitante puede probar el otro con `?layout=sidebar` sin que cambie lo que guardaste. Útil para decidir: abrí el perfil con los dos y comparalo.
-
----
-
-## Caso 7 — Publicar, proteger o esconder
-
-Tres visibilidades, y cada una se comporta distinto a propósito:
+### TC-16 — Publicar, proteger o esconder 📝
 
 | Visibilidad | Sin token | Con token | En el sitemap |
 |---|---|---|---|
@@ -218,9 +320,7 @@ Tres visibilidades, y cada una se comporta distinto a propósito:
 | `PROTECTED` | **401** | 200 | No |
 | `PRIVATE` | **404** | 404 | No |
 
-`PRIVATE` devuelve 404 y no 403 **a propósito**: un 403 confirmaría que el slug existe. Un 404 no revela nada.
-
-**En el panel:** selector *Visibilidad*. Al elegir `PROTECTED` aparece el campo del token, que pasa a ser obligatorio.
+**Pasos:** pestaña **Publicación** → selector *Visibilidad*. Al elegir `PROTECTED` aparece el campo del token, que pasa a ser obligatorio. El bloque del link ofrece copiarlo y abrirlo.
 
 ```bash
 # Publicar
@@ -233,20 +333,11 @@ curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
   -d "{\"visibility\":\"PROTECTED\",\"accessToken\":\"$(openssl rand -hex 16)\"}" | jq '{visibility, accessToken}'
 ```
 
-Y la comprobación, que vale la pena hacer siempre después de proteger algo:
+Después de proteger algo, ejecutá TC-10: es la comprobación que importa.
 
-```bash
-curl -s -o /dev/null -w 'sin token: %{http_code}\n' $API/api/curated-profiles/acme-tech-lead
-curl -s -o /dev/null -w 'con token: %{http_code}\n' "$API/api/curated-profiles/acme-tech-lead?token=EL-TOKEN"
-```
+### TC-17 — Previsualizar sin guardar 🔍
 
-El token viaja en `?token=` o en la cabecera `X-Access-Token`. En los logs el `?token=` sale **censurado**, y la cabecera `Referrer-Policy: no-referrer` evita que se filtre al navegar a un link externo.
-
----
-
-## Caso 8 — Previsualizar sin guardar
-
-El preview del constructor **no lo calcula el navegador**: lo resuelve el backend con el mismo servicio que la ruta pública (`CuratedProfileComposer`), para que no puedan divergir. Lo que ves es lo que va a ver el reclutador.
+El preview **no lo calcula el navegador**: lo resuelve el backend con el mismo servicio que la ruta pública (`CuratedProfileComposer`), para que no puedan divergir. Lo que ves es lo que verá quien reciba el link.
 
 ```bash
 curl -s -X POST $API/api/admin/curated-profiles/preview -H "$AUTH" \
@@ -255,37 +346,18 @@ curl -s -X POST $API/api/admin/curated-profiles/preview -H "$AUTH" \
   "headline": { "es": "Probando filtros", "en": "Testing filters" },
   "filterTags": ["dotnet"],
   "layout": "sidebar"
-}' | jq '{experiencias: (.experiences | length), skills: (.skillCategories | length), secciones: .sections}'
+}' | jq '{experiencias: (.experiences|length), skills: (.skillCategories|length), secciones: .sections}'
 ```
 
-> Cuidado con los nombres: lo que **mandás** usa `sectionsOrder` y `sectionsHidden`; lo que **vuelve resuelto** trae `sections` (ya ordenadas y filtradas) y `hiddenSections`. Es la diferencia entre la configuración y el resultado.
+No persiste nada. Sirve para tantear un filtro antes de tocar un perfil ya publicado.
 
-No persiste nada. Sirve para tantear un filtro antes de tocar un perfil que ya está publicado.
+> **Cuidado con los nombres:** lo que **mandás** usa `sectionsOrder` y `sectionsHidden`; lo que **vuelve resuelto** trae `sections` (ya ordenadas y filtradas) y `hiddenSections`. Es la diferencia entre la configuración y el resultado.
 
----
+### TC-18 — Medir qué pasó con los links 📝
 
-## Caso 9 — Compartir el link
+**Pasos:** `/admin` es el dashboard.
 
-Lo que mandás por LinkedIn o por mail:
-
-```
-https://portafolio.com/acme-tech-lead                    # como lo guardaste
-https://portafolio.com/acme-tech-lead?lang=en            # en inglés
-https://portafolio.com/acme-tech-lead?token=EL-TOKEN     # si es PROTECTED
-https://portafolio.com/acme-tech-lead?lang=en&theme=corporate&layout=sidebar
-```
-
-Qué ve el visitante: el perfil con su tema y su layout, un selector de idioma, y el menú de los otros perfiles **públicos** agrupados por `roleType` con su `techFocus`.
-
-> **Limitación conocida, importante al compartir:** los metadatos (título, descripción, OpenGraph, JSON-LD) se escriben en el cliente. Google ejecuta JavaScript y los ve; **LinkedIn, WhatsApp y Slack no**, así que la vista previa del link muestra los datos genéricos del portafolio y no los del perfil. Está anotado para 1.1 y requiere SSR o prerender por bot.
-
----
-
-## Caso 10 — Medir qué pasó con los links
-
-**En el panel:** `/admin` es el dashboard.
-
-- **Rango:** Últimos 7 días, 30 (por defecto), 90, o el último año.
+- **Rango:** 7, 30 (por defecto), 90 días o el último año.
 - **Totales:** Visitas en el rango · Perfiles vistos · Idiomas.
 - **Tablas:** por día, por perfil (con enlace al constructor y a la vista pública) y por idioma.
 
@@ -297,20 +369,17 @@ curl -s "$API/api/admin/analytics/views?from=2026-09-01&to=2026-10-04" -H "$AUTH
 }'
 ```
 
-Qué se guarda de cada visita: el perfil, el idioma, la fecha y la IP **solo como HMAC** con `ANALYTICS_SALT`. No hay cookies de seguimiento ni IP en claro. Las visitas se registran únicamente en la ruta pública, nunca en el preview del panel, y si el registro falla la respuesta al visitante no se altera.
+De cada visita se guarda el perfil, el idioma, la fecha y la IP **solo como HMAC** con `ANALYTICS_SALT`. No hay cookies de seguimiento. Las visitas se registran únicamente en la ruta pública, nunca en el preview, y si el registro falla la respuesta al visitante no se altera.
 
----
+### TC-19 — Mantener las experiencias 📝
 
-## Caso 11 — Mantener las experiencias
-
-**En el panel:** `/admin/experiencias`. **Nueva experiencia** abre el formulario:
+**Pasos:** `/admin/experiencias` → **Nueva experiencia**.
 
 | Campo | Notas |
 |---|---|
 | Empresa * | plano, no se traduce |
 | Ubicación * | plano |
-| Rol | **bilingüe**: una pestaña ES y una EN |
-| Resumen, logros | bilingües |
+| Rol, resumen, logros | **bilingües**, con pestañas ES y EN |
 | Inicio * / Fin | si marcás *Actual*, Fin queda vacío |
 | Orden | desempate cuando dos comparten `startDate` |
 | Tecnologías, tags, sector | listas de chips. **Los tags son los que usa `filterTags`** |
@@ -320,9 +389,9 @@ Qué se guarda de cada visita: el perfil, el idioma, la fecha y la IP **solo com
 curl -s -X POST $API/api/admin/experiences -H "$AUTH" \
   -H 'Content-Type: application/json' -d '{
   "company": "Acme",
-  "location": "Santiago, Chile",
+  "location": "Santa Cruz, Bolivia",
   "role": { "es": "Tech Lead", "en": "Tech Lead" },
-  "startDate": "2024-01-01",
+  "startDate": "2024-01",
   "current": true,
   "technologies": [".NET", "Azure"],
   "tags": ["dotnet", "leadership"],
@@ -330,18 +399,18 @@ curl -s -X POST $API/api/admin/experiences -H "$AUTH" \
 }' | jq '{id, company}'
 ```
 
-> Al agregar un tag nuevo, aparece solo como chip en el constructor de todos los perfiles. Es la forma más rápida de abrir una dimensión de filtrado nueva.
+> Un tag nuevo aparece solo como chip en el constructor de **todos** los perfiles: es la forma más rápida de abrir una dimensión de filtrado nueva.
+>
+> **Limitación actual:** el formulario expone los logros solo en español. El inglés se conserva al guardar, pero no se puede editar desde el panel. Lo resuelve el change `add-bilingual-builder-parity`.
 
----
+### TC-20 — Mantener skills y categorías 📝
 
-## Caso 12 — Mantener skills y categorías
-
-**En el panel:** `/admin/skills`. Las skills viven dentro de categorías.
+**Pasos:** `/admin/skills`. Las skills viven dentro de categorías.
 
 1. **Nueva categoría** — nombre bilingüe y orden.
-2. Dentro de cada categoría, **Nueva skill** — nombre, tags, orden.
-3. Una skill se puede **mover de categoría** editando su campo de categoría.
-4. Borrar una categoría **borra sus skills**. El panel lo confirma antes.
+2. Dentro de cada una, **Nueva skill** — nombre, tags, orden.
+3. Una skill se mueve de categoría editando su campo de categoría.
+4. Borrar una categoría **borra sus skills**; el panel lo confirma antes.
 
 ```bash
 CAT=$(curl -s -X POST $API/api/admin/skill-categories -H "$AUTH" \
@@ -357,34 +426,30 @@ Una categoría entra en un perfil curado si **alguna de sus skills** comparte un
 
 ---
 
-## Caso 13 — Lo que hoy NO se administra desde el panel
+## 4. Lo que hoy NO se administra desde el panel
 
-Hay que saberlo antes de necesitarlo. Estas entidades existen, se muestran en el sitio y **solo se cargan por seed**:
+Conviene saberlo antes de necesitarlo. Estas entidades se muestran en el sitio y **solo se cargan por seed**:
 
 | Entidad | Dónde se edita hoy |
 |---|---|
-| Perfil base (nombre, headline, resumen, contacto, foto) | `docs/cv-data.json` → `npm run seed` |
-| Educación | ídem |
-| Certificaciones | ídem |
-| Proyectos destacados | ídem |
-| Enlaces sociales | ídem |
+| Perfil base (nombre, titular, resumen, contacto, disponibilidad) | `docs/cv-data.json` → `npm run seed` |
+| Educación, certificaciones | ídem |
+| Proyectos destacados, enlaces sociales | ídem |
 | Temas (los cinco presets) | ídem |
-
-El procedimiento para cambiar cualquiera de ellas:
 
 ```bash
 # 1. Editar docs/cv-data.json
 # 2. Recargar (CUIDADO: sobrescribe el contenido del portafolio)
-cd backend && railway run npm run seed && railway run npm run seed:verify
+cd backend && npm run seed && npm run seed:verify
 ```
 
-> `seed` **sobrescribe**. No borra perfiles curados creados desde el panel, pero sí reemplaza el contenido que administra. Antes de correrlo en producción, hacé el `pg_dump` del § 7 del runbook.
+> `seed` **sobrescribe**. No borra los perfiles curados creados desde el panel, pero sí reemplaza el contenido que administra. Antes de correrlo en producción, hacé el `pg_dump` del § 7 de [`DEPLOY.md`](DEPLOY.md).
 
-Esto es la deuda más visible del producto: cinco entidades sin CRUD. Es candidata número uno de la próxima fase.
+Es la deuda más visible del producto y la resuelve el change `add-profile-content-admin`.
 
 ---
 
-## Caso 14 — Operar: salud, logs y recuperación
+## 5. Operación
 
 ```bash
 # ¿Vive y ve la base?
@@ -396,19 +461,46 @@ curl -s $API/health/live            # 200 mientras viva el proceso, sin tocar la
 curl -sD - $API/api/curated-profiles/no-existe -o /dev/null | grep -i x-request-id
 ```
 
-Con ese `requestId` buscás en los logs del panel de Railway la petición exacta. Los logs son JSON; de cada petición se guardan solo id, método y URL, con el `?token=` censurado — nunca cuerpos ni cabeceras, así que no hay credenciales en los logs.
-
 | Situación | Qué hacer |
 |---|---|
-| Olvidaste la contraseña del admin | `railway run npm run admin:bootstrap` con `ADMIN_PASSWORD` nuevo |
+| Olvidaste la contraseña del admin | `npm run admin:bootstrap` con `ADMIN_PASSWORD` nuevo |
 | Rotar el `JWT_SECRET` | cambiá la variable y redesplegá: invalida todas las sesiones |
-| Un perfil quedó mal publicado | pasalo a `PRIVATE` (devuelve 404 al instante) y arreglalo con calma |
+| Un perfil quedó mal publicado | pasalo a `PRIVATE` (404 al instante) y arreglalo con calma |
 | Perdiste datos | restaurá del backup — § 7 de [`DEPLOY.md`](DEPLOY.md) |
 | Deploy roto | Rollback en Deployments, dentro de las 72 h del plan Hobby |
 
 ---
 
-## Receta completa: de la vacante al link, en 6 llamadas
+## 6. Suite de regresión manual
+
+Antes de cada release, recorrer en este orden. Los marcados 📝 todavía no tienen captura de referencia: se agregan la próxima vez que se ejecute la suite con sesión iniciada en el panel.
+
+| # | Caso | Estado | Evidencia |
+|---|---|---|---|
+| TC-01 | La home resuelve el perfil completo | ✅ | captura |
+| TC-02 | Idioma negociado y forzado | ✅ | captura |
+| TC-03 | Un perfil curado filtra el contenido | ✅ | captura + métricas 15→7 |
+| TC-04 | Tema y layout desde la URL | ✅ | captura |
+| TC-05 | Menú de perfiles públicos | ✅ | captura |
+| TC-06 | Perfil protegido pide token | ✅ | captura |
+| TC-07 | Token correcto resuelve el perfil | ✅ | captura |
+| TC-08 | Slug inexistente o privado da 404 | ✅ | captura |
+| TC-09 | Vista móvil | ✅ | captura |
+| TC-10 | Códigos de estado por visibilidad | 🔍 | 401 / 200 / 404 |
+| TC-11 | Entrar al panel | ✅ | captura del login |
+| TC-12 | Crear un perfil curado | 📝 | — |
+| TC-13 | Tags y overrides | 📝 | — |
+| TC-14 | Ordenar y ocultar secciones | 📝 | — |
+| TC-15 | Personalizar el tema | 📝 | — |
+| TC-16 | Publicar, proteger, esconder | 📝 | — |
+| TC-17 | Previsualizar sin guardar | 🔍 | salida del preview |
+| TC-18 | Dashboard de analítica | 📝 | — |
+| TC-19 | Mantener experiencias | 📝 | — |
+| TC-20 | Mantener skills | 📝 | — |
+
+---
+
+## 7. Receta completa: de la vacante al link, en 6 llamadas
 
 ```bash
 # 1. Crear en privado
@@ -423,7 +515,7 @@ curl -s $API/api/admin/experiences -H "$AUTH" | jq -r '[.[].tags[]]|unique|join(
 
 # 3. Probar el filtro sin tocar nada
 curl -s -X POST $API/api/admin/curated-profiles/preview -H "$AUTH" -H 'Content-Type: application/json' \
-  -d '{"title":{"es":"x","en":"x"},"headline":{"es":"x","en":"x"},"filterTags":["dotnet","leadership"]}' \
+  -d '{"title":{"es":"x","en":"x"},"headline":{"es":"x","en":"x"},"filterTags":["dotnet"]}' \
   | jq '.experiences | length'
 
 # 4. Aplicar filtro, secciones y tema
@@ -440,31 +532,12 @@ curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" -H 'Content-Type
 
 # 6. Comprobar y compartir
 curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/acme-tech-lead
-echo "https://portafolio.com/acme-tech-lead"
+echo "$SITIO/acme-tech-lead"
 ```
 
 ---
 
-## Probar todo esto en local
-
-```bash
-# Postgres (si el 5432 está ocupado, cambiá el puerto y la DATABASE_URL)
-docker run -d --name portafolio-db -p 5432:5432 \
-  -e POSTGRES_USER=portfolio -e POSTGRES_PASSWORD=portfolio -e POSTGRES_DB=portfolio postgres:18-alpine
-
-cd backend
-npm ci && npm run prisma:migrate && npm run seed && npm run admin:bootstrap
-npm run start:dev                 # API en http://localhost:3300
-
-cd ../frontend
-npm ci && npm run dev             # sitio en http://localhost:5173, /admin para el panel
-```
-
-Con eso todos los casos de este manual funcionan igual, cambiando `API=http://localhost:3300`.
-
----
-
-## Qué falla y por qué
+## 8. Qué falla y por qué
 
 | Síntoma | Causa |
 |---|---|
@@ -476,5 +549,5 @@ Con eso todos los casos de este manual funcionan igual, cambiando `API=http://lo
 | `400` al crear un perfil | campo de más o faltante: el pipe rechaza lo que no está en el DTO. El mensaje dice cuál |
 | `409` al crear un perfil | el `slug` ya existe |
 | El `?token=` no funciona | el perfil es `PRIVATE`, no `PROTECTED`. `PRIVATE` siempre da 404 |
-| La vista previa en LinkedIn es genérica | limitación conocida: no ejecuta JavaScript (caso 9) |
+| La vista previa en LinkedIn es genérica | limitación conocida: no ejecuta JavaScript. La resuelve `add-server-rendered-head` |
 | El nuevo perfil no está en el sitemap | solo entran los `PUBLIC` |
