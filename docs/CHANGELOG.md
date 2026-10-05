@@ -1,5 +1,18 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (defectos D-01 y D-02 de la suite de regresión manual)
+
+Los dos defectos que encontró la primera ejecución completa de la suite (`docs/MANUAL.md` § 6.1, 5 de octubre de 2026). Los dos con Human Gate.
+
+### D-01 — El dashboard no mostraba las visitas de hoy (change OpenSpec `fix-analytics-range-inclusive`)
+- `GET /api/admin/analytics/views`: el rango `from`/`to` pasa a ser cerrado y de días UTC completos. Antes `to=<fecha>` se convertía en la medianoche inicial de ese día y excluía el día entero, así que el panel, que manda `to=<hoy>`, nunca contaba las visitas del día en curso.
+- El default son los 30 días que terminan hoy, igual que el panel (antes, 30 × 24 h hacia atrás desde ahora). La respuesta devuelve `from`/`to` normalizados.
+- Spec `profile-view-analytics` precisada con tres escenarios nuevos. Test unitario y e2e de TC-18.
+
+### D-02 — Omitir un objeto obligatorio respondía 500 (corrección de conformidad, sin change)
+- `@IsDefined()` en los campos bilingües obligatorios: `role` y `summary` de experiencias, `title` y `headline` de perfiles curados y `name` de categorías de skills. Ahora responden 400 con el campo en el mensaje, como ya exigían `api-platform` y las specs de CRUD. Los `PATCH` parciales no cambian.
+- Guardia en `backend/test/security.spec.ts` sobre los metadatos de `class-validator`: un `@ValidateNested()` sin `@IsOptional()` debe llevar `@IsDefined()`.
+
 ## Update — Septiembre 2026 (Fase 6 — change OpenSpec `add-production-hardening`)
 
 Hardening para el release 1.0.0 (propuesta aprobada por Human Gate, commit `33029cc`). Cierra los 6 bloqueantes del checklist y 5 de los 6 importantes; el sexto (backups) no es código.
