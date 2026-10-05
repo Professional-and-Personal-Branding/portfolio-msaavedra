@@ -1,5 +1,7 @@
 # MANUAL — Uso de la plataforma, paso a paso y con casos de prueba
 
+> **Versión interactiva: [`manual/index.html`](manual/index.html)** — el mismo contenido con índice lateral, filtros por estado, buscador, capturas ampliables y marcas de corrida. Abrila con doble clic o publicada como artifact; este Markdown queda como la fuente en texto plano, diffeable en el repo.
+>
 > Guía interactiva: cada funcionalidad está escrita como un **caso de prueba funcional** con precondición, pasos, resultado esperado y evidencia. Se puede leer como manual de uso o ejecutar como suite de regresión manual antes de cada release.
 >
 > Para desplegar: [`DEPLOY-RAILWAY.md`](DEPLOY-RAILWAY.md) (guía corta) y [`DEPLOY.md`](DEPLOY.md) (referencia). Este documento empieza donde terminan esos.
@@ -21,7 +23,7 @@
 
 ```bash
 # 1. Base de datos
-docker compose up -d                      # Postgres en 5432 y Adminer en 8080
+docker compose up -d                      # Postgres en 5434 y Adminer en 8080
 
 # 2. Backend
 cd backend
@@ -36,16 +38,16 @@ cd ../frontend
 npm ci && npm run dev                     # sitio en http://localhost:5173
 ```
 
-> **Si el 5432 está ocupado** por otro proyecto, levantá el Postgres del portafolio en otro puerto reusando su volumen y pasale la URL al backend por variable de entorno, sin tocar tu `.env`:
->
-> ```bash
-> docker run -d --name portafolio-pg -p 5434:5432 \
->   -e POSTGRES_USER=portfolio -e POSTGRES_PASSWORD=portfolio -e POSTGRES_DB=portfolio \
->   -v portfolio-pgdata:/var/lib/postgresql/data postgres:16-alpine
-> # y después, en la misma terminal del backend:
-> # PowerShell: $env:DATABASE_URL = "postgresql://portfolio:portfolio@localhost:5434/portfolio?schema=public"
-> # bash:       export DATABASE_URL="postgresql://portfolio:portfolio@localhost:5434/portfolio?schema=public"
-> ```
+### Puertos
+
+| Servicio | Puerto | Cómo se cambia |
+|---|---|---|
+| Postgres | **5434** | `POSTGRES_PORT=5555 docker compose up -d` |
+| Adminer | 8080 | `ADMINER_PORT=8081 docker compose up -d` |
+| API (NestJS) | 3300 | `PORT` en `backend/.env` |
+| Sitio (Vite) | 5173 | `npm run dev -- --port 5174` |
+
+> El Postgres del portafolio **no usa el 5432** a propósito: ese puerto suele estar tomado por otro Postgres local. Si el 5434 también lo está, cambialo con `POSTGRES_PORT` y ajustá `DATABASE_URL` en `backend/.env`.
 
 Comprobá que todo arrancó:
 
