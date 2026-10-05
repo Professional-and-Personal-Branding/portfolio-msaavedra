@@ -701,7 +701,7 @@ POST /api/admin/curated-profiles  sin "title"    -> 400  ["title should not be n
 POST /api/admin/curated-profiles  sin "headline" -> 400  ["headline should not be null or undefined"]
 POST /api/admin/skill-categories  sin "name"     -> 400  ["name should not be null or undefined"]
 POST /api/admin/experiences       completo       -> 201  (control)</pre></div>
-        <p><span class="lbl">Regresión</span> · <code>backend/test/dto-validation.spec.ts</code>, un test de comportamiento que exige un error por cada campo obligatorio de cada DTO de entrada (cuerpo vacío, campo ausente y campo en <code>null</code>). Sin el arreglo fallan 8 de sus 34 casos.</p>
+        <p><span class="lbl">Regresión</span> · <code>backend/test/dto-validation.spec.ts</code>, un test de comportamiento que exige un error por cada campo obligatorio de cada DTO de entrada (cuerpo vacío, campo ausente y campo en <code>null</code>). Sin el arreglo fallan 8 de sus 34 casos. Desde el PR #3 lo complementan una guarda estática en <code>backend/test/security.spec.ts</code>, que exige <code>@IsDefined()</code> en todo <code>@ValidateNested()</code> no opcional, y un e2e por HTTP de las seis omisiones.</p>
       </article>
     </section>
 
