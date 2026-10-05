@@ -1,15 +1,14 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup, configure } from '@testing-library/react';
+import { cleanup } from '@testing-library/react';
 import { afterEach } from 'vitest';
 
 afterEach(() => {
   cleanup();
 });
 
-// Las pantallas del backoffice cargan un chunk lazy y después responden por MSW:
-// con la suite en paralelo, el primer `findBy` de cada archivo a veces pasa del
-// segundo por defecto y falla sin que haya un defecto.
-configure({ asyncUtilTimeout: 5000 });
+// `asyncUtilTimeout` queda en el segundo por defecto a propósito: un `findBy` que tarda
+// más señala un problema real. Los tests del backoffice precargan el chunk lazy del panel
+// en `beforeAll` (`preloadBackoffice`), que era lo que hacía lento el primer test de cada archivo.
 
 // jsdom no implementa matchMedia (lo usa `useReducedMotion` de Motion).
 if (typeof window !== 'undefined' && !window.matchMedia) {
