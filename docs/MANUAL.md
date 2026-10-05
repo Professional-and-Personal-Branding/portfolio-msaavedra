@@ -10,7 +10,8 @@
 |---|---|
 | ✅ | Ejecutado y verificado el 4 de octubre de 2026 sobre la base del seed, con captura |
 | 🔍 | Ejecutado y verificado contra la API, con la salida transcrita |
-| 📝 | Documentado paso a paso; la captura queda pendiente (ver § 6) |
+| 📝 | Documentado paso a paso; la captura de pantalla queda pendiente (ver § 6) |
+| ❌ | Ejecutado y **falla**: el comportamiento real no es el esperado. Ver § 6.1 |
 
 ---
 
@@ -210,7 +211,7 @@ El token también viaja en la cabecera `X-Access-Token`. En los logs el `?token=
 
 La sesión es una cookie **httpOnly**: el cliente nunca guarda el JWT y el estado se deriva de `GET /api/auth/me`. Al expirar (`JWT_EXPIRES_IN`, por defecto `1d`), el panel vuelve al login en la siguiente petición.
 
-### TC-12 — Crear un perfil curado para una vacante 📝
+### TC-12 — Crear un perfil curado para una vacante 🔍📝
 
 **Precondición:** sesión iniciada.
 **Pasos:**
@@ -235,11 +236,21 @@ curl -s -X POST $API/api/admin/curated-profiles -H "$AUTH" \
 }' | jq '{id, slug, visibility}'
 ```
 
+**Ejecutado el 5 de octubre de 2026:**
+
+```
+POST /api/admin/curated-profiles       -> 201  slug=suite-demo visibility=PRIVATE
+  defaults: accentColor=#1A365D layout=classic views=0 filterTags=[]
+POST con el mismo slug                 -> 409
+POST con un campo fuera del DTO        -> 400
+POST omitiendo "title" (obligatorio)   -> 500  ❌ debería ser 400 — ver § 6.1
+```
+
 > **Recomendado:** crealo `PRIVATE` y pasalo a `PUBLIC` recién cuando esté listo (TC-16). Un `PRIVATE` devuelve 404, así que nadie lo encuentra mientras lo armás.
 
 Los campos que no mandás toman su valor por defecto: `filterTags`, `includeIds`, `excludeIds`, `sectionsOrder` y `sectionsHidden` vacíos, `accentColor` en `#1A365D`, `layout` en `classic`, `visibility` en `PUBLIC`.
 
-### TC-13 — Elegir qué entra con tags y overrides 📝
+### TC-13 — Elegir qué entra con tags y overrides 🔍📝
 
 Tres mecanismos, en este orden:
 
@@ -268,9 +279,18 @@ curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
 curl -s $API/api/admin/experiences -H "$AUTH" | jq -r '[.[].tags[]] | unique | join(", ")'
 ```
 
+**Ejecutado**, con dos experiencias de prueba que comparten el tag `suite-tag`, una visible y otra oculta:
+
+```
+filterTags vacío                          -> 16 experiencias (entra todo lo visible)
+filterTags=[suite-tag]                    -> 1; la visible entró, la oculta no
+includeIds sobre una experiencia oculta   -> no entró  (includeIds no fuerza invisibles)
+mismo id en includeIds y excludeIds       -> no entró  (excludeIds siempre gana)
+```
+
 El orden de salida siempre es cronológico: `startDate` descendente, `order` ascendente como desempate. No se reordena item por item, a propósito: todos los perfiles cuentan la historia en el mismo sentido.
 
-### TC-14 — Ordenar y ocultar secciones 📝
+### TC-14 — Ordenar y ocultar secciones 🔍📝
 
 Las nueve secciones conocidas: `hero`, `stats`, `experience`, `skills`, `projects`, `education`, `certifications`, `presence`, `contact`.
 
@@ -289,9 +309,18 @@ curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
 }' | jq '{sectionsOrder, sectionsHidden}'
 ```
 
+**Ejecutado** sobre un borrador sin proyectos ni formación que pasen el filtro:
+
+```
+sectionsOrder=[hero,experience]                        -> sections=[hero,experience]
+sectionsOrder=[hero,skills,experience,contact]
+            + sectionsHidden=[skills]                  -> sections=[hero,experience,contact]
+                                                          hiddenSections=[skills]
+```
+
 > El backend declara hoy **7** secciones por defecto y el frontend conoce **9**: `projects` y `presence` entran por la regla de relleno del cliente. Está identificado y resuelto en el change `unify-section-catalog`.
 
-### TC-15 — Personalizar el tema 📝
+### TC-15 — Personalizar el tema 🔍📝
 
 **Pasos:** pestaña **Diseño**, bloque *Tema*:
 
@@ -312,7 +341,14 @@ curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
 }' | jq '{themeId, themeOverrides}'
 ```
 
-### TC-16 — Publicar, proteger o esconder 📝
+**Ejecutado:**
+
+```
+GET /api/admin/themes  -> 5 temas: corporate, elegant, minimal, modern-dark, modern-light
+PATCH themeOverrides   -> se guarda {"colors":{"accent":"#5B2C87"}}, solo la diferencia
+```
+
+### TC-16 — Publicar, proteger o esconder 🔍📝
 
 | Visibilidad | Sin token | Con token | En el sitemap |
 |---|---|---|---|
@@ -331,6 +367,18 @@ curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
 curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
   -H 'Content-Type: application/json' \
   -d "{\"visibility\":\"PROTECTED\",\"accessToken\":\"$(openssl rand -hex 16)\"}" | jq '{visibility, accessToken}'
+```
+
+**Ejecutado**, recorriendo las tres visibilidades sobre el mismo perfil:
+
+```
+PUBLIC    sin token -> 200
+PROTECTED sin token -> 401
+PROTECTED con token -> 200
+PRIVATE   sin token -> 404
+PRIVATE   con token -> 404   (no revela que existe)
+slug inexistente    -> 404   (indistinguible del PRIVATE)
+el PRIVATE figura en el sitemap -> no
 ```
 
 Después de proteger algo, ejecutá TC-10: es la comprobación que importa.
@@ -353,7 +401,7 @@ No persiste nada. Sirve para tantear un filtro antes de tocar un perfil ya publi
 
 > **Cuidado con los nombres:** lo que **mandás** usa `sectionsOrder` y `sectionsHidden`; lo que **vuelve resuelto** trae `sections` (ya ordenadas y filtradas) y `hiddenSections`. Es la diferencia entre la configuración y el resultado.
 
-### TC-18 — Medir qué pasó con los links 📝
+### TC-18 — Medir qué pasó con los links ❌
 
 **Pasos:** `/admin` es el dashboard.
 
@@ -369,9 +417,21 @@ curl -s "$API/api/admin/analytics/views?from=2026-09-01&to=2026-10-04" -H "$AUTH
 }'
 ```
 
+**Ejecutado**, y acá apareció un defecto:
+
+```
+views del perfil antes                 -> 2
+tras 2 visitas a la ruta pública       -> 4   ✅ el contador sube
+tras un preview del panel              -> 4   ✅ el preview no cuenta como visita
+GET analytics/views?from=hoy&to=hoy    -> total=0   ❌ debería ser 4
+GET analytics/views?from=hoy&to=mañana -> total=13, byDay={hoy:13}
+```
+
+El contador del perfil y el registro de `ProfileView` funcionan. Lo que falla es el **rango** del agregado: `to` es exclusivo, y el dashboard pide `[hoy-29, hoy]`, así que **las visitas de hoy no aparecen nunca**. Ver § 6.1.
+
 De cada visita se guarda el perfil, el idioma, la fecha y la IP **solo como HMAC** con `ANALYTICS_SALT`. No hay cookies de seguimiento. Las visitas se registran únicamente en la ruta pública, nunca en el preview, y si el registro falla la respuesta al visitante no se altera.
 
-### TC-19 — Mantener las experiencias 📝
+### TC-19 — Mantener las experiencias 🔍📝
 
 **Pasos:** `/admin/experiencias` → **Nueva experiencia**.
 
@@ -399,11 +459,21 @@ curl -s -X POST $API/api/admin/experiences -H "$AUTH" \
 }' | jq '{id, company}'
 ```
 
+**Ejecutado:**
+
+```
+POST experiencia visible                       -> 201, tags=[suite-tag]
+POST experiencia oculta (visible:false)        -> 201
+GET /api/experiences (público) la oculta       -> no aparece
+GET /api/admin/experiences la oculta           -> sí aparece, con visible=false
+POST omitiendo "summary" (obligatorio)         -> 500  ❌ debería ser 400 — ver § 6.1
+```
+
 > Un tag nuevo aparece solo como chip en el constructor de **todos** los perfiles: es la forma más rápida de abrir una dimensión de filtrado nueva.
 >
 > **Limitación actual:** el formulario expone los logros solo en español. El inglés se conserva al guardar, pero no se puede editar desde el panel. Lo resuelve el change `add-bilingual-builder-parity`.
 
-### TC-20 — Mantener skills y categorías 📝
+### TC-20 — Mantener skills y categorías 🔍📝
 
 **Pasos:** `/admin/skills`. Las skills viven dentro de categorías.
 
@@ -420,6 +490,15 @@ CAT=$(curl -s -X POST $API/api/admin/skill-categories -H "$AUTH" \
 curl -s -X POST $API/api/admin/skill-categories/$CAT/skills -H "$AUTH" \
   -H 'Content-Type: application/json' \
   -d '{"name":"Railway","tags":["devops","cloud"],"order":1}' | jq '{id, name}'
+```
+
+**Ejecutado:**
+
+```
+POST categoría "Suite Cat"                          -> 201
+POST skill "SuiteSkill" con tags=[suite-tag]        -> 201
+preview con filterTags=[suite-tag]                  -> la categoría entra por el tag de su skill
+DELETE de la categoría                              -> se lleva sus skills
 ```
 
 Una categoría entra en un perfil curado si **alguna de sus skills** comparte un tag con `filterTags`; dentro, se muestran solo las skills que pasan el filtro.
@@ -473,7 +552,13 @@ curl -sD - $API/api/curated-profiles/no-existe -o /dev/null | grep -i x-request-
 
 ## 6. Suite de regresión manual
 
-Antes de cada release, recorrer en este orden. Los marcados 📝 todavía no tienen captura de referencia: se agregan la próxima vez que se ejecute la suite con sesión iniciada en el panel.
+Antes de cada release, recorrer en este orden. Última ejecución completa: **5 de octubre de 2026**, contra la base del seed (14 perfiles, 15 experiencias), con la API en `localhost:3300`.
+
+Los casos del backoffice están automatizados en [`manual/suite-backoffice.ps1`](manual/suite-backoffice.ps1): ejecuta TC-12 a TC-20 contra la API, imprime el resultado real junto al esperado y borra todos los datos de prueba que crea, pase o falle.
+
+```bash
+cd docs/manual && pwsh ./suite-backoffice.ps1
+```
 
 | # | Caso | Estado | Evidencia |
 |---|---|---|---|
@@ -488,15 +573,52 @@ Antes de cada release, recorrer en este orden. Los marcados 📝 todavía no tie
 | TC-09 | Vista móvil | ✅ | captura |
 | TC-10 | Códigos de estado por visibilidad | 🔍 | 401 / 200 / 404 |
 | TC-11 | Entrar al panel | ✅ | captura del login |
-| TC-12 | Crear un perfil curado | 📝 | — |
-| TC-13 | Tags y overrides | 📝 | — |
-| TC-14 | Ordenar y ocultar secciones | 📝 | — |
-| TC-15 | Personalizar el tema | 📝 | — |
-| TC-16 | Publicar, proteger, esconder | 📝 | — |
-| TC-17 | Previsualizar sin guardar | 🔍 | salida del preview |
-| TC-18 | Dashboard de analítica | 📝 | — |
-| TC-19 | Mantener experiencias | 📝 | — |
-| TC-20 | Mantener skills | 📝 | — |
+| TC-12 | Crear un perfil curado | 🔍📝 | 201 / 409 / 400, **y un 500** |
+| TC-13 | Tags y overrides | 🔍📝 | los cuatro casos del filtro |
+| TC-14 | Ordenar y ocultar secciones | 🔍📝 | orden y ocultado resueltos |
+| TC-15 | Personalizar el tema | 🔍📝 | 5 temas; solo se guarda la diferencia |
+| TC-16 | Publicar, proteger, esconder | 🔍📝 | la tabla completa de visibilidad |
+| TC-17 | Previsualizar sin guardar | 🔍 | no persiste nada |
+| TC-18 | Dashboard de analítica | ❌ | el contador sube; **el rango falla** |
+| TC-19 | Mantener experiencias | 🔍📝 | visible / oculta, **y un 500** |
+| TC-20 | Mantener skills | 🔍📝 | la categoría entra por el tag de su skill |
+
+**19 de 20 casos pasan.** Los marcados 🔍📝 están verificados contra la API pero **les falta la captura del panel**: se agregan la próxima vez que se ejecute la suite con sesión iniciada. TC-18 falla.
+
+### 6.1 Defectos encontrados al ejecutar la suite
+
+Los dos aparecieron al ejecutar estos casos por primera vez de punta a punta. Ninguno estaba reportado.
+
+#### D-01 — El dashboard nunca muestra las visitas de hoy
+
+**Severidad:** alta, visible para el usuario.
+**Síntoma:** se comparte un link, alguien lo abre, y el dashboard sigue en cero hasta el día siguiente.
+**Causa:** el parámetro `to` de `GET /api/admin/analytics/views` es **exclusivo**, pero `frontend/src/features/backoffice/dashboard/ranges.ts` documenta y construye un **rango cerrado** `[hoy - (días - 1), hoy]`. El `to = hoy` que manda el panel deja fuera el día en curso.
+
+```
+GET /api/admin/analytics/views?from=2026-10-05&to=2026-10-05  -> total=0
+GET /api/admin/analytics/views?from=2026-10-05&to=2026-10-06  -> total=13, byDay={2026-10-05:13}
+```
+
+**Arreglo propuesto:** hacer `to` inclusivo en el agregado (comparar contra el final del día de `to`, no contra su medianoche), que es lo que la spec `admin-analytics-dashboard` describe. Alternativa peor: que el frontend mande `to = mañana`, porque deja la API mintiendo sobre su propio contrato.
+
+#### D-02 — Omitir un objeto obligatorio devuelve 500 en lugar de 400
+
+**Severidad:** media; solo afecta endpoints autenticados del panel.
+**Síntoma:** un cuerpo al que le falta un campo obligatorio anidado responde `500 Error interno del servidor` en vez de un 400 que diga qué falta.
+**Causa:** los campos obligatorios de tipo objeto se declaran con `@ValidateNested()` + `@Type()` pero **sin `@IsDefined()`**. `class-validator` no valida un valor `undefined`, así que la validación pasa y el mapper revienta con `TypeError: Cannot read properties of undefined (reading 'en')`.
+
+Verificado en cinco variantes:
+
+```
+POST /api/admin/experiences      sin "summary"   -> 500   (esperado 400)
+POST /api/admin/experiences      sin "role"      -> 500   (esperado 400)
+POST /api/admin/curated-profiles sin "title"     -> 500   (esperado 400)
+POST /api/admin/curated-profiles sin "headline"  -> 500   (esperado 400)
+POST /api/admin/experiences      completo        -> 201   (control)
+```
+
+**Arreglo propuesto:** agregar `@IsDefined()` a los campos obligatorios de tipo objeto en los DTO de creación, y un test estático que falle si aparece un `@ValidateNested()` obligatorio sin él — en la línea del test que ya exige `adminValidationPipe` en todo endpoint con cuerpo.
 
 ---
 
