@@ -28,6 +28,7 @@ portfolio/
     ├── DEPLOY.md         # Runbook de producción: referencia (variables, arranque, backups, proveedores)
     ├── DEPLOY-RAILWAY.md # Guía corta para desplegar en Railway, paso a paso
     ├── MANUAL.md         # Uso de la plataforma, caso por caso (panel + API)
+    ├── manual/index.html # El mismo manual, interactivo: índice, filtros y capturas
     ├── RELEASE-1.0.0-CHECKLIST.md  # Estado de cada ítem del release
     ├── cv-data.json      # Datos consolidados de toda la trayectoria (seed)
     └── demo.html         # Demo estático para validar dirección estética

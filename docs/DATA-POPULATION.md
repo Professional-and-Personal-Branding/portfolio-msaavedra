@@ -36,7 +36,7 @@ docker compose up -d
 cd backend
 cp .env.example .env
 #    Verificar que DATABASE_URL apunte a la base local:
-#    postgresql://portfolio:portfolio@localhost:5432/portfolio?schema=public
+#    postgresql://portfolio:portfolio@localhost:5434/portfolio?schema=public
 
 # 3. Instalar dependencias (si aún no se hizo)
 npm install

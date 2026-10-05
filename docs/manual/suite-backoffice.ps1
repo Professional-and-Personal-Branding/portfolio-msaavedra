@@ -6,7 +6,7 @@
 #   cd docs/manual && pwsh ./suite-backoffice.ps1
 #
 # Requiere: backend en http://localhost:3300 y las credenciales en backend/.env.
-# Los casos marcados DEFECTO CONOCIDO fallan a proposito: ver docs/MANUAL.md § 6.1.
+# Los defectos D-01 y D-02 que encontro esta suite estan corregidos: ver docs/MANUAL.md § 6.1.
 $ErrorActionPreference = 'Stop'
 $API = 'http://localhost:3300'
 $R = "D:\projects\portfolio-msaavedra\portfolio-msaavedra"

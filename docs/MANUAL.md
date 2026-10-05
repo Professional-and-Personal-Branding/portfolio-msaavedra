@@ -1,5 +1,7 @@
 # MANUAL — Uso de la plataforma, paso a paso y con casos de prueba
 
+> **Versión interactiva: [`manual/index.html`](manual/index.html)** — el mismo contenido con índice lateral, filtros por estado, buscador, capturas ampliables y marcas de corrida. Abrila con doble clic o publicada como artifact; este Markdown queda como la fuente en texto plano, diffeable en el repo.
+>
 > Guía interactiva: cada funcionalidad está escrita como un **caso de prueba funcional** con precondición, pasos, resultado esperado y evidencia. Se puede leer como manual de uso o ejecutar como suite de regresión manual antes de cada release.
 >
 > Para desplegar: [`DEPLOY-RAILWAY.md`](DEPLOY-RAILWAY.md) (guía corta) y [`DEPLOY.md`](DEPLOY.md) (referencia). Este documento empieza donde terminan esos.
@@ -13,6 +15,8 @@
 | 📝 | Documentado paso a paso; la captura de pantalla queda pendiente (ver § 6) |
 | ❌ | Ejecutado y **falla**: el comportamiento real no es el esperado. Ver § 6.1 |
 
+> El estado 📝 desapareció el 5 de octubre: todos los casos del backoffice tienen su captura.
+
 ---
 
 ## 0. Preparar el entorno
@@ -21,7 +25,7 @@
 
 ```bash
 # 1. Base de datos
-docker compose up -d                      # Postgres en 5432 y Adminer en 8080
+docker compose up -d                      # Postgres en 5434 y Adminer en 8080
 
 # 2. Backend
 cd backend
@@ -36,16 +40,16 @@ cd ../frontend
 npm ci && npm run dev                     # sitio en http://localhost:5173
 ```
 
-> **Si el 5432 está ocupado** por otro proyecto, levantá el Postgres del portafolio en otro puerto reusando su volumen y pasale la URL al backend por variable de entorno, sin tocar tu `.env`:
->
-> ```bash
-> docker run -d --name portafolio-pg -p 5434:5432 \
->   -e POSTGRES_USER=portfolio -e POSTGRES_PASSWORD=portfolio -e POSTGRES_DB=portfolio \
->   -v portfolio-pgdata:/var/lib/postgresql/data postgres:16-alpine
-> # y después, en la misma terminal del backend:
-> # PowerShell: $env:DATABASE_URL = "postgresql://portfolio:portfolio@localhost:5434/portfolio?schema=public"
-> # bash:       export DATABASE_URL="postgresql://portfolio:portfolio@localhost:5434/portfolio?schema=public"
-> ```
+### Puertos
+
+| Servicio | Puerto | Cómo se cambia |
+|---|---|---|
+| Postgres | **5434** | `POSTGRES_PORT=5555 docker compose up -d` |
+| Adminer | 8080 | `ADMINER_PORT=8081 docker compose up -d` |
+| API (NestJS) | 3300 | `PORT` en `backend/.env` |
+| Sitio (Vite) | 5173 | `npm run dev -- --port 5174` |
+
+> El Postgres del portafolio **no usa el 5432** a propósito: ese puerto suele estar tomado por otro Postgres local. Si el 5434 también lo está, cambialo con `POSTGRES_PORT` y ajustá `DATABASE_URL` en `backend/.env`.
 
 Comprobá que todo arrancó:
 
@@ -211,7 +215,7 @@ El token también viaja en la cabecera `X-Access-Token`. En los logs el `?token=
 
 La sesión es una cookie **httpOnly**: el cliente nunca guarda el JWT y el estado se deriva de `GET /api/auth/me`. Al expirar (`JWT_EXPIRES_IN`, por defecto `1d`), el panel vuelve al login en la siguiente petición.
 
-### TC-12 — Crear un perfil curado para una vacante 🔍📝
+### TC-12 — Crear un perfil curado para una vacante ✅
 
 **Precondición:** sesión iniciada.
 **Pasos:**
@@ -243,14 +247,23 @@ POST /api/admin/curated-profiles       -> 201  slug=suite-demo visibility=PRIVAT
   defaults: accentColor=#1A365D layout=classic views=0 filterTags=[]
 POST con el mismo slug                 -> 409
 POST con un campo fuera del DTO        -> 400
-POST omitiendo "title" (obligatorio)   -> 500  ❌ debería ser 400 — ver § 6.1
+POST omitiendo "title" (obligatorio)   -> 500  ❌ antes del arreglo de D-02 — ver § 6.1
+POST omitiendo "title" (obligatorio)   -> 400  ✅ después: "title should not be null or undefined"
 ```
 
 > **Recomendado:** crealo `PRIVATE` y pasalo a `PUBLIC` recién cuando esté listo (TC-16). Un `PRIVATE` devuelve 404, así que nadie lo encuentra mientras lo armás.
 
+![Lista de perfiles curados](manual/tc12a-perfiles-lista.jpg)
+
+*La lista muestra el slug, la visibilidad, la taxonomía y las visitas de cada perfil.*
+
+![Pestaña Identidad del constructor](manual/tc12b-identidad.jpg)
+
+*Pestaña Identidad, con la vista previa en vivo a la derecha: `12 experiencias · 10 categorías · 1 proyectos` ya filtradas.*
+
 Los campos que no mandás toman su valor por defecto: `filterTags`, `includeIds`, `excludeIds`, `sectionsOrder` y `sectionsHidden` vacíos, `accentColor` en `#1A365D`, `layout` en `classic`, `visibility` en `PUBLIC`.
 
-### TC-13 — Elegir qué entra con tags y overrides 🔍📝
+### TC-13 — Elegir qué entra con tags y overrides ✅
 
 Tres mecanismos, en este orden:
 
@@ -290,7 +303,11 @@ mismo id en includeIds y excludeIds       -> no entró  (excludeIds siempre gana
 
 El orden de salida siempre es cronológico: `startDate` descendente, `order` ascendente como desempate. No se reordena item por item, a propósito: todos los perfiles cuentan la historia en el mismo sentido.
 
-### TC-14 — Ordenar y ocultar secciones 🔍📝
+![Pestaña Selección](manual/tc13-seleccion.jpg)
+
+*Los tags activos arriba y el universo de tags disponible debajo, sacado de los datos reales. La vista previa se recalcula con cada clic.*
+
+### TC-14 — Ordenar y ocultar secciones ✅
 
 Las nueve secciones conocidas: `hero`, `stats`, `experience`, `skills`, `projects`, `education`, `certifications`, `presence`, `contact`.
 
@@ -300,6 +317,10 @@ Las nueve secciones conocidas: `hero`, `stats`, `experience`, `skills`, `project
 
 - Una sección **con datos** que no figure en `sectionsOrder` **se agrega al final**. Para ocultarla hay que ponerla en `sectionsHidden`.
 - Una sección **sin datos** no se renderiza aunque esté en el orden.
+
+![Pestaña Diseño con las secciones](manual/tc14-secciones.jpg)
+
+*Las nueve secciones con su interruptor y sus flechas. `projects` y `presence` quedan en las posiciones 8 y 9 porque el orden guardado trae solo siete.*
 
 ```bash
 curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
@@ -320,7 +341,7 @@ sectionsOrder=[hero,skills,experience,contact]
 
 > El backend declara hoy **7** secciones por defecto y el frontend conoce **9**: `projects` y `presence` entran por la regla de relleno del cliente. Está identificado y resuelto en el change `unify-section-catalog`.
 
-### TC-15 — Personalizar el tema 🔍📝
+### TC-15 — Personalizar el tema ✅
 
 **Pasos:** pestaña **Diseño**, bloque *Tema*:
 
@@ -348,7 +369,11 @@ GET /api/admin/themes  -> 5 temas: corporate, elegant, minimal, modern-dark, mod
 PATCH themeOverrides   -> se guarda {"colors":{"accent":"#5B2C87"}}, solo la diferencia
 ```
 
-### TC-16 — Publicar, proteger o esconder 🔍📝
+![Customizador de tema](manual/tc15-tema.jpg)
+
+*Tema base, los ocho colores con su valor hexadecimal, y **Restablecer** para volver al preset.*
+
+### TC-16 — Publicar, proteger o esconder ✅
 
 | Visibilidad | Sin token | Con token | En el sitemap |
 |---|---|---|---|
@@ -380,6 +405,10 @@ PRIVATE   con token -> 404   (no revela que existe)
 slug inexistente    -> 404   (indistinguible del PRIVATE)
 el PRIVATE figura en el sitemap -> no
 ```
+
+![Pestaña Publicación](manual/tc16-publicacion.jpg)
+
+*Visibilidad, el link público con copiar y abrir, y el contador de visitas del perfil.*
 
 Después de proteger algo, ejecutá TC-10: es la comprobación que importa.
 
@@ -429,9 +458,13 @@ GET analytics/views?from=hoy&to=hoy    -> total=4   ✅ después del arreglo
 
 El contador del perfil y el registro de `ProfileView` siempre funcionaron. Lo que fallaba era el **rango** del agregado: `to` era exclusivo y el dashboard pide `[hoy-29, hoy]`, así que las visitas de hoy no aparecían nunca. Ver § 6.1.
 
+![Dashboard de analítica](manual/tc18-dashboard.jpg)
+
+*516 visitas en el rango, repartidas en 6 perfiles y 2 idiomas. Las tres tablas: por día, por perfil y por idioma.*
+
 De cada visita se guarda el perfil, el idioma, la fecha y la IP **solo como HMAC** con `ANALYTICS_SALT`. No hay cookies de seguimiento. Las visitas se registran únicamente en la ruta pública, nunca en el preview, y si el registro falla la respuesta al visitante no se altera.
 
-### TC-19 — Mantener las experiencias 🔍📝
+### TC-19 — Mantener las experiencias ✅
 
 **Pasos:** `/admin/experiencias` → **Nueva experiencia**.
 
@@ -466,14 +499,23 @@ POST experiencia visible                       -> 201, tags=[suite-tag]
 POST experiencia oculta (visible:false)        -> 201
 GET /api/experiences (público) la oculta       -> no aparece
 GET /api/admin/experiences la oculta           -> sí aparece, con visible=false
-POST omitiendo "summary" (obligatorio)         -> 500  ❌ debería ser 400 — ver § 6.1
+POST omitiendo "summary" (obligatorio)         -> 500  ❌ antes del arreglo de D-02 — ver § 6.1
+POST omitiendo "summary" (obligatorio)         -> 400  ✅ después: "summary should not be null or undefined"
 ```
 
 > Un tag nuevo aparece solo como chip en el constructor de **todos** los perfiles: es la forma más rápida de abrir una dimensión de filtrado nueva.
 >
+![Lista de experiencias](manual/tc19a-experiencias.jpg)
+
+*Cada fila con su empresa, periodo, tags y orden.*
+
+![Formulario de experiencia](manual/tc19b-formulario.jpg)
+
+*Los campos bilingües llevan su conmutador ES/EN. **Logros (es)** no lo tiene: es la limitación de abajo, a la vista.*
+
 > **Limitación actual:** el formulario expone los logros solo en español. El inglés se conserva al guardar, pero no se puede editar desde el panel. Lo resuelve el change `add-bilingual-builder-parity`.
 
-### TC-20 — Mantener skills y categorías 🔍📝
+### TC-20 — Mantener skills y categorías ✅
 
 **Pasos:** `/admin/skills`. Las skills viven dentro de categorías.
 
@@ -500,6 +542,10 @@ POST skill "SuiteSkill" con tags=[suite-tag]        -> 201
 preview con filterTags=[suite-tag]                  -> la categoría entra por el tag de su skill
 DELETE de la categoría                              -> se lleva sus skills
 ```
+
+![Skills por categoría](manual/tc20-skills.jpg)
+
+*Las skills viven dentro de categorías, y cada una lleva los tags que deciden en qué perfiles aparece.*
 
 Una categoría entra en un perfil curado si **alguna de sus skills** comparte un tag con `filterTags`; dentro, se muestran solo las skills que pasan el filtro.
 
@@ -573,17 +619,17 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-09 | Vista móvil | ✅ | captura |
 | TC-10 | Códigos de estado por visibilidad | 🔍 | 401 / 200 / 404 |
 | TC-11 | Entrar al panel | ✅ | captura del login |
-| TC-12 | Crear un perfil curado | 🔍📝 | 201 / 409 / 400 (D-02 corregido) |
-| TC-13 | Tags y overrides | 🔍📝 | los cuatro casos del filtro |
-| TC-14 | Ordenar y ocultar secciones | 🔍📝 | orden y ocultado resueltos |
-| TC-15 | Personalizar el tema | 🔍📝 | 5 temas; solo se guarda la diferencia |
-| TC-16 | Publicar, proteger, esconder | 🔍📝 | la tabla completa de visibilidad |
+| TC-12 | Crear un perfil curado | ✅ | 2 capturas · 201 / 409 / 400 (D-02 corregido) |
+| TC-13 | Tags y overrides | ✅ | captura · los cuatro casos del filtro |
+| TC-14 | Ordenar y ocultar secciones | ✅ | captura · orden y ocultado resueltos |
+| TC-15 | Personalizar el tema | ✅ | captura · solo se guarda la diferencia |
+| TC-16 | Publicar, proteger, esconder | ✅ | captura · la tabla completa de visibilidad |
 | TC-17 | Previsualizar sin guardar | 🔍 | no persiste nada |
-| TC-18 | Dashboard de analítica | 🔍 | el contador sube y el rango incluye hoy (D-01 corregido) |
-| TC-19 | Mantener experiencias | 🔍📝 | visible / oculta (D-02 corregido) |
-| TC-20 | Mantener skills | 🔍📝 | la categoría entra por el tag de su skill |
+| TC-18 | Dashboard de analítica | ✅ | captura previa al arreglo · el contador sube y el rango incluye hoy (D-01 corregido, verificado en e2e) |
+| TC-19 | Mantener experiencias | ✅ | 2 capturas · visible / oculta (D-02 corregido) |
+| TC-20 | Mantener skills | ✅ | captura · la categoría entra por el tag de su skill |
 
-**Los 20 casos pasan.** Los marcados 🔍📝 están verificados contra la API pero **les falta la captura del panel**: se agregan la próxima vez que se ejecute la suite con sesión iniciada.
+**Los 20 casos pasan, y los 20 tienen evidencia.** 20 capturas en `docs/manual/` más las transcripciones de la API. La captura de TC-18 es anterior al arreglo de D-01 y todavía muestra el dashboard en cero: se renueva en la próxima ejecución con sesión iniciada.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
