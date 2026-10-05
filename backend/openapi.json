@@ -1574,13 +1574,14 @@
     },
     "/api/admin/analytics/views": {
       "get": {
+        "description": "El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso.",
         "operationId": "AdminAnalyticsController_views",
         "parameters": [
           {
             "name": "from",
             "required": false,
             "in": "query",
-            "description": "ISO 8601; default: hace 30 días",
+            "description": "ISO 8601; default: hace 30 días. Una fecha sin hora empieza a su medianoche UTC",
             "schema": {
               "example": "2026-08-01",
               "type": "string"
@@ -1590,7 +1591,7 @@
             "name": "to",
             "required": false,
             "in": "query",
-            "description": "ISO 8601; default: ahora",
+            "description": "ISO 8601; default: ahora. El rango es cerrado: una fecha sin hora incluye ese día completo",
             "schema": {
               "example": "2026-09-07",
               "type": "string"

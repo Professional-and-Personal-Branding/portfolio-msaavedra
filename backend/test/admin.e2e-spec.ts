@@ -423,5 +423,22 @@ describe('Backoffice (e2e)', () => {
       expect((await adminGet('/api/admin/analytics/views?from=ayer')).status).toBe(400);
       expect((await get('/api/admin/analytics/views')).status).toBe(401);
     });
+
+    // Defecto D-01: `to` era exclusivo, así que el rango cerrado que manda el
+    // panel (`[hoy - (días - 1), hoy]`) dejaba fuera el día en curso.
+    it('el rango es cerrado: to=hoy incluye las visitas de hoy', async () => {
+      const hoy = new Date().toISOString().slice(0, 10);
+      const antes = (await adminGet(`/api/admin/analytics/views?from=${hoy}&to=${hoy}`)).body
+        .total as number;
+
+      await get('/api/curated-profiles/all?locale=es');
+
+      const res = await adminGet(`/api/admin/analytics/views?from=${hoy}&to=${hoy}`);
+      expect(res.status).toBe(200);
+      expect(res.body.total).toBe(antes + 1);
+      expect(res.body.byDay).toEqual(
+        expect.arrayContaining([expect.objectContaining({ day: hoy })]),
+      );
+    });
   });
 });
