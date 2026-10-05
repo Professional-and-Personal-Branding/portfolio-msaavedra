@@ -235,7 +235,8 @@
   <nav class="side" aria-label="Índice">
     <h3>Empezar</h3>
     <a href="#entorno"><span class="id">§0</span> Entorno y puertos</a>
-    <a href="#resumen"><span class="id">§1</span> Resumen</a>
+    <a href="#mapa"><span class="id">§1</span> Mapa de la plataforma</a>
+    <a href="#resumen"><span class="id">§2</span> Resumen</a>
     <h3>Vista pública</h3>
     <a href="#tc01"><span class="dot ok"></span><span class="id">TC-01</span> Home</a>
     <a href="#tc02"><span class="dot ok"></span><span class="id">TC-02</span> Idioma</a>
@@ -261,7 +262,9 @@
     <h3>Cierre</h3>
     <a href="#defectos"><span class="dot ok"></span><span class="id">§6</span> Defectos</a>
     <a href="#noadmin"><span class="id">§7</span> Sin administrar</a>
-    <a href="#fallas"><span class="id">§8</span> Qué falla y por qué</a>
+    <a href="#operacion"><span class="id">§8</span> Operación</a>
+    <a href="#receta"><span class="id">§9</span> Receta completa</a>
+    <a href="#fallas"><span class="id">§10</span> Qué falla y por qué</a>
   </nav>
 
   <main>
@@ -311,6 +314,47 @@ TOKEN=$(curl -s -X POST $API/api/auth/login \
 
 AUTH="Authorization: Bearer $TOKEN"
 curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
+    </section>
+
+    <!-- ───────────── Mapa ───────────── -->
+    <section id="mapa" class="block">
+      <h2>Mapa de la plataforma</h2>
+      <p class="lede">Dónde está cada cosa: lo público, lo que viaja en la URL y el panel.</p>
+
+      <p><span class="lbl">Rutas públicas</span></p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Ruta</th><th>Qué es</th></tr></thead>
+        <tbody>
+          <tr><td><code>/</code></td><td>La home. Es el perfil curado con slug <code>all</code></td></tr>
+          <tr><td><code>/:slug</code></td><td>Un perfil curado. Ej. <code>/tech-lead-dotnet</code></td></tr>
+          <tr><td>cualquier otra</td><td>404 propio</td></tr>
+          <tr><td><code>/robots.txt</code>, <code>/sitemap.xml</code></td><td>Los genera el backend con los perfiles <code>PUBLIC</code></td></tr>
+        </tbody>
+      </table></div>
+
+      <p><span class="lbl">Parámetros de URL</span> · viven en la URL, nunca en <code>localStorage</code>, así que se comparten.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Parámetro</th><th>Valores</th><th>Por defecto</th></tr></thead>
+        <tbody>
+          <tr><td><code>?lang=</code></td><td>es, en</td><td><code>Accept-Language</code> y después es. La API también acepta <code>?locale=</code>, con prioridad</td></tr>
+          <tr><td><code>?theme=</code></td><td>modern-dark, modern-light, minimal, elegant, corporate</td><td>modern-dark</td></tr>
+          <tr><td><code>?layout=</code></td><td>classic, sidebar</td><td>classic</td></tr>
+          <tr><td><code>?token=</code></td><td>el token del perfil</td><td>—</td></tr>
+        </tbody>
+      </table></div>
+
+      <p><span class="lbl">Panel</span> · en <code>/admin</code>, detrás de la cookie de sesión.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Ruta</th><th>Pantalla</th></tr></thead>
+        <tbody>
+          <tr><td><code>/admin/login</code></td><td>Entrada</td></tr>
+          <tr><td><code>/admin</code></td><td>Dashboard de analítica</td></tr>
+          <tr><td><code>/admin/experiencias</code></td><td>CRUD de experiencias</td></tr>
+          <tr><td><code>/admin/skills</code></td><td>CRUD de categorías y skills</td></tr>
+          <tr><td><code>/admin/perfiles</code></td><td>Lista de perfiles curados</td></tr>
+          <tr><td><code>/admin/perfiles/:id</code></td><td><b>El constructor</b>: Identidad, Selección, Diseño y Publicación, con preview en vivo</td></tr>
+        </tbody>
+      </table></div>
     </section>
 
     <!-- ───────────── Resumen ───────────── -->
@@ -676,6 +720,66 @@ POST /api/admin/experiences       completo       -> 201  (control)</pre></div>
       </table></div>
       <div class="note danger"><b><code>seed</code> sobrescribe.</b> No borra los perfiles curados creados desde el panel, pero sí reemplaza el contenido que administra. Antes de correrlo en producción, hacé el <code>pg_dump</code> del § 7 de <code>DEPLOY.md</code>.</div>
       <p>Es la deuda más visible del producto y la resuelve el change <code>add-profile-content-admin</code>.</p>
+    </section>
+
+    <!-- ───────────── Operación ───────────── -->
+    <section id="operacion" class="block">
+      <h2>Operación</h2>
+      <p class="lede">Salud de la API, cómo seguir un error concreto y qué hacer en las situaciones que más se repiten.</p>
+      <div class="codewrap"><pre># ¿Vive y ve la base?
+curl -s $API/health | jq            # 200, o 503 si Postgres no responde
+curl -s $API/health/live            # 200 mientras viva el proceso, sin tocar la base
+
+# Seguir un error concreto: cada respuesta de error trae requestId,
+# y el mismo id está en la cabecera X-Request-Id y en el log.
+curl -sD - $API/api/curated-profiles/no-existe -o /dev/null | grep -i x-request-id</pre></div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+        <tbody>
+          <tr><td>Olvidaste la contraseña del admin</td><td><code>npm run admin:bootstrap</code> con <code>ADMIN_PASSWORD</code> nuevo</td></tr>
+          <tr><td>Rotar el <code>JWT_SECRET</code></td><td>cambiá la variable y redesplegá: invalida todas las sesiones</td></tr>
+          <tr><td>Un perfil quedó mal publicado</td><td>pasalo a <code>PRIVATE</code> (404 al instante) y arreglalo con calma</td></tr>
+          <tr><td>Perdiste datos</td><td>restaurá del backup, § 7 de <code>DEPLOY.md</code></td></tr>
+          <tr><td>Deploy roto</td><td>Rollback en Deployments, dentro de las 72 h del plan Hobby</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ───────────── Receta ───────────── -->
+    <section id="receta" class="block">
+      <h2>Receta completa: de la vacante al link</h2>
+      <p class="lede">Seis llamadas a la API que recorren el caso de punta a punta: crear en privado, elegir qué entra, probar sin tocar nada, ajustar, publicar y comprobar.</p>
+      <div class="codewrap"><pre># 1. Crear en privado
+ID=$(curl -s -X POST $API/api/admin/curated-profiles -H "$AUTH" -H 'Content-Type: application/json' -d '{
+  "slug":"acme-tech-lead",
+  "title":{"es":"Tech Lead .NET","en":"Tech Lead .NET"},
+  "headline":{"es":"14 años en .NET y liderazgo","en":"14 years in .NET and leadership"},
+  "roleType":{"es":"Tech Lead","en":"Tech Lead"},"techFocus":".NET","visibility":"PRIVATE"}' | jq -r .id)
+
+# 2. Ver qué tags hay
+curl -s $API/api/admin/experiences -H "$AUTH" | jq -r '[.[].tags[]]|unique|join(", ")'
+
+# 3. Probar el filtro sin tocar nada
+curl -s -X POST $API/api/admin/curated-profiles/preview -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"title":{"es":"x","en":"x"},"headline":{"es":"x","en":"x"},"filterTags":["dotnet"]}' \
+  | jq '.experiences | length'
+
+# 4. Aplicar filtro, secciones y tema
+curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" -H 'Content-Type: application/json' -d '{
+  "filterTags":["dotnet","leadership"],
+  "sectionsOrder":["hero","experience","skills","projects","contact"],
+  "sectionsHidden":["education"],
+  "themeOverrides":{"colors":{"accent":"#5B2C87"}},
+  "layout":"sidebar"}' &gt; /dev/null
+
+# 5. Publicar
+curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"visibility":"PUBLIC"}' | jq .visibility
+
+# 6. Comprobar y compartir
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/acme-tech-lead
+echo "$SITIO/acme-tech-lead"</pre></div>
+      <div class="note"><b>Antes de empezar.</b> Necesitás <code>$API</code>, <code>$AUTH</code> y <code>$SITIO</code>: se arman en <a href="#entorno">Entorno y puertos</a>.</div>
     </section>
 
     <!-- ───────────── Fallas ───────────── -->
