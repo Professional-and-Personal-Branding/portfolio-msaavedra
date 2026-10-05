@@ -2,33 +2,45 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Head por perfil (spec `public-seo`, change `add-server-rendered-head`).
+      En producción Caddy procesa este archivo con `templates`; sus acciones son
+      los comentarios que empiezan con numeral. Pide el fragmento del perfil a la
+      API y, si llega, lo emite en lugar del fallback de abajo, de modo que nunca
+      hay dos etiquetas por clave. Si la API no responde, entrega el fallback. En
+      desarrollo, sin Caddy, estas líneas son comentarios y vale el fallback; el
+      cliente escribe los metadatos del perfil al resolverlo, como siempre.
+    -->
+    <!--# $slug := default "all" (trimPrefix "/" .OriginalReq.URL.Path) -->
+    <!--# $head := httpInclude (printf "/api/public/profile-head?slug=%s&lang=%s" (urlquery $slug) (urlquery (.OriginalReq.URL.Query.Get "lang"))) -->
+    <!--# if $head --><!--# $head --><!--# else -->
+    <title>Manuel Saavedra · Portafolio profesional</title>
     <meta
       name="description"
-      content="Portafolio profesional administrable con perfiles curados por rol."
+      content="Portafolio profesional de Manuel Saavedra: experiencia, skills y perfiles curados por rol."
     />
-    <!--
-      Metadatos base para los rastreadores que no ejecutan JavaScript.
-      La vista pública los sustituye por los del perfil al resolverlo (spec `public-seo`).
-    -->
     <meta property="og:type" content="profile" />
-    <meta property="og:site_name" content="Portafolio profesional" />
-    <meta property="og:title" content="Portafolio profesional" />
+    <meta property="og:site_name" content="Manuel Saavedra · Portafolio profesional" />
+    <meta property="og:title" content="Manuel Saavedra · Portafolio profesional" />
     <meta
       property="og:description"
-      content="Portafolio profesional administrable con perfiles curados por rol."
+      content="Portafolio profesional de Manuel Saavedra: experiencia, skills y perfiles curados por rol."
     />
-    <meta property="og:image" content="/favicon.svg" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Portafolio profesional" />
+    <!--# printf "<meta property=\"og:image\" content=\"https://%s/og-default.png\" />" .Host -->
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Manuel Saavedra — portafolio profesional" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Manuel Saavedra · Portafolio profesional" />
     <meta
       name="twitter:description"
-      content="Portafolio profesional administrable con perfiles curados por rol."
+      content="Portafolio profesional de Manuel Saavedra: experiencia, skills y perfiles curados por rol."
     />
+    <!--# end -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <title>Portafolio profesional</title>
   </head>
   <body>
     <div id="root"></div>

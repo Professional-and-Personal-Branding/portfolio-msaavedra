@@ -1,0 +1,47 @@
+# 4.2 / 4.4 — Con la API arriba (Caddy en :8099, API_ORIGIN -> API en :3310)
+
+GET /tech-lead-dotnet -> 200
+  <title> efectivo (primero): <title>Tech Lead .NET · Manuel Joaquín Saavedra Severiche</title>
+  cantidad de <title>:        1
+  og:title:                   property="og:title" content="Tech Lead .NET · Manuel Joaquín Saavedra Severiche"
+  og:image:                   property="og:image" content="http://localhost:5173/og-default.png"
+  robots:                     name="robots" content="index, follow"
+  og:title repetidos:         1
+  la SPA arranca (script):    1
+
+GET /devops-platform -> 200
+  <title> efectivo (primero): <title>DevOps / Platform Engineer · Manuel Joaquín Saavedra Severiche</title>
+  cantidad de <title>:        1
+  og:title:                   property="og:title" content="DevOps / Platform Engineer · Manuel Joaquín Saavedra Severiche"
+  og:image:                   property="og:image" content="http://localhost:5173/og-default.png"
+  robots:                     name="robots" content="index, follow"
+  og:title repetidos:         1
+  la SPA arranca (script):    1
+
+GET / -> 200
+  <title> efectivo (primero): <title>Perfil Completo · Manuel Joaquín Saavedra Severiche</title>
+  cantidad de <title>:        1
+  og:title:                   property="og:title" content="Perfil Completo · Manuel Joaquín Saavedra Severiche"
+  og:image:                   property="og:image" content="http://localhost:5173/og-default.png"
+  robots:                     name="robots" content="index, follow"
+  og:title repetidos:         1
+  la SPA arranca (script):    1
+
+GET /tech-lead-dotnet?lang=en -> 200
+  <title> efectivo (primero): <title>Tech Lead .NET · Manuel Joaquín Saavedra Severiche</title>
+  cantidad de <title>:        1
+  og:title:                   property="og:title" content="Tech Lead .NET · Manuel Joaquín Saavedra Severiche"
+  og:image:                   property="og:image" content="http://localhost:5173/og-default.png"
+  robots:                     name="robots" content="index, follow"
+  og:title repetidos:         1
+  la SPA arranca (script):    1
+
+GET /no-existe-jamas -> 200
+  <title> efectivo (primero): <title>Manuel Saavedra · Portafolio profesional</title>
+  cantidad de <title>:        1
+  og:title:                   property="og:title" content="Manuel Saavedra · Portafolio profesional"
+  og:image:                   property="og:image" content="http://localhost:5173/og-default.png"
+  robots:                     name="robots" content="noindex, nofollow"
+  og:title repetidos:         1
+  la SPA arranca (script):    1
+

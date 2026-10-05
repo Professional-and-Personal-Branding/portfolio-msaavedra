@@ -202,6 +202,103 @@ describe('Hardening de producción (e2e)', () => {
     });
   });
 
+  // add-server-rendered-head: el fragmento que el borde inserta en el HTML inicial.
+  describe('Fragmento de head (public-seo)', () => {
+    const head = (query: string) => get(`/api/public/profile-head?${query}`);
+    const robots = (html: string) => /<meta name="robots" content="([^"]+)"/.exec(html)?.[1];
+
+    async function withVisibility(
+      slug: string,
+      data: { visibility: 'PROTECTED' | 'PRIVATE'; accessToken?: string },
+      check: () => Promise<void>,
+    ) {
+      const row = await prisma.curatedProfile.findUniqueOrThrow({ where: { slug } });
+      try {
+        await prisma.curatedProfile.update({ where: { id: row.id }, data });
+        await check();
+      } finally {
+        await prisma.curatedProfile.update({
+          where: { id: row.id },
+          data: { visibility: row.visibility, accessToken: row.accessToken },
+        });
+      }
+    }
+
+    it('perfil público: 200 text/html con sus textos, canonical absoluto e index', async () => {
+      const row = await prisma.curatedProfile.findUniqueOrThrow({
+        where: { slug: 'tech-lead-dotnet' },
+      });
+      const res = await head('slug=tech-lead-dotnet');
+
+      expect(res.status).toBe(200);
+      expect(res.headers['content-type']).toBe('text/html; charset=utf-8');
+      expect(res.text).toContain(`<title>${(row.title as { es: string }).es} · `);
+      expect(res.text).toContain(`href="${FRONTEND_URL}/tech-lead-dotnet"`);
+      expect(robots(res.text)).toBe('index, follow');
+      expect(res.text).toContain('application/ld+json');
+    });
+
+    it('en inglés cambia los textos y og:locale', async () => {
+      const row = await prisma.curatedProfile.findUniqueOrThrow({
+        where: { slug: 'tech-lead-dotnet' },
+      });
+      const res = await head('slug=tech-lead-dotnet&lang=en');
+      expect(res.text).toContain(`<title>${(row.title as { en: string }).en} · `);
+      expect(res.text).toContain('content="en_US"');
+    });
+
+    it('el canonical coincide con la URL del perfil en el sitemap', async () => {
+      const canonical = /<link rel="canonical" href="([^"]+)"/.exec(
+        (await head('slug=tech-lead-dotnet')).text,
+      )?.[1];
+      expect((await get('/sitemap.xml')).text).toContain(`<loc>${canonical}</loc>`);
+    });
+
+    it('PROTECTED, con o sin token: genérico, noindex y sin textos del perfil', async () => {
+      const row = await prisma.curatedProfile.findUniqueOrThrow({
+        where: { slug: 'devops-platform' },
+      });
+      const title = (row.title as { es: string }).es;
+      await withVisibility(
+        'devops-platform',
+        { visibility: 'PROTECTED', accessToken: 'tok-head' },
+        async () => {
+          for (const query of ['slug=devops-platform', 'slug=devops-platform&token=tok-head']) {
+            const res = await head(query);
+            expect(res.status).toBe(200);
+            expect(robots(res.text)).toBe('noindex, nofollow');
+            expect(res.text).not.toContain(title);
+            expect(res.text).not.toContain('application/ld+json');
+          }
+          const conHeader = await head('slug=devops-platform').set('X-Access-Token', 'tok-head');
+          expect(conHeader.text).not.toContain(title);
+        },
+      );
+    });
+
+    it('PRIVATE e inexistente responden 200 con cuerpos idénticos', async () => {
+      await withVisibility('devops-platform', { visibility: 'PRIVATE' }, async () => {
+        const privado = await head('slug=devops-platform');
+        const inexistente = await head('slug=no-existe-jamas');
+        expect(privado.status).toBe(200);
+        expect(inexistente.status).toBe(200);
+        expect(privado.text).toBe(inexistente.text);
+      });
+    });
+
+    it('sin slug responde 200 con el genérico', async () => {
+      const res = await head('');
+      expect(res.status).toBe(200);
+      expect(robots(res.text)).toBe('noindex, nofollow');
+    });
+
+    it('no registra visitas', async () => {
+      const antes = await prisma.profileView.count();
+      await head('slug=tech-lead-dotnet');
+      expect(await prisma.profileView.count()).toBe(antes);
+    });
+  });
+
   describe('Rate limiting (api-rate-limiting)', () => {
     let limited: INestApplication;
 
@@ -233,6 +330,16 @@ describe('Hardening de producción (e2e)', () => {
     it('el healthcheck nunca se limita', async () => {
       for (let i = 0; i < 12; i += 1) {
         expect((await request(limited.getHttpServer()).get('/health/live')).status).toBe(200);
+      }
+    });
+
+    // add-server-rendered-head: lo pide el borde en cada carga de HTML.
+    it('el fragmento de head nunca se limita', async () => {
+      for (let i = 0; i < 12; i += 1) {
+        const res = await request(limited.getHttpServer()).get(
+          '/api/public/profile-head?slug=tech-lead-dotnet',
+        );
+        expect(res.status).toBe(200);
       }
     });
   });

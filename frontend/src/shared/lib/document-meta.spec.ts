@@ -110,6 +110,87 @@ describe('applyDocumentMeta', () => {
     expect(content('meta[name="robots"]')).toBe('noindex, nofollow');
   });
 
+  // add-server-rendered-head: el head puede llegar ya poblado por el fragmento del servidor.
+  const SERVER_HEAD = `
+    <title>Servidor · Ada</title>
+    <meta name="description" content="del servidor" />
+    <link rel="canonical" href="${ORIGIN}/otro" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="Servidor · Ada" />
+    <meta property="og:description" content="del servidor" />
+    <meta property="og:url" content="${ORIGIN}/otro" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:type" content="profile" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Servidor · Ada" />
+    <meta name="twitter:description" content="del servidor" />
+    <script type="application/ld+json">{"@type":"Person","name":"Servidor"}</script>`;
+
+  const KEYS = [
+    'meta[name="description"]',
+    'meta[name="robots"]',
+    'meta[property="og:title"]',
+    'meta[property="og:description"]',
+    'meta[property="og:url"]',
+    'meta[property="og:locale"]',
+    'meta[property="og:type"]',
+    'meta[name="twitter:card"]',
+    'meta[name="twitter:title"]',
+    'meta[name="twitter:description"]',
+    'link[rel="canonical"]',
+    'script[type="application/ld+json"]',
+  ];
+  const expectOnePerKey = () => {
+    for (const key of KEYS) expect(document.head.querySelectorAll(key), key).toHaveLength(1);
+  };
+
+  it('sobre un head del servidor reutiliza sus etiquetas: exactamente una por clave', () => {
+    document.head.innerHTML = SERVER_HEAD;
+    applyDocumentMeta(
+      metaFromProfile(
+        makeCuratedProfile({ slug: 'tech-lead-dotnet', title: 'Backend' }),
+        'es',
+        ORIGIN,
+      ),
+    );
+
+    expectOnePerKey();
+    expect(content('meta[property="og:title"]')).toBe('Backend · Ada Ejemplo');
+    expect(content('meta[name="description"]')).toBe('Vista completa de la trayectoria.');
+    expect(document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href).toBe(
+      `${ORIGIN}/tech-lead-dotnet`,
+    );
+    const jsonLd = document.head.querySelector('script[type="application/ld+json"]');
+    expect(JSON.parse(jsonLd?.textContent ?? '{}')).toMatchObject({ name: 'Ada Ejemplo' });
+  });
+
+  it('navegar entre perfiles deja una etiqueta por clave con los valores del nuevo', () => {
+    document.head.innerHTML = SERVER_HEAD;
+    applyDocumentMeta(
+      metaFromProfile(makeCuratedProfile({ slug: 'a', title: 'Uno' }), 'es', ORIGIN),
+    );
+    applyDocumentMeta(
+      metaFromProfile(makeCuratedProfile({ slug: 'b', title: 'Dos' }), 'es', ORIGIN),
+    );
+
+    expectOnePerKey();
+    expect(content('meta[property="og:title"]')).toBe('Dos · Ada Ejemplo');
+    expect(content('meta[property="og:url"]')).toBe(`${ORIGIN}/b`);
+  });
+
+  it('las etiquetas del servidor que el cliente reescribe quedan marcadas como gestionadas', () => {
+    document.head.innerHTML = SERVER_HEAD;
+    applyDocumentMeta(metaFromProfile(makeCuratedProfile(), 'es', ORIGIN));
+    for (const key of KEYS) {
+      expect(document.head.querySelector(key)?.hasAttribute('data-managed-meta'), key).toBe(true);
+    }
+  });
+
+  it('con el head vacío (desarrollo, sin borde) las crea, una por clave', () => {
+    applyDocumentMeta(metaFromProfile(makeCuratedProfile(), 'es', ORIGIN));
+    expectOnePerKey();
+  });
+
   it('restaurar limpia solo las etiquetas gestionadas', () => {
     document.head.innerHTML = '<meta name="viewport" content="width=device-width">';
     applyDocumentMeta(metaFromProfile(makeCuratedProfile(), 'es', ORIGIN));

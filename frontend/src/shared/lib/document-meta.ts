@@ -15,10 +15,14 @@ export interface DocumentMeta {
 const MANAGED = 'data-managed-meta';
 const OG_LOCALE: Record<Locale, string> = { es: 'es_ES', en: 'en_US' };
 
-/** Valores por defecto: los mismos que trae `index.html`. */
+/**
+ * Valores por defecto: los mismos que el fallback de `index.html` y que el
+ * fragmento genérico del backend (`profile-head.renderer.ts`, `GENERIC_HEAD.es`).
+ */
 export const DEFAULT_META = {
-  title: 'Portafolio profesional',
-  description: 'Portafolio profesional administrable con perfiles curados por rol.',
+  title: 'Manuel Saavedra · Portafolio profesional',
+  description:
+    'Portafolio profesional de Manuel Saavedra: experiencia, skills y perfiles curados por rol.',
 } as const;
 
 /** Metadatos derivados de un perfil curado resuelto. */
@@ -57,9 +61,10 @@ export function personJsonLd(data: CuratedProfile): Record<string, unknown> | un
 }
 
 /**
- * Aplica los metadatos al documento. Solo toca etiquetas propias (marcadas con
- * `data-managed-meta`), así que `restoreDocumentMeta` puede limpiarlas sin
- * tocar las que vienen en `index.html`.
+ * Aplica los metadatos al documento. Es idempotente sobre un head ya poblado: si
+ * la etiqueta existe (la trajo el fragmento del servidor o el fallback de
+ * `index.html`) la reutiliza en lugar de duplicarla, y la marca con
+ * `data-managed-meta` al escribirla (spec `public-portfolio-frontend`).
  */
 export function applyDocumentMeta(meta: DocumentMeta): void {
   if (typeof document === 'undefined') return;
@@ -82,7 +87,7 @@ export function applyDocumentMeta(meta: DocumentMeta): void {
   setJsonLd(meta.jsonLd);
 }
 
-/** Devuelve el documento a los valores base de `index.html`. */
+/** Quita lo que el cliente escribió o reescribió y devuelve el título base. */
 export function restoreDocumentMeta(): void {
   if (typeof document === 'undefined') return;
 
@@ -97,9 +102,9 @@ function setMeta(attribute: 'name' | 'property', key: string, content: string): 
   if (!element) {
     element = document.createElement('meta');
     element.setAttribute(attribute, key);
-    element.setAttribute(MANAGED, '');
     document.head.appendChild(element);
   }
+  element.setAttribute(MANAGED, '');
   element.setAttribute('content', content);
 }
 
@@ -108,9 +113,9 @@ function setCanonical(href: string): void {
   if (!link) {
     link = document.createElement('link');
     link.rel = 'canonical';
-    link.setAttribute(MANAGED, '');
     document.head.appendChild(link);
   }
+  link.setAttribute(MANAGED, '');
   link.href = href;
 }
 

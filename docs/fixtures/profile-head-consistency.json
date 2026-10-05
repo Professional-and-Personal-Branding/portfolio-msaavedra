@@ -1,0 +1,75 @@
+{
+  "_comment": "Fixture compartido del change add-server-rendered-head. Lo leen backend/src/modules/curated-profile/application/services/profile-head.consistency.spec.ts y frontend/src/shared/lib/document-meta.consistency.spec.ts: los dos derivan título, descripción y canonical del mismo perfil y tienen que llegar a `expected`. Incluye caracteres que se escapan, espacios repetidos y una descripción más larga que el límite de 300.",
+  "origin": "https://manuel.dev/",
+  "cases": [
+    {
+      "locale": "es",
+      "profile": {
+        "slug": "tech-lead-dotnet",
+        "title": "Tech Lead .NET & <Arquitectura>",
+        "headline": "Titular \"con comillas\"",
+        "description": "Liderazgo   técnico\ny arquitectura .NET.",
+        "visibility": "PUBLIC",
+        "profile": {
+          "fullName": "Ada Ejemplo",
+          "headline": "h",
+          "summary": "s",
+          "email": "ada@example.com",
+          "location": "SCZ"
+        },
+        "socialLinks": []
+      },
+      "expected": {
+        "title": "Tech Lead .NET & <Arquitectura> · Ada Ejemplo",
+        "description": "Liderazgo técnico y arquitectura .NET.",
+        "canonical": "https://manuel.dev/tech-lead-dotnet"
+      }
+    },
+    {
+      "locale": "en",
+      "profile": {
+        "slug": "all",
+        "title": "Full Profile",
+        "headline": "Senior Software Engineer",
+        "description": "",
+        "visibility": "PUBLIC",
+        "profile": {
+          "fullName": "Ada Ejemplo",
+          "headline": "h",
+          "summary": "s",
+          "email": "ada@example.com",
+          "location": "SCZ"
+        },
+        "socialLinks": []
+      },
+      "expected": {
+        "title": "Full Profile · Ada Ejemplo",
+        "description": "Senior Software Engineer",
+        "canonical": "https://manuel.dev/"
+      }
+    },
+    {
+      "locale": "es",
+      "profile": {
+        "slug": "largo",
+        "title": "Largo",
+        "headline": "",
+        "description": "palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra",
+        "visibility": "PUBLIC",
+        "profile": {
+          "fullName": "Ada Ejemplo",
+          "headline": "h",
+          "summary": "s",
+          "email": "ada@example.com",
+          "location": "SCZ"
+        },
+        "socialLinks": []
+      },
+      "expected": {
+        "title": "Largo · Ada Ejemplo",
+        "description": "palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra pal…",
+        "canonical": "https://manuel.dev/largo"
+      }
+    }
+  ]
+}
