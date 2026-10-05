@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsDefined,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -18,6 +19,7 @@ import { NewSkillProps } from '../../../domain/entities/skill.entity';
 
 export class CreateSkillCategoryDto {
   @ApiProperty({ type: LocalizedTextDto })
+  @IsDefined()
   @ValidateNested()
   @Type(() => LocalizedTextDto)
   name!: LocalizedTextDto;

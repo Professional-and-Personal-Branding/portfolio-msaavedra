@@ -98,7 +98,7 @@
       "<rootDir>/src",
       "<rootDir>/test"
     ],
-    "testRegex": "(src/.*\\.spec\\.ts|test/(architecture|security)\\.spec\\.ts)$",
+    "testRegex": "(src/.*\\.spec\\.ts|test/(architecture|security|dto-validation)\\.spec\\.ts)$",
     "transform": {
       "^.+\\.ts$": "ts-jest"
     },

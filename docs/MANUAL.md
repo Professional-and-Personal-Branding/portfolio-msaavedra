@@ -573,21 +573,21 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-09 | Vista móvil | ✅ | captura |
 | TC-10 | Códigos de estado por visibilidad | 🔍 | 401 / 200 / 404 |
 | TC-11 | Entrar al panel | ✅ | captura del login |
-| TC-12 | Crear un perfil curado | 🔍📝 | 201 / 409 / 400, **y un 500** |
+| TC-12 | Crear un perfil curado | 🔍📝 | 201 / 409 / 400 (D-02 corregido) |
 | TC-13 | Tags y overrides | 🔍📝 | los cuatro casos del filtro |
 | TC-14 | Ordenar y ocultar secciones | 🔍📝 | orden y ocultado resueltos |
 | TC-15 | Personalizar el tema | 🔍📝 | 5 temas; solo se guarda la diferencia |
 | TC-16 | Publicar, proteger, esconder | 🔍📝 | la tabla completa de visibilidad |
 | TC-17 | Previsualizar sin guardar | 🔍 | no persiste nada |
 | TC-18 | Dashboard de analítica | ❌ | el contador sube; **el rango falla** |
-| TC-19 | Mantener experiencias | 🔍📝 | visible / oculta, **y un 500** |
+| TC-19 | Mantener experiencias | 🔍📝 | visible / oculta (D-02 corregido) |
 | TC-20 | Mantener skills | 🔍📝 | la categoría entra por el tag de su skill |
 
 **19 de 20 casos pasan.** Los marcados 🔍📝 están verificados contra la API pero **les falta la captura del panel**: se agregan la próxima vez que se ejecute la suite con sesión iniciada. TC-18 falla.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
-Los dos aparecieron al ejecutar estos casos por primera vez de punta a punta. Ninguno estaba reportado.
+Los dos aparecieron al ejecutar estos casos por primera vez de punta a punta. Ninguno estaba reportado. D-02 ya está corregido; D-01 sigue abierto.
 
 #### D-01 — El dashboard nunca muestra las visitas de hoy
 
@@ -602,23 +602,26 @@ GET /api/admin/analytics/views?from=2026-10-05&to=2026-10-06  -> total=13, byDay
 
 **Arreglo propuesto:** hacer `to` inclusivo en el agregado (comparar contra el final del día de `to`, no contra su medianoche), que es lo que la spec `admin-analytics-dashboard` describe. Alternativa peor: que el frontend mande `to = mañana`, porque deja la API mintiendo sobre su propio contrato.
 
-#### D-02 — Omitir un objeto obligatorio devuelve 500 en lugar de 400
+#### D-02 — Omitir un objeto obligatorio devuelve 500 en lugar de 400 — ✅ corregido
 
 **Severidad:** media; solo afecta endpoints autenticados del panel.
-**Síntoma:** un cuerpo al que le falta un campo obligatorio anidado responde `500 Error interno del servidor` en vez de un 400 que diga qué falta.
+**Síntoma:** un cuerpo al que le falta un campo obligatorio anidado respondía `500 Error interno del servidor` en vez de un 400 que dijera qué falta.
 **Causa:** los campos obligatorios de tipo objeto se declaran con `@ValidateNested()` + `@Type()` pero **sin `@IsDefined()`**. `class-validator` no valida un valor `undefined`, así que la validación pasa y el mapper revienta con `TypeError: Cannot read properties of undefined (reading 'en')`.
 
-Verificado en cinco variantes:
+**Arreglo aplicado:** `@IsDefined()` en los cinco campos obligatorios de tipo objeto que había en los DTO de entrada — `role` y `summary` de `CreateExperienceDto`, `title` y `headline` de `CreateCuratedProfileDto`, y `name` de `CreateSkillCategoryDto`. Los `Update*Dto` heredan por `PartialType`, que inyecta `@IsOptional()` y corta la cadena antes de `@IsDefined()`: los PATCH parciales siguen funcionando igual. `openapi.json` no cambia, porque la obligatoriedad en Swagger ya venía de `@ApiProperty`.
+
+Las mismas cinco variantes, tras el arreglo:
 
 ```
-POST /api/admin/experiences      sin "summary"   -> 500   (esperado 400)
-POST /api/admin/experiences      sin "role"      -> 500   (esperado 400)
-POST /api/admin/curated-profiles sin "title"     -> 500   (esperado 400)
-POST /api/admin/curated-profiles sin "headline"  -> 500   (esperado 400)
-POST /api/admin/experiences      completo        -> 201   (control)
+POST /api/admin/experiences       sin "summary"  -> 400  ["summary should not be null or undefined"]
+POST /api/admin/experiences       sin "role"     -> 400  ["role should not be null or undefined"]
+POST /api/admin/curated-profiles  sin "title"    -> 400  ["title should not be null or undefined"]
+POST /api/admin/curated-profiles  sin "headline" -> 400  ["headline should not be null or undefined"]
+POST /api/admin/skill-categories  sin "name"     -> 400  ["name should not be null or undefined"]
+POST /api/admin/experiences       completo       -> 201  (control)
 ```
 
-**Arreglo propuesto:** agregar `@IsDefined()` a los campos obligatorios de tipo objeto en los DTO de creación, y un test estático que falle si aparece un `@ValidateNested()` obligatorio sin él — en la línea del test que ya exige `adminValidationPipe` en todo endpoint con cuerpo.
+**Regresión:** `backend/test/dto-validation.spec.ts` corre `class-validator` sobre cada DTO de entrada con las mismas opciones que `adminValidationPipe` y exige un error por cada campo obligatorio — con el cuerpo vacío, con el campo ausente y con el campo en `null` — más un control con el cuerpo completo. Es un test de comportamiento en vez del test estático que se había propuesto: no depende de qué decorador arregle el problema y cubre todos los campos obligatorios, no solo los anidados. Sin los `@IsDefined()` fallan 8 de sus 34 casos.
 
 ---
 
