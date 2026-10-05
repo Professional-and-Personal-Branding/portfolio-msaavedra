@@ -5,14 +5,13 @@ import { renderWithProviders } from '@/test/render';
 import { ThemeProvider } from '../theme-provider';
 import { resolveLayoutName } from './index';
 import { ProfileLayout } from './ProfileLayout';
-import { orderSections } from './sections';
+import { renderableSections } from './sections';
 
-function renderLayout(name: string) {
-  const data = makeCuratedProfile();
-  const sections = orderSections(data.sections, data.hiddenSections, data);
+function renderLayout(name: string, sections?: string[]) {
+  const data = makeCuratedProfile(sections ? { sections } : {});
   return renderWithProviders(
     <ThemeProvider>
-      <ProfileLayout name={name} data={data} sections={sections} />
+      <ProfileLayout name={name} data={data} sections={renderableSections(data.sections)} />
     </ThemeProvider>,
   );
 }
@@ -37,12 +36,20 @@ describe('layouts', () => {
       'stats',
       'experience',
       'skills',
+      'projects',
       'education',
       'certifications',
-      'contact',
-      'projects',
       'presence',
+      'contact',
     ]);
+  });
+
+  it('renderiza exactamente las secciones recibidas, sin reordenar ni rellenar', () => {
+    const { container } = renderLayout('classic', ['contact', 'hero', 'experience']);
+    const ids = [...container.querySelectorAll('[data-layout="classic"] section[id]')].map(
+      (s) => s.id,
+    );
+    expect(ids).toEqual(['contact', 'hero', 'experience']);
   });
 
   it('sidebar pone hero y contacto en la columna lateral y el resto a la derecha', () => {

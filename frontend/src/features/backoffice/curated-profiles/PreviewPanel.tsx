@@ -2,7 +2,7 @@ import { RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import type { CuratedProfile } from '@/shared/types/portfolio';
 import { ProfileLayout } from '@/themes/layouts/ProfileLayout';
-import { orderSections } from '@/themes/layouts/sections';
+import { renderableSections } from '@/themes/layouts/sections';
 import { ThemeProvider } from '@/themes/theme-provider';
 import type { ThemeTokens } from '@/themes/tokens';
 
@@ -54,7 +54,7 @@ export function PreviewPanel({ data, tokens, layout, isFetching, error }: Previe
               <ProfileLayout
                 name={layout}
                 data={data}
-                sections={orderSections(data.sections, data.hiddenSections, data)}
+                sections={renderableSections(data.sections)}
               />
             </div>
           </ThemeProvider>

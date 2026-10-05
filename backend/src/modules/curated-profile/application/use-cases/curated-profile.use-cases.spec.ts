@@ -375,7 +375,17 @@ describe('ResolveCuratedProfileUseCase', () => {
         }),
       }).useCase,
     );
-    expect(custom.sections).toEqual(['hero', 'contact']);
+    // Lo declarado primero; después el relleno, en orden canónico y sin la oculta.
+    expect(custom.sections).toEqual([
+      'hero',
+      'contact',
+      'stats',
+      'experience',
+      'projects',
+      'education',
+      'certifications',
+      'presence',
+    ]);
     expect(custom.hiddenSections).toEqual(['skills']);
 
     const def = await resolveOk(build().useCase);
@@ -384,10 +394,48 @@ describe('ResolveCuratedProfileUseCase', () => {
       'stats',
       'experience',
       'skills',
+      'projects',
       'education',
       'certifications',
+      'presence',
       'contact',
     ]);
+  });
+
+  // unify-section-catalog: el composer aplica el relleno y devuelve el orden final.
+  it('una sección con datos omitida del orden se agrega al final', async () => {
+    const out = await resolveOk(
+      build({ curated: curated({ sectionsOrder: ['hero', 'experience'] }) }).useCase,
+    );
+    expect(out.projects.length).toBeGreaterThan(0);
+    expect(out.sections.slice(0, 2)).toEqual(['hero', 'experience']);
+    expect(out.sections).toContain('projects');
+    expect(out.sections.indexOf('projects')).toBeGreaterThan(1);
+  });
+
+  it('sin proyectos tras el filtro, projects no se rellena ni aunque esté declarado', async () => {
+    const omitida = await resolveOk(
+      build({ curated: curated({ sectionsOrder: ['hero'], excludeIds: ['proj-erp'] }) }).useCase,
+    );
+    expect(omitida.projects).toEqual([]);
+    expect(omitida.sections).not.toContain('projects');
+
+    const declarada = await resolveOk(
+      build({
+        curated: curated({ sectionsOrder: ['hero', 'projects'], excludeIds: ['proj-erp'] }),
+      }).useCase,
+    );
+    expect(declarada.sections).not.toContain('projects');
+  });
+
+  it('una sección oculta no se rellena', async () => {
+    const out = await resolveOk(
+      build({ curated: curated({ sectionsOrder: ['hero'], sectionsHidden: ['projects'] }) })
+        .useCase,
+    );
+    expect(out.projects.length).toBeGreaterThan(0);
+    expect(out.sections).not.toContain('projects');
+    expect(out.hiddenSections).toContain('projects');
   });
 
   it('locale en aplica a todo el árbol y no quedan objetos {es,en}', async () => {

@@ -522,7 +522,7 @@ sectionsOrder=[hero,skills,experience,contact]
             + sectionsHidden=[skills]           -> sections=[hero,experience,contact]
                                                    hiddenSections=[skills]</pre></div>
         <div class="note"><b>Dos reglas.</b> Una sección <b>con datos</b> que no figure en <code>sectionsOrder</code> se agrega al final; para ocultarla hay que ponerla en <code>sectionsHidden</code>. Una sección <b>sin datos</b> no se renderiza aunque esté en el orden.</div>
-        <div class="note warn">El backend declara hoy <b>7</b> secciones por defecto y el frontend conoce <b>9</b>. Lo resuelve el change <code>unify-section-catalog</code>.</div>
+        <div class="note">Desde el change <code>unify-section-catalog</code> el catálogo es uno solo, con <b>9</b> secciones, y el backend aplica el relleno: <code>sections</code> trae al final, en orden canónico, las secciones con datos que no figuran en el orden ni están ocultas. La transcripción de arriba es anterior al change. Un id fuera del catálogo ahora responde 400.</div>
         <figure class="shot"><img src="tc14-secciones.jpg" alt="Pestaña Diseño con la lista de secciones" loading="lazy"><figcaption><code>projects</code> y <code>presence</code> quedan en las posiciones 8 y 9 porque el orden guardado trae solo siete.</figcaption></figure>
       </article>
 

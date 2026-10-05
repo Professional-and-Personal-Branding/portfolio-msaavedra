@@ -1,75 +1,49 @@
 import { describe, expect, it } from 'vitest';
-import { makeCuratedProfile } from '@/test/fixtures/curated-profile';
-import { hasData, KNOWN_SECTIONS, orderSections } from './sections';
+import { isSectionId, renderableSections, SECTION_IDS } from './sections';
 
-describe('orderSections', () => {
-  it('respeta el orden de la API', () => {
-    const data = makeCuratedProfile({
-      projects: [],
-      socialLinks: [],
-      education: [],
-      certifications: [],
-    });
-    const result = orderSections(['hero', 'skills', 'experience', 'contact'], [], data);
-    expect(result.slice(0, 4)).toEqual(['hero', 'skills', 'experience', 'contact']);
-    // stats es conocida, tiene datos y no está listada → al final
-    expect(result).toEqual(['hero', 'skills', 'experience', 'contact', 'stats']);
-  });
-
-  it('agrega al final las conocidas no listadas, en orden canónico', () => {
-    const data = makeCuratedProfile();
-    const seedOrder = [
+describe('SECTION_IDS', () => {
+  it('es el catálogo del contrato, en orden canónico', () => {
+    expect(SECTION_IDS).toEqual([
       'hero',
       'stats',
       'experience',
       'skills',
+      'projects',
       'education',
       'certifications',
+      'presence',
       'contact',
-    ];
-    const result = orderSections(seedOrder, [], data);
-
-    expect(result.slice(0, 7)).toEqual(seedOrder);
-    expect(result.slice(7)).toEqual(['projects', 'presence']);
+    ]);
   });
 
-  it('omite ocultas y vacías', () => {
-    const data = makeCuratedProfile({ projects: [] });
-    const result = orderSections(['hero', 'stats', 'projects', 'experience'], ['stats'], data);
-
-    expect(result).not.toContain('stats');
-    expect(result).not.toContain('projects');
-    expect(result[0]).toBe('hero');
-    expect(result[1]).toBe('experience');
-  });
-
-  it('ignora secciones desconocidas y duplicadas', () => {
-    const data = makeCuratedProfile();
-    const result = orderSections(['hero', 'timeline-3d', 'hero', 'skills'], [], data);
-    expect(result.filter((s) => s === 'hero')).toHaveLength(1);
-    expect(result).not.toContain('timeline-3d');
-  });
-
-  it('una sección oculta no reaparece al final', () => {
-    const data = makeCuratedProfile();
-    expect(orderSections(['hero'], ['presence', 'projects'], data)).not.toContain('presence');
+  it('isSectionId reconoce solo ids del catálogo', () => {
+    expect(isSectionId('presence')).toBe(true);
+    expect(isSectionId('timeline-3d')).toBe(false);
+    expect(isSectionId('toString')).toBe(false);
   });
 });
 
-describe('hasData', () => {
-  it('evalúa cada sección conocida', () => {
-    const full = makeCuratedProfile();
-    for (const section of KNOWN_SECTIONS) expect(hasData(section, full), section).toBe(true);
+// unify-section-catalog: el orden final lo decide el backend (spec `layout-engine`).
+describe('renderableSections', () => {
+  it('devuelve exactamente lo recibido, en ese orden', () => {
+    expect(renderableSections(['hero', 'experience', 'projects'])).toEqual([
+      'hero',
+      'experience',
+      'projects',
+    ]);
+  });
 
-    const empty = makeCuratedProfile({
-      profile: null,
-      experiences: [],
-      skillCategories: [],
-      projects: [],
-      education: [],
-      certifications: [],
-      socialLinks: [],
-    });
-    for (const section of KNOWN_SECTIONS) expect(hasData(section, empty), section).toBe(false);
+  it('no reordena', () => {
+    const order = ['contact', 'hero', 'skills', 'stats'];
+    expect(renderableSections(order)).toEqual(order);
+  });
+
+  it('no agrega secciones que la API no mandó', () => {
+    expect(renderableSections(['hero'])).toEqual(['hero']);
+    expect(renderableSections([])).toEqual([]);
+  });
+
+  it('omite un id desconocido sin romper el resto', () => {
+    expect(renderableSections(['hero', 'timeline-3d', 'skills'])).toEqual(['hero', 'skills']);
   });
 });

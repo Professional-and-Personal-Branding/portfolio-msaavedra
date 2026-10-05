@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { makeAdminCuratedProfile } from '@/test/fixtures/admin';
 import type { AdminExperience, AdminSkillCategory } from '../shared/admin-types';
 import {
   allSections,
@@ -6,6 +7,7 @@ import {
   moveSection,
   previewKey,
   tagUniverse,
+  toDraft,
   toProfileBody,
   validateDraft,
   type ProfileDraft,
@@ -119,7 +121,24 @@ describe('allSections', () => {
     expect(new Set(result).size).toBe(result.length);
   });
 
-  it('descarta secciones desconocidas', () => {
-    expect(allSections(['hero', 'timeline-3d'])).not.toContain('timeline-3d');
+  it('ofrece las nueve secciones del catálogo', () => {
+    expect(allSections([])).toHaveLength(9);
+  });
+});
+
+describe('toDraft', () => {
+  it('una fila anterior a la validación pierde al cargar los ids fuera del catálogo', () => {
+    const result = toDraft(
+      makeAdminCuratedProfile({
+        sectionsOrder: ['hero', 'timeline-3d', 'experience'],
+        sectionsHidden: ['proyectos', 'stats'],
+      }),
+    );
+    expect(result.sectionsOrder).toEqual(['hero', 'experience']);
+    expect(result.sectionsHidden).toEqual(['stats']);
+  });
+
+  it('sin orden guardado arranca con el catálogo completo', () => {
+    expect(toDraft(makeAdminCuratedProfile({ sectionsOrder: [] })).sectionsOrder).toHaveLength(9);
   });
 });
