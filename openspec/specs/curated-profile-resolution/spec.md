@@ -105,15 +105,35 @@ Un perfil `PUBLIC` SHALL resolverse sin credenciales. Un perfil `PRIVATE` o un s
 - **THEN** se obtiene la vista resuelta
 
 ### Requirement: Secciones ordenadas y ocultas
-El sistema SHALL devolver la lista final de secciones visibles: `sectionsOrder` (o, si está vacío, el orden por defecto `hero, stats, experience, skills, education, certifications, contact`) sin las que figuran en `sectionsHidden`. Las secciones ocultas SHALL informarse aparte.
-
-#### Scenario: Orden personalizado con ocultas
-- **WHEN** `sectionsOrder = ["hero","skills","experience","contact"]` y `sectionsHidden = ["skills"]`
-- **THEN** `sections = ["hero","experience","contact"]` y `hiddenSections = ["skills"]`
+La resolución SHALL devolver el orden final, con relleno aplicado: el composer SHALL devolver en `sections` el orden **final** que se renderiza. Para eso, después de aplicar `sectionsOrder` y `sectionsHidden`, SHALL agregar al final las secciones del catálogo que (a) tengan datos tras el filtrado, (b) no estén ocultas y (c) no figuren ya en el orden. El relleno MUST NOT duplicar ids ni reordenar los que ya venían. Una sección sin datos MUST NOT aparecer en `sections`, aunque figure en `sectionsOrder`. El cliente MUST NOT recalcular el orden ni completarlo. Las secciones de `sectionsHidden` MUST NOT figurar en `sections` y SHALL informarse aparte, sin duplicados, en `hiddenSections`.
 
 #### Scenario: Orden vacío usa el default
-- **WHEN** `sectionsOrder = []` y `sectionsHidden = []`
-- **THEN** `sections` es el orden por defecto completo
+- **WHEN** `sectionsOrder = []`, `sectionsHidden = []` y hay datos en todas las colecciones
+- **THEN** `sections` es el catálogo completo, en orden canónico
+
+#### Scenario: Orden personalizado con ocultas
+- **WHEN** `sectionsOrder = ["hero","skills","experience","contact"]`, `sectionsHidden = ["skills"]` y hay datos en todas las colecciones
+- **THEN** `sections` empieza con `["hero","experience","contact"]`, no contiene `skills`, sigue con el relleno en orden canónico, y `hiddenSections = ["skills"]`
+
+#### Scenario: Sección con datos omitida del orden
+- **WHEN** un perfil declara `sectionsOrder: ["hero", "experience"]`, tiene proyectos que pasan el filtro y no oculta nada
+- **THEN** `sections` empieza con `hero` y `experience`, e incluye `projects` después de ellas
+
+#### Scenario: Sección sin datos no se rellena
+- **WHEN** un perfil declara `sectionsOrder: ["hero"]` y ningún proyecto pasa el filtro
+- **THEN** `sections` no contiene `projects`
+
+#### Scenario: Sección oculta no se rellena
+- **WHEN** un perfil declara `sectionsOrder: ["hero"]`, `sectionsHidden: ["projects"]` y tiene proyectos que pasan el filtro
+- **THEN** `sections` no contiene `projects` y `hiddenSections` sí
+
+#### Scenario: El orden declarado no se altera
+- **WHEN** un perfil declara `sectionsOrder: ["contact", "hero", "experience"]`
+- **THEN** esos tres ids aparecen en `sections` en ese mismo orden, antes de cualquier id agregado por relleno
+
+#### Scenario: Id repetido en el orden
+- **WHEN** un perfil declara `sectionsOrder: ["hero", "hero", "experience"]`
+- **THEN** `sections` contiene `hero` una sola vez
 
 ### Requirement: Resultado listo para presentación
 La vista resuelta SHALL contener: metadatos del perfil curado (`slug`, `title`, `headline`, `description`, `roleType`, `techFocus`, `accentColor`, `layout`, `visibility`), `sections`/`hiddenSections`, el `theme` resuelto (ver `theme-resolution`), el perfil base (`profile`, misma forma que `public-profile-api`), las `experiences` (misma forma que `public-experience-api`), `skillCategories[] { name, skills[] }`, `projects` (seleccionados por tags/overrides), `education`, `certifications` y `socialLinks` (misma forma que `public-portfolio-sections-api`). Todos los campos traducibles SHALL venir resueltos al locale pedido; la salida MUST NOT contener `accessToken`, `includeIds`, `excludeIds` ni `filterTags`.
@@ -177,3 +197,14 @@ La vista resuelta SHALL incluir educación, certificaciones y enlaces sociales v
 #### Scenario: Conteos seed
 - **WHEN** se resuelve cualquier perfil `PUBLIC`
 - **THEN** `education` tiene 6 elementos, `certifications` 8 y `socialLinks` 3
+
+### Requirement: Catálogo canónico de secciones
+El dominio SHALL declarar **un único** catálogo de secciones, `SECTION_IDS`, con estos nueve ids en este orden canónico: `hero`, `stats`, `experience`, `skills`, `projects`, `education`, `certifications`, `presence`, `contact`. `DEFAULT_SECTIONS` SHALL ser ese mismo catálogo. Ningún otro módulo, ni el frontend, SHALL declarar una lista propia de secciones: el contrato OpenAPI es el único transporte del catálogo hacia el cliente.
+
+#### Scenario: Orden vacío usa el catálogo completo
+- **WHEN** un perfil curado tiene `sectionsOrder` vacío y datos en todas las colecciones
+- **THEN** `sections` contiene los nueve ids en el orden canónico
+
+#### Scenario: El catálogo del backend y el tipo del frontend no pueden divergir
+- **WHEN** se agrega un id al catálogo del backend y se regeneran los tipos
+- **THEN** el frontend no compila hasta que el registro de secciones implemente ese id
