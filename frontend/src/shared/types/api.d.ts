@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: ad884c9050db2f747a200027988f4bfe3e4717f066ea16f7d4de96f72cfbcbc6
+// openapi-sha256: 08b41efafd634f12e0e8fdcf0db42a81634cf7ee0dec6cb325467f8137967d96
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -560,9 +560,9 @@ export interface components {
             layout: string;
             roleType?: components["schemas"]["LocalizedTextDto"] | null;
             /** @default [] */
-            sectionsHidden: string[];
+            sectionsHidden: components["schemas"]["SectionId"][];
             /** @default [] */
-            sectionsOrder: string[];
+            sectionsOrder: components["schemas"]["SectionId"][];
             /**
              * @description kebab-case, único
              * @example qa-lead
@@ -863,9 +863,9 @@ export interface components {
             layout: string;
             roleType?: components["schemas"]["LocalizedTextDto"] | null;
             /** @default [] */
-            sectionsHidden: string[];
+            sectionsHidden: components["schemas"]["SectionId"][];
             /** @default [] */
-            sectionsOrder: string[];
+            sectionsOrder: components["schemas"]["SectionId"][];
             /**
              * @description kebab-case, único
              * @example qa-lead
@@ -955,6 +955,8 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** @enum {string} */
+        SectionId: "hero" | "stats" | "experience" | "skills" | "projects" | "education" | "certifications" | "presence" | "contact";
         SkillCategoryResponse: {
             /**
              * @description Resuelto al locale.
@@ -1038,9 +1040,9 @@ export interface components {
             layout: string;
             roleType?: components["schemas"]["LocalizedTextDto"] | null;
             /** @default [] */
-            sectionsHidden: string[];
+            sectionsHidden: components["schemas"]["SectionId"][];
             /** @default [] */
-            sectionsOrder: string[];
+            sectionsOrder: components["schemas"]["SectionId"][];
             /**
              * @description kebab-case, único
              * @example qa-lead

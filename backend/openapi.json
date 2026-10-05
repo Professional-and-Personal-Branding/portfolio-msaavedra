@@ -2945,6 +2945,20 @@
           "socialLinks"
         ]
       },
+      "SectionId": {
+        "type": "string",
+        "enum": [
+          "hero",
+          "stats",
+          "experience",
+          "skills",
+          "projects",
+          "education",
+          "certifications",
+          "presence",
+          "contact"
+        ]
+      },
       "PreviewCuratedProfileDto": {
         "type": "object",
         "properties": {
@@ -3023,17 +3037,17 @@
             "default": "classic"
           },
           "sectionsOrder": {
-            "default": [],
             "type": "array",
+            "default": [],
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/SectionId"
             }
           },
           "sectionsHidden": {
-            "default": [],
             "type": "array",
+            "default": [],
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/SectionId"
             }
           },
           "visibility": {
@@ -3263,17 +3277,17 @@
             "default": "classic"
           },
           "sectionsOrder": {
-            "default": [],
             "type": "array",
+            "default": [],
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/SectionId"
             }
           },
           "sectionsHidden": {
-            "default": [],
             "type": "array",
+            "default": [],
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/SectionId"
             }
           },
           "visibility": {
@@ -3375,17 +3389,17 @@
             "default": "classic"
           },
           "sectionsOrder": {
-            "default": [],
             "type": "array",
+            "default": [],
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/SectionId"
             }
           },
           "sectionsHidden": {
-            "default": [],
             "type": "array",
+            "default": [],
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/SectionId"
             }
           },
           "visibility": {

@@ -6,7 +6,7 @@ import { SidebarLayout } from './SidebarLayout';
 
 export interface LayoutProps {
   data: CuratedProfile;
-  /** Secciones ya ordenadas y filtradas (`orderSections`). */
+  /** Secciones en el orden final que resolvió el backend (`renderableSections`). */
   sections: readonly SectionId[];
 }
 

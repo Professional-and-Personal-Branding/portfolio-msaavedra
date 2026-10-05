@@ -117,16 +117,17 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
    * Alterna un valor en una lista partiendo SIEMPRE del estado vigente: varios
    * clics en la misma tanda de renderizado no se pisan entre sí.
    */
-  const toggleIn = (
-    key: 'filterTags' | 'includeIds' | 'excludeIds' | 'sectionsHidden',
-    value: string,
+  const toggleIn = <K extends 'filterTags' | 'includeIds' | 'excludeIds' | 'sectionsHidden'>(
+    key: K,
+    value: ProfileDraft[K][number],
   ) =>
-    setDraft((current) => ({
-      ...current,
-      [key]: current[key].includes(value)
-        ? current[key].filter((item) => item !== value)
-        : [...current[key], value],
-    }));
+    setDraft((current) => {
+      const list: readonly ProfileDraft[K][number][] = current[key];
+      return {
+        ...current,
+        [key]: list.includes(value) ? list.filter((item) => item !== value) : [...list, value],
+      };
+    });
 
   const publicUrl = `${globalThis.location?.origin ?? ''}${profilePath(draft.slug)}${
     draft.visibility === 'PROTECTED' && draft.accessToken

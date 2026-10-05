@@ -10,7 +10,7 @@ import {
 import { useUrlState } from '@/shared/lib/url-state';
 import { resolveLayoutName } from '@/themes/layouts';
 import { ProfileLayout } from '@/themes/layouts/ProfileLayout';
-import { orderSections } from '@/themes/layouts/sections';
+import { renderableSections } from '@/themes/layouts/sections';
 import { ThemeProvider } from '@/themes/theme-provider';
 import { AccessTokenForm } from './components/AccessTokenForm';
 import { ErrorState } from './components/ErrorState';
@@ -59,7 +59,7 @@ export function CuratedProfileView({ slug }: CuratedProfileViewProps) {
         <ProfileLayout
           name={layoutName}
           data={state.data}
-          sections={orderSections(state.data.sections, state.data.hiddenSections, state.data)}
+          sections={renderableSections(state.data.sections)}
         />
       );
       break;

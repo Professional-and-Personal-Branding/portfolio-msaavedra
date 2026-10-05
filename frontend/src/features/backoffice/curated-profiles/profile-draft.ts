@@ -1,4 +1,4 @@
-import { KNOWN_SECTIONS, type SectionId } from '@/themes/layouts/sections';
+import { isSectionId, SECTION_IDS, type SectionId } from '@/themes/layouts/sections';
 import type {
   AdminCuratedProfile,
   AdminExperience,
@@ -23,21 +23,14 @@ export interface ProfileDraft {
   themeId: string | null;
   themeOverrides: Record<string, unknown> | null;
   layout: string;
-  sectionsOrder: string[];
-  sectionsHidden: string[];
+  sectionsOrder: SectionId[];
+  sectionsHidden: SectionId[];
   visibility: Visibility;
   accessToken: string;
 }
 
-export const DEFAULT_SECTIONS: SectionId[] = [
-  'hero',
-  'stats',
-  'experience',
-  'skills',
-  'education',
-  'certifications',
-  'contact',
-];
+/** Un perfil nuevo arranca con el catálogo completo, en orden canónico. */
+export const DEFAULT_SECTIONS: readonly SectionId[] = SECTION_IDS;
 
 export const EMPTY_DRAFT: ProfileDraft = {
   slug: '',
@@ -74,9 +67,14 @@ export function toDraft(profile: AdminCuratedProfile): ProfileDraft {
     themeId: profile.themeId,
     themeOverrides: (profile.themeOverrides as Record<string, unknown> | null) ?? null,
     layout: profile.layout,
+    // Una fila anterior a la validación de ids podría traer alguno fuera del
+    // catálogo: el panel no puede mostrarlo ni quitarlo, así que se descarta al
+    // cargar y guardar deja el dato limpio. La API, en cambio, lo rechaza.
     sectionsOrder:
-      profile.sectionsOrder.length > 0 ? [...profile.sectionsOrder] : [...DEFAULT_SECTIONS],
-    sectionsHidden: [...profile.sectionsHidden],
+      profile.sectionsOrder.length > 0
+        ? profile.sectionsOrder.filter(isSectionId)
+        : [...DEFAULT_SECTIONS],
+    sectionsHidden: profile.sectionsHidden.filter(isSectionId),
     visibility: profile.visibility,
     accessToken: profile.accessToken ?? '',
   };
@@ -165,7 +163,7 @@ export function tagUniverse(
 }
 
 /** Mueve una sección una posición arriba o abajo (spec `curated-profile-builder`). */
-export function moveSection(sections: string[], index: number, direction: -1 | 1): string[] {
+export function moveSection<T>(sections: T[], index: number, direction: -1 | 1): T[] {
   const target = index + direction;
   if (index < 0 || index >= sections.length || target < 0 || target >= sections.length) {
     return sections;
@@ -178,8 +176,8 @@ export function moveSection(sections: string[], index: number, direction: -1 | 1
 }
 
 /** Todas las secciones conocidas, con el orden del perfil primero. */
-export function allSections(sectionsOrder: readonly string[]): string[] {
-  const known = sectionsOrder.filter((s) => (KNOWN_SECTIONS as readonly string[]).includes(s));
-  const missing = KNOWN_SECTIONS.filter((s) => !known.includes(s));
+export function allSections(sectionsOrder: readonly SectionId[]): SectionId[] {
+  const known = sectionsOrder.filter((s) => SECTION_IDS.includes(s));
+  const missing = SECTION_IDS.filter((s) => !known.includes(s));
   return [...known, ...missing];
 }

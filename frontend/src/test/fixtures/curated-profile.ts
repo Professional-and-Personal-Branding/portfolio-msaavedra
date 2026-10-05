@@ -31,7 +31,18 @@ export function makeCuratedProfile(overrides: Partial<CuratedProfile> = {}): Cur
     accentColor: '#38bdf8',
     layout: 'classic',
     visibility: 'PUBLIC',
-    sections: ['hero', 'stats', 'experience', 'skills', 'education', 'certifications', 'contact'],
+    // Lo que devuelve el backend para un perfil con datos en todo: el catálogo completo.
+    sections: [
+      'hero',
+      'stats',
+      'experience',
+      'skills',
+      'projects',
+      'education',
+      'certifications',
+      'presence',
+      'contact',
+    ],
     hiddenSections: [],
     theme: {
       slug: 'modern-dark',

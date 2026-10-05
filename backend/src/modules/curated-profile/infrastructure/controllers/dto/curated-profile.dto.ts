@@ -21,7 +21,9 @@ import {
   NewCuratedProfileProps,
 } from '../../../domain/entities/curated-profile.entity';
 import { HEX_COLOR_REGEX, SLUG_REGEX } from '../../../domain/services/validate-curated-profile';
+import { SECTION_IDS, SectionId } from '../../../domain/services/resolve-sections';
 import { AccessToken } from '../../../domain/value-objects/access-token.vo';
+import { IsSectionIdList } from './is-section-id-list.validator';
 
 export class CreateCuratedProfileDto {
   @ApiProperty({ example: 'qa-lead', description: 'kebab-case, único' })
@@ -96,17 +98,26 @@ export class CreateCuratedProfileDto {
   @IsNotEmpty()
   layout?: string;
 
-  @ApiPropertyOptional({ type: [String], default: [] })
+  /** Orden de las secciones; vacío = catálogo completo en orden canónico. */
+  @ApiPropertyOptional({
+    enum: SECTION_IDS,
+    enumName: 'SectionId',
+    isArray: true,
+    default: [],
+  })
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  sectionsOrder?: string[];
+  @IsSectionIdList()
+  sectionsOrder?: SectionId[];
 
-  @ApiPropertyOptional({ type: [String], default: [] })
+  @ApiPropertyOptional({
+    enum: SECTION_IDS,
+    enumName: 'SectionId',
+    isArray: true,
+    default: [],
+  })
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  sectionsHidden?: string[];
+  @IsSectionIdList()
+  sectionsHidden?: SectionId[];
 
   @ApiPropertyOptional({ enum: CURATED_VISIBILITIES, default: 'PUBLIC' })
   @IsOptional()

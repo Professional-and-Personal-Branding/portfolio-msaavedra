@@ -208,13 +208,16 @@ describe('Perfiles curados (e2e)', () => {
       expect(Object.keys(res.body.theme).sort()).toEqual(
         ['slug', 'name', 'isPreset', 'tokens'].sort(),
       );
+      // unify-section-catalog: el orden final ya incluye projects y presence en su lugar.
       expect(res.body.sections).toEqual([
         'hero',
         'stats',
         'experience',
         'skills',
+        'projects',
         'education',
         'certifications',
+        'presence',
         'contact',
       ]);
       expect(res.body.hiddenSections).toEqual([]);

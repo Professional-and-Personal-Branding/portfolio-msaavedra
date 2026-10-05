@@ -339,7 +339,7 @@ sectionsOrder=[hero,skills,experience,contact]
                                                           hiddenSections=[skills]
 ```
 
-> El backend declara hoy **7** secciones por defecto y el frontend conoce **9**: `projects` y `presence` entran por la regla de relleno del cliente. Está identificado y resuelto en el change `unify-section-catalog`.
+> **Desde el change `unify-section-catalog`** el catálogo es uno solo, con **9** secciones, y el **backend** aplica el relleno: `sections` trae además, al final y en orden canónico, las secciones con datos que no figuran en `sectionsOrder` ni están ocultas. Es el orden final que se renderiza. La transcripción de arriba es anterior al change y muestra `sections` sin ese relleno. Un id fuera del catálogo en `sectionsOrder` o `sectionsHidden` ahora responde 400.
 
 ### TC-15 — Personalizar el tema ✅
 

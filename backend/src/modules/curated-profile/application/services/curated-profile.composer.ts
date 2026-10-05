@@ -21,12 +21,13 @@ import {
 } from '../../../theme/domain/repositories/theme.repository';
 import { mergeThemeTokens } from '../../../theme/domain/services/merge-theme-tokens';
 import { CuratedProfile } from '../../domain/entities/curated-profile.entity';
-import { resolveSections } from '../../domain/services/resolve-sections';
+import { completeSections, resolveSections } from '../../domain/services/resolve-sections';
 import { selectByTags, SelectionCriteria } from '../../domain/services/select-by-tags';
 import { selectSkillCategories } from '../../domain/services/select-skill-categories';
 import { CuratedProfileOutput } from '../dto/curated-profile.output';
 import { toCuratedProfileOutput } from '../mappers/curated-profile.mapper';
 import { PortfolioSectionsLoader } from './portfolio-sections.loader';
+import { sectionsWithData } from './sections-with-data';
 
 /**
  * Pasos 3-5 y 7 de `CLAUDE.md § ResolveCuratedProfile`: dado un perfil curado
@@ -82,7 +83,7 @@ export class CuratedProfileComposer {
       : null;
     const sections = resolveSections(curated.sectionsOrder, curated.sectionsHidden);
 
-    return toCuratedProfileOutput({
+    const output = toCuratedProfileOutput({
       curated,
       locale,
       profile,
@@ -95,6 +96,9 @@ export class CuratedProfileComposer {
       theme: resolvedTheme,
       sections,
     });
+    // El orden final, con relleno, se decide acá: el cliente lo renderiza tal cual
+    // (spec `curated-profile-resolution`).
+    return { ...output, sections: completeSections(sections, sectionsWithData(output)) };
   }
 
   /** Tema propio → preset por defecto → null (la resolución nunca falla por el tema). */
