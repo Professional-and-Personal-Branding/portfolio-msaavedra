@@ -18,14 +18,22 @@ import {
   AggregateProfileViewsUseCase,
   ProfileViewsOutput,
 } from '../../application/use-cases/aggregate-profile-views.use-case';
+import { parseRangeEnd, parseRangeStart } from '../../domain/services/range-boundaries';
 
 export class ViewsRangeQueryDto {
-  @ApiPropertyOptional({ description: 'ISO 8601; default: hace 30 días', example: '2026-08-01' })
+  @ApiPropertyOptional({
+    description: 'ISO 8601; default: hace 30 días. Una fecha sin hora empieza a su medianoche UTC',
+    example: '2026-08-01',
+  })
   @IsOptional()
   @IsISO8601()
   from?: string;
 
-  @ApiPropertyOptional({ description: 'ISO 8601; default: ahora', example: '2026-09-07' })
+  @ApiPropertyOptional({
+    description:
+      'ISO 8601; default: ahora. El rango es cerrado: una fecha sin hora incluye ese día completo',
+    example: '2026-09-07',
+  })
   @IsOptional()
   @IsISO8601()
   to?: string;
@@ -63,13 +71,16 @@ export class AdminAnalyticsController {
   constructor(private readonly aggregate: AggregateProfileViewsUseCase) {}
 
   @Get('views')
-  @ApiOperation({ summary: 'Visitas agregadas por perfil, idioma y día' })
+  @ApiOperation({
+    summary: 'Visitas agregadas por perfil, idioma y día',
+    description: 'El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso.',
+  })
   @ApiOkResponse({ type: ProfileViewsResponse })
   @ApiBadRequestResponse({ type: ErrorResponseDto })
   async views(@Query() query: ViewsRangeQueryDto): Promise<ProfileViewsOutput> {
     const result = await this.aggregate.execute({
-      from: query.from ? new Date(query.from) : undefined,
-      to: query.to ? new Date(query.to) : undefined,
+      from: parseRangeStart(query.from),
+      to: parseRangeEnd(query.to),
     });
     if (!result.ok) throw toHttpException(result.error);
     return result.value;

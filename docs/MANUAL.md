@@ -247,7 +247,8 @@ POST /api/admin/curated-profiles       -> 201  slug=suite-demo visibility=PRIVAT
   defaults: accentColor=#1A365D layout=classic views=0 filterTags=[]
 POST con el mismo slug                 -> 409
 POST con un campo fuera del DTO        -> 400
-POST omitiendo "title" (obligatorio)   -> 500  ❌ debería ser 400 — ver § 6.1
+POST omitiendo "title" (obligatorio)   -> 500  ❌ antes del arreglo de D-02 — ver § 6.1
+POST omitiendo "title" (obligatorio)   -> 400  ✅ después: "title should not be null or undefined"
 ```
 
 > **Recomendado:** crealo `PRIVATE` y pasalo a `PUBLIC` recién cuando esté listo (TC-16). Un `PRIVATE` devuelve 404, así que nadie lo encuentra mientras lo armás.
@@ -429,7 +430,7 @@ No persiste nada. Sirve para tantear un filtro antes de tocar un perfil ya publi
 
 > **Cuidado con los nombres:** lo que **mandás** usa `sectionsOrder` y `sectionsHidden`; lo que **vuelve resuelto** trae `sections` (ya ordenadas y filtradas) y `hiddenSections`. Es la diferencia entre la configuración y el resultado.
 
-### TC-18 — Medir qué pasó con los links ❌
+### TC-18 — Medir qué pasó con los links ✅
 
 **Pasos:** `/admin` es el dashboard.
 
@@ -445,17 +446,17 @@ curl -s "$API/api/admin/analytics/views?from=2026-09-01&to=2026-10-04" -H "$AUTH
 }'
 ```
 
-**Ejecutado**, y acá apareció un defecto:
+**Ejecutado.** Acá apareció el defecto D-01, ya corregido:
 
 ```
 views del perfil antes                 -> 2
 tras 2 visitas a la ruta pública       -> 4   ✅ el contador sube
 tras un preview del panel              -> 4   ✅ el preview no cuenta como visita
-GET analytics/views?from=hoy&to=hoy    -> total=0   ❌ debería ser 4
-GET analytics/views?from=hoy&to=mañana -> total=13, byDay={hoy:13}
+GET analytics/views?from=hoy&to=hoy    -> total=0   ❌ antes del arreglo; debía ser 4
+GET analytics/views?from=hoy&to=hoy    -> total=4   ✅ después del arreglo
 ```
 
-El contador del perfil y el registro de `ProfileView` funcionan. Lo que falla es el **rango** del agregado: `to` es exclusivo, y el dashboard pide `[hoy-29, hoy]`, así que **las visitas de hoy no aparecen nunca**. Ver § 6.1.
+El contador del perfil y el registro de `ProfileView` siempre funcionaron. Lo que fallaba era el **rango** del agregado: `to` era exclusivo y el dashboard pide `[hoy-29, hoy]`, así que las visitas de hoy no aparecían nunca. Ver § 6.1.
 
 ![Dashboard de analítica](manual/tc18-dashboard.jpg)
 
@@ -498,7 +499,8 @@ POST experiencia visible                       -> 201, tags=[suite-tag]
 POST experiencia oculta (visible:false)        -> 201
 GET /api/experiences (público) la oculta       -> no aparece
 GET /api/admin/experiences la oculta           -> sí aparece, con visible=false
-POST omitiendo "summary" (obligatorio)         -> 500  ❌ debería ser 400 — ver § 6.1
+POST omitiendo "summary" (obligatorio)         -> 500  ❌ antes del arreglo de D-02 — ver § 6.1
+POST omitiendo "summary" (obligatorio)         -> 400  ✅ después: "summary should not be null or undefined"
 ```
 
 > Un tag nuevo aparece solo como chip en el constructor de **todos** los perfiles: es la forma más rápida de abrir una dimensión de filtrado nueva.
@@ -617,52 +619,57 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-09 | Vista móvil | ✅ | captura |
 | TC-10 | Códigos de estado por visibilidad | 🔍 | 401 / 200 / 404 |
 | TC-11 | Entrar al panel | ✅ | captura del login |
-| TC-12 | Crear un perfil curado | ✅ | 2 capturas · 201 / 409 / 400, **y un 500** |
+| TC-12 | Crear un perfil curado | ✅ | 2 capturas · 201 / 409 / 400 (D-02 corregido) |
 | TC-13 | Tags y overrides | ✅ | captura · los cuatro casos del filtro |
 | TC-14 | Ordenar y ocultar secciones | ✅ | captura · orden y ocultado resueltos |
 | TC-15 | Personalizar el tema | ✅ | captura · solo se guarda la diferencia |
 | TC-16 | Publicar, proteger, esconder | ✅ | captura · la tabla completa de visibilidad |
 | TC-17 | Previsualizar sin guardar | 🔍 | no persiste nada |
-| TC-18 | Dashboard de analítica | ❌ | captura · el contador sube, **el rango falla** |
-| TC-19 | Mantener experiencias | ✅ | 2 capturas · visible / oculta, **y un 500** |
+| TC-18 | Dashboard de analítica | ✅ | captura previa al arreglo · el contador sube y el rango incluye hoy (D-01 corregido, verificado en e2e) |
+| TC-19 | Mantener experiencias | ✅ | 2 capturas · visible / oculta (D-02 corregido) |
 | TC-20 | Mantener skills | ✅ | captura · la categoría entra por el tag de su skill |
 
-**19 de 20 casos pasan, y los 20 tienen evidencia.** 20 capturas en `docs/manual/` más las transcripciones de la API. TC-18 falla.
+**Los 20 casos pasan, y los 20 tienen evidencia.** 20 capturas en `docs/manual/` más las transcripciones de la API. La captura de TC-18 es anterior al arreglo de D-01 y todavía muestra el dashboard en cero: se renueva en la próxima ejecución con sesión iniciada.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
-Los dos aparecieron al ejecutar estos casos por primera vez de punta a punta. Ninguno estaba reportado.
+Los dos aparecieron al ejecutar estos casos por primera vez de punta a punta. Ninguno estaba reportado. **Los dos están corregidos**; quedan documentados acá porque la suite los sigue cubriendo.
 
-#### D-01 — El dashboard nunca muestra las visitas de hoy
+#### D-01 — El dashboard nunca muestra las visitas de hoy — ✅ corregido
 
 **Severidad:** alta, visible para el usuario.
-**Síntoma:** se comparte un link, alguien lo abre, y el dashboard sigue en cero hasta el día siguiente.
-**Causa:** el parámetro `to` de `GET /api/admin/analytics/views` es **exclusivo**, pero `frontend/src/features/backoffice/dashboard/ranges.ts` documenta y construye un **rango cerrado** `[hoy - (días - 1), hoy]`. El `to = hoy` que manda el panel deja fuera el día en curso.
+**Síntoma:** se compartía un link, alguien lo abría, y el dashboard seguía en cero hasta el día siguiente.
+**Causa:** el parámetro `to` de `GET /api/admin/analytics/views` se interpretaba como un instante, así que `to=2026-10-05` era la medianoche de ese día. `frontend/src/features/backoffice/dashboard/ranges.ts` documenta y construye un **rango cerrado** `[hoy - (días - 1), hoy]`, de modo que el `to = hoy` del panel dejaba fuera el día en curso.
 
 ```
-GET /api/admin/analytics/views?from=2026-10-05&to=2026-10-05  -> total=0
+GET /api/admin/analytics/views?from=2026-10-05&to=2026-10-05  -> total=0    (antes)
 GET /api/admin/analytics/views?from=2026-10-05&to=2026-10-06  -> total=13, byDay={2026-10-05:13}
 ```
 
-**Arreglo propuesto:** hacer `to` inclusivo en el agregado (comparar contra el final del día de `to`, no contra su medianoche), que es lo que la spec `admin-analytics-dashboard` describe. Alternativa peor: que el frontend mande `to = mañana`, porque deja la API mintiendo sobre su propio contrato.
+**Arreglo aplicado:** el rango pasó a ser cerrado en la API, que es lo que describe la spec `admin-analytics-dashboard` y lo que el panel ya asumía. Una fecha sin hora se resuelve al borde del día en UTC — inicio para `from`, último milisegundo para `to` —; un instante completo (`2026-10-05T14:30:00Z`) se respeta tal cual, para poder pedir ventanas más finas que un día. La decisión vive en un servicio puro, `backend/src/modules/analytics/domain/services/range-boundaries.ts`, y el controller la usa en lugar de llamar a `new Date()` directamente. Se descartó la alternativa de que el frontend mandara `to = mañana`, porque deja la API mintiendo sobre su propio contrato.
 
-#### D-02 — Omitir un objeto obligatorio devuelve 500 en lugar de 400
+**Regresión:** `range-boundaries.spec.ts` cubre los bordes del parseo, y `admin.e2e-spec.ts` agrega el caso de punta a punta — una visita nueva aparece en `?from=hoy&to=hoy`. Sin el arreglo ese caso da `total=0`. La descripción del endpoint en Swagger ahora dice que el rango es cerrado, así que `openapi.json` y los tipos del frontend se regeneraron.
+
+#### D-02 — Omitir un objeto obligatorio devuelve 500 en lugar de 400 — ✅ corregido
 
 **Severidad:** media; solo afecta endpoints autenticados del panel.
-**Síntoma:** un cuerpo al que le falta un campo obligatorio anidado responde `500 Error interno del servidor` en vez de un 400 que diga qué falta.
+**Síntoma:** un cuerpo al que le falta un campo obligatorio anidado respondía `500 Error interno del servidor` en vez de un 400 que dijera qué falta.
 **Causa:** los campos obligatorios de tipo objeto se declaran con `@ValidateNested()` + `@Type()` pero **sin `@IsDefined()`**. `class-validator` no valida un valor `undefined`, así que la validación pasa y el mapper revienta con `TypeError: Cannot read properties of undefined (reading 'en')`.
 
-Verificado en cinco variantes:
+**Arreglo aplicado:** `@IsDefined()` en los cinco campos obligatorios de tipo objeto que había en los DTO de entrada — `role` y `summary` de `CreateExperienceDto`, `title` y `headline` de `CreateCuratedProfileDto`, y `name` de `CreateSkillCategoryDto`. Los `Update*Dto` heredan por `PartialType`, que inyecta `@IsOptional()` y corta la cadena antes de `@IsDefined()`: los PATCH parciales siguen funcionando igual. `openapi.json` no cambia, porque la obligatoriedad en Swagger ya venía de `@ApiProperty`.
+
+Las mismas cinco variantes, tras el arreglo:
 
 ```
-POST /api/admin/experiences      sin "summary"   -> 500   (esperado 400)
-POST /api/admin/experiences      sin "role"      -> 500   (esperado 400)
-POST /api/admin/curated-profiles sin "title"     -> 500   (esperado 400)
-POST /api/admin/curated-profiles sin "headline"  -> 500   (esperado 400)
-POST /api/admin/experiences      completo        -> 201   (control)
+POST /api/admin/experiences       sin "summary"  -> 400  ["summary should not be null or undefined"]
+POST /api/admin/experiences       sin "role"     -> 400  ["role should not be null or undefined"]
+POST /api/admin/curated-profiles  sin "title"    -> 400  ["title should not be null or undefined"]
+POST /api/admin/curated-profiles  sin "headline" -> 400  ["headline should not be null or undefined"]
+POST /api/admin/skill-categories  sin "name"     -> 400  ["name should not be null or undefined"]
+POST /api/admin/experiences       completo       -> 201  (control)
 ```
 
-**Arreglo propuesto:** agregar `@IsDefined()` a los campos obligatorios de tipo objeto en los DTO de creación, y un test estático que falle si aparece un `@ValidateNested()` obligatorio sin él — en la línea del test que ya exige `adminValidationPipe` en todo endpoint con cuerpo.
+**Regresión:** `backend/test/dto-validation.spec.ts` corre `class-validator` sobre cada DTO de entrada con las mismas opciones que `adminValidationPipe` y exige un error por cada campo obligatorio — con el cuerpo vacío, con el campo ausente y con el campo en `null` — más un control con el cuerpo completo. Es un test de comportamiento en vez del test estático que se había propuesto: no depende de qué decorador arregle el problema y cubre todos los campos obligatorios, no solo los anidados. Sin los `@IsDefined()` fallan 8 de sus 34 casos.
 
 ---
 

@@ -23,6 +23,7 @@ Cuando `GET /api/curated-profiles/:slug` responde 200, el sistema SHALL crear un
 ### Requirement: Lectura agregada para el administrador
 `GET /api/admin/analytics/views` SHALL devolver `{ from, to, total, byProfile: [{ slug, views }], byLocale: [{ locale, views }], byDay: [{ day, views }] }` para el rango `from`/`to` (fechas ISO, default últimos 30 días), ordenando `byProfile` por vistas descendente y `byDay` ascendente. Requiere token de administrador.
 
+
 #### Scenario: Agregado tras visitas
 - **WHEN** se registraron 3 visitas a `all` (2 en `es`, 1 en `en`) dentro del rango y el administrador consulta
 - **THEN** `total ≥ 3`, `byProfile` contiene `{ slug: "all", views ≥ 3 }` y `byLocale` contiene `es` y `en`
@@ -34,3 +35,14 @@ Cuando `GET /api/curated-profiles/:slug` responde 200, el sistema SHALL crear un
 #### Scenario: Rango inválido
 - **WHEN** envía `from=ayer`
 - **THEN** recibe 400
+
+### Requirement: El rango de fechas es cerrado
+El rango `from`/`to` SHALL ser cerrado: una fecha sin hora se resuelve al borde de ese día en UTC, inicio para `from` y final para `to`. Un instante completo SHALL respetarse tal cual, para consultar ventanas más finas que un día.
+
+#### Scenario: El día en curso entra en el rango
+- **WHEN** se registra una visita hoy y el administrador consulta `?from=<hoy>&to=<hoy>`
+- **THEN** esa visita está en `total` y `byDay` contiene el día de hoy
+
+#### Scenario: Ventana de horas
+- **WHEN** consulta `?from=2026-10-05T12:00:00Z&to=2026-10-05T13:00:00Z`
+- **THEN** solo cuenta las visitas de esa hora

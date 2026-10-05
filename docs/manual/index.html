@@ -254,11 +254,11 @@
     <a href="#tc15"><span class="dot ok"></span><span class="id">TC-15</span> Tema</a>
     <a href="#tc16"><span class="dot ok"></span><span class="id">TC-16</span> Publicar</a>
     <a href="#tc17"><span class="dot ok"></span><span class="id">TC-17</span> Preview</a>
-    <a href="#tc18"><span class="dot fail"></span><span class="id">TC-18</span> Analítica</a>
+    <a href="#tc18"><span class="dot ok"></span><span class="id">TC-18</span> Analítica</a>
     <a href="#tc19"><span class="dot ok"></span><span class="id">TC-19</span> Experiencias</a>
     <a href="#tc20"><span class="dot ok"></span><span class="id">TC-20</span> Skills</a>
     <h3>Cierre</h3>
-    <a href="#defectos"><span class="dot fail"></span><span class="id">§6</span> Defectos</a>
+    <a href="#defectos"><span class="dot ok"></span><span class="id">§6</span> Defectos</a>
     <a href="#noadmin"><span class="id">§7</span> Sin administrar</a>
     <a href="#fallas"><span class="id">§8</span> Qué falla y por qué</a>
   </nav>
@@ -319,12 +319,12 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
 
       <div class="stats">
         <div class="stat"><b>20</b><span>casos</span></div>
-        <div class="stat ok"><b>19</b><span>pasan</span></div>
-        <div class="stat fail"><b>1</b><span>falla</span></div>
+        <div class="stat ok"><b>20</b><span>pasan</span></div>
+        <div class="stat"><b>2</b><span>defectos corregidos</span></div>
         <div class="stat"><b>20</b><span>capturas</span></div>
       </div>
 
-      <div class="note danger"><b>TC-18 falla.</b> El dashboard nunca muestra las visitas del día en curso. Causa y arreglo propuesto en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Los 20 casos pasan.</b> Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -484,7 +484,8 @@ curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
   defaults: accentColor=#1A365D layout=classic views=0 filterTags=[]
 POST con el mismo slug                 -> 409
 POST con un campo fuera del DTO        -> 400
-POST omitiendo "title" (obligatorio)   -> 500  ❌ debería ser 400</pre></div>
+POST omitiendo "title" (obligatorio)   -> 500  ❌ antes del arreglo de D-02
+POST omitiendo "title" (obligatorio)   -> 400  ✅ después: "title should not be null or undefined"</pre></div>
         <div class="note"><b>Recomendado.</b> Crealo <code>PRIVATE</code> y pasalo a <code>PUBLIC</code> recién cuando esté listo. Un <code>PRIVATE</code> devuelve 404, así que nadie lo encuentra mientras lo armás.</div>
         <figure class="shot"><img src="tc12a-perfiles-lista.jpg" alt="Lista de perfiles curados en el panel" loading="lazy"><figcaption>Slug, visibilidad, taxonomía y visitas de cada perfil.</figcaption></figure>
         <figure class="shot"><img src="tc12b-identidad.jpg" alt="Pestaña Identidad del constructor" loading="lazy"><figcaption>Pestaña Identidad, con la vista previa en vivo: <code>12 experiencias · 10 categorías · 1 proyectos</code> ya filtradas.</figcaption></figure>
@@ -572,18 +573,18 @@ el PRIVATE figura en el sitemap -> no</pre></div>
         <div class="note"><b>Cuidado con los nombres.</b> Lo que mandás usa <code>sectionsOrder</code> y <code>sectionsHidden</code>; lo que vuelve resuelto trae <code>sections</code> y <code>hiddenSections</code>. Es la diferencia entre la configuración y el resultado.</div>
       </article>
 
-      <article class="case" data-status="fail" id="tc18">
-        <div class="case-head"><span class="case-id">TC-18</span><h3>Medir qué pasó con los links</h3><span class="pill fail">falla</span>
+      <article class="case" data-status="ok" id="tc18">
+        <div class="case-head"><span class="case-id">TC-18</span><h3>Medir qué pasó con los links</h3><span class="pill ok">pasa</span>
           <label class="run"><input type="checkbox" data-run="tc18"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · <code>/admin</code> es el dashboard: rango de 7, 30 (por defecto), 90 días o el último año; totales de visitas, perfiles vistos e idiomas; y tablas por día, por perfil y por idioma.</p>
         <p><span class="lbl">Observado</span></p>
         <div class="codewrap"><pre>views del perfil antes                 -> 2
 tras 2 visitas a la ruta pública       -> 4   ✅ el contador sube
 tras un preview del panel              -> 4   ✅ el preview no cuenta como visita
-GET analytics/views?from=hoy&amp;to=hoy    -> total=0   ❌ debería ser 4
-GET analytics/views?from=hoy&amp;to=mañana -> total=13, byDay={hoy:13}</pre></div>
-        <div class="note danger"><b>Falla el rango, no el registro.</b> El contador del perfil y el registro de <code>ProfileView</code> funcionan. <code>to</code> es exclusivo y el dashboard pide <code>[hoy-29, hoy]</code>, así que las visitas de hoy no aparecen nunca. Ver <a href="#defectos">D-01</a>.</div>
-        <figure class="shot"><img src="tc18-dashboard.jpg" alt="Dashboard de analítica" loading="lazy"><figcaption>516 visitas en el rango, 6 perfiles y 2 idiomas. Los datos más recientes son de septiembre: las visitas de hoy no entran.</figcaption></figure>
+GET analytics/views?from=hoy&amp;to=hoy    -> total=0   ❌ antes del arreglo de D-01
+GET analytics/views?from=hoy&amp;to=hoy    -> total=4   ✅ después</pre></div>
+        <div class="note"><b>Fallaba el rango, no el registro.</b> El contador del perfil y el registro de <code>ProfileView</code> siempre funcionaron. <code>to</code> era exclusivo y el dashboard pide <code>[hoy-29, hoy]</code>, así que las visitas de hoy no aparecían. Corregido: ver <a href="#defectos">D-01</a>.</div>
+        <figure class="shot"><img src="tc18-dashboard.jpg" alt="Dashboard de analítica" loading="lazy"><figcaption>516 visitas en el rango, 6 perfiles y 2 idiomas. Captura anterior al arreglo de D-01: los datos más recientes son de septiembre porque las visitas de hoy todavía no entraban. Se renueva en la próxima ejecución.</figcaption></figure>
         <p>De cada visita se guarda el perfil, el idioma, la fecha y la IP <b>solo como HMAC</b> con <code>ANALYTICS_SALT</code>. No hay cookies de seguimiento, y si el registro falla la respuesta al visitante no se altera.</p>
       </article>
 
@@ -606,7 +607,8 @@ GET analytics/views?from=hoy&amp;to=mañana -> total=13, byDay={hoy:13}</pre></d
 POST experiencia oculta (visible:false)  -> 201
 GET /api/experiences (público)           -> la oculta no aparece
 GET /api/admin/experiences               -> la oculta aparece, con visible=false
-POST omitiendo "summary" (obligatorio)   -> 500  ❌ debería ser 400</pre></div>
+POST omitiendo "summary" (obligatorio)   -> 500  ❌ antes del arreglo de D-02
+POST omitiendo "summary" (obligatorio)   -> 400  ✅ después: "summary should not be null or undefined"</pre></div>
         <figure class="shot"><img src="tc19a-experiencias.jpg" alt="Lista de experiencias" loading="lazy"><figcaption>Cada fila con su empresa, periodo, tags y orden.</figcaption></figure>
         <figure class="shot"><img src="tc19b-formulario.jpg" alt="Formulario de experiencia" loading="lazy"><figcaption>Los campos bilingües llevan conmutador ES/EN. <b>Logros (es)</b> no lo tiene: la limitación de abajo, a la vista.</figcaption></figure>
         <div class="note warn"><b>Limitación actual.</b> El formulario expone los logros solo en español. El inglés se conserva al guardar, pero no se puede editar desde el panel. Lo resuelve el change <code>add-bilingual-builder-parity</code>.</div>
@@ -629,27 +631,32 @@ DELETE de la categoría                        -> se lleva sus skills</pre></div
     <!-- ───────────── Defectos ───────────── -->
     <section class="block" id="defectos">
       <h2>Defectos encontrados al ejecutar la suite</h2>
-      <p class="lede">Los dos aparecieron al ejecutar estos casos por primera vez de punta a punta. Ninguno estaba reportado.</p>
+      <p class="lede">Los dos aparecieron al ejecutar estos casos por primera vez de punta a punta. Ninguno estaba reportado. <b>Los dos están corregidos</b>; quedan documentados acá porque la suite los sigue cubriendo.</p>
 
-      <article class="case" data-status="fail">
-        <div class="case-head"><span class="case-id">D-01</span><h3>El dashboard nunca muestra las visitas de hoy</h3><span class="pill fail">severidad alta</span></div>
-        <p><span class="lbl">Síntoma</span> · Se comparte un link, alguien lo abre, y el dashboard sigue en cero hasta el día siguiente.</p>
-        <p><span class="lbl">Causa</span> · El parámetro <code>to</code> de <code>GET /api/admin/analytics/views</code> es <b>exclusivo</b>, pero <code>frontend/src/features/backoffice/dashboard/ranges.ts</code> documenta y construye un rango <b>cerrado</b> <code>[hoy - (días - 1), hoy]</code>. El <code>to = hoy</code> que manda el panel deja fuera el día en curso.</p>
+      <article class="case" data-status="ok">
+        <div class="case-head"><span class="case-id">D-01</span><h3>El dashboard nunca muestra las visitas de hoy</h3><span class="pill ok">corregido</span></div>
+        <p><span class="lbl">Severidad</span> · Alta, visible para el usuario.</p>
+        <p><span class="lbl">Síntoma</span> · Se compartía un link, alguien lo abría, y el dashboard seguía en cero hasta el día siguiente.</p>
+        <p><span class="lbl">Causa</span> · El parámetro <code>to</code> de <code>GET /api/admin/analytics/views</code> se interpretaba como un instante: <code>to=2026-10-05</code> era la medianoche de ese día. <code>frontend/src/features/backoffice/dashboard/ranges.ts</code> construye un rango <b>cerrado</b> <code>[hoy - (días - 1), hoy]</code>, así que el <code>to = hoy</code> del panel dejaba fuera el día en curso.</p>
         <div class="codewrap"><pre>GET /api/admin/analytics/views?from=2026-10-05&amp;to=2026-10-05  -> total=0
 GET /api/admin/analytics/views?from=2026-10-05&amp;to=2026-10-06  -> total=13, byDay={2026-10-05:13}</pre></div>
-        <p><span class="lbl">Arreglo propuesto</span> · Hacer <code>to</code> inclusivo en el agregado, que es lo que describe la spec <code>admin-analytics-dashboard</code>. Que el frontend mande <code>to = mañana</code> es peor: deja la API mintiendo sobre su propio contrato.</p>
+        <p><span class="lbl">Arreglo aplicado</span> · El rango es cerrado en la API. Una fecha sin hora se toma al borde del día en UTC (inicio para <code>from</code>, último milisegundo para <code>to</code>) y un instante completo se respeta tal cual. La lógica vive en <code>backend/src/modules/analytics/domain/services/range-boundaries.ts</code>. Se descartó que el frontend mandara <code>to = mañana</code>, porque dejaba la API mintiendo sobre su propio contrato.</p>
+        <p><span class="lbl">Regresión</span> · <code>range-boundaries.spec.ts</code> y un caso e2e en <code>admin.e2e-spec.ts</code>: una visita recién registrada aparece en <code>?from=hoy&amp;to=hoy</code>. Sin el arreglo da <code>total=0</code>.</p>
       </article>
 
-      <article class="case" data-status="fail">
-        <div class="case-head"><span class="case-id">D-02</span><h3>Omitir un objeto obligatorio devuelve 500 en lugar de 400</h3><span class="pill fail">severidad media</span></div>
-        <p><span class="lbl">Síntoma</span> · Un cuerpo al que le falta un campo obligatorio anidado responde <code>500 Error interno del servidor</code> en vez de un 400 que diga qué falta.</p>
+      <article class="case" data-status="ok">
+        <div class="case-head"><span class="case-id">D-02</span><h3>Omitir un objeto obligatorio devuelve 500 en lugar de 400</h3><span class="pill ok">corregido</span></div>
+        <p><span class="lbl">Severidad</span> · Media; solo afecta endpoints autenticados del panel.</p>
+        <p><span class="lbl">Síntoma</span> · Un cuerpo al que le faltaba un campo obligatorio anidado respondía <code>500 Error interno del servidor</code> en vez de un 400 que dijera qué falta.</p>
         <p><span class="lbl">Causa</span> · Los campos obligatorios de tipo objeto se declaran con <code>@ValidateNested()</code> + <code>@Type()</code> pero <b>sin <code>@IsDefined()</code></b>. <code>class-validator</code> no valida un valor <code>undefined</code>, así que la validación pasa y el mapper revienta con <code>TypeError: Cannot read properties of undefined (reading 'en')</code>.</p>
-        <div class="codewrap"><pre>POST /api/admin/experiences      sin "summary"   -> 500   (esperado 400)
-POST /api/admin/experiences      sin "role"      -> 500   (esperado 400)
-POST /api/admin/curated-profiles sin "title"     -> 500   (esperado 400)
-POST /api/admin/curated-profiles sin "headline"  -> 500   (esperado 400)
-POST /api/admin/experiences      completo        -> 201   (control)</pre></div>
-        <p><span class="lbl">Arreglo propuesto</span> · Agregar <code>@IsDefined()</code> a los campos obligatorios de tipo objeto en los DTO de creación, y un test estático que falle si aparece un <code>@ValidateNested()</code> obligatorio sin él, en la línea del test que ya exige <code>adminValidationPipe</code> en todo endpoint con cuerpo.</p>
+        <p><span class="lbl">Arreglo aplicado</span> · <code>@IsDefined()</code> en los cinco campos de este tipo: <code>role</code> y <code>summary</code> (experiencias), <code>title</code> y <code>headline</code> (perfiles curados) y <code>name</code> (categorías de skills). Los PATCH no cambian, porque <code>PartialType</code> agrega <code>@IsOptional()</code>. Después del arreglo:</p>
+        <div class="codewrap"><pre>POST /api/admin/experiences       sin "summary"  -> 400  ["summary should not be null or undefined"]
+POST /api/admin/experiences       sin "role"     -> 400  ["role should not be null or undefined"]
+POST /api/admin/curated-profiles  sin "title"    -> 400  ["title should not be null or undefined"]
+POST /api/admin/curated-profiles  sin "headline" -> 400  ["headline should not be null or undefined"]
+POST /api/admin/skill-categories  sin "name"     -> 400  ["name should not be null or undefined"]
+POST /api/admin/experiences       completo       -> 201  (control)</pre></div>
+        <p><span class="lbl">Regresión</span> · <code>backend/test/dto-validation.spec.ts</code>, un test de comportamiento que exige un error por cada campo obligatorio de cada DTO de entrada (cuerpo vacío, campo ausente y campo en <code>null</code>). Sin el arreglo fallan 8 de sus 34 casos.</p>
       </article>
     </section>
 

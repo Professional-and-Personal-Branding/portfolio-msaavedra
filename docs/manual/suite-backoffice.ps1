@@ -6,7 +6,7 @@
 #   cd docs/manual && pwsh ./suite-backoffice.ps1
 #
 # Requiere: backend en http://localhost:3300 y las credenciales en backend/.env.
-# Los casos marcados DEFECTO CONOCIDO fallan a proposito: ver docs/MANUAL.md § 6.1.
+# Los defectos D-01 y D-02 que encontro esta suite estan corregidos: ver docs/MANUAL.md § 6.1.
 $ErrorActionPreference = 'Stop'
 $API = 'http://localhost:3300'
 $R = "D:\projects\portfolio-msaavedra\portfolio-msaavedra"
@@ -51,9 +51,9 @@ $c = Code POST "$API/api/admin/curated-profiles" $H $body
 $c = Code POST "$API/api/admin/curated-profiles" $H (@{slug='x';title=@{es='a';en='a'};headline=@{es='a';en='a'};campoInventado='x'}|ConvertTo-Json -Depth 5)
 "  POST con un campo fuera del DTO             -> $c  (esperado 400)"
 $c = Code POST "$API/api/admin/curated-profiles" $H (@{slug='x';headline=@{es='a';en='a'}}|ConvertTo-Json -Depth 5)
-"  POST omitiendo 'title' (obligatorio)        -> $c  (esperado 400; DEFECTO CONOCIDO: devuelve 500)"
+"  POST omitiendo 'title' (obligatorio)        -> $c  (esperado 400)"
 $c = Code POST "$API/api/admin/experiences" $H (@{company='X';location='Y';role=@{es='a';en='a'};startDate='2025-01'}|ConvertTo-Json -Depth 5)
-"  POST experiencia omitiendo 'summary'        -> $c  (esperado 400; DEFECTO CONOCIDO: devuelve 500)"
+"  POST experiencia omitiendo 'summary'        -> $c  (esperado 400)"
 ""
 
 # ───────────────────────── TC-19 ─────────────────────────

@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsDefined,
   IsIn,
   IsNotEmpty,
   IsObject,
@@ -28,11 +29,13 @@ export class CreateCuratedProfileDto {
   slug!: string;
 
   @ApiProperty({ type: LocalizedTextDto })
+  @IsDefined()
   @ValidateNested()
   @Type(() => LocalizedTextDto)
   title!: LocalizedTextDto;
 
   @ApiProperty({ type: LocalizedTextDto })
+  @IsDefined()
   @ValidateNested()
   @Type(() => LocalizedTextDto)
   headline!: LocalizedTextDto;
@@ -154,8 +157,8 @@ export function toNewCuratedProfileProps(dto: CreateCuratedProfileDto): NewCurat
 export function toDraftCuratedProfileProps(dto: PreviewCuratedProfileDto): NewCuratedProfileProps {
   return {
     slug: dto.slug ?? 'preview',
-    title: dto.title ? toLocalizedText(dto.title) : '',
-    headline: dto.headline ? toLocalizedText(dto.headline) : '',
+    title: dto.title ? toLocalizedText(dto.title) : {},
+    headline: dto.headline ? toLocalizedText(dto.headline) : {},
     description: dto.description ? toLocalizedText(dto.description) : null,
     roleType: dto.roleType ? toLocalizedText(dto.roleType) : null,
     techFocus: dto.techFocus ?? null,

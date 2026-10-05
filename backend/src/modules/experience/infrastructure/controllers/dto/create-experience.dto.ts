@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsDefined,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -27,6 +28,7 @@ export class CreateExperienceDto {
   company!: string;
 
   @ApiProperty({ type: LocalizedTextDto })
+  @IsDefined()
   @ValidateNested()
   @Type(() => LocalizedTextDto)
   role!: LocalizedTextDto;
@@ -56,6 +58,7 @@ export class CreateExperienceDto {
   location!: string;
 
   @ApiProperty({ type: LocalizedTextDto })
+  @IsDefined()
   @ValidateNested()
   @Type(() => LocalizedTextDto)
   summary!: LocalizedTextDto;
