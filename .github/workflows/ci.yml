@@ -1,0 +1,111 @@
+# CI del portafolio: lint, tipos, tests y build de backend y frontend en cada
+# push y en cada PR a main. Los e2e corren contra un Postgres real, migrado con
+# `prisma migrate deploy` y cargado con el seed, igual que en producción.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Un push nuevo a la misma rama cancela la corrida anterior.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  backend:
+    name: Backend · lint, tipos, unitarios y build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run prisma:generate
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      # openapi.json se versiona y es la fuente de los tipos del frontend: si el
+      # código cambió el contrato y nadie lo regeneró, falla acá.
+      - name: El contrato OpenAPI está al día
+        run: |
+          npm run openapi:export
+          git diff --exit-code -- openapi.json
+
+  backend-e2e:
+    name: Backend · e2e contra Postgres
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: portfolio
+          POSTGRES_PASSWORD: portfolio
+          POSTGRES_DB: portfolio
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U portfolio"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://portfolio:portfolio@localhost:5432/portfolio?schema=public
+      NODE_ENV: test
+      FRONTEND_URL: http://localhost:5173
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      # Secretos de un solo uso: se generan en cada corrida y no se versionan.
+      - name: Secretos efímeros
+        run: |
+          echo "JWT_SECRET=$(openssl rand -base64 48)" >> "$GITHUB_ENV"
+          echo "ANALYTICS_SALT=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+      - run: npm ci
+      - run: npm run prisma:generate
+      - run: npm run prisma:deploy
+      - run: npm run seed
+      - run: npm run seed:verify
+      - run: npm run test:e2e
+
+  frontend:
+    name: Frontend · lint, tipos, tests y build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      # Incluye el test de deriva de api.d.ts contra openapi.json.
+      - run: npm test
+      # `build` corre `tsc -b` antes de `vite build`.
+      - run: npm run build
