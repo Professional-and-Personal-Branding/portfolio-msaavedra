@@ -40,7 +40,7 @@
 - [ ] **Accesibilidad (a11y).** Auditar con axe o Lighthouse. La base está: roles, `aria-label` en los controles y navegación por teclado en el panel.
 - [ ] **Caché / performance.** Cache de los perfiles públicos, lazy-loading de imágenes, Lighthouse > 90.
 - [x] ✅ **Dashboard de analítica.** Entregado en la Fase 5: visitas por perfil, idioma y día, con rango de fechas.
-- [ ] **CI/CD.** Pipeline que corra lint + tests + build en cada push.
+- [x] ✅ **CI.** `.github/workflows/ci.yml` corre lint, typecheck, unitarios, e2e contra Postgres (con `prisma migrate deploy` y seed), build y el control del contrato OpenAPI en cada push y PR a `main` (PR #2). El **CD** queda del lado de Railway, que despliega al hacer push a `main` una vez configurado el deploy.
 - [ ] **Repositorios destacados reales.** Curaduría manual pendiente (de Manuel): completar `featuredRepositories` en `docs/cv-data.json`. Ver `docs/DATA-POPULATION.md` § 10.
 - [ ] ⏸️ **Token CSRF.** Diferido: la cookie es `SameSite` estricto y los endpoints de escritura solo aceptan JSON, así que un formulario cross-site no puede provocar una escritura. Revisar si alguna vez se sirve el frontend desde un subdominio no confiable.
 

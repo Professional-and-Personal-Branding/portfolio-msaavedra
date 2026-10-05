@@ -1,5 +1,21 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (ronda 1.1, change 1 — `unify-section-catalog`; CI)
+
+Primer change de la ronda 1.1 (`docs/ROADMAP-1.1.md` § 4), mergeado en PR #4 y archivado en `openspec/changes/archive/2026-10-05-unify-section-catalog/`. Antes, en PR #2, se agregó el CI.
+
+### Catálogo de secciones
+- **Una sola fuente de verdad**: `SECTION_IDS` en el dominio del backend, con 9 ids en orden canónico (`hero, stats, experience, skills, projects, education, certifications, presence, contact`). Viaja al cliente como enum `SectionId` del OpenAPI. Antes el backend declaraba 7 y el frontend 9.
+- **El backend decide el orden final**: el composer aplica el orden, el ocultado y el relleno (las secciones con datos que no figuran en `sectionsOrder` van al final) y descarta las vacías. El frontend renderiza `sections` tal cual llega; desaparecen `orderSections` y `hasData` del cliente.
+- **Validación**: un id fuera del catálogo en `sectionsOrder` o `sectionsHidden` responde 400 nombrando el id, al crear, al editar y en el preview.
+- **Contrato que compila**: el registro de componentes del frontend es `Record<SectionId, …>`; si el backend agrega una sección y el cliente no la implementa, el build falla.
+- **Seed**: las plantillas y `all` usan `SECTION_IDS`. Visiblemente se ven las mismas secciones; `projects` y `presence` pasan del final a su lugar canónico.
+- Specs sincronizadas: `curated-profile-resolution` (requisito nuevo *Catálogo canónico de secciones*; *Secciones ordenadas y ocultas* reescrito), `layout-engine` y `admin-curated-profile-crud` (*Validación de ids de sección*).
+
+### CI (`.github/workflows/ci.yml`)
+- En cada push y PR a `main`: backend (lint, typecheck, unitarios, build y control de que `openapi.json` siga al día), backend e2e contra Postgres 16 con `prisma migrate deploy` y seed, y frontend (lint, tests y build). Cierra el ítem CI/CD del checklist 1.0.x.
+- `asyncUtilTimeout` de Testing Library a 5 s: las pantallas lazy del backoffice fallaban al azar con el segundo por defecto.
+
 ## Update — Octubre 2026 (defectos D-01 y D-02 de la suite de regresión manual)
 
 Los dos defectos que encontró la primera ejecución completa de la suite (`docs/MANUAL.md` § 6.1, 5 de octubre de 2026). Corregidos en PR #1; PR #3 agrega la cobertura de punta a punta y una guardia general.
