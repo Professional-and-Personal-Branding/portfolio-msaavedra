@@ -128,6 +128,16 @@ describe('Backoffice (e2e)', () => {
       expect(await prisma.experience.count({ where: { company: 'ACME E2E' } })).toBe(0);
     });
 
+    it('omitir un texto bilingüe obligatorio (role, summary) → 400, no 500 (D-02)', async () => {
+      for (const field of ['role', 'summary'] as const) {
+        const { [field]: _omitted, ...sinCampo } = body;
+        const res = await adminPost('/api/admin/experiences').send(sinCampo);
+        expect(res.status).toBe(400);
+        expect(JSON.stringify(res.body.message)).toContain(field);
+      }
+      expect(await prisma.experience.count({ where: { company: 'ACME E2E' } })).toBe(0);
+    });
+
     it('404 en get/patch de id inexistente; referencia huérfana en overrides no rompe', async () => {
       expect((await adminGet('/api/admin/experiences/no-existe')).status).toBe(404);
       expect((await adminPatch('/api/admin/experiences/no-existe').send({ order: 1 })).status).toBe(
@@ -208,6 +218,9 @@ describe('Backoffice (e2e)', () => {
     });
 
     it('validaciones y 404: nombre sin es, categoría inexistente, skill inexistente', async () => {
+      const sinNombre = await adminPost('/api/admin/skill-categories').send({ order: 0 });
+      expect(sinNombre.status).toBe(400); // D-02: antes 500
+      expect(JSON.stringify(sinNombre.body.message)).toContain('name');
       expect(
         (await adminPost('/api/admin/skill-categories').send({ name: { en: 'Data' } })).status,
       ).toBe(400);
@@ -224,6 +237,17 @@ describe('Backoffice (e2e)', () => {
 
   // ─── Perfiles curados ───────────────────────────────────────────────────
   describe('CRUD de perfiles curados', () => {
+    it('omitir title o headline → 400, no 500 (D-02)', async () => {
+      const completo = { slug: 'd02-e2e', title: { es: 'x' }, headline: { es: 'y' } };
+      for (const field of ['title', 'headline'] as const) {
+        const { [field]: _omitted, ...sinCampo } = completo;
+        const res = await adminPost('/api/admin/curated-profiles').send(sinCampo);
+        expect(res.status).toBe(400);
+        expect(JSON.stringify(res.body.message)).toContain(field);
+      }
+      expect(await prisma.curatedProfile.count({ where: { slug: 'd02-e2e' } })).toBe(0);
+    });
+
     it('listado admin con campos internos', async () => {
       const res = await adminGet('/api/admin/curated-profiles');
       expect(res.status).toBe(200);

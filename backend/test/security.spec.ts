@@ -3,6 +3,7 @@
  * que no se pierdan sin que nadie se entere (spec `api-platform`).
  * Es un test estático: lee el código fuente, no levanta la aplicación.
  */
+import { getMetadataStorage, ValidationTypes } from 'class-validator';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -41,6 +42,56 @@ describe('Validación de entradas (bloqueante del release)', () => {
     );
     expect(pipe).toContain('whitelist: true');
     expect(pipe).toContain('forbidNonWhitelisted: true');
+  });
+});
+
+describe('Objetos anidados obligatorios (D-02)', () => {
+  /**
+   * Regresión: `class-validator` no valida un valor `undefined`, así que un
+   * `@ValidateNested()` obligatorio sin `@IsDefined()` deja pasar un cuerpo que
+   * omite el objeto y el mapper revienta con 500 en lugar de responder 400.
+   * Se juzga sobre los metadatos que evalúa el pipe, no sobre el texto.
+   */
+  const validables = walk(SRC).filter((file) =>
+    fs.readFileSync(file, 'utf-8').includes("from 'class-validator'"),
+  );
+  const clases = validables.flatMap((file) =>
+    Object.values(jest.requireActual<Record<string, unknown>>(file)).filter(
+      (value): value is new () => object => typeof value === 'function',
+    ),
+  );
+  const storage = getMetadataStorage();
+
+  it('hay clases validadas con objetos anidados para revisar', () => {
+    const conAnidados = clases.filter((cls) =>
+      storage
+        .getTargetValidationMetadatas(cls, '', true, false)
+        .some((m) => m.type === ValidationTypes.NESTED_VALIDATION),
+    );
+    expect(conAnidados.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('todo @ValidateNested() sin @IsOptional() lleva @IsDefined()', () => {
+    const sinIsDefined = clases.flatMap((cls) => {
+      const metadatas = storage.getTargetValidationMetadatas(cls, '', true, false);
+      const tiene = (prop: string, type: string) =>
+        metadatas.some((m) => m.propertyName === prop && m.type === type);
+      return [
+        ...new Set(
+          metadatas
+            .filter((m) => m.type === ValidationTypes.NESTED_VALIDATION)
+            .map((m) => m.propertyName),
+        ),
+      ]
+        .filter(
+          (prop) =>
+            !tiene(prop, ValidationTypes.CONDITIONAL_VALIDATION) &&
+            !tiene(prop, ValidationTypes.IS_DEFINED),
+        )
+        .map((prop) => `${cls.name}.${prop}`);
+    });
+
+    expect(sinIsDefined).toEqual([]);
   });
 });
 

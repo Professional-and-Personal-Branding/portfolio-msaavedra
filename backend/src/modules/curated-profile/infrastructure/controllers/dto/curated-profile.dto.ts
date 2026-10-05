@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsDefined,
   IsIn,
   IsNotEmpty,
   IsObject,
@@ -28,11 +29,13 @@ export class CreateCuratedProfileDto {
   slug!: string;
 
   @ApiProperty({ type: LocalizedTextDto })
+  @IsDefined()
   @ValidateNested()
   @Type(() => LocalizedTextDto)
   title!: LocalizedTextDto;
 
   @ApiProperty({ type: LocalizedTextDto })
+  @IsDefined()
   @ValidateNested()
   @Type(() => LocalizedTextDto)
   headline!: LocalizedTextDto;

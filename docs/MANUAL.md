@@ -243,7 +243,7 @@ POST /api/admin/curated-profiles       -> 201  slug=suite-demo visibility=PRIVAT
   defaults: accentColor=#1A365D layout=classic views=0 filterTags=[]
 POST con el mismo slug                 -> 409
 POST con un campo fuera del DTO        -> 400
-POST omitiendo "title" (obligatorio)   -> 500  ❌ debería ser 400 — ver § 6.1
+POST omitiendo "title" (obligatorio)   -> 400  (era 500 hasta corregir D-02, § 6.1)
 ```
 
 > **Recomendado:** crealo `PRIVATE` y pasalo a `PUBLIC` recién cuando esté listo (TC-16). Un `PRIVATE` devuelve 404, así que nadie lo encuentra mientras lo armás.
@@ -466,7 +466,7 @@ POST experiencia visible                       -> 201, tags=[suite-tag]
 POST experiencia oculta (visible:false)        -> 201
 GET /api/experiences (público) la oculta       -> no aparece
 GET /api/admin/experiences la oculta           -> sí aparece, con visible=false
-POST omitiendo "summary" (obligatorio)         -> 500  ❌ debería ser 400 — ver § 6.1
+POST omitiendo "summary" (obligatorio)         -> 400  (era 500 hasta corregir D-02, § 6.1)
 ```
 
 > Un tag nuevo aparece solo como chip en el constructor de **todos** los perfiles: es la forma más rápida de abrir una dimensión de filtrado nueva.
@@ -573,14 +573,14 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-09 | Vista móvil | ✅ | captura |
 | TC-10 | Códigos de estado por visibilidad | 🔍 | 401 / 200 / 404 |
 | TC-11 | Entrar al panel | ✅ | captura del login |
-| TC-12 | Crear un perfil curado | 🔍📝 | 201 / 409 / 400, **y un 500** |
+| TC-12 | Crear un perfil curado | 🔍📝 | 201 / 409 / 400 (el 500 era D-02, resuelto) |
 | TC-13 | Tags y overrides | 🔍📝 | los cuatro casos del filtro |
 | TC-14 | Ordenar y ocultar secciones | 🔍📝 | orden y ocultado resueltos |
 | TC-15 | Personalizar el tema | 🔍📝 | 5 temas; solo se guarda la diferencia |
 | TC-16 | Publicar, proteger, esconder | 🔍📝 | la tabla completa de visibilidad |
 | TC-17 | Previsualizar sin guardar | 🔍 | no persiste nada |
 | TC-18 | Dashboard de analítica | 🔍📝 | el contador sube y el rango que termina hoy lo cuenta (D-01 resuelto) |
-| TC-19 | Mantener experiencias | 🔍📝 | visible / oculta, **y un 500** |
+| TC-19 | Mantener experiencias | 🔍📝 | visible / oculta, 400 al omitir `summary` (el 500 era D-02, resuelto) |
 | TC-20 | Mantener skills | 🔍📝 | la categoría entra por el tag de su skill |
 
 **20 de 20 casos pasan.** Los marcados 🔍📝 están verificados contra la API pero **les falta la captura del panel**: se agregan la próxima vez que se ejecute la suite con sesión iniciada. TC-18 falló en la primera ejecución por D-01 y pasa desde `fix-analytics-range-inclusive`.
@@ -606,6 +606,8 @@ GET /api/admin/analytics/views?from=2026-10-05&to=2026-10-06  -> total=13, byDay
 
 #### D-02 — Omitir un objeto obligatorio devuelve 500 en lugar de 400
 
+**Estado:** ✅ resuelto como corrección de conformidad con `api-platform`, `admin-experience-crud` y `admin-curated-profile-crud`, que ya exigían 400 (sin change de OpenSpec). Cubierto por los e2e *omitir … → 400, no 500 (D-02)* y por una guardia en `test/security.spec.ts`.
+
 **Severidad:** media; solo afecta endpoints autenticados del panel.
 **Síntoma:** un cuerpo al que le falta un campo obligatorio anidado responde `500 Error interno del servidor` en vez de un 400 que diga qué falta.
 **Causa:** los campos obligatorios de tipo objeto se declaran con `@ValidateNested()` + `@Type()` pero **sin `@IsDefined()`**. `class-validator` no valida un valor `undefined`, así que la validación pasa y el mapper revienta con `TypeError: Cannot read properties of undefined (reading 'en')`.
@@ -620,7 +622,7 @@ POST /api/admin/curated-profiles sin "headline"  -> 500   (esperado 400)
 POST /api/admin/experiences      completo        -> 201   (control)
 ```
 
-**Arreglo propuesto:** agregar `@IsDefined()` a los campos obligatorios de tipo objeto en los DTO de creación, y un test estático que falle si aparece un `@ValidateNested()` obligatorio sin él — en la línea del test que ya exige `adminValidationPipe` en todo endpoint con cuerpo.
+**Arreglo:** `@IsDefined()` en los cinco campos obligatorios de tipo objeto: los cuatro de arriba y `name` de `POST /api/admin/skill-categories`, que tenía el mismo defecto y apareció al escribir los tests. Los DTO de actualización y el del preview derivan con `PartialType`, que anula el `@IsDefined()`, así que los `PATCH` parciales siguen funcionando. La guardia de `test/security.spec.ts` recorre los metadatos de `class-validator` de toda clase validada en `src/` y falla si un `@ValidateNested()` sin `@IsOptional()` no lleva `@IsDefined()`.
 
 ---
 
