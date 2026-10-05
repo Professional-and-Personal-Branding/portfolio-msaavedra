@@ -15,6 +15,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
+import { SECTION_IDS } from '../src/modules/curated-profile/domain/services/resolve-sections';
 
 const prisma = new PrismaClient();
 
@@ -474,15 +475,8 @@ async function main() {
         accentColor: tpl.accentColor,
         themeId: themeBySlug['modern-dark'],
         layout: 'classic',
-        sectionsOrder: [
-          'hero',
-          'stats',
-          'experience',
-          'skills',
-          'education',
-          'certifications',
-          'contact',
-        ],
+        // El catálogo completo del dominio: lo que se ve no depende del relleno.
+        sectionsOrder: [...SECTION_IDS],
         visibility: 'PUBLIC',
       },
     });
@@ -502,15 +496,7 @@ async function main() {
       accentColor: '#38bdf8',
       themeId: themeBySlug['modern-dark'],
       layout: 'classic',
-      sectionsOrder: [
-        'hero',
-        'stats',
-        'experience',
-        'skills',
-        'education',
-        'certifications',
-        'contact',
-      ],
+      sectionsOrder: [...SECTION_IDS],
       visibility: 'PUBLIC',
     },
   });

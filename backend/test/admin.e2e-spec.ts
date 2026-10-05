@@ -128,6 +128,16 @@ describe('Backoffice (e2e)', () => {
       expect(await prisma.experience.count({ where: { company: 'ACME E2E' } })).toBe(0);
     });
 
+    it('omitir un texto bilingüe obligatorio (role, summary) → 400, no 500 (D-02)', async () => {
+      for (const field of ['role', 'summary'] as const) {
+        const { [field]: _omitted, ...sinCampo } = body;
+        const res = await adminPost('/api/admin/experiences').send(sinCampo);
+        expect(res.status).toBe(400);
+        expect(JSON.stringify(res.body.message)).toContain(field);
+      }
+      expect(await prisma.experience.count({ where: { company: 'ACME E2E' } })).toBe(0);
+    });
+
     it('404 en get/patch de id inexistente; referencia huérfana en overrides no rompe', async () => {
       expect((await adminGet('/api/admin/experiences/no-existe')).status).toBe(404);
       expect((await adminPatch('/api/admin/experiences/no-existe').send({ order: 1 })).status).toBe(
@@ -208,6 +218,9 @@ describe('Backoffice (e2e)', () => {
     });
 
     it('validaciones y 404: nombre sin es, categoría inexistente, skill inexistente', async () => {
+      const sinNombre = await adminPost('/api/admin/skill-categories').send({ order: 0 });
+      expect(sinNombre.status).toBe(400); // D-02: antes 500
+      expect(JSON.stringify(sinNombre.body.message)).toContain('name');
       expect(
         (await adminPost('/api/admin/skill-categories').send({ name: { en: 'Data' } })).status,
       ).toBe(400);
@@ -224,6 +237,17 @@ describe('Backoffice (e2e)', () => {
 
   // ─── Perfiles curados ───────────────────────────────────────────────────
   describe('CRUD de perfiles curados', () => {
+    it('omitir title o headline → 400, no 500 (D-02)', async () => {
+      const completo = { slug: 'd02-e2e', title: { es: 'x' }, headline: { es: 'y' } };
+      for (const field of ['title', 'headline'] as const) {
+        const { [field]: _omitted, ...sinCampo } = completo;
+        const res = await adminPost('/api/admin/curated-profiles').send(sinCampo);
+        expect(res.status).toBe(400);
+        expect(JSON.stringify(res.body.message)).toContain(field);
+      }
+      expect(await prisma.curatedProfile.count({ where: { slug: 'd02-e2e' } })).toBe(0);
+    });
+
     it('listado admin con campos internos', async () => {
       const res = await adminGet('/api/admin/curated-profiles');
       expect(res.status).toBe(200);
@@ -349,6 +373,69 @@ describe('Backoffice (e2e)', () => {
           },
         });
       }
+    });
+
+    // unify-section-catalog: un id fuera del catálogo se rechaza nombrándolo.
+    describe('ids de sección', () => {
+      const base = { title: { es: 'x' }, headline: { es: 'y' } };
+      const CATALOGO = [
+        'hero',
+        'stats',
+        'experience',
+        'skills',
+        'projects',
+        'education',
+        'certifications',
+        'presence',
+        'contact',
+      ];
+
+      it('POST con un id inválido → 400 que lo nombra, y no crea nada', async () => {
+        const antes = await prisma.curatedProfile.count();
+        const res = await adminPost('/api/admin/curated-profiles').send({
+          ...base,
+          slug: 'secciones-e2e',
+          sectionsOrder: ['hero', 'heroe'],
+        });
+        expect(res.status).toBe(400);
+        expect(JSON.stringify(res.body.message)).toContain('heroe');
+        expect(await prisma.curatedProfile.count()).toBe(antes);
+      });
+
+      it('PATCH con un id inválido → 400 y el perfil queda igual; los nueve del catálogo → 200', async () => {
+        const row = await prisma.curatedProfile.findUniqueOrThrow({
+          where: { slug: 'tech-lead-dotnet' },
+        });
+        try {
+          const bad = await adminPatch(`/api/admin/curated-profiles/${row.id}`).send({
+            sectionsHidden: ['proyectos'],
+          });
+          expect(bad.status).toBe(400);
+          expect(JSON.stringify(bad.body.message)).toContain('proyectos');
+          const intacto = await prisma.curatedProfile.findUniqueOrThrow({ where: { id: row.id } });
+          expect(intacto.sectionsHidden).toEqual(row.sectionsHidden);
+
+          const reverso = [...CATALOGO].reverse();
+          const ok = await adminPatch(`/api/admin/curated-profiles/${row.id}`).send({
+            sectionsOrder: reverso,
+          });
+          expect(ok.status).toBe(200);
+          expect(ok.body.sectionsOrder).toEqual(reverso);
+        } finally {
+          await prisma.curatedProfile.update({
+            where: { id: row.id },
+            data: { sectionsOrder: row.sectionsOrder, sectionsHidden: row.sectionsHidden },
+          });
+        }
+      });
+
+      it('preview con un id inválido → 400', async () => {
+        const res = await adminPost('/api/admin/curated-profiles/preview').send({
+          sectionsOrder: ['hero', 'timeline-3d'],
+        });
+        expect(res.status).toBe(400);
+        expect(JSON.stringify(res.body.message)).toContain('timeline-3d');
+      });
     });
   });
 

@@ -1,6 +1,6 @@
 # curated-profile-resolution Specification (delta)
 
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Catálogo canónico de secciones
 El dominio SHALL declarar **un único** catálogo de secciones, `SECTION_IDS`, con estos nueve ids en este orden canónico: `hero`, `stats`, `experience`, `skills`, `projects`, `education`, `certifications`, `presence`, `contact`. `DEFAULT_SECTIONS` SHALL ser ese mismo catálogo. Ningún otro módulo, ni el frontend, SHALL declarar una lista propia de secciones: el contrato OpenAPI es el único transporte del catálogo hacia el cliente.
@@ -13,8 +13,18 @@ El dominio SHALL declarar **un único** catálogo de secciones, `SECTION_IDS`, c
 - **WHEN** se agrega un id al catálogo del backend y se regeneran los tipos
 - **THEN** el frontend no compila hasta que el registro de secciones implemente ese id
 
-### Requirement: La resolución devuelve el orden final, con relleno aplicado
-El composer SHALL devolver en `sections` el orden **final** que se renderiza. Para eso, después de aplicar `sectionsOrder` y `sectionsHidden`, SHALL agregar al final las secciones del catálogo que (a) tengan datos tras el filtrado, (b) no estén ocultas y (c) no figuren ya en el orden. El relleno MUST NOT duplicar ids ni reordenar los que ya venían. Una sección sin datos MUST NOT aparecer en `sections`, aunque figure en `sectionsOrder`. El cliente MUST NOT recalcular el orden ni completarlo.
+## MODIFIED Requirements
+
+### Requirement: Secciones ordenadas y ocultas
+La resolución SHALL devolver el orden final, con relleno aplicado: el composer SHALL devolver en `sections` el orden **final** que se renderiza. Para eso, después de aplicar `sectionsOrder` y `sectionsHidden`, SHALL agregar al final las secciones del catálogo que (a) tengan datos tras el filtrado, (b) no estén ocultas y (c) no figuren ya en el orden. El relleno MUST NOT duplicar ids ni reordenar los que ya venían. Una sección sin datos MUST NOT aparecer en `sections`, aunque figure en `sectionsOrder`. El cliente MUST NOT recalcular el orden ni completarlo. Las secciones de `sectionsHidden` MUST NOT figurar en `sections` y SHALL informarse aparte, sin duplicados, en `hiddenSections`.
+
+#### Scenario: Orden vacío usa el default
+- **WHEN** `sectionsOrder = []`, `sectionsHidden = []` y hay datos en todas las colecciones
+- **THEN** `sections` es el catálogo completo, en orden canónico
+
+#### Scenario: Orden personalizado con ocultas
+- **WHEN** `sectionsOrder = ["hero","skills","experience","contact"]`, `sectionsHidden = ["skills"]` y hay datos en todas las colecciones
+- **THEN** `sections` empieza con `["hero","experience","contact"]`, no contiene `skills`, sigue con el relleno en orden canónico, y `hiddenSections = ["skills"]`
 
 #### Scenario: Sección con datos omitida del orden
 - **WHEN** un perfil declara `sectionsOrder: ["hero", "experience"]`, tiene proyectos que pasan el filtro y no oculta nada

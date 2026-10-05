@@ -185,6 +185,21 @@ describe('ProfileBuilderPage', () => {
     );
   });
 
+  // unify-section-catalog: el bloque ofrece el catálogo completo del contrato.
+  it('el bloque Secciones ofrece las nueve secciones del catálogo', async () => {
+    server.use(trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+
+    await openBuilder();
+    await user.click(screen.getByRole('tab', { name: 'Diseño' }));
+
+    const sections = screen.getByRole('region', { name: 'Secciones' });
+    expect(within(sections).getAllByRole('listitem')).toHaveLength(9);
+    for (const id of ['projects', 'presence']) {
+      expect(within(sections).getByRole('switch', { name: `Mostrar ${id}` })).toBeInTheDocument();
+    }
+  });
+
   it('reordenar y ocultar secciones se refleja en el preview', async () => {
     const bodies: Record<string, unknown>[] = [];
     server.use(trackPreviews(bodies), ...adminHandlers);
