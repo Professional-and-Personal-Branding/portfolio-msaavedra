@@ -1,5 +1,19 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (defectos D-01 y D-02 de la suite de regresión manual)
+
+Los dos defectos que encontró la primera ejecución completa de la suite (`docs/MANUAL.md` § 6.1, 5 de octubre de 2026). Corregidos en PR #1; PR #3 agrega la cobertura de punta a punta y una guardia general.
+
+### D-01 — El dashboard no mostraba las visitas de hoy
+- `GET /api/admin/analytics/views`: el rango `from`/`to` es **cerrado**. Una fecha sin hora se resuelve al borde de su día en UTC —inicio para `from`, último milisegundo para `to`— en `range-boundaries.ts`; un instante completo se respeta tal cual, para consultar ventanas de horas. Antes `to=<fecha>` caía en la medianoche inicial y el panel, que manda `to=<hoy>`, nunca contaba el día en curso.
+- Spec `profile-view-analytics`: requisito nuevo *El rango de fechas es cerrado*. Tests unitarios de los bordes y e2e del día en curso.
+
+### D-02 — Omitir un objeto obligatorio respondía 500
+- `@IsDefined()` en los campos bilingües obligatorios: `role` y `summary` de experiencias, `title` y `headline` de perfiles curados y `name` de categorías de skills. Ahora responden 400, como ya exigían `api-platform` y las specs de CRUD. Los `PATCH` parciales no cambian: `PartialType` anula el `@IsDefined()`.
+- `backend/test/dto-validation.spec.ts`: por cada DTO de entrada listado, un cuerpo sin cada campo obligatorio, o con él en `null`, falla la validación.
+- `backend/test/security.spec.ts` (PR #3): guardia sobre los metadatos de `class-validator` de **toda** clase validada en `src/`; un `@ValidateNested()` sin `@IsOptional()` debe llevar `@IsDefined()`. Cubre los DTO que todavía no están en la lista anterior.
+- `backend/test/admin.e2e-spec.ts` (PR #3): las seis omisiones por HTTP responden 400 con el campo en el mensaje, sin crear nada.
+
 ## Update — Septiembre 2026 (Fase 6 — change OpenSpec `add-production-hardening`)
 
 Hardening para el release 1.0.0 (propuesta aprobada por Human Gate, commit `33029cc`). Cierra los 6 bloqueantes del checklist y 5 de los 6 importantes; el sexto (backups) no es código.
