@@ -140,6 +140,12 @@ npm run api:types        # regenera src/shared/types/api.d.ts desde ../backend/o
 - [x] Fase 5 — frontend backoffice + customizador visual — change `add-admin-backoffice`
 - [x] Fase 6 — hardening para producción — change `add-production-hardening`; falta el deploy en sí (ver `docs/DEPLOY.md`)
 - [ ] Deploy 1.0.0 — **Railway** (los tres servicios en un proyecto); configuración versionada en `backend/railway.json`, `frontend/railway.json`, `frontend/Dockerfile` y `frontend/Caddyfile`. Guía corta: `docs/DEPLOY-RAILWAY.md`; referencia completa: `docs/DEPLOY.md` § 9.5
+- [ ] Ronda 1.1 — 5 changes en orden (`docs/ROADMAP-1.1.md` § 4):
+  - [x] `unify-section-catalog` — un solo catálogo de secciones (archivado 2026-10-05)
+  - [ ] `add-server-rendered-head` — head SEO por perfil servido desde el servidor
+  - [ ] `add-curated-profile-lifecycle` — duplicar, archivar, `listed` y alias de slug
+  - [ ] `add-profile-content-admin` — hero, educación, certificaciones, proyectos y enlaces desde el panel
+  - [ ] `add-bilingual-builder-parity` — conmutador de idioma en el preview y `highlights.en` editable
 
 ---
 
