@@ -423,5 +423,16 @@ describe('Backoffice (e2e)', () => {
       expect((await adminGet('/api/admin/analytics/views?from=ayer')).status).toBe(400);
       expect((await get('/api/admin/analytics/views')).status).toBe(401);
     });
+
+    it('un rango que termina hoy incluye las visitas de hoy (D-01, TC-18)', async () => {
+      await get('/api/curated-profiles/all?locale=es');
+      const today = new Date().toISOString().slice(0, 10);
+      const res = await adminGet(`/api/admin/analytics/views?from=${today}&to=${today}`);
+      expect(res.status).toBe(200);
+      expect(res.body.total).toBeGreaterThanOrEqual(1);
+      expect(res.body.byDay).toEqual([{ day: today, views: res.body.total }]);
+      expect(res.body.from).toBe(`${today}T00:00:00.000Z`);
+      expect(res.body.to).toBe(`${today}T23:59:59.999Z`);
+    });
   });
 });

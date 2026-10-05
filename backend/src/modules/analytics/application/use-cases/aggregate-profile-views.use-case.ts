@@ -9,6 +9,12 @@ import {
 
 export const DEFAULT_RANGE_DAYS = 30;
 
+const DAY_MS = 86_400_000;
+
+function startOfUtcDay(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+}
+
 export interface AggregateProfileViewsInput {
   from?: Date;
   to?: Date;
@@ -21,7 +27,11 @@ export interface ProfileViewsOutput extends ProfileViewAggregate {
   to: string;
 }
 
-/** Lectura agregada de visitas (spec `profile-view-analytics`); default: últimos 30 días. */
+/**
+ * Lectura agregada de visitas (spec `profile-view-analytics`). El rango es cerrado y de días UTC
+ * completos: `from` cuenta desde las 00:00 de su día y `to` hasta el final del suyo (default: los
+ * 30 días que terminan hoy). Al repositorio le llega semiabierto, `[from, día siguiente a to)`.
+ */
 @Injectable()
 export class AggregateProfileViewsUseCase {
   constructor(@Inject(PROFILE_VIEW_REPOSITORY) private readonly views: ProfileViewRepository) {}
@@ -29,13 +39,19 @@ export class AggregateProfileViewsUseCase {
   async execute(
     input: AggregateProfileViewsInput,
   ): Promise<Result<ProfileViewsOutput, ValidationError>> {
-    const now = input.now ?? new Date();
-    const to = input.to ?? now;
-    const from = input.from ?? new Date(to.getTime() - DEFAULT_RANGE_DAYS * 86_400_000);
-    if (from > to) {
+    const toDay = startOfUtcDay(input.to ?? input.now ?? new Date());
+    const from = input.from
+      ? startOfUtcDay(input.from)
+      : new Date(toDay.getTime() - (DEFAULT_RANGE_DAYS - 1) * DAY_MS);
+    if (from > toDay) {
       return fail(new ValidationError('from no puede ser posterior a to', ['from', 'to']));
     }
-    const aggregate = await this.views.aggregate({ from, to });
-    return ok({ from: from.toISOString(), to: to.toISOString(), ...aggregate });
+    const toExclusive = new Date(toDay.getTime() + DAY_MS);
+    const aggregate = await this.views.aggregate({ from, to: toExclusive });
+    return ok({
+      from: from.toISOString(),
+      to: new Date(toExclusive.getTime() - 1).toISOString(),
+      ...aggregate,
+    });
   }
 }

@@ -579,11 +579,11 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-15 | Personalizar el tema | 🔍📝 | 5 temas; solo se guarda la diferencia |
 | TC-16 | Publicar, proteger, esconder | 🔍📝 | la tabla completa de visibilidad |
 | TC-17 | Previsualizar sin guardar | 🔍 | no persiste nada |
-| TC-18 | Dashboard de analítica | ❌ | el contador sube; **el rango falla** |
+| TC-18 | Dashboard de analítica | 🔍📝 | el contador sube y el rango que termina hoy lo cuenta (D-01 resuelto) |
 | TC-19 | Mantener experiencias | 🔍📝 | visible / oculta, **y un 500** |
 | TC-20 | Mantener skills | 🔍📝 | la categoría entra por el tag de su skill |
 
-**19 de 20 casos pasan.** Los marcados 🔍📝 están verificados contra la API pero **les falta la captura del panel**: se agregan la próxima vez que se ejecute la suite con sesión iniciada. TC-18 falla.
+**20 de 20 casos pasan.** Los marcados 🔍📝 están verificados contra la API pero **les falta la captura del panel**: se agregan la próxima vez que se ejecute la suite con sesión iniciada. TC-18 falló en la primera ejecución por D-01 y pasa desde `fix-analytics-range-inclusive`.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
@@ -591,16 +591,18 @@ Los dos aparecieron al ejecutar estos casos por primera vez de punta a punta. Ni
 
 #### D-01 — El dashboard nunca muestra las visitas de hoy
 
+**Estado:** ✅ resuelto por el change `fix-analytics-range-inclusive`; cubierto por un test unitario del caso de uso y por el e2e *un rango que termina hoy incluye las visitas de hoy*.
+
 **Severidad:** alta, visible para el usuario.
 **Síntoma:** se comparte un link, alguien lo abre, y el dashboard sigue en cero hasta el día siguiente.
-**Causa:** el parámetro `to` de `GET /api/admin/analytics/views` es **exclusivo**, pero `frontend/src/features/backoffice/dashboard/ranges.ts` documenta y construye un **rango cerrado** `[hoy - (días - 1), hoy]`. El `to = hoy` que manda el panel deja fuera el día en curso.
+**Causa:** el parámetro `to` de `GET /api/admin/analytics/views` se convertía a la **medianoche inicial** de su día (`new Date('2026-10-05')` = `2026-10-05T00:00:00Z`) y se comparaba con `<=`, así que en la práctica excluía su propio día, pero `frontend/src/features/backoffice/dashboard/ranges.ts` documenta y construye un **rango cerrado** `[hoy - (días - 1), hoy]`. El `to = hoy` que manda el panel deja fuera el día en curso.
 
 ```
 GET /api/admin/analytics/views?from=2026-10-05&to=2026-10-05  -> total=0
 GET /api/admin/analytics/views?from=2026-10-05&to=2026-10-06  -> total=13, byDay={2026-10-05:13}
 ```
 
-**Arreglo propuesto:** hacer `to` inclusivo en el agregado (comparar contra el final del día de `to`, no contra su medianoche), que es lo que la spec `admin-analytics-dashboard` describe. Alternativa peor: que el frontend mande `to = mañana`, porque deja la API mintiendo sobre su propio contrato.
+**Arreglo:** el caso de uso normaliza el rango a días UTC completos —`from` desde las 00:00 de su día, `to` hasta el final del suyo— y el repositorio consulta el semiabierto `[from, día siguiente a to)`. El default pasa a ser los 30 días que terminan hoy, igual que el panel, y la respuesta devuelve `from`/`to` normalizados. La spec `profile-view-analytics` lo dice explícitamente. Se descartó que el frontend mande `to = mañana`, porque deja la API mintiendo sobre su propio contrato.
 
 #### D-02 — Omitir un objeto obligatorio devuelve 500 en lugar de 400
 

@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: a8270c9fa914f151dbd1aa1e61b87f125a65b6dd1ecfa1e9f075632c13be026b
+// openapi-sha256: b1d45ca6f9fef182633f87a6dfd4a234bdd06c1101664fddca09118ecd810e44
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -1121,9 +1121,9 @@ export interface operations {
     AdminAnalyticsController_views: {
         parameters: {
             query?: {
-                /** @description ISO 8601; default: hace 30 días */
+                /** @description Día ISO 8601, inclusivo desde las 00:00 UTC; default: hace 29 días (30 días con hoy) */
                 from?: string;
-                /** @description ISO 8601; default: ahora */
+                /** @description Día ISO 8601, inclusivo hasta el final del día UTC; default: hoy */
                 to?: string;
             };
             header?: never;

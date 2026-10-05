@@ -20,12 +20,19 @@ import {
 } from '../../application/use-cases/aggregate-profile-views.use-case';
 
 export class ViewsRangeQueryDto {
-  @ApiPropertyOptional({ description: 'ISO 8601; default: hace 30 días', example: '2026-08-01' })
+  @ApiPropertyOptional({
+    description:
+      'Día ISO 8601, inclusivo desde las 00:00 UTC; default: hace 29 días (30 días con hoy)',
+    example: '2026-08-01',
+  })
   @IsOptional()
   @IsISO8601()
   from?: string;
 
-  @ApiPropertyOptional({ description: 'ISO 8601; default: ahora', example: '2026-09-07' })
+  @ApiPropertyOptional({
+    description: 'Día ISO 8601, inclusivo hasta el final del día UTC; default: hoy',
+    example: '2026-09-07',
+  })
   @IsOptional()
   @IsISO8601()
   to?: string;
