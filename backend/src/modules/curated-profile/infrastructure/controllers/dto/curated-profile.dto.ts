@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsDefined,
   IsIn,
   IsNotEmpty,
@@ -92,6 +93,16 @@ export class CreateCuratedProfileDto {
   @IsObject()
   themeOverrides?: Record<string, unknown> | null;
 
+  @ApiPropertyOptional({
+    default: true,
+    description:
+      'Se enumera en el listado público, el menú y el sitemap. No afecta el acceso por slug. ' +
+      'El archivado no se escribe acá: tiene sus propios endpoints.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  listed?: boolean;
+
   @ApiPropertyOptional({ default: 'classic' })
   @IsOptional()
   @IsString()
@@ -142,6 +153,12 @@ export class UpdateCuratedProfileDto extends PartialType(CreateCuratedProfileDto
  */
 export class PreviewCuratedProfileDto extends PartialType(CreateCuratedProfileDto) {}
 
+/**
+ * Cuerpo de duplicar: vacío a propósito. Con `forbidNonWhitelisted`, cualquier
+ * campo —un `slug`, por ejemplo— da 400: el slug se deriva y renombrar es aparte.
+ */
+export class DuplicateCuratedProfileDto {}
+
 export function toNewCuratedProfileProps(dto: CreateCuratedProfileDto): NewCuratedProfileProps {
   return {
     slug: dto.slug,
@@ -160,6 +177,7 @@ export function toNewCuratedProfileProps(dto: CreateCuratedProfileDto): NewCurat
     sectionsOrder: dto.sectionsOrder ?? [],
     sectionsHidden: dto.sectionsHidden ?? [],
     visibility: dto.visibility ?? 'PUBLIC',
+    listed: dto.listed ?? true,
     accessToken: AccessToken.create(dto.accessToken),
   };
 }
@@ -212,6 +230,7 @@ export function toCuratedProfileChanges(
   if (dto.layout !== undefined) c.layout = dto.layout;
   if (dto.sectionsOrder !== undefined) c.sectionsOrder = dto.sectionsOrder;
   if (dto.sectionsHidden !== undefined) c.sectionsHidden = dto.sectionsHidden;
+  if (dto.listed !== undefined) c.listed = dto.listed;
   if (dto.visibility !== undefined) c.visibility = dto.visibility;
   if (dto.accessToken !== undefined) c.accessToken = AccessToken.create(dto.accessToken);
   return c;

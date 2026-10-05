@@ -101,6 +101,8 @@ export function makeAdminCuratedProfile(
     sectionsHidden: [],
     visibility: 'PUBLIC',
     accessToken: null,
+    listed: true,
+    archivedAt: null,
     views: 12,
     createdAt: null,
     updatedAt: null,

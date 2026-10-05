@@ -10,6 +10,65 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
+// add-curated-profile-lifecycle: un link enviado no enumera a los demás, y un
+// slug anterior pasa al canónico.
+describe('CuratedProfilePage — menú y slug canónico', () => {
+  const profilesList = () =>
+    http.get(`${API}/curated-profiles`, () =>
+      HttpResponse.json([
+        { slug: 'all', title: 'Perfil completo', roleType: '', techFocus: null },
+        { slug: 'otro-perfil', title: 'Otro', roleType: 'Backend', techFocus: 'Java' },
+      ]),
+    );
+
+  it('en /:slug no hay menú de perfiles ni enlaces a otro slug', async () => {
+    server.use(
+      profilesList(),
+      http.get(`${API}/curated-profiles/:slug`, () =>
+        HttpResponse.json(makeCuratedProfile({ slug: 'demo' })),
+      ),
+    );
+    renderWithProviders(<AppRouter />, { route: '/demo' });
+    await screen.findByRole('heading', { level: 1, name: 'Ada Ejemplo' });
+
+    expect(screen.queryByRole('button', { name: 'Perfiles' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Abrir menú' })).toBeNull();
+    const otrosSlugs = screen
+      .queryAllByRole('link')
+      .map((link) => link.getAttribute('href') ?? '')
+      .filter((href) => /^\/[a-z0-9-]+(\?|$)/.test(href) && !href.startsWith('/demo'));
+    expect(otrosSlugs).toEqual([]);
+  });
+
+  it('en la home sí está el menú de perfiles', async () => {
+    server.use(
+      profilesList(),
+      http.get(`${API}/curated-profiles/:slug`, () =>
+        HttpResponse.json(makeCuratedProfile({ slug: 'all' })),
+      ),
+    );
+    renderWithProviders(<AppRouter />, { route: '/' });
+    expect(await screen.findByRole('button', { name: 'Perfiles' })).toBeInTheDocument();
+  });
+
+  it('resuelto por un slug anterior, la vista pasa al slug canónico', async () => {
+    const pedidos: string[] = [];
+    server.use(
+      http.get(`${API}/curated-profiles/:slug`, ({ params }) => {
+        pedidos.push(String(params.slug));
+        return HttpResponse.json(makeCuratedProfile({ slug: 'acme-lead', title: 'Acme' }));
+      }),
+    );
+    renderWithProviders(<AppRouter />, { route: '/acme-tech-lead?lang=es' });
+
+    await waitFor(() => expect(pedidos).toContain('acme-lead'));
+    expect(pedidos[0]).toBe('acme-tech-lead');
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Ada Ejemplo' }),
+    ).toBeInTheDocument();
+  });
+});
+
 describe('CuratedProfilePage', () => {
   it('renderiza el perfil curado con sus secciones y pide la API con ?locale=', async () => {
     const urls: string[] = [];
@@ -29,7 +88,7 @@ describe('CuratedProfilePage', () => {
     expect(screen.getByText('Senior Backend Engineer')).toBeInTheDocument();
     expect(screen.getByText('Acme Corp')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Habilidades Técnicas' })).toBeInTheDocument();
-    // projects y presence no están en `sections` pero tienen datos → al final
+    // projects y presence llegan en `sections` (el backend ya aplicó el relleno)
     expect(screen.getByRole('heading', { name: 'Proyectos Destacados' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Presencia Pública' })).toBeInTheDocument();
     expect(urls[0]).toBe(`${API}/curated-profiles/demo?locale=es`);

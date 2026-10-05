@@ -223,6 +223,87 @@ describe('ProfileBuilderPage', () => {
   });
 });
 
+// add-curated-profile-lifecycle: los tres ejes en la pestaña Publicación.
+describe('ProfileBuilderPage — ciclo de vida', () => {
+  const openPublicacion = async (user: ReturnType<typeof userEvent.setup>) => {
+    await openBuilder();
+    await user.click(screen.getByRole('tab', { name: 'Publicación' }));
+  };
+
+  it('visibilidad, enumeración y archivado son controles distintos, cada uno explicado', async () => {
+    server.use(trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openPublicacion(user);
+
+    expect(screen.getByText(/quién puede abrir/)).toBeInTheDocument();
+    const enumeracion = screen.getByRole('region', { name: 'Enumeración' });
+    expect(within(enumeracion).getByText(/si se enumera/)).toBeInTheDocument();
+    expect(within(enumeracion).getByRole('switch')).toBeChecked();
+    const archivado = screen.getByRole('region', { name: 'Archivado' });
+    expect(within(archivado).getByText(/si sigue vivo/)).toBeInTheDocument();
+  });
+
+  it('desactivar la enumeración viaja como listed: false al guardar', async () => {
+    let body: Record<string, unknown> | undefined;
+    server.use(
+      http.patch(`${API}/admin/curated-profiles/:id`, async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(makeAdminCuratedProfile({ listed: false }));
+      }),
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openPublicacion(user);
+
+    await user.click(
+      within(screen.getByRole('region', { name: 'Enumeración' })).getByRole('switch'),
+    );
+    await user.click(screen.getByRole('button', { name: /Guardar/ }));
+    await waitFor(() => expect(body?.listed).toBe(false));
+  });
+
+  it('archivar pide confirmación, se refleja sin recargar y el link advierte que no resuelve', async () => {
+    const archivados: string[] = [];
+    server.use(
+      http.post(`${API}/admin/curated-profiles/:id/archive`, ({ params }) => {
+        archivados.push(String(params.id));
+        return HttpResponse.json(
+          makeAdminCuratedProfile({ archivedAt: '2026-10-05T12:00:00.000Z' }),
+        );
+      }),
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openPublicacion(user);
+
+    expect(screen.queryByText(/Este link no resuelve/)).toBeNull();
+    const archivado = screen.getByRole('region', { name: 'Archivado' });
+    await user.click(within(archivado).getByRole('button', { name: /Archivar/ }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(within(dialog).getByText(/deja de funcionar/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/visitas se conservan/)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Archivar' }));
+
+    await waitFor(() => expect(archivados).toEqual(['cp-1']));
+    expect(
+      await within(archivado).findByRole('button', { name: /Desarchivar/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Este link no resuelve: el perfil está archivado/)).toBeInTheDocument();
+  });
+
+  it('un perfil privado también advierte que su link no resuelve', async () => {
+    server.use(trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openPublicacion(user);
+
+    await user.click(screen.getByRole('combobox', { name: 'Visibilidad' }));
+    await user.click(await screen.findByRole('option', { name: 'Privado' }));
+    expect(await screen.findByText(/Este link no resuelve: un perfil privado/)).toBeInTheDocument();
+  });
+});
+
 describe('ThemeCustomizerPanel', () => {
   it('cambiar un color no genera peticiones y guarda solo la diferencia', async () => {
     const previews: Record<string, unknown>[] = [];

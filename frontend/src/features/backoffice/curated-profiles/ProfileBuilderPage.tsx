@@ -1,4 +1,15 @@
-import { ArrowLeft, ArrowUpRight, Check, ChevronDown, ChevronUp, Copy, Save } from 'lucide-react';
+import {
+  Archive,
+  ArchiveRestore,
+  ArrowLeft,
+  ArrowUpRight,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Save,
+  TriangleAlert,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { Badge } from '@/shared/components/ui/badge';
@@ -21,6 +32,7 @@ import { LAYOUT_NAMES } from '@/themes/layouts';
 import { ThemeCustomizerPanel } from '../theme-customizer/ThemeCustomizerPanel';
 import { baseTokensOf, diffTokens, effectiveTokens } from '../theme-customizer/theme-draft';
 import type { AdminCuratedProfile, Visibility } from '../shared/admin-types';
+import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { ChipListField } from '../shared/fields/ChipListField';
 import { LocalizedField } from '../shared/fields/LocalizedField';
 import { PageHeader } from '../shared/PageHeader';
@@ -28,6 +40,7 @@ import { ErrorPanel, LoadingRows } from '../shared/states';
 import {
   notifyError,
   notifySuccess,
+  useArchiveCuratedProfile,
   useCuratedProfilesAdmin,
   useExperiences,
   useSaveCuratedProfile,
@@ -90,8 +103,25 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
   const categories = useSkillCategories();
   const themes = useThemes();
   const save = useSaveCuratedProfile();
+  const archive = useArchiveCuratedProfile();
 
   const [draft, setDraft] = useState<ProfileDraft>(initialDraft);
+  // Archivar no pasa por el borrador: tiene su propio endpoint y se aplica al instante.
+  const [archivedAt, setArchivedAt] = useState<string | null>(saved?.archivedAt ?? null);
+  const setArchived = (next: boolean) =>
+    id &&
+    archive.mutate(
+      { id, archive: next },
+      {
+        onSuccess: (profile) => {
+          setArchivedAt(profile.archivedAt);
+          notifySuccess(next ? 'Perfil archivado: su link ya no resuelve' : 'Perfil desarchivado');
+        },
+        onError: (error) => notifyError(error, 'No se pudo cambiar el archivado'),
+      },
+    );
+  // El link no resuelve si el perfil está archivado o es privado (la misma tabla de verdad del backend).
+  const linkResolves = archivedAt === null && draft.visibility !== 'PRIVATE';
   const [errors, setErrors] = useState<ReturnType<typeof validateDraft>>({});
   const [copied, setCopied] = useState(false);
 
@@ -418,6 +448,9 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
           <TabsContent value="publicacion" className="surface flex flex-col gap-4 p-card">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="visibility">Visibilidad</Label>
+              <p className="text-xs text-text-dim">
+                Decide <strong>quién puede abrir</strong> el perfil por su link.
+              </p>
               <Select
                 value={draft.visibility}
                 onValueChange={(value) => update('visibility', value as Visibility)}
@@ -454,6 +487,66 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
               </div>
             )}
 
+            <section aria-label="Enumeración" className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between gap-3">
+                <Label htmlFor="listed">Enumerar en la home y el sitemap</Label>
+                <Switch
+                  id="listed"
+                  checked={draft.listed}
+                  onCheckedChange={(checked) => update('listed', checked)}
+                />
+              </div>
+              <p className="text-xs text-text-dim">
+                Decide <strong>si se enumera</strong> en el menú de la home, el listado público y el
+                sitemap. No cambia el acceso: un perfil no enumerado sigue abriendo por su link, que
+                es lo que lo vuelve un envío dirigido.
+              </p>
+            </section>
+
+            {id && (
+              <section aria-label="Archivado" className="flex flex-col gap-1.5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <Label>Archivado</Label>
+                  {archivedAt ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={archive.isPending}
+                      onClick={() => setArchived(false)}
+                    >
+                      <ArchiveRestore aria-hidden />
+                      Desarchivar
+                    </Button>
+                  ) : (
+                    <ConfirmDialog
+                      trigger={
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={archive.isPending}
+                        >
+                          <Archive aria-hidden />
+                          Archivar
+                        </Button>
+                      }
+                      title="Archivar perfil curado"
+                      description="El link deja de funcionar (responde 404) y el perfil sale del listado y del sitemap. Las visitas se conservan y siguen en el dashboard. Se puede desarchivar."
+                      confirmLabel="Archivar"
+                      onConfirm={() => setArchived(true)}
+                    />
+                  )}
+                </div>
+                <p className="text-xs text-text-dim">
+                  Decide <strong>si sigue vivo</strong>.{' '}
+                  {archivedAt
+                    ? `Archivado el ${new Date(archivedAt).toLocaleDateString('es')}.`
+                    : 'Es la forma de retirarlo sin perder su analítica, a diferencia de borrarlo.'}
+                </p>
+              </section>
+            )}
+
             <div className="flex flex-col gap-2">
               <Label>Link público</Label>
               <div className="flex flex-wrap items-center gap-2">
@@ -481,9 +574,12 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
                   </a>
                 </Button>
               </div>
-              {draft.visibility === 'PRIVATE' && (
-                <p className="text-xs text-text-dim">
-                  Un perfil privado responde 404 en la vista pública: usalo para borradores.
+              {!linkResolves && (
+                <p role="status" className="flex items-start gap-1.5 text-xs text-destructive">
+                  <TriangleAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                  {archivedAt
+                    ? 'Este link no resuelve: el perfil está archivado y responde 404.'
+                    : 'Este link no resuelve: un perfil privado responde 404. Usalo para borradores.'}
                 </p>
               )}
             </div>

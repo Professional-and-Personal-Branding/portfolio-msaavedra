@@ -39,11 +39,17 @@ import {
   ListAllCuratedProfilesUseCase,
   UpdateCuratedProfileUseCase,
 } from '../../application/use-cases/admin/curated-profile-admin.use-cases';
+import {
+  ArchiveCuratedProfileUseCase,
+  DuplicateCuratedProfileUseCase,
+  UnarchiveCuratedProfileUseCase,
+} from '../../application/use-cases/admin/curated-profile-lifecycle.use-cases';
 import { PreviewCuratedProfileUseCase } from '../../application/use-cases/admin/preview-curated-profile.use-case';
 import { AdminCuratedProfileResponse } from './docs/admin-curated-profile.response';
 import { CuratedProfileResponse } from './docs/curated-profile.response';
 import {
   CreateCuratedProfileDto,
+  DuplicateCuratedProfileDto,
   PreviewCuratedProfileDto,
   toCuratedProfileChanges,
   toDraftCuratedProfileProps,
@@ -65,6 +71,9 @@ export class AdminCuratedProfileController {
     private readonly updateOne: UpdateCuratedProfileUseCase,
     private readonly deleteOne: DeleteCuratedProfileUseCase,
     private readonly preview: PreviewCuratedProfileUseCase,
+    private readonly duplicateOne: DuplicateCuratedProfileUseCase,
+    private readonly archiveOne: ArchiveCuratedProfileUseCase,
+    private readonly unarchiveOne: UnarchiveCuratedProfileUseCase,
   ) {}
 
   @Post('preview')
@@ -130,9 +139,64 @@ export class AdminCuratedProfileController {
     return result.value;
   }
 
+  // ─── Ciclo de vida (add-curated-profile-lifecycle) ─────────────────────────
+
+  @Post(':id/duplicate')
+  @ApiOperation({
+    summary: 'Duplicar perfil curado',
+    description:
+      'Copia la configuración con un slug derivado (`-2`, `-3`, …). El duplicado nace PRIVATE y ' +
+      'no enumerado, sin token, sin visitas y sin archivar. El cuerpo no lleva nada.',
+  })
+  @ApiCreatedResponse({ type: AdminCuratedProfileResponse })
+  @ApiNotFoundResponse({ type: ErrorResponseDto })
+  @ApiConflictResponse({ type: ErrorResponseDto, description: 'Sin slug libre hasta -50' })
+  @ApiBadRequestResponse({ type: ErrorResponseDto, description: 'El cuerpo no acepta campos' })
+  async duplicate(
+    @Param('id') id: string,
+    @Body() _body: DuplicateCuratedProfileDto,
+  ): Promise<AdminCuratedProfileOutput> {
+    const result = await this.duplicateOne.execute({ id });
+    if (!result.ok) throw toHttpException(result.error);
+    return result.value;
+  }
+
+  @Post(':id/archive')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Archivar perfil curado',
+    description:
+      'Deja de resolver (404) y de enumerarse; conserva sus visitas. Idempotente: archivar ' +
+      'dos veces conserva la primera fecha.',
+  })
+  @ApiOkResponse({ type: AdminCuratedProfileResponse })
+  @ApiNotFoundResponse({ type: ErrorResponseDto })
+  async archive(@Param('id') id: string): Promise<AdminCuratedProfileOutput> {
+    const result = await this.archiveOne.execute({ id });
+    if (!result.ok) throw toHttpException(result.error);
+    return result.value;
+  }
+
+  @Post(':id/unarchive')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Desarchivar perfil curado',
+    description: 'Vuelve a resolver según su visibilidad. Idempotente.',
+  })
+  @ApiOkResponse({ type: AdminCuratedProfileResponse })
+  @ApiNotFoundResponse({ type: ErrorResponseDto })
+  async unarchive(@Param('id') id: string): Promise<AdminCuratedProfileOutput> {
+    const result = await this.unarchiveOne.execute({ id });
+    if (!result.ok) throw toHttpException(result.error);
+    return result.value;
+  }
+
   @Delete(':id')
   @HttpCode(204)
-  @ApiOperation({ summary: 'Borrar perfil curado (y sus visitas)' })
+  @ApiOperation({
+    summary: 'Borrar perfil curado (y sus visitas)',
+    description: 'Borra también su analítica. Para retirar un perfil conservándola, archivarlo.',
+  })
   @ApiNoContentResponse()
   @ApiNotFoundResponse({ type: ErrorResponseDto })
   async remove(@Param('id') id: string): Promise<void> {

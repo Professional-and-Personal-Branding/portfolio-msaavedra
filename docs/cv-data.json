@@ -1425,7 +1425,8 @@
         "spring-boot",
         "microservices"
       ],
-      "accentColor": "#1A365D"
+      "accentColor": "#1A365D",
+      "listed": true
     },
     {
       "slug": "fullstack-nest-react",
@@ -1452,7 +1453,8 @@
         "fullstack",
         "java"
       ],
-      "accentColor": "#065F46"
+      "accentColor": "#065F46",
+      "listed": true
     },
     {
       "slug": "devops-platform",
@@ -1479,7 +1481,8 @@
         "iac",
         "serverless"
       ],
-      "accentColor": "#0F766E"
+      "accentColor": "#0F766E",
+      "listed": true
     },
     {
       "slug": "dotnet-backend",
@@ -1505,7 +1508,8 @@
         "azure",
         "integration"
       ],
-      "accentColor": "#0078D4"
+      "accentColor": "#0078D4",
+      "listed": true
     },
     {
       "slug": "it-leadership",
@@ -1533,7 +1537,8 @@
         "cto",
         "migration"
       ],
-      "accentColor": "#1B3A6B"
+      "accentColor": "#1B3A6B",
+      "listed": true
     },
     {
       "slug": "integration-architect",
@@ -1560,7 +1565,8 @@
         "fintech",
         "messaging"
       ],
-      "accentColor": "#0E5263"
+      "accentColor": "#0E5263",
+      "listed": true
     },
     {
       "slug": "ai-software-engineer",
@@ -1589,7 +1595,8 @@
         "fullstack",
         "python"
       ],
-      "accentColor": "#6D28D9"
+      "accentColor": "#6D28D9",
+      "listed": true
     },
     {
       "slug": "fullstack-microsoft",
@@ -1618,7 +1625,8 @@
         "reporting",
         "integration"
       ],
-      "accentColor": "#0078D4"
+      "accentColor": "#0078D4",
+      "listed": true
     },
     {
       "slug": "devops-azure",
@@ -1646,7 +1654,8 @@
         "iac",
         "microsoft"
       ],
-      "accentColor": "#0078D4"
+      "accentColor": "#0078D4",
+      "listed": true
     },
     {
       "slug": "software-architect",
@@ -1675,7 +1684,8 @@
         "integration",
         "cloud"
       ],
-      "accentColor": "#1E293B"
+      "accentColor": "#1E293B",
+      "listed": true
     },
     {
       "slug": "backend-payments-ror",
@@ -1704,7 +1714,8 @@
         "messaging",
         "integration"
       ],
-      "accentColor": "#9B1C2E"
+      "accentColor": "#9B1C2E",
+      "listed": true
     },
     {
       "slug": "tech-lead-dotnet",
@@ -1734,7 +1745,8 @@
         "integration",
         "fullstack"
       ],
-      "accentColor": "#5B2C87"
+      "accentColor": "#5B2C87",
+      "listed": true
     },
     {
       "slug": "generalist-polyglot",
@@ -1765,7 +1777,8 @@
         "fintech",
         "leadership"
       ],
-      "accentColor": "#0F766E"
+      "accentColor": "#0F766E",
+      "listed": true
     }
   ]
 }

@@ -403,7 +403,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
           <label class="run"><input type="checkbox" data-run="tc05"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · En cualquier vista, abrir el desplegable <b>Perfiles</b>.</p>
         <p><span class="lbl">Esperado</span> · Lista todos los perfiles <code>PUBLIC</code> agrupados por <code>roleType</code>, cada uno con su <code>techFocus</code> debajo.</p>
-        <div class="note warn"><b>Comportamiento a tener en cuenta.</b> El menú se monta también en <code>/:slug</code>, así que quien recibe un link ve los otros perfiles hechos para otras vacantes. Lo resuelve el change <code>add-curated-profile-lifecycle</code>.</div>
+        <div class="note"><b>Desde el change <code>add-curated-profile-lifecycle</code></b> el menú solo se monta en la home: quien recibe un link no ve los otros perfiles. La captura de abajo es anterior y muestra el menú sobre <code>/tech-lead-dotnet</code>, que ya no ocurre; se renueva en la próxima ejecución.</div>
         <figure class="shot"><img src="tc05-menu-perfiles.jpg" alt="Menú de perfiles abierto sobre un perfil curado" loading="lazy"><figcaption>El desplegable abierto sobre <code>/tech-lead-dotnet</code>.</figcaption></figure>
       </article>
 

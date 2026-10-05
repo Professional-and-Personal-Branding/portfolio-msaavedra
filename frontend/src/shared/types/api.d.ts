@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: aa6e433ef7033b932b200486a97f638f57e909d20bc350307f6ca7eac75a1c4a
+// openapi-sha256: 078a948c9c883415c5e7d88494756dacba8c26762e6077f56e84eb17b71a92ef
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -51,12 +51,75 @@ export interface paths {
         get: operations["AdminCuratedProfileController_find"];
         put?: never;
         post?: never;
-        /** Borrar perfil curado (y sus visitas) */
+        /**
+         * Borrar perfil curado (y sus visitas)
+         * @description Borra también su analítica. Para retirar un perfil conservándola, archivarlo.
+         */
         delete: operations["AdminCuratedProfileController_remove"];
         options?: never;
         head?: never;
         /** Editar perfil curado (parcial) */
         patch: operations["AdminCuratedProfileController_update"];
+        trace?: never;
+    };
+    "/api/admin/curated-profiles/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archivar perfil curado
+         * @description Deja de resolver (404) y de enumerarse; conserva sus visitas. Idempotente: archivar dos veces conserva la primera fecha.
+         */
+        post: operations["AdminCuratedProfileController_archive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/curated-profiles/{id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Duplicar perfil curado
+         * @description Copia la configuración con un slug derivado (`-2`, `-3`, …). El duplicado nace PRIVATE y no enumerado, sin token, sin visitas y sin archivar. El cuerpo no lleva nada.
+         */
+        post: operations["AdminCuratedProfileController_duplicate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/curated-profiles/{id}/unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Desarchivar perfil curado
+         * @description Vuelve a resolver según su visibilidad. Idempotente.
+         */
+        post: operations["AdminCuratedProfileController_unarchive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/admin/curated-profiles/preview": {
@@ -313,7 +376,7 @@ export interface paths {
         };
         /**
          * Perfil curado resuelto
-         * @description Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash).
+         * @description Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash). Un slug anterior (renombrado) también resuelve: el cuerpo trae el slug canónico y `Content-Location` su ruta. Un perfil archivado responde 404.
          */
         get: operations["CuratedProfileController_findBySlug"];
         put?: never;
@@ -460,6 +523,8 @@ export interface components {
             /** @example #5B2C87 */
             accentColor: string;
             accessToken: string | null;
+            /** @description ISO 8601 si está archivado (no resuelve: 404); null si está vivo */
+            archivedAt: string | null;
             createdAt: string | null;
             description: components["schemas"]["LocalizedTextDto"] | null;
             excludeIds: string[];
@@ -469,6 +534,8 @@ export interface components {
             includeIds: string[];
             /** @example classic */
             layout: string;
+            /** @description Se enumera en el listado público, el menú y el sitemap */
+            listed: boolean;
             roleType: components["schemas"]["LocalizedTextDto"] | null;
             sectionsHidden: string[];
             sectionsOrder: string[];
@@ -578,6 +645,11 @@ export interface components {
             includeIds: string[];
             /** @default classic */
             layout: string;
+            /**
+             * @description Se enumera en el listado público, el menú y el sitemap. No afecta el acceso por slug. El archivado no se escribe acá: tiene sus propios endpoints.
+             * @default true
+             */
+            listed: boolean;
             roleType?: components["schemas"]["LocalizedTextDto"] | null;
             /** @default [] */
             sectionsHidden: components["schemas"]["SectionId"][];
@@ -731,6 +803,7 @@ export interface components {
              */
             title: string;
         };
+        DuplicateCuratedProfileDto: Record<string, never>;
         EducationResponse: {
             /**
              * @description Resuelto al locale.
@@ -881,6 +954,11 @@ export interface components {
             includeIds: string[];
             /** @default classic */
             layout: string;
+            /**
+             * @description Se enumera en el listado público, el menú y el sitemap. No afecta el acceso por slug. El archivado no se escribe acá: tiene sus propios endpoints.
+             * @default true
+             */
+            listed: boolean;
             roleType?: components["schemas"]["LocalizedTextDto"] | null;
             /** @default [] */
             sectionsHidden: components["schemas"]["SectionId"][];
@@ -1058,6 +1136,11 @@ export interface components {
             includeIds: string[];
             /** @default classic */
             layout: string;
+            /**
+             * @description Se enumera en el listado público, el menú y el sitemap. No afecta el acceso por slug. El archivado no se escribe acá: tiene sus propios endpoints.
+             * @default true
+             */
+            listed: boolean;
             roleType?: components["schemas"]["LocalizedTextDto"] | null;
             /** @default [] */
             sectionsHidden: components["schemas"]["SectionId"][];
@@ -1383,6 +1466,142 @@ export interface operations {
                 };
             };
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminCuratedProfileController_archive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCuratedProfileResponse"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminCuratedProfileController_duplicate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DuplicateCuratedProfileDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCuratedProfileResponse"];
+                };
+            };
+            /** @description El cuerpo no acepta campos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin slug libre hasta -50 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminCuratedProfileController_unarchive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCuratedProfileResponse"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2096,6 +2315,8 @@ export interface operations {
                 headers: {
                     /** @description Locale servido */
                     "Content-Language"?: string;
+                    /** @description Solo si se pidió un slug anterior: ruta del slug canónico */
+                    "Content-Location"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2111,7 +2332,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponseDto"];
                 };
             };
-            /** @description Slug inexistente o perfil PRIVATE */
+            /** @description Slug inexistente, perfil PRIVATE o archivado */
             404: {
                 headers: {
                     [name: string]: unknown;

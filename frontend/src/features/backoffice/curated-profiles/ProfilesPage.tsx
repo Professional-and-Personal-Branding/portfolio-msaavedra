@@ -1,4 +1,15 @@
-import { ExternalLink, Eye, Lock, Pencil, Plus, Shield, Trash2 } from 'lucide-react';
+import {
+  Archive,
+  Copy,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  Lock,
+  Pencil,
+  Plus,
+  Shield,
+  Trash2,
+} from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
@@ -12,6 +23,7 @@ import {
   notifySuccess,
   useCuratedProfilesAdmin,
   useDeleteCuratedProfile,
+  useDuplicateCuratedProfile,
 } from '../shared/use-admin-api';
 
 const VISIBILITY_META: Record<Visibility, { label: string; icon: typeof Eye }> = {
@@ -24,6 +36,7 @@ const VISIBILITY_META: Record<Visibility, { label: string; icon: typeof Eye }> =
 export function ProfilesPage() {
   const profiles = useCuratedProfilesAdmin();
   const remove = useDeleteCuratedProfile();
+  const duplicate = useDuplicateCuratedProfile();
   const navigate = useNavigate();
 
   return (
@@ -62,6 +75,15 @@ export function ProfilesPage() {
                   onError: (error) => notifyError(error, 'No se pudo borrar'),
                 })
               }
+              onDuplicate={() =>
+                duplicate.mutate(profile.id, {
+                  onSuccess: (copy) => {
+                    notifySuccess(`Duplicado como /${copy.slug}: privado hasta que lo publiques`);
+                    void navigate(`/admin/perfiles/${copy.id}`);
+                  },
+                  onError: (error) => notifyError(error, 'No se pudo duplicar'),
+                })
+              }
             />
           ))}
         </ul>
@@ -70,7 +92,13 @@ export function ProfilesPage() {
   );
 }
 
-function ProfileRow({ profile, onDelete }: { profile: AdminCuratedProfile; onDelete: () => void }) {
+interface ProfileRowProps {
+  profile: AdminCuratedProfile;
+  onDelete: () => void;
+  onDuplicate: () => void;
+}
+
+function ProfileRow({ profile, onDelete, onDuplicate }: ProfileRowProps) {
   const meta = VISIBILITY_META[profile.visibility];
   return (
     <li className="surface flex flex-wrap items-center gap-3 px-4 py-3">
@@ -81,6 +109,18 @@ function ProfileRow({ profile, onDelete }: { profile: AdminCuratedProfile; onDel
             <meta.icon className="size-3" aria-hidden />
             {meta.label}
           </Badge>
+          {profile.archivedAt && (
+            <Badge variant="outline" className="gap-1 text-text-muted">
+              <Archive className="size-3" aria-hidden />
+              Archivado
+            </Badge>
+          )}
+          {!profile.listed && (
+            <Badge variant="outline" className="gap-1 text-text-muted">
+              <EyeOff className="size-3" aria-hidden />
+              No enumerado
+            </Badge>
+          )}
         </p>
         <p className="truncate text-sm text-text-muted">
           /{profile.slug}
@@ -110,12 +150,24 @@ function ProfileRow({ profile, onDelete }: { profile: AdminCuratedProfile; onDel
 
       <ConfirmDialog
         trigger={
+          <Button variant="outline" size="icon-sm" aria-label={`Duplicar ${profile.slug}`}>
+            <Copy aria-hidden />
+          </Button>
+        }
+        title="Duplicar perfil curado"
+        description={`Se crea una copia de "${profile.title.es}" con toda su configuración. Nace privada y sin enumerar, sin token ni visitas, y se abre para que la ajustes.`}
+        confirmLabel="Duplicar"
+        onConfirm={onDuplicate}
+      />
+
+      <ConfirmDialog
+        trigger={
           <Button variant="outline" size="icon-sm" aria-label={`Borrar ${profile.slug}`}>
             <Trash2 aria-hidden />
           </Button>
         }
         title="Borrar perfil curado"
-        description={`Se borrará "${profile.title.es}" (/${profile.slug}) y sus ${profile.views} visitas registradas.`}
+        description={`Se borrará "${profile.title.es}" (/${profile.slug}) y sus ${profile.views} visitas registradas. Para retirarlo conservando las visitas, archivalo desde su pestaña Publicación.`}
         onConfirm={onDelete}
       />
     </li>

@@ -5,11 +5,20 @@ import {
   type SitemapProfile,
 } from './sitemap.builder';
 
+const vivo = { listed: true, archivedAt: null };
 const profiles: SitemapProfile[] = [
-  { slug: 'all', visibility: 'PUBLIC', updatedAt: new Date('2026-09-01T10:00:00Z') },
-  { slug: 'tech-lead-dotnet', visibility: 'PUBLIC', updatedAt: new Date('2026-09-05T10:00:00Z') },
-  { slug: 'borrador', visibility: 'PRIVATE' },
-  { slug: 'para-acme', visibility: 'PROTECTED' },
+  { slug: 'all', visibility: 'PUBLIC', ...vivo, updatedAt: new Date('2026-09-01T10:00:00Z') },
+  {
+    slug: 'tech-lead-dotnet',
+    visibility: 'PUBLIC',
+    ...vivo,
+    updatedAt: new Date('2026-09-05T10:00:00Z'),
+  },
+  { slug: 'borrador', visibility: 'PRIVATE', ...vivo },
+  { slug: 'para-acme', visibility: 'PROTECTED', ...vivo },
+  // add-curated-profile-lifecycle: públicos que no se enumeran.
+  { slug: 'dirigido', visibility: 'PUBLIC', listed: false, archivedAt: null },
+  { slug: 'retirado', visibility: 'PUBLIC', listed: true, archivedAt: new Date('2026-10-01') },
 ];
 
 describe('toSitemapEntries', () => {
@@ -23,15 +32,21 @@ describe('toSitemapEntries', () => {
     expect(paths).not.toContain('/para-acme');
   });
 
+  it('excluye los no enumerados y los archivados aunque sean PUBLIC', () => {
+    const paths = toSitemapEntries(profiles).map((e) => e.path);
+    expect(paths).not.toContain('/dirigido');
+    expect(paths).not.toContain('/retirado');
+  });
+
   it('el perfil `all` es la home, no una URL aparte', () => {
     expect(toSitemapEntries(profiles).map((e) => e.path)).not.toContain('/all');
     expect(toSitemapEntries(profiles)[0]?.lastModified).toEqual(new Date('2026-09-01T10:00:00Z'));
   });
 
   it('sin perfiles públicos deja al menos la home', () => {
-    expect(toSitemapEntries([{ slug: 'x', visibility: 'PRIVATE' }]).map((e) => e.path)).toEqual([
-      '/',
-    ]);
+    expect(
+      toSitemapEntries([{ slug: 'x', visibility: 'PRIVATE', ...vivo }]).map((e) => e.path),
+    ).toEqual(['/']);
   });
 });
 

@@ -101,7 +101,10 @@ describe('canonical del fragmento y sitemap', () => {
   it.each(['tech-lead-dotnet', 'all'])('coinciden para %s', (slug) => {
     const html = render(output({ slug }));
     const canonical = /<link rel="canonical" href="([^"]+)"/.exec(html)?.[1];
-    const sitemap = buildSitemapXml(BASE, toSitemapEntries([{ slug, visibility: 'PUBLIC' }]));
+    const sitemap = buildSitemapXml(
+      BASE,
+      toSitemapEntries([{ slug, visibility: 'PUBLIC', listed: true, archivedAt: null }]),
+    );
     expect(sitemap).toContain(`<loc>${canonical}</loc>`);
   });
 });

@@ -5,6 +5,7 @@ import {
   CURATED_PROFILE_REPOSITORY,
   CuratedProfileRepository,
 } from '../../domain/repositories/curated-profile.repository';
+import { isPubliclyListed } from '../../domain/services/publicly-listed';
 import { CuratedProfileSummaryOutput } from '../dto/curated-profile.output';
 import { toCuratedProfileSummary } from '../mappers/curated-profile.mapper';
 
@@ -12,7 +13,11 @@ export interface ListCuratedProfilesInput {
   locale: Locale;
 }
 
-/** Listado para el menú de navegación: solo perfiles PUBLIC, resueltos al locale. */
+/**
+ * Listado para el menú de navegación, resuelto al locale: solo lo que
+ * `isPubliclyListed` enumera (PUBLIC, `listed` y no archivado), el mismo
+ * criterio que el sitemap.
+ */
 @Injectable()
 export class ListCuratedProfilesUseCase {
   constructor(
@@ -22,7 +27,7 @@ export class ListCuratedProfilesUseCase {
   async execute(input: ListCuratedProfilesInput): Promise<Ok<CuratedProfileSummaryOutput[]>> {
     const profiles = await this.curatedProfiles.findAllPublic();
     return ok(
-      profiles.filter((p) => p.isPublic).map((p) => toCuratedProfileSummary(p, input.locale)),
+      profiles.filter(isPubliclyListed).map((p) => toCuratedProfileSummary(p, input.locale)),
     );
   }
 }

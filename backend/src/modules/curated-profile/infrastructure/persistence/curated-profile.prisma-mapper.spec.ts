@@ -19,6 +19,8 @@ const record: CuratedProfileRecord = {
   sectionsHidden: [],
   visibility: 'PROTECTED',
   accessToken: 'tok',
+  archivedAt: null,
+  listed: true,
   views: 3,
   createdAt: new Date(),
   updatedAt: new Date(),

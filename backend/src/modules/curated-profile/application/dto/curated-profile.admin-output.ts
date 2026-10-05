@@ -21,6 +21,10 @@ export interface AdminCuratedProfileOutput {
   sectionsHidden: string[];
   visibility: CuratedVisibility;
   accessToken: string | null;
+  /** Se enumera en el listado público, el menú y el sitemap. */
+  listed: boolean;
+  /** ISO 8601 si está archivado (no resuelve); null si está vivo. */
+  archivedAt: string | null;
   views: number;
   createdAt: string | null;
   updatedAt: string | null;

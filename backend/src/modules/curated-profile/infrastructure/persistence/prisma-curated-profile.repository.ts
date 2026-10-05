@@ -21,6 +21,16 @@ export class PrismaCuratedProfileRepository implements CuratedProfileRepository 
     return record ? toCuratedProfileEntity(record) : null;
   }
 
+  async findBySlugOrAlias(slug: string): Promise<CuratedProfile | null> {
+    const direct = await this.findBySlug(slug);
+    if (direct) return direct;
+    const alias = await this.prisma.curatedProfileSlugAlias.findUnique({
+      where: { slug },
+      include: { curatedProfile: true },
+    });
+    return alias ? toCuratedProfileEntity(alias.curatedProfile) : null;
+  }
+
   async findAllPublic(): Promise<CuratedProfile[]> {
     const records = await this.prisma.curatedProfile.findMany({
       where: { visibility: 'PUBLIC' },
@@ -40,11 +50,18 @@ export class PrismaCuratedProfileRepository implements CuratedProfileRepository 
   }
 
   async existsBySlug(slug: string, excludeId?: string): Promise<boolean> {
-    const found = await this.prisma.curatedProfile.findFirst({
-      where: { slug, ...(excludeId ? { id: { not: excludeId } } : {}) },
-      select: { id: true },
-    });
-    return found !== null;
+    const other = excludeId ? { not: excludeId } : undefined;
+    const [profile, alias] = await Promise.all([
+      this.prisma.curatedProfile.findFirst({
+        where: { slug, ...(other ? { id: other } : {}) },
+        select: { id: true },
+      }),
+      this.prisma.curatedProfileSlugAlias.findFirst({
+        where: { slug, ...(other ? { curatedProfileId: other } : {}) },
+        select: { id: true },
+      }),
+    ]);
+    return profile !== null || alias !== null;
   }
 
   async create(props: NewCuratedProfileProps): Promise<CuratedProfile> {
@@ -54,9 +71,25 @@ export class PrismaCuratedProfileRepository implements CuratedProfileRepository 
 
   async update(profile: CuratedProfile): Promise<CuratedProfile | null> {
     try {
-      const record = await this.prisma.curatedProfile.update({
-        where: { id: profile.id },
-        data: toCuratedProfileData(profile.toProps()),
+      const record = await this.prisma.$transaction(async (tx) => {
+        const current = await tx.curatedProfile.findUniqueOrThrow({
+          where: { id: profile.id },
+          select: { slug: true },
+        });
+        if (current.slug !== profile.slug) {
+          // El slug nuevo deja de ser alias (si este perfil vuelve a uno anterior)
+          // y el anterior pasa a serlo, para que los links ya enviados sigan vivos.
+          await tx.curatedProfileSlugAlias.deleteMany({
+            where: { slug: profile.slug, curatedProfileId: profile.id },
+          });
+          await tx.curatedProfileSlugAlias.create({
+            data: { slug: current.slug, curatedProfileId: profile.id },
+          });
+        }
+        return tx.curatedProfile.update({
+          where: { id: profile.id },
+          data: toCuratedProfileData(profile.toProps()),
+        });
       });
       return toCuratedProfileEntity(record);
     } catch (error) {

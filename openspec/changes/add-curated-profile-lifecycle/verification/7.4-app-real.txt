@@ -1,0 +1,41 @@
+# 7.4 — Verificación en la app real (2026-10-05)
+
+API y frontend del change en puertos propios (3310 y 5175), contra la base aparte
+portfolio_verify recién cargada con el seed. Sesión con el administrador de fixture
+de backend/test/e2e-helpers.ts. Todo el circuito se hizo desde la interfaz del
+panel, con clics; las comprobaciones de estado son lecturas de la API.
+
+1. /admin/perfiles → «Duplicar tech-lead-dotnet» → el diálogo explica que la copia
+   nace privada y sin enumerar → Confirmar.
+   Resultado: aviso «Duplicado como /tech-lead-dotnet-2: privado hasta que lo
+   publiques» y el constructor se abre sobre la copia.
+
+2. En el constructor, cambiando solo tres campos más la visibilidad:
+     slug     tech-lead-dotnet-2 → acme-tech-lead
+     título   → «Tech Lead .NET para Acme»
+     titular  → «Liderazgo técnico .NET para el equipo de pagos de Acme»
+     Publicación → Visibilidad: Público → Guardar
+   GET /api/curated-profiles/acme-tech-lead            → 200, 13 experiencias,
+                                                         las 9 secciones
+   Panel: visibility PUBLIC, listed false (el duplicado sigue sin enumerar:
+   es un envío dirigido)
+
+3. Tres visitas a la ruta pública → contador del perfil: 3.
+
+4. Publicación → «Archivar» → el diálogo avisa que el link deja de funcionar y
+   que las visitas se conservan → Confirmar.
+   Sin recargar: el botón pasa a «Desarchivar» y el bloque del link muestra
+   «Este link no resuelve: el perfil está archivado y responde 404.»
+   GET /api/curated-profiles/acme-tech-lead            → 404
+   Panel: archivedAt 2026-10-05T20:50:58.044Z, views 3
+
+5. /admin (dashboard), tabla «Por perfil»: «acme-tech-lead · archivado · 3»,
+   sin el enlace «ver» (su link ya no resuelve).
+
+6. Menú público: en /tech-lead-dotnet la barra no tiene el botón de perfiles;
+   en / sí.
+
+Capturas: 01-lista-perfiles.png (insignias Archivado y No enumerado),
+02-publicacion-archivado.png (los tres ejes, archivado y la advertencia del link),
+03-link-archivado-404.png, 04-dashboard-archivado.png, 05-perfil-sin-menu.png,
+06-home-con-menu.png.

@@ -42,6 +42,7 @@ function build(existing: CuratedProfile[] = []) {
   const store = [...existing];
   const repo: CuratedProfileRepository = {
     findBySlug: jest.fn(),
+    findBySlugOrAlias: jest.fn(),
     findAllPublic: jest.fn(),
     findAll: jest.fn().mockImplementation(() => Promise.resolve([...store])),
     findById: jest

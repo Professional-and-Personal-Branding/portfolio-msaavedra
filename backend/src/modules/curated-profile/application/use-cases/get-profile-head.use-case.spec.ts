@@ -6,8 +6,11 @@ import { GetProfileHeadUseCase } from './get-profile-head.use-case';
 
 const BASE = 'https://manuel.dev';
 
-function curated(visibility: 'PUBLIC' | 'PROTECTED' | 'PRIVATE'): CuratedProfile {
-  return { slug: 'tech-lead-dotnet', visibility } as unknown as CuratedProfile;
+function curated(
+  visibility: 'PUBLIC' | 'PROTECTED' | 'PRIVATE',
+  archivedAt: Date | null = null,
+): CuratedProfile {
+  return { slug: 'tech-lead-dotnet', visibility, archivedAt } as unknown as CuratedProfile;
 }
 
 const RESOLVED = {
@@ -22,7 +25,7 @@ const RESOLVED = {
 
 function build(found: CuratedProfile | null) {
   const repo = {
-    findBySlug: jest.fn().mockResolvedValue(found),
+    findBySlugOrAlias: jest.fn().mockResolvedValue(found),
   } as unknown as CuratedProfileRepository;
   const compose = jest.fn().mockResolvedValue(RESOLVED);
   const composer = { compose } as unknown as CuratedProfileComposer;
@@ -52,6 +55,10 @@ describe('GetProfileHeadUseCase', () => {
     expect(html).not.toContain('Titular secreto');
   });
 
+  it('PUBLIC archivado: el mismo genérico que un slug inexistente', async () => {
+    expect(await run(curated('PUBLIC', new Date('2026-10-01')))).toBe(await run(null));
+  });
+
   it('PRIVATE e inexistente dan exactamente el mismo cuerpo', async () => {
     expect(await run(curated('PRIVATE'))).toBe(await run(null));
   });
@@ -59,7 +66,7 @@ describe('GetProfileHeadUseCase', () => {
   it('sin slug: genérico, sin consultar la base', async () => {
     const { useCase, repo } = build(curated('PUBLIC'));
     const html = (await useCase.execute({ slug: '', locale: 'es', baseUrl: BASE })).value;
-    expect(repo.findBySlug).not.toHaveBeenCalled();
+    expect(repo.findBySlugOrAlias).not.toHaveBeenCalled();
     expect(html).toContain('content="noindex, nofollow"');
   });
 });
