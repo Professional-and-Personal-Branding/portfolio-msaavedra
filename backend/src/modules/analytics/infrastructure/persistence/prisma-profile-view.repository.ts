@@ -36,7 +36,7 @@ export class PrismaProfileViewRepository implements ProfileViewRepository {
   }
 
   async aggregate(range: DateRange): Promise<ProfileViewAggregate> {
-    const where: Prisma.ProfileViewWhereInput = { viewedAt: { gte: range.from, lt: range.to } };
+    const where: Prisma.ProfileViewWhereInput = { viewedAt: { gte: range.from, lte: range.to } };
 
     const [total, byProfileRaw, byLocaleRaw, byDayRaw] = await Promise.all([
       this.prisma.profileView.count({ where }),
@@ -51,7 +51,7 @@ export class PrismaProfileViewRepository implements ProfileViewRepository {
       this.prisma.$queryRaw<DayRow[]>`
         SELECT date_trunc('day', "viewedAt") AS day, COUNT(*)::int AS views
         FROM "ProfileView"
-        WHERE "viewedAt" >= ${range.from} AND "viewedAt" < ${range.to}
+        WHERE "viewedAt" >= ${range.from} AND "viewedAt" <= ${range.to}
         GROUP BY 1
         ORDER BY 1 ASC`,
     ]);

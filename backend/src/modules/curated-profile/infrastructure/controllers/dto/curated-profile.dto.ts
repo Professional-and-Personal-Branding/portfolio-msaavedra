@@ -157,8 +157,8 @@ export function toNewCuratedProfileProps(dto: CreateCuratedProfileDto): NewCurat
 export function toDraftCuratedProfileProps(dto: PreviewCuratedProfileDto): NewCuratedProfileProps {
   return {
     slug: dto.slug ?? 'preview',
-    title: dto.title ? toLocalizedText(dto.title) : '',
-    headline: dto.headline ? toLocalizedText(dto.headline) : '',
+    title: dto.title ? toLocalizedText(dto.title) : {},
+    headline: dto.headline ? toLocalizedText(dto.headline) : {},
     description: dto.description ? toLocalizedText(dto.description) : null,
     roleType: dto.roleType ? toLocalizedText(dto.roleType) : null,
     techFocus: dto.techFocus ?? null,

@@ -51,6 +51,8 @@ describe('Objetos anidados obligatorios (D-02)', () => {
    * `@ValidateNested()` obligatorio sin `@IsDefined()` deja pasar un cuerpo que
    * omite el objeto y el mapper revienta con 500 en lugar de responder 400.
    * Se juzga sobre los metadatos que evalúa el pipe, no sobre el texto.
+   * Complementa a `dto-validation.spec.ts`, que prueba el comportamiento de los
+   * DTO listados: esta guardia alcanza también a los que nadie agregó a esa lista.
    */
   const validables = walk(SRC).filter((file) =>
     fs.readFileSync(file, 'utf-8').includes("from 'class-validator'"),

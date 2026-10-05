@@ -9,7 +9,6 @@ export interface NewProfileView {
   readonly ipHash?: string;
 }
 
-/** Rango semiabierto: `from` inclusivo, `to` exclusivo. */
 export interface DateRange {
   readonly from: Date;
   readonly to: Date;

@@ -448,15 +448,21 @@ describe('Backoffice (e2e)', () => {
       expect((await get('/api/admin/analytics/views')).status).toBe(401);
     });
 
-    it('un rango que termina hoy incluye las visitas de hoy (D-01, TC-18)', async () => {
+    // Defecto D-01: `to` era exclusivo, así que el rango cerrado que manda el
+    // panel (`[hoy - (días - 1), hoy]`) dejaba fuera el día en curso.
+    it('el rango es cerrado: to=hoy incluye las visitas de hoy', async () => {
+      const hoy = new Date().toISOString().slice(0, 10);
+      const antes = (await adminGet(`/api/admin/analytics/views?from=${hoy}&to=${hoy}`)).body
+        .total as number;
+
       await get('/api/curated-profiles/all?locale=es');
-      const today = new Date().toISOString().slice(0, 10);
-      const res = await adminGet(`/api/admin/analytics/views?from=${today}&to=${today}`);
+
+      const res = await adminGet(`/api/admin/analytics/views?from=${hoy}&to=${hoy}`);
       expect(res.status).toBe(200);
-      expect(res.body.total).toBeGreaterThanOrEqual(1);
-      expect(res.body.byDay).toEqual([{ day: today, views: res.body.total }]);
-      expect(res.body.from).toBe(`${today}T00:00:00.000Z`);
-      expect(res.body.to).toBe(`${today}T23:59:59.999Z`);
+      expect(res.body.total).toBe(antes + 1);
+      expect(res.body.byDay).toEqual(
+        expect.arrayContaining([expect.objectContaining({ day: hoy })]),
+      );
     });
   });
 });

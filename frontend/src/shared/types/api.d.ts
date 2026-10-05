@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: b1d45ca6f9fef182633f87a6dfd4a234bdd06c1101664fddca09118ecd810e44
+// openapi-sha256: ad884c9050db2f747a200027988f4bfe3e4717f066ea16f7d4de96f72cfbcbc6
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -9,7 +9,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Visitas agregadas por perfil, idioma y día */
+        /**
+         * Visitas agregadas por perfil, idioma y día
+         * @description El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso.
+         */
         get: operations["AdminAnalyticsController_views"];
         put?: never;
         post?: never;
@@ -1121,9 +1124,9 @@ export interface operations {
     AdminAnalyticsController_views: {
         parameters: {
             query?: {
-                /** @description Día ISO 8601, inclusivo desde las 00:00 UTC; default: hace 29 días (30 días con hoy) */
+                /** @description ISO 8601; default: hace 30 días. Una fecha sin hora empieza a su medianoche UTC */
                 from?: string;
-                /** @description Día ISO 8601, inclusivo hasta el final del día UTC; default: hoy */
+                /** @description ISO 8601; default: ahora. El rango es cerrado: una fecha sin hora incluye ese día completo */
                 to?: string;
             };
             header?: never;
