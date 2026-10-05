@@ -15,6 +15,8 @@
 | 📝 | Documentado paso a paso; la captura de pantalla queda pendiente (ver § 6) |
 | ❌ | Ejecutado y **falla**: el comportamiento real no es el esperado. Ver § 6.1 |
 
+> El estado 📝 desapareció el 5 de octubre: todos los casos del backoffice tienen su captura.
+
 ---
 
 ## 0. Preparar el entorno
@@ -213,7 +215,7 @@ El token también viaja en la cabecera `X-Access-Token`. En los logs el `?token=
 
 La sesión es una cookie **httpOnly**: el cliente nunca guarda el JWT y el estado se deriva de `GET /api/auth/me`. Al expirar (`JWT_EXPIRES_IN`, por defecto `1d`), el panel vuelve al login en la siguiente petición.
 
-### TC-12 — Crear un perfil curado para una vacante 🔍📝
+### TC-12 — Crear un perfil curado para una vacante ✅
 
 **Precondición:** sesión iniciada.
 **Pasos:**
@@ -250,9 +252,17 @@ POST omitiendo "title" (obligatorio)   -> 500  ❌ debería ser 400 — ver § 6
 
 > **Recomendado:** crealo `PRIVATE` y pasalo a `PUBLIC` recién cuando esté listo (TC-16). Un `PRIVATE` devuelve 404, así que nadie lo encuentra mientras lo armás.
 
+![Lista de perfiles curados](manual/tc12a-perfiles-lista.jpg)
+
+*La lista muestra el slug, la visibilidad, la taxonomía y las visitas de cada perfil.*
+
+![Pestaña Identidad del constructor](manual/tc12b-identidad.jpg)
+
+*Pestaña Identidad, con la vista previa en vivo a la derecha: `12 experiencias · 10 categorías · 1 proyectos` ya filtradas.*
+
 Los campos que no mandás toman su valor por defecto: `filterTags`, `includeIds`, `excludeIds`, `sectionsOrder` y `sectionsHidden` vacíos, `accentColor` en `#1A365D`, `layout` en `classic`, `visibility` en `PUBLIC`.
 
-### TC-13 — Elegir qué entra con tags y overrides 🔍📝
+### TC-13 — Elegir qué entra con tags y overrides ✅
 
 Tres mecanismos, en este orden:
 
@@ -292,7 +302,11 @@ mismo id en includeIds y excludeIds       -> no entró  (excludeIds siempre gana
 
 El orden de salida siempre es cronológico: `startDate` descendente, `order` ascendente como desempate. No se reordena item por item, a propósito: todos los perfiles cuentan la historia en el mismo sentido.
 
-### TC-14 — Ordenar y ocultar secciones 🔍📝
+![Pestaña Selección](manual/tc13-seleccion.jpg)
+
+*Los tags activos arriba y el universo de tags disponible debajo, sacado de los datos reales. La vista previa se recalcula con cada clic.*
+
+### TC-14 — Ordenar y ocultar secciones ✅
 
 Las nueve secciones conocidas: `hero`, `stats`, `experience`, `skills`, `projects`, `education`, `certifications`, `presence`, `contact`.
 
@@ -302,6 +316,10 @@ Las nueve secciones conocidas: `hero`, `stats`, `experience`, `skills`, `project
 
 - Una sección **con datos** que no figure en `sectionsOrder` **se agrega al final**. Para ocultarla hay que ponerla en `sectionsHidden`.
 - Una sección **sin datos** no se renderiza aunque esté en el orden.
+
+![Pestaña Diseño con las secciones](manual/tc14-secciones.jpg)
+
+*Las nueve secciones con su interruptor y sus flechas. `projects` y `presence` quedan en las posiciones 8 y 9 porque el orden guardado trae solo siete.*
 
 ```bash
 curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
@@ -322,7 +340,7 @@ sectionsOrder=[hero,skills,experience,contact]
 
 > El backend declara hoy **7** secciones por defecto y el frontend conoce **9**: `projects` y `presence` entran por la regla de relleno del cliente. Está identificado y resuelto en el change `unify-section-catalog`.
 
-### TC-15 — Personalizar el tema 🔍📝
+### TC-15 — Personalizar el tema ✅
 
 **Pasos:** pestaña **Diseño**, bloque *Tema*:
 
@@ -350,7 +368,11 @@ GET /api/admin/themes  -> 5 temas: corporate, elegant, minimal, modern-dark, mod
 PATCH themeOverrides   -> se guarda {"colors":{"accent":"#5B2C87"}}, solo la diferencia
 ```
 
-### TC-16 — Publicar, proteger o esconder 🔍📝
+![Customizador de tema](manual/tc15-tema.jpg)
+
+*Tema base, los ocho colores con su valor hexadecimal, y **Restablecer** para volver al preset.*
+
+### TC-16 — Publicar, proteger o esconder ✅
 
 | Visibilidad | Sin token | Con token | En el sitemap |
 |---|---|---|---|
@@ -382,6 +404,10 @@ PRIVATE   con token -> 404   (no revela que existe)
 slug inexistente    -> 404   (indistinguible del PRIVATE)
 el PRIVATE figura en el sitemap -> no
 ```
+
+![Pestaña Publicación](manual/tc16-publicacion.jpg)
+
+*Visibilidad, el link público con copiar y abrir, y el contador de visitas del perfil.*
 
 Después de proteger algo, ejecutá TC-10: es la comprobación que importa.
 
@@ -431,9 +457,13 @@ GET analytics/views?from=hoy&to=mañana -> total=13, byDay={hoy:13}
 
 El contador del perfil y el registro de `ProfileView` funcionan. Lo que falla es el **rango** del agregado: `to` es exclusivo, y el dashboard pide `[hoy-29, hoy]`, así que **las visitas de hoy no aparecen nunca**. Ver § 6.1.
 
+![Dashboard de analítica](manual/tc18-dashboard.jpg)
+
+*516 visitas en el rango, repartidas en 6 perfiles y 2 idiomas. Las tres tablas: por día, por perfil y por idioma.*
+
 De cada visita se guarda el perfil, el idioma, la fecha y la IP **solo como HMAC** con `ANALYTICS_SALT`. No hay cookies de seguimiento. Las visitas se registran únicamente en la ruta pública, nunca en el preview, y si el registro falla la respuesta al visitante no se altera.
 
-### TC-19 — Mantener las experiencias 🔍📝
+### TC-19 — Mantener las experiencias ✅
 
 **Pasos:** `/admin/experiencias` → **Nueva experiencia**.
 
@@ -473,9 +503,17 @@ POST omitiendo "summary" (obligatorio)         -> 500  ❌ debería ser 400 — 
 
 > Un tag nuevo aparece solo como chip en el constructor de **todos** los perfiles: es la forma más rápida de abrir una dimensión de filtrado nueva.
 >
+![Lista de experiencias](manual/tc19a-experiencias.jpg)
+
+*Cada fila con su empresa, periodo, tags y orden.*
+
+![Formulario de experiencia](manual/tc19b-formulario.jpg)
+
+*Los campos bilingües llevan su conmutador ES/EN. **Logros (es)** no lo tiene: es la limitación de abajo, a la vista.*
+
 > **Limitación actual:** el formulario expone los logros solo en español. El inglés se conserva al guardar, pero no se puede editar desde el panel. Lo resuelve el change `add-bilingual-builder-parity`.
 
-### TC-20 — Mantener skills y categorías 🔍📝
+### TC-20 — Mantener skills y categorías ✅
 
 **Pasos:** `/admin/skills`. Las skills viven dentro de categorías.
 
@@ -502,6 +540,10 @@ POST skill "SuiteSkill" con tags=[suite-tag]        -> 201
 preview con filterTags=[suite-tag]                  -> la categoría entra por el tag de su skill
 DELETE de la categoría                              -> se lleva sus skills
 ```
+
+![Skills por categoría](manual/tc20-skills.jpg)
+
+*Las skills viven dentro de categorías, y cada una lleva los tags que deciden en qué perfiles aparece.*
 
 Una categoría entra en un perfil curado si **alguna de sus skills** comparte un tag con `filterTags`; dentro, se muestran solo las skills que pasan el filtro.
 
@@ -575,17 +617,17 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-09 | Vista móvil | ✅ | captura |
 | TC-10 | Códigos de estado por visibilidad | 🔍 | 401 / 200 / 404 |
 | TC-11 | Entrar al panel | ✅ | captura del login |
-| TC-12 | Crear un perfil curado | 🔍📝 | 201 / 409 / 400, **y un 500** |
-| TC-13 | Tags y overrides | 🔍📝 | los cuatro casos del filtro |
-| TC-14 | Ordenar y ocultar secciones | 🔍📝 | orden y ocultado resueltos |
-| TC-15 | Personalizar el tema | 🔍📝 | 5 temas; solo se guarda la diferencia |
-| TC-16 | Publicar, proteger, esconder | 🔍📝 | la tabla completa de visibilidad |
+| TC-12 | Crear un perfil curado | ✅ | 2 capturas · 201 / 409 / 400, **y un 500** |
+| TC-13 | Tags y overrides | ✅ | captura · los cuatro casos del filtro |
+| TC-14 | Ordenar y ocultar secciones | ✅ | captura · orden y ocultado resueltos |
+| TC-15 | Personalizar el tema | ✅ | captura · solo se guarda la diferencia |
+| TC-16 | Publicar, proteger, esconder | ✅ | captura · la tabla completa de visibilidad |
 | TC-17 | Previsualizar sin guardar | 🔍 | no persiste nada |
-| TC-18 | Dashboard de analítica | ❌ | el contador sube; **el rango falla** |
-| TC-19 | Mantener experiencias | 🔍📝 | visible / oculta, **y un 500** |
-| TC-20 | Mantener skills | 🔍📝 | la categoría entra por el tag de su skill |
+| TC-18 | Dashboard de analítica | ❌ | captura · el contador sube, **el rango falla** |
+| TC-19 | Mantener experiencias | ✅ | 2 capturas · visible / oculta, **y un 500** |
+| TC-20 | Mantener skills | ✅ | captura · la categoría entra por el tag de su skill |
 
-**19 de 20 casos pasan.** Los marcados 🔍📝 están verificados contra la API pero **les falta la captura del panel**: se agregan la próxima vez que se ejecute la suite con sesión iniciada. TC-18 falla.
+**19 de 20 casos pasan, y los 20 tienen evidencia.** 20 capturas en `docs/manual/` más las transcripciones de la API. TC-18 falla.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 

@@ -222,7 +222,7 @@
     <div class="filters" id="filters">
       <button class="chip" data-filter="all" aria-pressed="true">Todos</button>
       <button class="chip" data-filter="ok" aria-pressed="false">Pasan</button>
-      <button class="chip" data-filter="part" aria-pressed="false">Sin captura</button>
+      
       <button class="chip" data-filter="fail" aria-pressed="false">Fallan</button>
     </div>
     <input class="search" id="q" type="search" placeholder="Buscar caso…" aria-label="Buscar caso">
@@ -248,15 +248,15 @@
     <a href="#tc10"><span class="dot ok"></span><span class="id">TC-10</span> Visibilidad</a>
     <h3>Backoffice</h3>
     <a href="#tc11"><span class="dot ok"></span><span class="id">TC-11</span> Entrar</a>
-    <a href="#tc12"><span class="dot part"></span><span class="id">TC-12</span> Crear perfil</a>
-    <a href="#tc13"><span class="dot part"></span><span class="id">TC-13</span> Tags</a>
-    <a href="#tc14"><span class="dot part"></span><span class="id">TC-14</span> Secciones</a>
-    <a href="#tc15"><span class="dot part"></span><span class="id">TC-15</span> Tema</a>
-    <a href="#tc16"><span class="dot part"></span><span class="id">TC-16</span> Publicar</a>
+    <a href="#tc12"><span class="dot ok"></span><span class="id">TC-12</span> Crear perfil</a>
+    <a href="#tc13"><span class="dot ok"></span><span class="id">TC-13</span> Tags</a>
+    <a href="#tc14"><span class="dot ok"></span><span class="id">TC-14</span> Secciones</a>
+    <a href="#tc15"><span class="dot ok"></span><span class="id">TC-15</span> Tema</a>
+    <a href="#tc16"><span class="dot ok"></span><span class="id">TC-16</span> Publicar</a>
     <a href="#tc17"><span class="dot ok"></span><span class="id">TC-17</span> Preview</a>
     <a href="#tc18"><span class="dot fail"></span><span class="id">TC-18</span> Analítica</a>
-    <a href="#tc19"><span class="dot part"></span><span class="id">TC-19</span> Experiencias</a>
-    <a href="#tc20"><span class="dot part"></span><span class="id">TC-20</span> Skills</a>
+    <a href="#tc19"><span class="dot ok"></span><span class="id">TC-19</span> Experiencias</a>
+    <a href="#tc20"><span class="dot ok"></span><span class="id">TC-20</span> Skills</a>
     <h3>Cierre</h3>
     <a href="#defectos"><span class="dot fail"></span><span class="id">§6</span> Defectos</a>
     <a href="#noadmin"><span class="id">§7</span> Sin administrar</a>
@@ -321,8 +321,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
         <div class="stat"><b>20</b><span>casos</span></div>
         <div class="stat ok"><b>19</b><span>pasan</span></div>
         <div class="stat fail"><b>1</b><span>falla</span></div>
-        <div class="stat part"><b>9</b><span>sin captura</span></div>
-        <div class="stat"><b>10</b><span>capturas</span></div>
+        <div class="stat"><b>20</b><span>capturas</span></div>
       </div>
 
       <div class="note danger"><b>TC-18 falla.</b> El dashboard nunca muestra las visitas del día en curso. Causa y arreglo propuesto en <a href="#defectos">Defectos</a>.</div>
@@ -332,7 +331,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
         <table>
           <tbody>
             <tr><td><span class="pill ok">pasa</span></td><td>Ejecutado y verificado, con captura o transcripción.</td></tr>
-            <tr><td><span class="pill part">sin captura</span></td><td>Verificado contra la API; falta la captura de la pantalla del panel.</td></tr>
+
             <tr><td><span class="pill fail">falla</span></td><td>Ejecutado y el comportamiento real no es el esperado.</td></tr>
           </tbody>
         </table>
@@ -456,7 +455,7 @@ curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
     <!-- ───────────── Backoffice ───────────── -->
     <section class="block" id="backoffice">
       <h2>Casos del backoffice</h2>
-      <p class="lede">Requieren sesión. Los marcados <span class="pill part">sin captura</span> están verificados contra la API; falta la captura de la pantalla.</p>
+      <p class="lede">Requieren sesión. Los nueve se recorrieron en el panel real el 5 de octubre, con la base del seed.</p>
 
       <article class="case" data-status="ok" id="tc11">
         <div class="case-head"><span class="case-id">TC-11</span><h3>Entrar al panel</h3><span class="pill ok">pasa</span>
@@ -466,8 +465,8 @@ curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
         <figure class="shot"><img src="tc10-login.jpg" alt="Pantalla de login del backoffice" loading="lazy" style="max-width:480px"><figcaption>El panel vive en el mismo frontend, en un chunk aparte.</figcaption></figure>
       </article>
 
-      <article class="case" data-status="part" id="tc12">
-        <div class="case-head"><span class="case-id">TC-12</span><h3>Crear un perfil curado para una vacante</h3><span class="pill part">sin captura</span>
+      <article class="case" data-status="ok" id="tc12">
+        <div class="case-head"><span class="case-id">TC-12</span><h3>Crear un perfil curado para una vacante</h3><span class="pill ok">pasa</span>
           <label class="run"><input type="checkbox" data-run="tc12"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · <code>/admin/perfiles</code> → <b>Nuevo perfil</b> → pestaña <b>Identidad</b>: <code>slug</code> en kebab-case (es la URL y se valida), <code>title</code>, <code>headline</code> y <code>description</code> en ES y EN, <code>roleType</code> y <code>techFocus</code>. Guardar.</p>
         <div class="codewrap"><pre>curl -s -X POST $API/api/admin/curated-profiles -H "$AUTH" \
@@ -487,10 +486,12 @@ POST con el mismo slug                 -> 409
 POST con un campo fuera del DTO        -> 400
 POST omitiendo "title" (obligatorio)   -> 500  ❌ debería ser 400</pre></div>
         <div class="note"><b>Recomendado.</b> Crealo <code>PRIVATE</code> y pasalo a <code>PUBLIC</code> recién cuando esté listo. Un <code>PRIVATE</code> devuelve 404, así que nadie lo encuentra mientras lo armás.</div>
+        <figure class="shot"><img src="tc12a-perfiles-lista.jpg" alt="Lista de perfiles curados en el panel" loading="lazy"><figcaption>Slug, visibilidad, taxonomía y visitas de cada perfil.</figcaption></figure>
+        <figure class="shot"><img src="tc12b-identidad.jpg" alt="Pestaña Identidad del constructor" loading="lazy"><figcaption>Pestaña Identidad, con la vista previa en vivo: <code>12 experiencias · 10 categorías · 1 proyectos</code> ya filtradas.</figcaption></figure>
       </article>
 
-      <article class="case" data-status="part" id="tc13">
-        <div class="case-head"><span class="case-id">TC-13</span><h3>Elegir qué entra con tags y overrides</h3><span class="pill part">sin captura</span>
+      <article class="case" data-status="ok" id="tc13">
+        <div class="case-head"><span class="case-id">TC-13</span><h3>Elegir qué entra con tags y overrides</h3><span class="pill ok">pasa</span>
           <label class="run"><input type="checkbox" data-run="tc13"> ejecutado</label></div>
         <div class="tablewrap"><table>
           <thead><tr><th>Mecanismo</th><th>Efecto</th></tr></thead>
@@ -507,10 +508,11 @@ filterTags=[suite-tag]                    -> 1; la visible entró, la oculta no
 includeIds sobre una experiencia oculta   -> no entró  (no fuerza invisibles)
 mismo id en includeIds y excludeIds       -> no entró  (excludeIds siempre gana)</pre></div>
         <p>El orden de salida siempre es cronológico: <code>startDate</code> descendente, <code>order</code> ascendente como desempate. No se reordena item por item, a propósito.</p>
+        <figure class="shot"><img src="tc13-seleccion.jpg" alt="Pestaña Selección con los chips de tags" loading="lazy"><figcaption>Los tags activos arriba y el universo disponible debajo, sacado de los datos reales.</figcaption></figure>
       </article>
 
-      <article class="case" data-status="part" id="tc14">
-        <div class="case-head"><span class="case-id">TC-14</span><h3>Ordenar y ocultar secciones</h3><span class="pill part">sin captura</span>
+      <article class="case" data-status="ok" id="tc14">
+        <div class="case-head"><span class="case-id">TC-14</span><h3>Ordenar y ocultar secciones</h3><span class="pill ok">pasa</span>
           <label class="run"><input type="checkbox" data-run="tc14"> ejecutado</label></div>
         <p>Las nueve secciones conocidas: <code>hero</code>, <code>stats</code>, <code>experience</code>, <code>skills</code>, <code>projects</code>, <code>education</code>, <code>certifications</code>, <code>presence</code>, <code>contact</code>.</p>
         <p><span class="lbl">Observado</span></p>
@@ -520,19 +522,21 @@ sectionsOrder=[hero,skills,experience,contact]
                                                    hiddenSections=[skills]</pre></div>
         <div class="note"><b>Dos reglas.</b> Una sección <b>con datos</b> que no figure en <code>sectionsOrder</code> se agrega al final; para ocultarla hay que ponerla en <code>sectionsHidden</code>. Una sección <b>sin datos</b> no se renderiza aunque esté en el orden.</div>
         <div class="note warn">El backend declara hoy <b>7</b> secciones por defecto y el frontend conoce <b>9</b>. Lo resuelve el change <code>unify-section-catalog</code>.</div>
+        <figure class="shot"><img src="tc14-secciones.jpg" alt="Pestaña Diseño con la lista de secciones" loading="lazy"><figcaption><code>projects</code> y <code>presence</code> quedan en las posiciones 8 y 9 porque el orden guardado trae solo siete.</figcaption></figure>
       </article>
 
-      <article class="case" data-status="part" id="tc15">
-        <div class="case-head"><span class="case-id">TC-15</span><h3>Personalizar el tema</h3><span class="pill part">sin captura</span>
+      <article class="case" data-status="ok" id="tc15">
+        <div class="case-head"><span class="case-id">TC-15</span><h3>Personalizar el tema</h3><span class="pill ok">pasa</span>
           <label class="run"><input type="checkbox" data-run="tc15"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · Pestaña <b>Diseño</b>, bloque <i>Tema</i>: tema base entre los cinco presets, ocho controles de color (Fondo, Fondo suave, Tarjeta, Borde, Texto, Texto tenue, Acento y Acento 2), densidad Compacta / Cómoda / Amplia, y <b>Restablecer</b>.</p>
         <p><span class="lbl">Esperado</span> · El preview cambia al instante, porque los tokens se aplican como variables CSS <code>--t-*</code> en el contenedor del preview y no en el documento. Y <b>solo se guardan las diferencias</b> contra el tema base, en <code>themeOverrides</code>: si mañana cambia el preset, el perfil hereda la mejora y conserva su ajuste.</p>
         <div class="codewrap"><pre>GET /api/admin/themes  -> 5 temas: corporate, elegant, minimal, modern-dark, modern-light
 PATCH themeOverrides   -> se guarda {"colors":{"accent":"#5B2C87"}}, solo la diferencia</pre></div>
+        <figure class="shot"><img src="tc15-tema.jpg" alt="Customizador de tema" loading="lazy"><figcaption>Tema base, los ocho colores con su hexadecimal, y <b>Restablecer</b> para volver al preset.</figcaption></figure>
       </article>
 
-      <article class="case" data-status="part" id="tc16">
-        <div class="case-head"><span class="case-id">TC-16</span><h3>Publicar, proteger o esconder</h3><span class="pill part">sin captura</span>
+      <article class="case" data-status="ok" id="tc16">
+        <div class="case-head"><span class="case-id">TC-16</span><h3>Publicar, proteger o esconder</h3><span class="pill ok">pasa</span>
           <label class="run"><input type="checkbox" data-run="tc16"> ejecutado</label></div>
         <div class="tablewrap"><table>
           <thead><tr><th>Visibilidad</th><th>Sin token</th><th>Con token</th><th>En el sitemap</th></tr></thead>
@@ -550,6 +554,7 @@ PRIVATE   sin token -> 404
 PRIVATE   con token -> 404   (no revela que existe)
 slug inexistente    -> 404   (indistinguible del PRIVATE)
 el PRIVATE figura en el sitemap -> no</pre></div>
+        <figure class="shot"><img src="tc16-publicacion.jpg" alt="Pestaña Publicación" loading="lazy"><figcaption>Visibilidad, el link público con copiar y abrir, y el contador de visitas.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc17">
@@ -578,11 +583,12 @@ tras un preview del panel              -> 4   ✅ el preview no cuenta como visi
 GET analytics/views?from=hoy&amp;to=hoy    -> total=0   ❌ debería ser 4
 GET analytics/views?from=hoy&amp;to=mañana -> total=13, byDay={hoy:13}</pre></div>
         <div class="note danger"><b>Falla el rango, no el registro.</b> El contador del perfil y el registro de <code>ProfileView</code> funcionan. <code>to</code> es exclusivo y el dashboard pide <code>[hoy-29, hoy]</code>, así que las visitas de hoy no aparecen nunca. Ver <a href="#defectos">D-01</a>.</div>
+        <figure class="shot"><img src="tc18-dashboard.jpg" alt="Dashboard de analítica" loading="lazy"><figcaption>516 visitas en el rango, 6 perfiles y 2 idiomas. Los datos más recientes son de septiembre: las visitas de hoy no entran.</figcaption></figure>
         <p>De cada visita se guarda el perfil, el idioma, la fecha y la IP <b>solo como HMAC</b> con <code>ANALYTICS_SALT</code>. No hay cookies de seguimiento, y si el registro falla la respuesta al visitante no se altera.</p>
       </article>
 
-      <article class="case" data-status="part" id="tc19">
-        <div class="case-head"><span class="case-id">TC-19</span><h3>Mantener las experiencias</h3><span class="pill part">sin captura</span>
+      <article class="case" data-status="ok" id="tc19">
+        <div class="case-head"><span class="case-id">TC-19</span><h3>Mantener las experiencias</h3><span class="pill ok">pasa</span>
           <label class="run"><input type="checkbox" data-run="tc19"> ejecutado</label></div>
         <div class="tablewrap"><table>
           <thead><tr><th>Campo</th><th>Notas</th></tr></thead>
@@ -601,11 +607,13 @@ POST experiencia oculta (visible:false)  -> 201
 GET /api/experiences (público)           -> la oculta no aparece
 GET /api/admin/experiences               -> la oculta aparece, con visible=false
 POST omitiendo "summary" (obligatorio)   -> 500  ❌ debería ser 400</pre></div>
+        <figure class="shot"><img src="tc19a-experiencias.jpg" alt="Lista de experiencias" loading="lazy"><figcaption>Cada fila con su empresa, periodo, tags y orden.</figcaption></figure>
+        <figure class="shot"><img src="tc19b-formulario.jpg" alt="Formulario de experiencia" loading="lazy"><figcaption>Los campos bilingües llevan conmutador ES/EN. <b>Logros (es)</b> no lo tiene: la limitación de abajo, a la vista.</figcaption></figure>
         <div class="note warn"><b>Limitación actual.</b> El formulario expone los logros solo en español. El inglés se conserva al guardar, pero no se puede editar desde el panel. Lo resuelve el change <code>add-bilingual-builder-parity</code>.</div>
       </article>
 
-      <article class="case" data-status="part" id="tc20">
-        <div class="case-head"><span class="case-id">TC-20</span><h3>Mantener skills y categorías</h3><span class="pill part">sin captura</span>
+      <article class="case" data-status="ok" id="tc20">
+        <div class="case-head"><span class="case-id">TC-20</span><h3>Mantener skills y categorías</h3><span class="pill ok">pasa</span>
           <label class="run"><input type="checkbox" data-run="tc20"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · <code>/admin/skills</code>. Las skills viven dentro de categorías: nueva categoría con nombre bilingüe y orden, y dentro nueva skill con nombre, tags y orden. Una skill se mueve de categoría editando su campo de categoría.</p>
         <p><span class="lbl">Observado</span></p>
@@ -613,6 +621,7 @@ POST omitiendo "summary" (obligatorio)   -> 500  ❌ debería ser 400</pre></div
 POST skill "SuiteSkill" con tags=[suite-tag]  -> 201
 preview con filterTags=[suite-tag]            -> la categoría entra por el tag de su skill
 DELETE de la categoría                        -> se lleva sus skills</pre></div>
+        <figure class="shot"><img src="tc20-skills.jpg" alt="Skills agrupadas por categoría" loading="lazy"><figcaption>Cada skill lleva los tags que deciden en qué perfiles aparece.</figcaption></figure>
         <p>Una categoría entra en un perfil curado si <b>alguna de sus skills</b> comparte un tag con <code>filterTags</code>; dentro, se muestran solo las skills que pasan el filtro.</p>
       </article>
     </section>
