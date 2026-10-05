@@ -37,3 +37,6 @@ coverage/
 # Misc
 .cache/
 tmp/
+
+# Cache de Vite al servir la guia interactiva (configuracion 'manual' de .claude/launch.json)
+docs/manual/.vite/
