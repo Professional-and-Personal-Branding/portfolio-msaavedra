@@ -50,6 +50,7 @@ Y hay una pieza de analítica que cuesta casi nada y hoy se desperdicia: `Profil
 - `admin-backoffice-shell`: tres entradas nuevas en la navegación.
 - `admin-analytics-dashboard`: agregado y tabla por origen.
 - `profile-view-analytics`: `byReferrer` en la salida del agregado.
+- `admin-curated-profile-crud`: `headline` opcional; vacío, el hero usa el titular del perfil base (D7, decidido durante la implementación).
 
 ## Impact
 

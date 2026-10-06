@@ -41,5 +41,12 @@
 - [x] 6.3 `docs/MANUAL.md`: el caso 13 pasa de "lo que no se administra" a los casos de administración de portada, formación y proyectos; se refuerza la advertencia sobre `seed` como repoblado, no como edición.
 - [x] 6.4 `docs/DEPLOY.md`: nota de que después de este change correr `seed` en producción pisa el contenido editado desde el panel.
 - [x] 6.5 Suite completa: `npm run test:all` en backend y `npm run test` en frontend. Verificar: en verde.
-- [ ] 6.6 Verificación en la app real: cambiar el titular y la disponibilidad desde el panel, comprobarlo en `/` y en dos perfiles curados, y completar la `url` de los dos proyectos del seed. Verificar: capturas en `verification/`.
-  - Hecho: disponibilidad cambiada desde el panel, vista previa sin guardar, visible en `/`, `fullstack-nest-react` y `tech-lead-dotnet`, y revertida (capturas 01–04). **Pendiente de Manuel:** las `url` reales de los dos proyectos, y la decisión sobre el titular de los perfiles curados (Open Questions de `design.md`).
+- [x] 6.6 Verificación en la app real: cambiar el titular y la disponibilidad desde el panel, comprobarlo en `/` y en dos perfiles curados, y completar la `url` de los dos proyectos del seed. Verificar: capturas en `verification/`.
+  - Hecho: disponibilidad cambiada desde el panel, vista previa sin guardar, visible en `/`, `fullstack-nest-react` y `tech-lead-dotnet`, y revertida (capturas 01–04). Titular base cambiado y visto en el hero de `/` tras D7, y revertido.
+  - Las `url` de los dos proyectos quedan vacías por decisión (D8): se cargan desde el panel cuando existan.
+
+## 7. Titular opcional del perfil curado (D7)
+
+- [x] 7.1 `headline` opcional en `CreateCuratedProfileDto` (omitido → `{}`); `dto-validation.spec.ts` y `admin.e2e-spec.ts` ajustados, más un e2e de creación sin titular que hereda el del perfil base.
+- [x] 7.2 Seed: `all` sin titular propio. Constructor: el titular deja de ser obligatorio (solo exige el español si hay traducción). Portada: el texto de ayuda lo explica.
+- [x] 7.3 Spec delta `admin-curated-profile-crud`, contrato regenerado, manual y guía actualizados.

@@ -237,15 +237,26 @@ describe('Backoffice (e2e)', () => {
 
   // ─── Perfiles curados ───────────────────────────────────────────────────
   describe('CRUD de perfiles curados', () => {
-    it('omitir title o headline → 400, no 500 (D-02)', async () => {
-      const completo = { slug: 'd02-e2e', title: { es: 'x' }, headline: { es: 'y' } };
-      for (const field of ['title', 'headline'] as const) {
-        const { [field]: _omitted, ...sinCampo } = completo;
-        const res = await adminPost('/api/admin/curated-profiles').send(sinCampo);
-        expect(res.status).toBe(400);
-        expect(JSON.stringify(res.body.message)).toContain(field);
-      }
+    it('omitir title → 400, no 500 (D-02)', async () => {
+      const res = await adminPost('/api/admin/curated-profiles').send({
+        slug: 'd02-e2e',
+        headline: { es: 'y' },
+      });
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body.message)).toContain('title');
       expect(await prisma.curatedProfile.count({ where: { slug: 'd02-e2e' } })).toBe(0);
+    });
+
+    it('sin headline se crea y el hero hereda el titular del perfil base (D7)', async () => {
+      const res = await adminPost('/api/admin/curated-profiles').send({
+        slug: 'd02-e2e',
+        title: { es: 'x' },
+      });
+      expect(res.status).toBe(201);
+      const publico = await get('/api/curated-profiles/d02-e2e');
+      expect(publico.body.headline).toBe('');
+      expect(publico.body.profile.headline).toBeTruthy();
+      await prisma.curatedProfile.deleteMany({ where: { slug: 'd02-e2e' } });
     });
 
     it('listado admin con campos internos', async () => {

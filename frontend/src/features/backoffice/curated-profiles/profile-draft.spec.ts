@@ -22,12 +22,13 @@ const draft = (overrides: Partial<ProfileDraft> = {}): ProfileDraft => ({
 });
 
 describe('validateDraft', () => {
-  it('exige slug kebab-case, título y titular en español', () => {
+  it('exige slug kebab-case y título; el titular es opcional', () => {
     expect(validateDraft(draft())).toEqual({});
     expect(validateDraft(draft({ slug: '' })).slug).toBe('El slug es obligatorio');
     expect(validateDraft(draft({ slug: 'No Kebab' })).slug).toMatch(/kebab-case/);
     expect(validateDraft(draft({ title: { es: '  ', en: 'x' } })).title).toBeDefined();
-    expect(validateDraft(draft({ headline: { es: '', en: '' } })).headline).toBeDefined();
+    expect(validateDraft(draft({ headline: { es: '', en: '' } })).headline).toBeUndefined();
+    expect(validateDraft(draft({ headline: { es: '', en: 'Only english' } })).headline).toBeDefined();
   });
 
   it('un perfil PROTECTED necesita token; los demás no', () => {

@@ -487,7 +487,9 @@ async function main() {
     data: {
       slug: 'all',
       title: { es: 'Perfil Completo', en: 'Full Profile' },
-      headline: data.profile.headline,
+      // Sin titular propio: la home muestra el del perfil base, que se edita en
+      // /admin/portada (add-profile-content-admin, D7).
+      headline: {},
       description: {
         es: 'Vista completa del portafolio profesional.',
         en: 'Complete view of the professional portfolio.',

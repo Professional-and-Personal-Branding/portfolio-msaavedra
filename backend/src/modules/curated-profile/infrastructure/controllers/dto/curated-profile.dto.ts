@@ -36,11 +36,16 @@ export class CreateCuratedProfileDto {
   @Type(() => LocalizedTextDto)
   title!: LocalizedTextDto;
 
-  @ApiProperty({ type: LocalizedTextDto })
-  @IsDefined()
+  @ApiPropertyOptional({
+    type: LocalizedTextDto,
+    description:
+      'Titular propio del perfil. Omitido o vacío, el hero muestra el titular del perfil base ' +
+      '(add-profile-content-admin, D7).',
+  })
+  @IsOptional()
   @ValidateNested()
   @Type(() => LocalizedTextDto)
-  headline!: LocalizedTextDto;
+  headline?: LocalizedTextDto;
 
   @ApiPropertyOptional({ type: LocalizedTextDto, nullable: true })
   @IsOptional()
@@ -146,7 +151,7 @@ export function toNewCuratedProfileProps(dto: CreateCuratedProfileDto): NewCurat
   return {
     slug: dto.slug,
     title: toLocalizedText(dto.title),
-    headline: toLocalizedText(dto.headline),
+    headline: dto.headline ? toLocalizedText(dto.headline) : {},
     description: dto.description ? toLocalizedText(dto.description) : null,
     roleType: dto.roleType ? toLocalizedText(dto.roleType) : null,
     techFocus: dto.techFocus ?? null,

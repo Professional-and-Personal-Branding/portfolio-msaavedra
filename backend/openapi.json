@@ -4863,7 +4863,12 @@
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
           "headline": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
+            "description": "Titular propio del perfil. Omitido o vacío, el hero muestra el titular del perfil base (add-profile-content-admin, D7).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
           },
           "description": {
             "nullable": true,
@@ -5103,7 +5108,12 @@
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
           "headline": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
+            "description": "Titular propio del perfil. Omitido o vacío, el hero muestra el titular del perfil base (add-profile-content-admin, D7).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
           },
           "description": {
             "nullable": true,
@@ -5199,8 +5209,7 @@
         },
         "required": [
           "slug",
-          "title",
-          "headline"
+          "title"
         ]
       },
       "UpdateCuratedProfileDto": {
@@ -5215,7 +5224,12 @@
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
           "headline": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
+            "description": "Titular propio del perfil. Omitido o vacío, el hero muestra el titular del perfil base (add-profile-content-admin, D7).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
           },
           "description": {
             "nullable": true,

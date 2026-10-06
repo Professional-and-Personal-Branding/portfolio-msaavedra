@@ -141,7 +141,11 @@ export function validateDraft(draft: ProfileDraft): DraftErrors {
   else if (!SLUG_PATTERN.test(slug))
     errors.slug = 'Usá kebab-case: solo minúsculas, números y guiones';
   if (!draft.title.es.trim()) errors.title = 'El título en español es obligatorio';
-  if (!draft.headline.es.trim()) errors.headline = 'El titular en español es obligatorio';
+  // El titular es opcional (D7): vacío, el hero usa el del perfil base. Si hay
+  // traducción, el español —el idioma origen— no puede faltar.
+  if (!draft.headline.es.trim() && draft.headline.en?.trim()) {
+    errors.headline = 'Falta el titular en español';
+  }
   if (draft.visibility === 'PROTECTED' && !draft.accessToken.trim()) {
     errors.accessToken = 'Un perfil protegido necesita un token de acceso';
   }

@@ -107,7 +107,7 @@ function ProfileEditor({ initialDraft }: { initialDraft: PortadaDraft }) {
           required
           value={draft.headline}
           error={errors.headline}
-          description="Un perfil curado con titular propio muestra el suyo en lugar de este."
+          description="Lo muestran la home y los perfiles curados sin titular propio; uno con titular propio muestra el suyo."
           onChange={(value) => update('headline', localized(value))}
         />
         <LocalizedField

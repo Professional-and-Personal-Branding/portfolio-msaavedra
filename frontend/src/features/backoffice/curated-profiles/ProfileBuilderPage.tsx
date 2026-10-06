@@ -220,9 +220,10 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
             />
             <LocalizedField
               label="Titular"
-              required
               value={draft.headline}
               error={errors.headline}
+              description="Opcional. Vacío, el hero muestra el titular del perfil base (Portada)."
+
               onChange={(value) => update('headline', { es: value.es, en: value.en ?? '' })}
             />
             <LocalizedField

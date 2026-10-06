@@ -64,9 +64,20 @@ No se guarda nada nuevo: el `referrer` ya está en la fila. `userAgent` **no** s
 - **`isHttpUrl`** pasó a `shared/domain`: lo usan proyectos y enlaces sociales.
 - **`byReferrer`** sale de un `groupBy` por `referrer` crudo en el adaptador; la normalización (`normalizeReferrer`, `aggregateByReferrer`) es dominio puro. El controller pasa `FRONTEND_URL` como URL del sitio, igual que el sitemap.
 
-## Open Questions (nuevas)
+### D7 — El titular del perfil curado es opcional; vacío hereda el del perfil base
 
-- **El titular base no se ve en el hero de los perfiles curados.** `Hero` muestra `data.headline || profile.headline`, y el seed le copia el titular base a cada plantilla, incluida la home `all`. Editar el titular desde la portada cambia `profile.headline` en todas las respuestas, pero el hero sigue mostrando el titular propio de cada perfil curado. Opciones: (a) que el titular del perfil curado sea opcional y el seed deje vacío el de `all` (y de las plantillas que no lo personalizan), con el constructor aceptando "vacío = usar el titular base"; (b) dejarlo así y que la portada lo diga, que es lo que hace hoy. Pide decisión de producto antes de cerrar el change.
+Decidido por Manuel el 5 de octubre de 2026 (opción a). `Hero` ya mostraba `data.headline || profile.headline`, pero el seed le copiaba el titular base a la home `all`, así que editarlo en la portada no se veía. Ahora:
+
+- `headline` es opcional en `CreateCuratedProfileDto`; omitido se guarda `{}` y resuelve a `""`.
+- El seed deja `all` sin titular propio. Las 13 plantillas conservan el suyo: ninguna era copia del titular base, todas están pensadas para su rol.
+- El constructor ya no exige el titular; solo pide el español si hay traducción.
+- Spec delta en `specs/admin-curated-profile-crud/spec.md`.
+
+Alternativa descartada: (b) dejarlo y avisarlo en la portada. Mantenía un campo que se edita y no se ve.
+
+### D8 — Las URL de los proyectos del seed quedan vacías
+
+También decidido por Manuel: los dos proyectos del seed siguen sin `url`. Se cargan cuando corresponda desde `/admin/proyectos`, que los marca «Sin enlace». No se inventa ningún enlace.
 
 ## Risks
 

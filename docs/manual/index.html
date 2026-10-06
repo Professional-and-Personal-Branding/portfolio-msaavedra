@@ -688,7 +688,7 @@ PUT /api/admin/profile                        -> 200; all, fullstack-nest-react 
 PUT con un campo desconocido                  -> 400 y el perfil queda idéntico
 PUT con email vacío                           -> 400 y conserva el anterior</pre></div>
         <figure class="shot" id="img-tc21-portada"><img src="tc21-portada.jpg" width="560" height="420" alt="Portada con la vista previa del hero"><figcaption>La vista previa la resuelve el backend con el mismo mapper que la ruta pública.</figcaption></figure>
-        <div class="note">Un perfil curado con titular propio muestra el suyo en lugar del titular base. El seed le copia el titular base a cada plantilla.</div>
+        <div class="note">El titular base se ve en la home y en todo perfil curado <b>sin titular propio</b> (decisión D7). Las plantillas del seed traen el suyo y lo conservan; para volver al titular base, vaciá el del perfil en la pestaña Identidad.</div>
       </article>
 
       <article class="case" data-status="ok" id="tc22">
@@ -739,6 +739,7 @@ POST /api/admin/curated-profiles  sin "title"    -> 400  ["title should not be n
 POST /api/admin/curated-profiles  sin "headline" -> 400  ["headline should not be null or undefined"]
 POST /api/admin/skill-categories  sin "name"     -> 400  ["name should not be null or undefined"]
 POST /api/admin/experiences       completo       -> 201  (control)</pre></div>
+        <div class="note">Desde <code>add-profile-content-admin</code> (D7), <code>headline</code> es opcional: sin él la creación da 201 y el hero usa el titular del perfil base. La línea de arriba queda como registro del defecto.</div>
         <p><span class="lbl">Regresión</span> · <code>backend/test/dto-validation.spec.ts</code>, un test de comportamiento que exige un error por cada campo obligatorio de cada DTO de entrada (cuerpo vacío, campo ausente y campo en <code>null</code>). Sin el arreglo fallan 8 de sus 34 casos. Desde el PR #3 lo complementan una guarda estática en <code>backend/test/security.spec.ts</code>, que exige <code>@IsDefined()</code> en todo <code>@ValidateNested()</code> no opcional, y un e2e por HTTP de las seis omisiones.</p>
       </article>
     </section>

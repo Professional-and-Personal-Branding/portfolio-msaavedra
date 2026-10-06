@@ -223,7 +223,7 @@ La sesión es una cookie **httpOnly**: el cliente nunca guarda el JWT y el estad
 **Precondición:** sesión iniciada.
 **Pasos:**
 1. `/admin/perfiles` → **Nuevo perfil**.
-2. Pestaña **Identidad**: `slug` en kebab-case (es la URL, y se valida), `title`, `headline` y `description` en ES y EN, `roleType` (agrupa el menú) y `techFocus`.
+2. Pestaña **Identidad**: `slug` en kebab-case (es la URL, y se valida), `title`, `headline` (opcional: vacío usa el titular del perfil base) y `description` en ES y EN, `roleType` (agrupa el menú) y `techFocus`.
 3. Guardar.
 
 **Resultado esperado:** el perfil se crea y el constructor queda abierto sobre él. Un slug repetido devuelve **409**.
@@ -567,7 +567,7 @@ Desde el change `add-profile-content-admin`, todo lo que el sitio muestra se edi
 3. Un obligatorio vacío (nombre, titular o resumen en español, email, ubicación) no se envía; si llega a la API, es 400 y el perfil queda como estaba.
 4. **Idiomas**, en la misma página: agregar, editar y borrar con confirmación.
 
-> Un perfil curado con titular propio muestra el suyo en lugar del titular base. El seed le copia el titular base a cada plantilla, así que el titular nuevo se ve en el hero solo donde el perfil curado no tiene uno propio.
+> El titular base se ve en la home y en todo perfil curado **sin titular propio** (decisión D7). Las 13 plantillas del seed traen el suyo, pensado para su rol, y lo conservan; la home `all` no tiene ninguno. Para que un perfil curado vuelva a usar el titular base, vaciá su titular en la pestaña Identidad del constructor.
 
 ```bash
 # El perfil es un singleton: no hay id en la ruta. El PUT reemplaza todo.
@@ -578,7 +578,7 @@ curl -s -X PUT $API/api/admin/profile -H "$AUTH" -H 'Content-Type: application/j
 **Ejecutado** (e2e `content-admin.e2e-spec.ts`):
 
 ```
-PUT con headline nuevo                     -> 200 y GET /api/curated-profiles/all lo trae en profile.headline
+PUT con headline nuevo                     -> 200 y el hero de / lo muestra (all no tiene titular propio)
 PUT con startDate nuevo                    -> el perfil curado lo sirve en el idioma pedido
 PUT con un campo desconocido               -> 400 y el perfil queda idéntico
 PUT con email vacío                        -> 400 y conserva el email anterior
@@ -726,6 +726,8 @@ POST /api/admin/curated-profiles  sin "headline" -> 400  ["headline should not b
 POST /api/admin/skill-categories  sin "name"     -> 400  ["name should not be null or undefined"]
 POST /api/admin/experiences       completo       -> 201  (control)
 ```
+
+> Desde `add-profile-content-admin` (decisión D7), `headline` es **opcional**: un perfil curado sin titular propio responde 201 y su hero muestra el titular del perfil base. La línea de `headline` de arriba queda como registro del defecto; hoy esa omisión da 201.
 
 **Regresión:** `backend/test/dto-validation.spec.ts` corre `class-validator` sobre cada DTO de entrada con las mismas opciones que `adminValidationPipe` y exige un error por cada campo obligatorio — con el cuerpo vacío, con el campo ausente y con el campo en `null` — más un control con el cuerpo completo. Es un test de comportamiento: no depende de qué decorador arregle el problema y cubre todos los campos obligatorios, no solo los anidados. Sin los `@IsDefined()` fallan 8 de sus 34 casos. Desde el PR #3 lo complementan una guarda estática en `backend/test/security.spec.ts`, que exige `@IsDefined()` en todo `@ValidateNested()` no opcional de cualquier clase validada en `src/`, y un e2e en `admin.e2e-spec.ts` que prueba las seis omisiones por HTTP.
 

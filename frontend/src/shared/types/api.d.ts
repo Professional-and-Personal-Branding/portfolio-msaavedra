@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 557e1399150e7616d1f75aeead0018aef54c9092093796924eb494b2aa58967d
+// openapi-sha256: 3b249985b96d1fc42b88c3546ea0694520a51582e1c5770d70bb00b90c4469b1
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -896,7 +896,8 @@ export interface components {
             excludeIds: string[];
             /** @default [] */
             filterTags: string[];
-            headline: components["schemas"]["LocalizedTextDto"];
+            /** @description Titular propio del perfil. Omitido o vacío, el hero muestra el titular del perfil base (add-profile-content-admin, D7). */
+            headline?: components["schemas"]["LocalizedTextDto"];
             /** @default [] */
             includeIds: string[];
             /** @default classic */
@@ -1290,6 +1291,7 @@ export interface components {
             excludeIds: string[];
             /** @default [] */
             filterTags: string[];
+            /** @description Titular propio del perfil. Omitido o vacío, el hero muestra el titular del perfil base (add-profile-content-admin, D7). */
             headline?: components["schemas"]["LocalizedTextDto"];
             /** @default [] */
             includeIds: string[];
@@ -1517,6 +1519,7 @@ export interface components {
             excludeIds: string[];
             /** @default [] */
             filterTags: string[];
+            /** @description Titular propio del perfil. Omitido o vacío, el hero muestra el titular del perfil base (add-profile-content-admin, D7). */
             headline?: components["schemas"]["LocalizedTextDto"];
             /** @default [] */
             includeIds: string[];
