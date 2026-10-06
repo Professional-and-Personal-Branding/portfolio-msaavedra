@@ -6,6 +6,7 @@ import {
   ProfileViewAggregate,
   ProfileViewRepository,
 } from '../../domain/repositories/profile-view.repository';
+import { aggregateByReferrer } from '../../domain/services/normalize-referrer';
 
 export const DEFAULT_RANGE_DAYS = 30;
 
@@ -14,14 +15,21 @@ export interface AggregateProfileViewsInput {
   to?: Date;
   /** Inyectable para tests. */
   now?: Date;
+  /** URL pública del sitio (`FRONTEND_URL`): sus visitas cuentan como origen `interno`. */
+  siteUrl?: string | null;
 }
 
 export interface ProfileViewsOutput extends ProfileViewAggregate {
   from: string;
   to: string;
+  /** Por origen normalizado (D5), descendente. Su suma es `total`. */
+  byReferrer: { referrer: string; views: number }[];
 }
 
-/** Lectura agregada de visitas (spec `profile-view-analytics`); default: últimos 30 días. */
+/**
+ * Lectura agregada de visitas (spec `profile-view-analytics`); default: últimos
+ * 30 días. El origen se normaliza acá, sobre el `referrer` ya guardado.
+ */
 @Injectable()
 export class AggregateProfileViewsUseCase {
   constructor(@Inject(PROFILE_VIEW_REPOSITORY) private readonly views: ProfileViewRepository) {}
@@ -35,7 +43,15 @@ export class AggregateProfileViewsUseCase {
     if (from > to) {
       return fail(new ValidationError('from no puede ser posterior a to', ['from', 'to']));
     }
-    const aggregate = await this.views.aggregate({ from, to });
-    return ok({ from: from.toISOString(), to: to.toISOString(), ...aggregate });
+    const [aggregate, referrers] = await Promise.all([
+      this.views.aggregate({ from, to }),
+      this.views.countByReferrer({ from, to }),
+    ]);
+    return ok({
+      from: from.toISOString(),
+      to: to.toISOString(),
+      ...aggregate,
+      byReferrer: aggregateByReferrer(referrers, input.siteUrl ?? null),
+    });
   }
 }

@@ -6,6 +6,7 @@ import {
   NewProfileView,
   ProfileViewAggregate,
   ProfileViewRepository,
+  ReferrerCount,
 } from '../../domain/repositories/profile-view.repository';
 
 interface DayRow {
@@ -81,5 +82,14 @@ export class PrismaProfileViewRepository implements ProfileViewRepository {
         views: Number(r.views),
       })),
     };
+  }
+
+  async countByReferrer(range: DateRange): Promise<ReferrerCount[]> {
+    const rows = await this.prisma.profileView.groupBy({
+      by: ['referrer'],
+      where: { viewedAt: { gte: range.from, lte: range.to } },
+      _count: { _all: true },
+    });
+    return rows.map((r) => ({ referrer: r.referrer, views: r._count._all }));
   }
 }

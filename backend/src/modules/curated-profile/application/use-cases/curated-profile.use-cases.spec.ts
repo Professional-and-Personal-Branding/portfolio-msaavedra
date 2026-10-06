@@ -218,6 +218,7 @@ function build(deps: Deps = {}) {
   };
   const profileRepo: ProfileRepository = {
     findOne: jest.fn().mockResolvedValue(deps.profile === undefined ? PROFILE : deps.profile),
+    save: jest.fn(),
   };
   const experienceRepo: ExperienceRepository = {
     ...stubs(),
@@ -246,7 +247,11 @@ function build(deps: Deps = {}) {
     findAll: jest.fn().mockResolvedValue(themes),
   };
   const record = deps.record ?? jest.fn().mockResolvedValue(undefined);
-  const viewsRepo: ProfileViewRepository = { record, aggregate: jest.fn() };
+  const viewsRepo: ProfileViewRepository = {
+    record,
+    aggregate: jest.fn(),
+    countByReferrer: jest.fn(),
+  };
   const loader = {
     load: jest.fn().mockResolvedValue({
       education: EDUCATION,

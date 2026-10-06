@@ -187,6 +187,487 @@
         ]
       }
     },
+    "/api/admin/profile": {
+      "get": {
+        "operationId": "AdminProfileController_find",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No hay perfil cargado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ver el perfil base (datos bilingües crudos)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "put": {
+        "description": "Reemplazo completo: lo opcional que no se manda queda vacío. Un campo desconocido es 400. Los idiomas no van acá: tienen su propia ruta (`/api/admin/languages`).",
+        "operationId": "AdminProfileController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No hay perfil cargado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reemplazar el perfil base",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/profile/preview": {
+      "post": {
+        "description": "Resuelve el borrador al idioma negociado con el mismo mapper que `GET /api/profile`, sobre los idiomas ya guardados. No escribe nada.",
+        "operationId": "AdminProfileController_previewDraft",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Previsualizar el perfil base sin guardarlo",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/languages": {
+      "get": {
+        "operationId": "AdminLanguageController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminLanguageResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar idiomas (datos bilingües crudos)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminLanguageController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLanguageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminLanguageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No hay perfil cargado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear idioma (en el perfil base)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/languages/{id}": {
+      "get": {
+        "operationId": "AdminLanguageController_find",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminLanguageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ver idioma",
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminLanguageController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLanguageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminLanguageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar idioma (parcial)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminLanguageController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Borrar idioma",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/experiences": {
       "get": {
         "description": "Ordenadas por `order` ascendente y `startDate` descendente. Campos traducibles resueltos al locale negociado.",
@@ -1574,7 +2055,7 @@
     },
     "/api/admin/analytics/views": {
       "get": {
-        "description": "El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso.",
+        "description": "El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso. El origen se normaliza al host del `referrer` guardado; las visitas desde el propio sitio cuentan como `interno`.",
         "operationId": "AdminAnalyticsController_views",
         "parameters": [
           {
@@ -1635,7 +2116,7 @@
             "bearer": []
           }
         ],
-        "summary": "Visitas agregadas por perfil, idioma y día",
+        "summary": "Visitas agregadas por perfil, idioma, día y origen",
         "tags": [
           "admin"
         ]
@@ -1763,6 +2244,550 @@
         ]
       }
     },
+    "/api/admin/education": {
+      "get": {
+        "operationId": "AdminEducationController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminEducationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar formación (incluye oculta, datos bilingües crudos)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminEducationController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEducationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminEducationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear formación",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/education/{id}": {
+      "get": {
+        "operationId": "AdminEducationController_find",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminEducationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ver formación",
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminEducationController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEducationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminEducationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar formación (parcial)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminEducationController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Borrar formación",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/certifications": {
+      "get": {
+        "operationId": "AdminCertificationController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminCertificationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar certificaciones (incluye ocultas, datos bilingües crudos)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminCertificationController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCertificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCertificationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear certificación",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/certifications/{id}": {
+      "get": {
+        "operationId": "AdminCertificationController_find",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCertificationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ver certificación",
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminCertificationController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCertificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCertificationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar certificación (parcial)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminCertificationController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Borrar certificación",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/projects": {
       "get": {
         "operationId": "ProjectController_list",
@@ -1824,6 +2849,278 @@
         ]
       }
     },
+    "/api/admin/projects": {
+      "get": {
+        "operationId": "AdminProjectController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminProjectResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar proyectos (incluye ocultos, datos bilingües crudos)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminProjectController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProjectResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear proyecto",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/projects/{id}": {
+      "get": {
+        "operationId": "AdminProjectController_find",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProjectResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ver proyecto",
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminProjectController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProjectResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar proyecto (parcial)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminProjectController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Borrar proyecto",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/social-links": {
       "get": {
         "operationId": "SocialLinkController_list",
@@ -1882,6 +3179,278 @@
         "summary": "Presencia pública (GitHub, LinkedIn, YouTube…) visible",
         "tags": [
           "sections"
+        ]
+      }
+    },
+    "/api/admin/social-links": {
+      "get": {
+        "operationId": "AdminSocialLinkController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminSocialLinkResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar enlaces sociales (incluye ocultos, datos bilingües crudos)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminSocialLinkController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSocialLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSocialLinkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear enlace social",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/social-links/{id}": {
+      "get": {
+        "operationId": "AdminSocialLinkController_find",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSocialLinkResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ver enlace social",
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminSocialLinkController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSocialLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSocialLinkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar enlace social (parcial)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminSocialLinkController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Borrar enlace social",
+        "tags": [
+          "admin"
         ]
       }
     }
@@ -2138,6 +3707,345 @@
           "languages"
         ]
       },
+      "LocalizedTextDto": {
+        "type": "object",
+        "properties": {
+          "es": {
+            "type": "string",
+            "example": "Ingeniero de Software Senior"
+          },
+          "en": {
+            "type": "string",
+            "example": "Senior Software Engineer"
+          }
+        },
+        "required": [
+          "es"
+        ]
+      },
+      "AdminAvailabilityResponse": {
+        "type": "object",
+        "properties": {
+          "modality": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "contractType": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "startDate": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "modality",
+          "contractType",
+          "startDate"
+        ]
+      },
+      "AdminProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "headline": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "location": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "yearsOfExperience": {
+            "type": "number"
+          },
+          "availability": {
+            "$ref": "#/components/schemas/AdminAvailabilityResponse"
+          }
+        },
+        "required": [
+          "id",
+          "fullName",
+          "headline",
+          "summary",
+          "location",
+          "timezone",
+          "email",
+          "phone",
+          "yearsOfExperience",
+          "availability"
+        ]
+      },
+      "AvailabilityDto": {
+        "type": "object",
+        "properties": {
+          "modality": {
+            "nullable": true,
+            "description": "Modalidad",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "contractType": {
+            "nullable": true,
+            "description": "Tipo de contrato",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "startDate": {
+            "nullable": true,
+            "description": "Fecha de inicio",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          }
+        }
+      },
+      "ReplaceProfileDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "Manuel Saavedra"
+          },
+          "headline": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "email": {
+            "type": "string",
+            "example": "manuel@example.com"
+          },
+          "location": {
+            "type": "string",
+            "example": "Santa Cruz, Bolivia"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "example": "+591 70000000"
+          },
+          "timezone": {
+            "type": "string",
+            "default": "GMT-4"
+          },
+          "yearsOfExperience": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "availability": {
+            "$ref": "#/components/schemas/AvailabilityDto"
+          }
+        },
+        "required": [
+          "fullName",
+          "headline",
+          "summary",
+          "email",
+          "location"
+        ]
+      },
+      "PreviewProfileDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "Manuel Saavedra"
+          },
+          "headline": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "email": {
+            "type": "string",
+            "example": "manuel@example.com"
+          },
+          "location": {
+            "type": "string",
+            "example": "Santa Cruz, Bolivia"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "example": "+591 70000000"
+          },
+          "timezone": {
+            "type": "string",
+            "default": "GMT-4"
+          },
+          "yearsOfExperience": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "availability": {
+            "$ref": "#/components/schemas/AvailabilityDto"
+          }
+        },
+        "required": [
+          "fullName",
+          "headline",
+          "summary",
+          "email",
+          "location"
+        ]
+      },
+      "AdminLanguageResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "Inglés"
+          },
+          "nameI18n": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "level": {
+            "type": "string",
+            "example": "B2"
+          },
+          "detail": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "nameI18n",
+          "level",
+          "detail"
+        ]
+      },
+      "CreateLanguageDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Inglés",
+            "description": "Nombre canónico; fallback de nameI18n"
+          },
+          "nameI18n": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "level": {
+            "type": "string",
+            "example": "B2"
+          },
+          "detail": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "level"
+        ]
+      },
+      "UpdateLanguageDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Inglés",
+            "description": "Nombre canónico; fallback de nameI18n"
+          },
+          "nameI18n": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "level": {
+            "type": "string",
+            "example": "B2"
+          },
+          "detail": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          }
+        }
+      },
       "ExperienceResponse": {
         "type": "object",
         "properties": {
@@ -2234,22 +4142,6 @@
           "technologies",
           "tags",
           "order"
-        ]
-      },
-      "LocalizedTextDto": {
-        "type": "object",
-        "properties": {
-          "es": {
-            "type": "string",
-            "example": "Ingeniero de Software Senior"
-          },
-          "en": {
-            "type": "string",
-            "example": "Senior Software Engineer"
-          }
-        },
-        "required": [
-          "es"
         ]
       },
       "LocalizedListDto": {
@@ -3642,6 +5534,23 @@
           "views"
         ]
       },
+      "CountByReferrer": {
+        "type": "object",
+        "properties": {
+          "referrer": {
+            "type": "string",
+            "example": "linkedin.com",
+            "description": "Host del origen sin `www.`, o `directo` / `interno`"
+          },
+          "views": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "referrer",
+          "views"
+        ]
+      },
       "ProfileViewsResponse": {
         "type": "object",
         "properties": {
@@ -3671,6 +5580,13 @@
             "items": {
               "$ref": "#/components/schemas/CountByDay"
             }
+          },
+          "byReferrer": {
+            "description": "Por origen, descendente. Su suma es `total`; solo se agrega el host",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountByReferrer"
+            }
           }
         },
         "required": [
@@ -3679,8 +5595,564 @@
           "total",
           "byProfile",
           "byLocale",
-          "byDay"
+          "byDay",
+          "byReferrer"
         ]
+      },
+      "AdminEducationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "degree": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "institution": {
+            "type": "string",
+            "example": "UAGRM School of Engineering"
+          },
+          "startDate": {
+            "type": "string",
+            "example": "2024-02"
+          },
+          "endDate": {
+            "type": "string",
+            "nullable": true
+          },
+          "inProgress": {
+            "type": "boolean"
+          },
+          "order": {
+            "type": "number"
+          },
+          "visible": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "degree",
+          "institution",
+          "startDate",
+          "endDate",
+          "inProgress",
+          "order",
+          "visible"
+        ]
+      },
+      "CreateEducationDto": {
+        "type": "object",
+        "properties": {
+          "degree": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "institution": {
+            "type": "string",
+            "example": "UAGRM School of Engineering"
+          },
+          "startDate": {
+            "type": "string",
+            "example": "2024-02",
+            "description": "YYYY-MM o YYYY"
+          },
+          "endDate": {
+            "type": "string",
+            "example": "2021-04",
+            "description": "YYYY-MM o YYYY; omitir o null si está en curso",
+            "nullable": true
+          },
+          "inProgress": {
+            "type": "boolean",
+            "default": false
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "degree",
+          "institution",
+          "startDate"
+        ]
+      },
+      "UpdateEducationDto": {
+        "type": "object",
+        "properties": {
+          "degree": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "institution": {
+            "type": "string",
+            "example": "UAGRM School of Engineering"
+          },
+          "startDate": {
+            "type": "string",
+            "example": "2024-02",
+            "description": "YYYY-MM o YYYY"
+          },
+          "endDate": {
+            "type": "string",
+            "example": "2021-04",
+            "description": "YYYY-MM o YYYY; omitir o null si está en curso",
+            "nullable": true
+          },
+          "inProgress": {
+            "type": "boolean",
+            "default": false
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "AdminCertificationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "issuer": {
+            "type": "string",
+            "example": "CertifPro, Sunrise Florida, EEUU"
+          },
+          "year": {
+            "type": "string",
+            "nullable": true,
+            "example": "2021"
+          },
+          "order": {
+            "type": "number"
+          },
+          "visible": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "issuer",
+          "year",
+          "order",
+          "visible"
+        ]
+      },
+      "CreateCertificationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "issuer": {
+            "type": "string",
+            "example": "CertifPro, Sunrise Florida, EEUU"
+          },
+          "year": {
+            "type": "string",
+            "example": "2021",
+            "description": "YYYY; omitir o null si no se conoce",
+            "nullable": true
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "name",
+          "issuer"
+        ]
+      },
+      "UpdateCertificationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "issuer": {
+            "type": "string",
+            "example": "CertifPro, Sunrise Florida, EEUU"
+          },
+          "year": {
+            "type": "string",
+            "example": "2021",
+            "description": "YYYY; omitir o null si no se conoce",
+            "nullable": true
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "AdminProjectResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "Portafolio Web Administrable"
+          },
+          "role": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "period": {
+            "type": "string",
+            "example": "2026"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "technologies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "order": {
+            "type": "number"
+          },
+          "visible": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "role",
+          "period",
+          "summary",
+          "technologies",
+          "tags",
+          "url",
+          "order",
+          "visible"
+        ]
+      },
+      "CreateProjectDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Portafolio Web Administrable"
+          },
+          "role": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "period": {
+            "type": "string",
+            "example": "2026"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "technologies": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "default": [],
+            "description": "Tags para el filtrado de perfiles curados",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "url": {
+            "type": "string",
+            "example": "https://github.com/manu/portafolio",
+            "description": "URL http(s) absoluta; null para quitarla",
+            "nullable": true
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "name",
+          "role",
+          "period",
+          "summary"
+        ]
+      },
+      "UpdateProjectDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Portafolio Web Administrable"
+          },
+          "role": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "period": {
+            "type": "string",
+            "example": "2026"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "technologies": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "default": [],
+            "description": "Tags para el filtrado de perfiles curados",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "url": {
+            "type": "string",
+            "example": "https://github.com/manu/portafolio",
+            "description": "URL http(s) absoluta; null para quitarla",
+            "nullable": true
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "AdminSocialLinkResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string",
+            "example": "github"
+          },
+          "handle": {
+            "type": "string",
+            "example": "manuXD270516"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://github.com/manuXD270516"
+          },
+          "label": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "stats": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "example": {
+              "repos": 67,
+              "achievements": [
+                "Pull Shark"
+              ]
+            }
+          },
+          "featured": {
+            "type": "boolean"
+          },
+          "order": {
+            "type": "number"
+          },
+          "visible": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "platform",
+          "handle",
+          "url",
+          "label",
+          "description",
+          "stats",
+          "featured",
+          "order",
+          "visible"
+        ]
+      },
+      "CreateSocialLinkDto": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "example": "github",
+            "description": "Minúsculas, dígitos y guiones"
+          },
+          "handle": {
+            "type": "string",
+            "example": "manuXD270516"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://github.com/manuXD270516",
+            "description": "URL http(s) absoluta"
+          },
+          "label": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "nullable": true,
+            "description": "null para quitarla",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "stats": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "example": {
+              "repos": 67,
+              "achievements": [
+                "Pull Shark"
+              ]
+            },
+            "description": "Objeto JSON libre; null para quitarlo. Arrays y primitivos → 400"
+          },
+          "featured": {
+            "type": "boolean",
+            "default": false
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "platform",
+          "handle",
+          "url",
+          "label"
+        ]
+      },
+      "UpdateSocialLinkDto": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "example": "github",
+            "description": "Minúsculas, dígitos y guiones"
+          },
+          "handle": {
+            "type": "string",
+            "example": "manuXD270516"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://github.com/manuXD270516",
+            "description": "URL http(s) absoluta"
+          },
+          "label": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "nullable": true,
+            "description": "null para quitarla",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "stats": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "example": {
+              "repos": 67,
+              "achievements": [
+                "Pull Shark"
+              ]
+            },
+            "description": "Objeto JSON libre; null para quitarlo. Arrays y primitivos → 400"
+          },
+          "featured": {
+            "type": "boolean",
+            "default": false
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true
+          }
+        }
       }
     }
   }

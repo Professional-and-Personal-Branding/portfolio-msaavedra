@@ -1,4 +1,5 @@
 import { Controller, Get, Query, UseGuards, UsePipes } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -10,6 +11,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { IsISO8601, IsOptional } from 'class-validator';
+import { APP_CONFIG, AppConfig } from '../../../../config/configuration';
 import { adminValidationPipe } from '../../../../shared/infrastructure/http/admin-validation.pipe';
 import { toHttpException } from '../../../../shared/infrastructure/http/domain-error.mapper';
 import { ErrorResponseDto } from '../../../../shared/infrastructure/http/error-response.dto';
@@ -47,6 +49,14 @@ class CountByLocale {
   @ApiProperty() locale!: string;
   @ApiProperty() views!: number;
 }
+class CountByReferrer {
+  @ApiProperty({
+    example: 'linkedin.com',
+    description: 'Host del origen sin `www.`, o `directo` / `interno`',
+  })
+  referrer!: string;
+  @ApiProperty() views!: number;
+}
 class CountByDay {
   @ApiProperty({ example: '2026-09-07' }) day!: string;
   @ApiProperty() views!: number;
@@ -59,6 +69,11 @@ export class ProfileViewsResponse implements ProfileViewsOutput {
   @ApiProperty({ type: [CountBySlug] }) byProfile!: CountBySlug[];
   @ApiProperty({ type: [CountByLocale] }) byLocale!: CountByLocale[];
   @ApiProperty({ type: [CountByDay] }) byDay!: CountByDay[];
+  @ApiProperty({
+    type: [CountByReferrer],
+    description: 'Por origen, descendente. Su suma es `total`; solo se agrega el host',
+  })
+  byReferrer!: CountByReferrer[];
 }
 
 @ApiTags('admin')
@@ -68,12 +83,17 @@ export class ProfileViewsResponse implements ProfileViewsOutput {
 @UsePipes(adminValidationPipe)
 @Controller('admin/analytics')
 export class AdminAnalyticsController {
-  constructor(private readonly aggregate: AggregateProfileViewsUseCase) {}
+  constructor(
+    private readonly aggregate: AggregateProfileViewsUseCase,
+    private readonly config: ConfigService,
+  ) {}
 
   @Get('views')
   @ApiOperation({
-    summary: 'Visitas agregadas por perfil, idioma y día',
-    description: 'El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso.',
+    summary: 'Visitas agregadas por perfil, idioma, día y origen',
+    description:
+      'El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso. ' +
+      'El origen se normaliza al host del `referrer` guardado; las visitas desde el propio sitio cuentan como `interno`.',
   })
   @ApiOkResponse({ type: ProfileViewsResponse })
   @ApiBadRequestResponse({ type: ErrorResponseDto })
@@ -81,6 +101,7 @@ export class AdminAnalyticsController {
     const result = await this.aggregate.execute({
       from: parseRangeStart(query.from),
       to: parseRangeEnd(query.to),
+      siteUrl: this.config.getOrThrow<AppConfig>(APP_CONFIG).frontendUrl,
     });
     if (!result.ok) throw toHttpException(result.error);
     return result.value;

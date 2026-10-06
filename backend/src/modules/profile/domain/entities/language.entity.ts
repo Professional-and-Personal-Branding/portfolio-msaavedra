@@ -9,12 +9,24 @@ export interface LanguageProps {
   readonly detail: LocalizedText | string | null;
 }
 
+/** Datos para crear un idioma: el id lo genera la persistencia. */
+export type NewLanguageProps = Omit<LanguageProps, 'id'>;
+
 /** Idioma que habla la persona (ej. Español nativo, Inglés B2). */
 export class Language {
   private constructor(private readonly props: LanguageProps) {}
 
   static create(props: LanguageProps): Language {
-    return new Language(props);
+    return new Language({ ...props });
+  }
+
+  /** Copia con cambios parciales (edición desde el backoffice). */
+  with(changes: Partial<NewLanguageProps>): Language {
+    return Language.create({ ...this.props, ...changes });
+  }
+
+  toProps(): LanguageProps {
+    return { ...this.props };
   }
 
   get id(): string {

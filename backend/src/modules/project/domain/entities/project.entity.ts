@@ -14,6 +14,9 @@ export interface ProjectProps {
   readonly visible: boolean;
 }
 
+/** Datos para crear un proyecto: el id lo genera la persistencia. */
+export type NewProjectProps = Omit<ProjectProps, 'id'>;
+
 /** Proyecto destacado. Participa del filtrado por tags (implementa `Taggable`). */
 export class Project {
   private constructor(private readonly props: ProjectProps) {}
@@ -24,6 +27,19 @@ export class Project {
       technologies: [...props.technologies],
       tags: [...props.tags],
     });
+  }
+
+  /** Copia con cambios parciales (edición desde el backoffice). */
+  with(changes: Partial<NewProjectProps>): Project {
+    return Project.create({ ...this.props, ...changes });
+  }
+
+  toProps(): ProjectProps {
+    return {
+      ...this.props,
+      technologies: [...this.props.technologies],
+      tags: [...this.props.tags],
+    };
   }
 
   get id(): string {
