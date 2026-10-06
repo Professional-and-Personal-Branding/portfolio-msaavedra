@@ -18,6 +18,26 @@ export type AdminCuratedProfile = Schemas['AdminCuratedProfileResponse'];
 export type CreateCuratedProfileBody = Schemas['CreateCuratedProfileDto'];
 export type UpdateCuratedProfileBody = Schemas['UpdateCuratedProfileDto'];
 
+// add-profile-content-admin: perfil base, idiomas, formación, proyectos y enlaces.
+export type AdminProfile = Schemas['AdminProfileResponse'];
+export type ReplaceProfileBody = Schemas['ReplaceProfileDto'];
+export type ProfilePreview = Schemas['ProfileResponse'];
+export type AdminLanguage = Schemas['AdminLanguageResponse'];
+export type CreateLanguageBody = Schemas['CreateLanguageDto'];
+export type UpdateLanguageBody = Schemas['UpdateLanguageDto'];
+export type AdminEducation = Schemas['AdminEducationResponse'];
+export type CreateEducationBody = Schemas['CreateEducationDto'];
+export type UpdateEducationBody = Schemas['UpdateEducationDto'];
+export type AdminCertification = Schemas['AdminCertificationResponse'];
+export type CreateCertificationBody = Schemas['CreateCertificationDto'];
+export type UpdateCertificationBody = Schemas['UpdateCertificationDto'];
+export type AdminProject = Schemas['AdminProjectResponse'];
+export type CreateProjectBody = Schemas['CreateProjectDto'];
+export type UpdateProjectBody = Schemas['UpdateProjectDto'];
+export type AdminSocialLink = Schemas['AdminSocialLinkResponse'];
+export type CreateSocialLinkBody = Schemas['CreateSocialLinkDto'];
+export type UpdateSocialLinkBody = Schemas['UpdateSocialLinkDto'];
+
 export type AdminTheme = Schemas['ThemeResponse'];
 export type ProfileViews = Schemas['ProfileViewsResponse'];
 export type Visibility = AdminCuratedProfile['visibility'];

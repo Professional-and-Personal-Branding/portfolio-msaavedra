@@ -20,6 +20,13 @@ export const adminKeys = {
   skillCategories: ['admin', 'skill-categories'] as const,
   curatedProfiles: ['admin', 'curated-profiles'] as const,
   themes: ['admin', 'themes'] as const,
+  profile: ['admin', 'profile'] as const,
+  profilePreview: (draftKey: string) => ['admin', 'profile-preview', draftKey] as const,
+  languages: ['admin', 'languages'] as const,
+  education: ['admin', 'education'] as const,
+  certifications: ['admin', 'certifications'] as const,
+  projects: ['admin', 'projects'] as const,
+  socialLinks: ['admin', 'social-links'] as const,
   analytics: (from: string, to: string) => ['admin', 'analytics', from, to] as const,
   preview: (draftKey: string) => ['admin', 'preview', draftKey] as const,
 };
@@ -33,7 +40,7 @@ export function notifyError(error: unknown, fallback = 'No se pudo guardar'): vo
   toast.error(apiErrorMessage(error) ?? (error instanceof Error ? error.message : fallback));
 }
 
-function invalidate(client: QueryClient, key: readonly unknown[]): void {
+export function invalidate(client: QueryClient, key: readonly unknown[]): void {
   void client.invalidateQueries({ queryKey: key });
 }
 

@@ -1,0 +1,340 @@
+import { ExternalLink, EyeOff, Pencil, Plus, Star, Trash2 } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
+import { Badge } from '@/shared/components/ui/badge';
+import { Button } from '@/shared/components/ui/button';
+import type {
+  AdminProject,
+  AdminSocialLink,
+  CreateProjectBody,
+  CreateSocialLinkBody,
+} from '../shared/admin-types';
+import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { PageHeader } from '../shared/PageHeader';
+import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
+import { notifyError, notifySuccess } from '../shared/use-admin-api';
+import { ProjectForm } from './ProjectForm';
+import {
+  toProjectValues,
+  toSocialLinkValues,
+  type ProjectFormValues,
+  type SocialLinkFormValues,
+} from './proyectos-form';
+import { SocialLinkForm } from './SocialLinkForm';
+import {
+  useDeleteProject,
+  useDeleteSocialLink,
+  useProjects,
+  useSaveProject,
+  useSaveSocialLink,
+  useSocialLinks,
+} from './use-proyectos-api';
+
+interface Editing<T> {
+  id?: string;
+  values?: T;
+  title: string;
+}
+
+/** Proyectos destacados y enlaces sociales (spec `admin-content-management`). */
+export function ProyectosPage() {
+  return (
+    <>
+      <PageHeader
+        title="Proyectos"
+        description="Proyectos destacados y enlaces sociales que se muestran en la vista pública."
+      />
+      <div className="flex flex-col gap-8">
+        <ProjectsSection />
+        <SocialLinksSection />
+      </div>
+    </>
+  );
+}
+
+// ── Proyectos destacados ────────────────────────────────────────────────────
+function ProjectsSection() {
+  const projects = useProjects();
+  const save = useSaveProject();
+  const remove = useDeleteProject();
+  const [editing, setEditing] = useState<Editing<ProjectFormValues> | null>(null);
+
+  const handleSubmit = (body: CreateProjectBody) => {
+    save.mutate(
+      { id: editing?.id, body },
+      {
+        onSuccess: () => {
+          notifySuccess(editing?.id ? 'Proyecto actualizado' : 'Proyecto creado');
+          setEditing(null);
+        },
+        onError: (error) => notifyError(error),
+      },
+    );
+  };
+
+  const handleDelete = (project: AdminProject) => {
+    remove.mutate(project.id, {
+      onSuccess: () => notifySuccess('Proyecto borrado'),
+      onError: (error) => notifyError(error, 'No se pudo borrar'),
+    });
+  };
+
+  return (
+    <Section
+      label="Proyectos destacados"
+      action={
+        <Button size="sm" onClick={() => setEditing({ title: 'Nuevo proyecto' })}>
+          <Plus aria-hidden />
+          Nuevo proyecto
+        </Button>
+      }
+    >
+      {projects.isPending && <LoadingRows rows={2} />}
+      {projects.isError && (
+        <ErrorPanel message={projects.error.message} onRetry={() => void projects.refetch()} />
+      )}
+      {projects.data?.length === 0 && (
+        <EmptyState
+          title="Todavía no hay proyectos"
+          description="Creá el primero para mostrarlo en los perfiles curados."
+        />
+      )}
+
+      {projects.data && projects.data.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {projects.data.map((project) => (
+            <li
+              key={project.id}
+              data-visible={project.visible}
+              className={`surface flex flex-wrap items-center gap-3 px-4 py-3 ${
+                project.visible ? '' : 'opacity-60'
+              }`}
+            >
+              <div className="min-w-0 flex-1">
+                <p className="flex flex-wrap items-center gap-2 font-semibold">
+                  {project.name}
+                  {!project.visible && <HiddenBadge />}
+                </p>
+                <p className="truncate text-sm text-text-muted">
+                  {project.role.es} · {project.period}
+                </p>
+                {project.url ? (
+                  <a
+                    href={project.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-flex max-w-full items-center gap-1 truncate text-xs text-brand hover:underline"
+                  >
+                    <ExternalLink className="size-3 shrink-0" aria-hidden />
+                    {project.url}
+                  </a>
+                ) : (
+                  <p className="mt-1 text-xs text-text-dim">Sin enlace</p>
+                )}
+                {project.tags.length > 0 && (
+                  <p className="mt-1 truncate text-xs text-text-dim">{project.tags.join(' · ')}</p>
+                )}
+              </div>
+
+              <span className="text-xs text-text-dim">orden {project.order}</span>
+
+              <Button
+                variant="outline"
+                size="icon-sm"
+                aria-label={`Editar ${project.name}`}
+                onClick={() =>
+                  setEditing({
+                    id: project.id,
+                    values: toProjectValues(project),
+                    title: `Editar ${project.name}`,
+                  })
+                }
+              >
+                <Pencil aria-hidden />
+              </Button>
+              <ConfirmDialog
+                trigger={
+                  <Button variant="outline" size="icon-sm" aria-label={`Borrar ${project.name}`}>
+                    <Trash2 aria-hidden />
+                  </Button>
+                }
+                title="Borrar proyecto"
+                description={`Se borrará "${project.name}". Esta acción no se puede deshacer.`}
+                onConfirm={() => handleDelete(project)}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {editing && (
+        <ProjectForm
+          key={editing.id ?? 'new'}
+          title={editing.title}
+          initialValues={editing.values}
+          saving={save.isPending}
+          onSubmit={handleSubmit}
+          onOpenChange={(open) => !open && setEditing(null)}
+        />
+      )}
+    </Section>
+  );
+}
+
+// ── Enlaces sociales ────────────────────────────────────────────────────────
+function SocialLinksSection() {
+  const links = useSocialLinks();
+  const save = useSaveSocialLink();
+  const remove = useDeleteSocialLink();
+  const [editing, setEditing] = useState<Editing<SocialLinkFormValues> | null>(null);
+
+  const handleSubmit = (body: CreateSocialLinkBody) => {
+    save.mutate(
+      { id: editing?.id, body },
+      {
+        onSuccess: () => {
+          notifySuccess(editing?.id ? 'Enlace actualizado' : 'Enlace creado');
+          setEditing(null);
+        },
+        onError: (error) => notifyError(error),
+      },
+    );
+  };
+
+  const handleDelete = (link: AdminSocialLink) => {
+    remove.mutate(link.id, {
+      onSuccess: () => notifySuccess('Enlace borrado'),
+      onError: (error) => notifyError(error, 'No se pudo borrar'),
+    });
+  };
+
+  return (
+    <Section
+      label="Enlaces sociales"
+      action={
+        <Button size="sm" onClick={() => setEditing({ title: 'Nuevo enlace' })}>
+          <Plus aria-hidden />
+          Nuevo enlace
+        </Button>
+      }
+    >
+      {links.isPending && <LoadingRows rows={2} />}
+      {links.isError && (
+        <ErrorPanel message={links.error.message} onRetry={() => void links.refetch()} />
+      )}
+      {links.data?.length === 0 && (
+        <EmptyState
+          title="Todavía no hay enlaces sociales"
+          description="Agregá GitHub, LinkedIn o el canal que quieras mostrar."
+        />
+      )}
+
+      {links.data && links.data.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {links.data.map((link) => (
+            <li
+              key={link.id}
+              data-visible={link.visible}
+              className={`surface flex flex-wrap items-center gap-3 px-4 py-3 ${
+                link.visible ? '' : 'opacity-60'
+              }`}
+            >
+              <div className="min-w-0 flex-1">
+                <p className="flex flex-wrap items-center gap-2 font-semibold">
+                  {link.label.es}
+                  <span className="text-xs font-normal text-text-dim">{link.platform}</span>
+                  {link.featured && (
+                    <Badge variant="outline" className="gap-1 text-brand">
+                      <Star className="size-3" aria-hidden />
+                      Destacado
+                    </Badge>
+                  )}
+                  {!link.visible && <HiddenBadge />}
+                </p>
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex max-w-full items-center gap-1 truncate text-sm text-text-muted hover:underline"
+                >
+                  <ExternalLink className="size-3 shrink-0" aria-hidden />@{link.handle}
+                </a>
+              </div>
+
+              <span className="text-xs text-text-dim">orden {link.order}</span>
+
+              <Button
+                variant="outline"
+                size="icon-sm"
+                aria-label={`Editar enlace ${link.label.es}`}
+                onClick={() =>
+                  setEditing({
+                    id: link.id,
+                    values: toSocialLinkValues(link),
+                    title: `Editar ${link.label.es}`,
+                  })
+                }
+              >
+                <Pencil aria-hidden />
+              </Button>
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    aria-label={`Borrar enlace ${link.label.es}`}
+                  >
+                    <Trash2 aria-hidden />
+                  </Button>
+                }
+                title="Borrar enlace social"
+                description={`Se borrará el enlace a ${link.label.es} y dejará de verse en la vista pública.`}
+                onConfirm={() => handleDelete(link)}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {editing && (
+        <SocialLinkForm
+          key={editing.id ?? 'new'}
+          title={editing.title}
+          initialValues={editing.values}
+          saving={save.isPending}
+          onSubmit={handleSubmit}
+          onOpenChange={(open) => !open && setEditing(null)}
+        />
+      )}
+    </Section>
+  );
+}
+
+// ── Piezas comunes ──────────────────────────────────────────────────────────
+function Section({
+  label,
+  action,
+  children,
+}: {
+  label: string;
+  action: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section aria-label={label} className="flex flex-col gap-3">
+      <header className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold">{label}</h2>
+        {action}
+      </header>
+      {children}
+    </section>
+  );
+}
+
+function HiddenBadge() {
+  return (
+    <Badge variant="secondary" className="gap-1">
+      <EyeOff className="size-3" aria-hidden />
+      Oculto
+    </Badge>
+  );
+}

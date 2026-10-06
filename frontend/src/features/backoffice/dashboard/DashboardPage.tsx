@@ -134,6 +134,29 @@ export function DashboardPage() {
                   </ul>
                 </section>
               </div>
+
+              {/* add-profile-content-admin, D5: el host del referrer, o directo / interno. */}
+              <section aria-labelledby="por-origen" className="surface p-card">
+                <h2 id="por-origen" className="mb-1 font-semibold">
+                  Por origen
+                </h2>
+                <p className="mb-4 text-xs text-text-dim">
+                  De dónde llegó cada visita. «directo» es sin referencia (un link pegado, un
+                  correo); «interno» es navegación dentro del propio sitio.
+                </p>
+                <ol className="flex flex-col gap-2">
+                  {[...analytics.data.byReferrer]
+                    .sort((a, b) => b.views - a.views)
+                    .map((row) => (
+                      <li key={row.referrer} className="flex items-center gap-3">
+                        <span className="min-w-0 flex-1 truncate text-sm">{row.referrer}</span>
+                        <span className="w-10 text-right text-sm font-semibold tabular-nums">
+                          {row.views}
+                        </span>
+                      </li>
+                    ))}
+                </ol>
+              </section>
             </>
           )}
         </div>

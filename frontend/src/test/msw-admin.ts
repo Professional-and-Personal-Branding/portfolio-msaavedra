@@ -9,6 +9,8 @@ import {
   makeAdminCuratedProfile,
 } from './fixtures/admin';
 import { makeCuratedProfile } from './fixtures/curated-profile';
+import { ADMIN_PROJECTS, ADMIN_SOCIAL_LINKS } from './fixtures/admin';
+import { ADMIN_CERTIFICATIONS, ADMIN_EDUCATION } from './fixtures/admin';
 
 export const unauthorized = () =>
   HttpResponse.json(
@@ -28,6 +30,10 @@ export const adminHandlers: HttpHandler[] = [
   http.get(`${API}/admin/themes`, () => HttpResponse.json(ADMIN_THEMES)),
   http.get(`${API}/admin/analytics/views`, () => HttpResponse.json(ANALYTICS)),
   http.post(`${API}/admin/curated-profiles/preview`, () => HttpResponse.json(makeCuratedProfile())),
+  http.get(`${API}/admin/education`, () => HttpResponse.json(ADMIN_EDUCATION)),
+  http.get(`${API}/admin/certifications`, () => HttpResponse.json(ADMIN_CERTIFICATIONS)),
+  http.get(`${API}/admin/projects`, () => HttpResponse.json(ADMIN_PROJECTS)),
+  http.get(`${API}/admin/social-links`, () => HttpResponse.json(ADMIN_SOCIAL_LINKS)),
 ];
 
 /** Handlers sin sesión: `/auth/me` responde 401. */
