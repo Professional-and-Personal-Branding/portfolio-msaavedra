@@ -102,9 +102,12 @@ curl -s $API/api/auth/me -H "$AUTH" | jq
 | Ruta | Pantalla |
 |---|---|
 | `/admin/login` | Entrada |
-| `/admin` | Dashboard de analítica |
+| `/admin` | Dashboard de analítica, con la tabla **Por origen** |
+| `/admin/portada` | Perfil base (titular, resumen, contacto, disponibilidad) e idiomas, con vista previa del hero |
 | `/admin/experiencias` | CRUD de experiencias |
 | `/admin/skills` | CRUD de categorías y skills |
+| `/admin/formacion` | Educación y certificaciones |
+| `/admin/proyectos` | Proyectos destacados y enlaces sociales |
 | `/admin/perfiles` | Lista de perfiles curados |
 | `/admin/perfiles/:id` | **El constructor**: Identidad, Selección, Diseño y Publicación, con preview en vivo |
 
@@ -551,26 +554,78 @@ Una categoría entra en un perfil curado si **alguna de sus skills** comparte un
 
 ---
 
-## 4. Lo que hoy NO se administra desde el panel
+## 4. Administrar el resto del contenido
 
-Conviene saberlo antes de necesitarlo. Estas entidades se muestran en el sitio y **solo se cargan por seed**:
+Desde el change `add-profile-content-admin`, todo lo que el sitio muestra se edita en el panel. El seed queda para **poblar una base vacía**, no para editar.
 
-| Entidad | Dónde se edita hoy |
-|---|---|
-| Perfil base (nombre, titular, resumen, contacto, disponibilidad) | `docs/cv-data.json` → `npm run seed` |
-| Educación, certificaciones | ídem |
-| Proyectos destacados, enlaces sociales | ídem |
-| Temas (los cinco presets) | ídem |
+### TC-21 — Cambiar el titular y la disponibilidad ✅
+
+**Pasos:** `/admin/portada`.
+
+1. Editar **Titular** o **Fecha de inicio** (pestañas ES/EN). La vista previa del hero, a la derecha, cambia sin guardar: la resuelve el backend con el mismo mapper que la ruta pública.
+2. **Guardar portada.** El cambio se ve en `/` y en cada perfil curado, sin correr el seed.
+3. Un obligatorio vacío (nombre, titular o resumen en español, email, ubicación) no se envía; si llega a la API, es 400 y el perfil queda como estaba.
+4. **Idiomas**, en la misma página: agregar, editar y borrar con confirmación.
+
+> Un perfil curado con titular propio muestra el suyo en lugar del titular base. El seed le copia el titular base a cada plantilla, así que el titular nuevo se ve en el hero solo donde el perfil curado no tiene uno propio.
 
 ```bash
-# 1. Editar docs/cv-data.json
-# 2. Recargar (CUIDADO: sobrescribe el contenido del portafolio)
+# El perfil es un singleton: no hay id en la ruta. El PUT reemplaza todo.
+curl -s $API/api/admin/profile -H "$AUTH" | jq '{headline, availability}'
+curl -s -X PUT $API/api/admin/profile -H "$AUTH" -H 'Content-Type: application/json'   -d "$(curl -s $API/api/admin/profile -H "$AUTH" | jq 'del(.id) | .availability.startDate={"es":"En dos semanas","en":"In two weeks"}')"
+```
+
+**Ejecutado** (e2e `content-admin.e2e-spec.ts`):
+
+```
+PUT con headline nuevo                     -> 200 y GET /api/curated-profiles/all lo trae en profile.headline
+PUT con startDate nuevo                    -> el perfil curado lo sirve en el idioma pedido
+PUT con un campo desconocido               -> 400 y el perfil queda idéntico
+PUT con email vacío                        -> 400 y conserva el email anterior
+POST /api/admin/profile/preview            -> 200 resuelto, sin escribir nada
+```
+
+![Portada con la vista previa del hero](manual/tc21-portada.jpg)
+
+### TC-22 — Formación: ocultar sin borrar ✅
+
+**Pasos:** `/admin/formacion`. Dos listas: **Educación** y **Certificaciones**, con el mismo patrón de lista y diálogo que Skills.
+
+1. **Nueva** → completar → **Guardar**. Las fechas aceptan `YYYY-MM` o `YYYY`; *en curso* excluye la fecha de fin.
+2. Para retirar un ítem sin perderlo, desmarcar **Visible en el sitio**: sale de la vista pública y sigue en el panel con la marca *Oculto*.
+3. Borrar pide confirmación.
+
+```
+POST certificación + PATCH {visible:false} -> fuera de GET /api/certifications, sigue en /api/admin/certifications
+GET /api/admin/education                   -> incluye la oculta, con visible y order
+```
+
+![Formación en el panel](manual/tc22-formacion.jpg)
+
+### TC-23 — Proyectos y enlaces sociales ✅
+
+**Pasos:** `/admin/proyectos`.
+
+1. Un proyecto con **tags** que coincidan con los `filterTags` de un perfil curado aparece en ese perfil, con su **url** como enlace. Es la forma de completar la `url` de los dos proyectos del seed.
+2. Enlaces sociales: plataforma (`github`, `linkedin`, …), handle, url, etiqueta bilingüe, *destacado*, y `stats` como JSON (un objeto; un array o un texto es 400).
+
+```
+POST proyecto con tags del perfil          -> aparece en /api/curated-profiles/tech-lead-dotnet con su url
+DELETE enlace social                       -> 204 y desaparece de /api/social-links
+POST enlace con stats=[1,2]                -> 400
+POST de cualquiera de las cinco entidades con un campo extra -> 400
+```
+
+![Proyectos y enlaces sociales](manual/tc23-proyectos.jpg)
+
+### El seed ya no es la forma de editar
+
+```bash
+# Solo para una base vacía (o para volver al estado del CV a propósito)
 cd backend && npm run seed && npm run seed:verify
 ```
 
-> `seed` **sobrescribe**. No borra los perfiles curados creados desde el panel, pero sí reemplaza el contenido que administra. Antes de correrlo en producción, hacé el `pg_dump` del § 7 de [`DEPLOY.md`](DEPLOY.md).
-
-Es la deuda más visible del producto y la resuelve el change `add-profile-content-admin`.
+> `seed` **sobrescribe**: correrlo sobre una base con contenido administrado desde el panel **pisa ese trabajo** (portada, formación, proyectos, enlaces, experiencias y skills). Antes de correrlo en producción, hacé el `pg_dump` del § 7 de [`DEPLOY.md`](DEPLOY.md).
 
 ---
 
@@ -628,8 +683,11 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-18 | Dashboard de analítica | ✅ | captura previa al arreglo · el contador sube y el rango incluye hoy (D-01 corregido, verificado en e2e) |
 | TC-19 | Mantener experiencias | ✅ | 2 capturas · visible / oculta (D-02 corregido) |
 | TC-20 | Mantener skills | ✅ | captura · la categoría entra por el tag de su skill |
+| TC-21 | Portada: titular, disponibilidad, idiomas | ✅ | captura · e2e · 200 / 400 sin cambios · preview sin escribir |
+| TC-22 | Formación: ocultar sin borrar | ✅ | captura · e2e · visible:false sale del sitio y queda en el panel |
+| TC-23 | Proyectos y enlaces sociales | ✅ | captura · e2e · el proyecto entra por tags con su url · stats inválido 400 |
 
-**Los 20 casos pasan, y los 20 tienen evidencia.** 20 capturas en `docs/manual/` más las transcripciones de la API. La captura de TC-18 es anterior al arreglo de D-01 y todavía muestra el dashboard en cero: se renueva en la próxima ejecución con sesión iniciada.
+**Los 23 casos pasan, y los 23 tienen evidencia.** TC-21 a TC-23 suman la transcripción del e2e y su captura de la app real. 23 capturas en `docs/manual/` más las transcripciones de la API. La captura de TC-18 es anterior al arreglo de D-01 y todavía muestra el dashboard en cero: se renueva en la próxima ejecución con sesión iniciada.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 

@@ -55,6 +55,19 @@ No se guarda nada nuevo: el `referrer` ya está en la fila. `userAgent` **no** s
 
 `npm run seed` sigue siendo la forma de poblar una base vacía y sigue sobrescribiendo. Lo que cambia es que deja de ser la forma de **editar**: después de este change, correrlo en una base con contenido administrado desde el panel pisa ese trabajo. La advertencia se refuerza en `docs/MANUAL.md` y en `docs/DEPLOY.md`, y `seed:verify` se mantiene como está.
 
+## Decisiones tomadas al implementar
+
+- **D4, precisada.** El preview del constructor resuelve un *perfil curado* y lee el perfil base guardado, así que no puede mostrar un titular sin guardar. La portada usa su propia ruta, `POST /api/admin/profile/preview`, que resuelve el borrador con `toProfileOutput` —el mismo mapper que `GET /api/profile` y que la composición del perfil curado— sobre los idiomas ya guardados. El frontend lo pinta con el componente `Hero` de la vista pública: sigue habiendo un solo renderizador.
+- **`Language` no tiene `visible` ni `order`.** Sin migración (non-goal) no hay dónde guardarlos; el listado crudo los omite y se ordena por id, que sigue el orden de creación. Es la única excepción al requisito de listado crudo.
+- **Los Json opcionales vacíos siguen siendo `null`.** El mapper de lectura convertía una columna vacía en `{}`; guardar la habría reescrito como `{}`. Ahora la disponibilidad, `nameI18n` y `detail` vuelven como `null` y se escriben como `DbNull`.
+- **`PATCH` con `null` en un obligatorio es 400.** Los DTO de edición usan `PartialType(…, { skipNullProperties: false })`: con el default, `{ "role": null }` saltaba la validación y llegaba a la base como 500.
+- **`isHttpUrl`** pasó a `shared/domain`: lo usan proyectos y enlaces sociales.
+- **`byReferrer`** sale de un `groupBy` por `referrer` crudo en el adaptador; la normalización (`normalizeReferrer`, `aggregateByReferrer`) es dominio puro. El controller pasa `FRONTEND_URL` como URL del sitio, igual que el sitemap.
+
+## Open Questions (nuevas)
+
+- **El titular base no se ve en el hero de los perfiles curados.** `Hero` muestra `data.headline || profile.headline`, y el seed le copia el titular base a cada plantilla, incluida la home `all`. Editar el titular desde la portada cambia `profile.headline` en todas las respuestas, pero el hero sigue mostrando el titular propio de cada perfil curado. Opciones: (a) que el titular del perfil curado sea opcional y el seed deje vacío el de `all` (y de las plantillas que no lo personalizan), con el constructor aceptando "vacío = usar el titular base"; (b) dejarlo así y que la portada lo diga, que es lo que hace hoy. Pide decisión de producto antes de cerrar el change.
+
 ## Risks
 
 | Riesgo | Mitigación |

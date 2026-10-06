@@ -104,7 +104,7 @@ Desde tu máquina, con la `DATABASE_URL` del servicio ya enlazada (`railway link
 ```bash
 cd backend
 
-# 1. Cargar los datos del portafolio (una sola vez)
+# 1. Cargar los datos del portafolio (una sola vez: después se edita desde /admin)
 railway run npm run seed && railway run npm run seed:verify
 
 # 2. Crear el administrador
@@ -202,7 +202,7 @@ Revisá además, en el panel del proveedor, que los logs salgan en **JSON con `r
 
 1. **Código**: en el servicio, pestaña Deployments → *Rollback* en el despliegue que funcionaba. **Solo alcanza los que estén dentro de la retención: 72 h en el plan Hobby, 120 h en Pro.** Más viejo que eso, hay que volver a desplegar desde el commit.
 2. **Migraciones**: `prisma migrate deploy` solo agrega; si una migración rompió algo, restaurá desde el backup (§ 7) y desplegá la versión anterior.
-3. **Datos**: nunca corras `seed` sobre una base con datos reales; sobrescribe el contenido del portafolio.
+3. **Datos**: nunca corras `seed` sobre una base con datos reales; sobrescribe el contenido del portafolio. Desde `add-profile-content-admin` todo el contenido se edita en el panel, así que un `seed` en producción **pisa lo editado** ahí (portada, formación, proyectos, enlaces, experiencias y skills).
 
 ---
 
