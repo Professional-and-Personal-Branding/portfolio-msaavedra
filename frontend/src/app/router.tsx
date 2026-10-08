@@ -1,14 +1,9 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { Route, Routes } from 'react-router';
+import { BackofficeApp } from '@/app/lazy-backoffice';
 import { CuratedProfilePage } from '@/features/curated-view/CuratedProfilePage';
 import { NotFoundPage } from '@/features/curated-view/NotFoundPage';
 import { HomePage } from '@/features/portfolio-public/HomePage';
-
-/**
- * El backoffice va en su propio chunk: un visitante anónimo nunca lo descarga
- * (spec `admin-backoffice-shell` § Separación de la vista pública).
- */
-const BackofficeApp = lazy(() => import('@/features/backoffice/BackofficeApp'));
 
 /** Rutas declarativas: `/` = perfil curado `all`, `/:slug` = perfil curado, `/admin/*` = panel. */
 export function AppRouter() {
