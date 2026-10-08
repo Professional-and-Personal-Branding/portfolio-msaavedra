@@ -150,14 +150,16 @@ curl -s $API/api/auth/me -H "$AUTH" | jq
 
 ![Tema corporate con layout sidebar](manual/tc04-tema-layout.jpg)
 
-### TC-05 — El menú ofrece los demás perfiles, solo en la home 🔍
+### TC-05 — El menú ofrece los demás perfiles, solo en la home ✅
 
 **Pasos:** en la home (`/`), abrir el desplegable **Perfiles**. Después abrir un perfil por su link, por ejemplo `/tech-lead-dotnet`.
 **Resultado esperado:** en la home, el menú lista los perfiles públicos, enumerados y no archivados, agrupados por `roleType` (Perfil Completo, Backend, Fullstack, DevOps…), cada uno con su `techFocus` debajo. En `/:slug` **no hay menú**: quien recibe un link no ve los otros perfiles hechos para otras vacantes.
 
 ![Menú de perfiles](manual/tc05-menu-perfiles.jpg)
 
-> **Desde el change `add-curated-profile-lifecycle`** el menú solo se monta en la home. La captura de arriba es anterior: muestra el menú abierto sobre `/tech-lead-dotnet`, que ya no ocurre, y se renueva en la próxima ejecución. Las capturas nuevas de los dos casos están en `openspec/changes/archive/*-add-curated-profile-lifecycle/verification/` (`05-perfil-sin-menu.png` y `06-home-con-menu.png`).
+*El desplegable abierto en la home, agrupado por tipo de rol. Capturada el 8 de octubre de 2026; en la misma ejecución, `/tech-lead-dotnet` no tenía el botón **Perfiles**.*
+
+> Desde el change `add-curated-profile-lifecycle` el menú solo se monta en la home. La captura del perfil sin menú está en `openspec/changes/archive/*-add-curated-profile-lifecycle/verification/05-perfil-sin-menu.png`.
 
 ### TC-06 — Un perfil protegido pide token ✅
 
@@ -480,7 +482,7 @@ El contador del perfil y el registro de `ProfileView` siempre funcionaron. Lo qu
 
 ![Dashboard de analítica](manual/tc18-dashboard.jpg)
 
-*516 visitas en el rango, repartidas en 6 perfiles y 2 idiomas. Las tres tablas: por día, por perfil y por idioma.*
+*Capturada el 8 de octubre de 2026 con sesión iniciada: 381 visitas en el rango, en 7 perfiles y 2 idiomas, con las de hoy incluidas (D-01 corregido). Las cuatro tablas: por día, por perfil, por idioma y por origen.*
 
 De cada visita se guarda el perfil, el idioma, la fecha y la IP **solo como HMAC** con `ANALYTICS_SALT`. No hay cookies de seguimiento. Las visitas se registran únicamente en la ruta pública, nunca en el preview, y si el registro falla la respuesta al visitante no se altera.
 
@@ -736,7 +738,7 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-02 | Idioma negociado y forzado | ✅ | captura |
 | TC-03 | Un perfil curado filtra el contenido | ✅ | captura + métricas 15→7 |
 | TC-04 | Tema y layout desde la URL | ✅ | captura |
-| TC-05 | Menú de perfiles, solo en la home | 🔍 | captura anterior al cambio · comportamiento nuevo verificado en tests y en la app real |
+| TC-05 | Menú de perfiles, solo en la home | ✅ | captura renovada · en `/:slug` no hay menú |
 | TC-06 | Perfil protegido pide token | ✅ | captura |
 | TC-07 | Token correcto resuelve el perfil | ✅ | captura |
 | TC-08 | Slug inexistente o privado da 404 | ✅ | captura |
@@ -749,7 +751,7 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-15 | Personalizar el tema | ✅ | captura · solo se guarda la diferencia |
 | TC-16 | Publicar, proteger, esconder | ✅ | captura · la tabla completa de visibilidad |
 | TC-17 | Previsualizar sin guardar | 🔍 | no persiste nada |
-| TC-18 | Dashboard de analítica | ✅ | captura previa al arreglo · el contador sube y el rango incluye hoy (D-01 corregido, verificado en e2e) |
+| TC-18 | Dashboard de analítica | ✅ | captura renovada con las visitas de hoy y la tabla por origen (D-01 corregido) |
 | TC-19 | Mantener experiencias | ✅ | 2 capturas · visible / oculta (D-02 corregido) |
 | TC-20 | Mantener skills | ✅ | captura · la categoría entra por el tag de su skill |
 | TC-21 | Duplicar un perfil | 🔍 | e2e · app real con capturas en el archivo del change |
@@ -760,7 +762,7 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-26 | Formación: ocultar sin borrar | ✅ | captura · e2e · visible:false sale del sitio y queda en el panel |
 | TC-27 | Proyectos y enlaces sociales | ✅ | captura · e2e · el proyecto entra por tags con su url · stats inválido 400 |
 
-**Los 27 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. La captura de TC-18 es anterior al arreglo de D-01 y la de TC-05 al cambio del menú: las dos se renuevan en la próxima ejecución con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real: 23 capturas en total.
+**Los 27 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real: 23 capturas en total.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 

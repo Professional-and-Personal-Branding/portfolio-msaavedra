@@ -37,8 +37,8 @@ const NAV = [
   { to: '/admin/perfiles', label: 'Perfiles curados', icon: Palette, end: false },
 ] as const;
 
-/** Texto de las acciones del header: oculto en móvil y entre `lg` y `xl`. */
-const ACTION_LABEL = 'hidden sm:inline lg:hidden xl:inline';
+/** Texto de las acciones del header: oculto en móvil y por debajo de `2xl` desde `lg`. */
+const ACTION_LABEL = 'hidden sm:inline lg:hidden 2xl:inline';
 
 /**
  * Marco del backoffice. Fija el preset `modern-dark` para que el panel tenga
@@ -81,7 +81,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               <Button
                 variant="outline"
                 size="icon-sm"
-                className="lg:hidden"
+                className="xl:hidden"
                 aria-label="Abrir menú"
               >
                 <Menu aria-hidden />
@@ -102,21 +102,21 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             Backoffice
           </Link>
 
-          {/* La barra completa solo cabe desde `lg`; por debajo, el menú lateral. */}
+          {/* La barra completa solo cabe desde `xl`; por debajo, el menú lateral. */}
           <nav
             aria-label="Secciones"
-            className="ml-4 hidden min-w-0 items-center gap-1 overflow-x-auto lg:flex"
+            className="ml-4 hidden min-w-0 items-center gap-1 overflow-x-auto xl:flex"
           >
             <NavLinks />
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
             {admin && (
-              <span className="hidden text-xs text-text-dim xl:inline" data-testid="admin-name">
+              <span className="hidden text-xs text-text-dim 2xl:inline" data-testid="admin-name">
                 {admin.name}
               </span>
             )}
-            {/* Entre `lg` y `xl` la navegación ocupa el ancho: solo íconos. */}
+            {/* Por debajo de `2xl` la navegación ocupa el ancho: solo íconos. */}
             <Button asChild variant="outline" size="sm">
               <Link
                 to="/"

@@ -65,6 +65,26 @@ describe('DashboardPage', () => {
     expect(screen.getAllByRole('img', { name: /visitas$/ })).toHaveLength(3);
   });
 
+  it('las barras diarias son proporcionales al máximo y tienen un contenedor de alto definido', async () => {
+    server.use(...adminHandlers);
+
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    // byDay del fixture: 1, 5 y 2 visitas → máximo 5.
+    const max = await screen.findByRole('img', { name: '7 sept: 5 visitas' });
+    const mid = screen.getByRole('img', { name: '8 sept: 2 visitas' });
+    const min = screen.getByRole('img', { name: '6 sept: 1 visitas' });
+    expect(max.style.height).toBe('100%');
+    expect(mid.style.height).toBe('40%');
+    expect(min.style.height).toBe('20%');
+
+    // El % solo resuelve si el contenedor tiene alto: pista con flex-1 dentro de un <li> h-full.
+    const track = max.parentElement as HTMLElement;
+    expect(track).toHaveAttribute('data-testid', 'day-bar-track');
+    expect(track).toHaveClass('flex-1');
+    expect(track.parentElement).toHaveClass('h-full');
+  });
+
   it('cambiar el rango pide de nuevo la API con from y to', async () => {
     const urls: string[] = [];
     server.use(

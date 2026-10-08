@@ -200,24 +200,32 @@ function StatCard({
   );
 }
 
+/** Alto proporcional de la barra; mínimo visible (4 %) si hay visitas, 0 si no. */
+function barPercent(views: number, max: number): number {
+  return views > 0 ? Math.max(4, (views / max) * 100) : 0;
+}
+
 /** Barras verticales con la cifra siempre disponible como texto (accesibilidad). */
 function DayBars({ data }: { data: { day: string; views: number }[] }) {
   const max = Math.max(1, ...data.map((d) => d.views));
   return (
-    <ol className="flex h-40 items-end gap-1 overflow-x-auto pb-1">
+    <ol className="flex h-40 items-stretch gap-1 overflow-x-auto pb-1">
       {data.map((row) => (
         <li
           key={row.day}
-          className="flex min-w-4 flex-1 flex-col items-center justify-end gap-1"
+          className="flex h-full min-w-4 flex-1 flex-col items-center gap-1"
           title={`${formatDay(row.day)}: ${row.views}`}
         >
           <span className="text-[10px] text-text-dim tabular-nums">{row.views}</span>
-          <div
-            role="img"
-            aria-label={`${formatDay(row.day)}: ${row.views} visitas`}
-            className="w-full rounded-t-sm bg-brand-gradient"
-            style={{ height: `${Math.max(4, (row.views / max) * 100)}%` }}
-          />
+          {/* El alto de la barra es un % de este contenedor (definido por flex-1). */}
+          <div className="relative min-h-0 w-full flex-1" data-testid="day-bar-track">
+            <div
+              role="img"
+              aria-label={`${formatDay(row.day)}: ${row.views} visitas`}
+              className="absolute inset-x-0 bottom-0 rounded-t-sm bg-brand-gradient"
+              style={{ height: `${barPercent(row.views, max)}%` }}
+            />
+          </div>
           <span className="text-[10px] whitespace-nowrap text-text-dim">{formatDay(row.day)}</span>
         </li>
       ))}

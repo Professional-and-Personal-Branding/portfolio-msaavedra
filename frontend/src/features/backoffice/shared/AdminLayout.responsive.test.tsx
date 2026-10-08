@@ -27,8 +27,8 @@ describe('AdminLayout responsive', () => {
     const trigger = within(header).getByRole('button', { name: 'Abrir menú' });
     const nav = within(header).getByRole('navigation', { name: 'Secciones' });
 
-    expect(trigger).toHaveClass('lg:hidden');
-    expect(nav).toHaveClass('hidden', 'lg:flex');
+    expect(trigger).toHaveClass('xl:hidden');
+    expect(nav).toHaveClass('hidden', 'xl:flex');
     // Si la lista crece, se desplaza dentro de la barra y no estira la página.
     expect(nav).toHaveClass('min-w-0', 'overflow-x-auto');
   });
@@ -44,9 +44,9 @@ describe('AdminLayout responsive', () => {
         'hidden',
         'sm:inline',
         'lg:hidden',
-        'xl:inline',
+        '2xl:inline',
       );
     }
-    expect(within(header).getByTestId('admin-name')).toHaveClass('hidden', 'xl:inline');
+    expect(within(header).getByTestId('admin-name')).toHaveClass('hidden', '2xl:inline');
   });
 });
