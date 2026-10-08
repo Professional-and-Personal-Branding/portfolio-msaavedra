@@ -5,11 +5,11 @@
 ### Requirement: Fragmento de head por perfil
 El backend SHALL servir `GET /api/public/profile-head` con los parámetros `slug` (requerido) y `lang` (opcional), y SHALL responder **siempre 200** con `Content-Type: text/html; charset=utf-8` y un fragmento de HTML apto para insertarse dentro de `<head>`. El fragmento SHALL construirse con el mismo servicio de composición que resuelve la ruta pública, de modo que sus textos no puedan divergir de lo que ve el visitante. La ruta MUST NOT registrar visitas, MUST NOT aceptar `token` ni `X-Access-Token`, y SHALL estar exenta del límite de peticiones.
 
-Para un perfil `PUBLIC`, el fragmento MUST contener `<title>`, `description`, `canonical`, `og:title`, `og:description`, `og:type`, `og:url`, `og:locale`, `og:image` (absoluta, raster), las Twitter Card, `robots: index,follow` y el bloque JSON-LD `Person`. El contenido textual MUST ir escapado.
+Para un perfil `PUBLIC`, el fragmento MUST contener `<title>`, `description`, `canonical`, `og:title`, `og:description`, `og:type`, `og:url`, `og:locale`, `og:image` (absoluta, raster), las Twitter Card, `robots: index, follow` y el bloque JSON-LD `Person`. El contenido textual MUST ir escapado.
 
 #### Scenario: Perfil público en español
 - **WHEN** se pide `GET /api/public/profile-head?slug=tech-lead-dotnet`
-- **THEN** responde 200 `text/html`, el `<title>` y `og:title` corresponden a ese perfil, `canonical` es su URL absoluta sobre `FRONTEND_URL` y `robots` es `index,follow`
+- **THEN** responde 200 `text/html`, el `<title>` y `og:title` corresponden a ese perfil, `canonical` es su URL absoluta sobre `FRONTEND_URL` y `robots` es `index, follow`
 
 #### Scenario: Perfil público en inglés
 - **WHEN** se pide el mismo slug con `lang=en`
@@ -24,11 +24,11 @@ Para un perfil `PUBLIC`, el fragmento MUST contener `<title>`, `description`, `c
 - **THEN** son idénticos
 
 ### Requirement: Los perfiles no públicos no filtran textos por el head
-Para un perfil `PROTECTED`, `PRIVATE` o inexistente, el fragmento SHALL ser el **genérico** del portafolio y MUST declarar `robots: noindex,nofollow`, sin JSON-LD. Un perfil `PROTECTED` MUST NOT exponer su título ni su descripción por esta ruta, aunque sean accesibles con token en la ruta pública.
+Para un perfil `PROTECTED`, `PRIVATE` o inexistente, el fragmento SHALL ser el **genérico** del portafolio y MUST declarar `robots: noindex, nofollow`, sin JSON-LD. Un perfil `PROTECTED` MUST NOT exponer su título ni su descripción por esta ruta, aunque sean accesibles con token en la ruta pública.
 
 #### Scenario: Perfil protegido
 - **WHEN** se pide el fragmento de un perfil `PROTECTED`, con o sin `?token=`
-- **THEN** responde 200 con los textos genéricos y `robots: noindex,nofollow`, y el título del perfil no aparece en el cuerpo
+- **THEN** responde 200 con los textos genéricos y `robots: noindex, nofollow`, y el título del perfil no aparece en el cuerpo
 
 #### Scenario: Perfil privado e inexistente son indistinguibles
 - **WHEN** se piden los fragmentos de un perfil `PRIVATE` y de un slug que no existe

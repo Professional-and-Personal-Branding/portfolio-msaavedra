@@ -1,0 +1,14 @@
+# noindex sin JavaScript — perfil PROTECTED servido por Caddy
+
+lang=en llega a la API: property="og:locale" content="en_US"
+
+GET /devops-platform (PROTECTED)
+  robots:                           name="robots" content="noindex, nofollow"
+  aparece 'DevOps / Platform':      0
+  JSON-LD:                          0
+GET /devops-platform?token=tok-verify (PROTECTED)
+  robots:                           name="robots" content="noindex, nofollow"
+  aparece 'DevOps / Platform':      0
+  JSON-LD:                          0
+
+restaurado a PUBLIC: name="robots" content="index, follow"

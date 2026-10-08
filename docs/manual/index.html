@@ -828,7 +828,7 @@ echo "$SITIO/acme-tech-lead"</pre></div>
           <tr><td><code>400</code> al crear un perfil</td><td>campo de más o faltante: el pipe rechaza lo que no está en el DTO</td></tr>
           <tr><td><code>409</code> al crear un perfil</td><td>el <code>slug</code> ya existe</td></tr>
           <tr><td>El <code>?token=</code> no funciona</td><td>el perfil es <code>PRIVATE</code>, no <code>PROTECTED</code>. <code>PRIVATE</code> siempre da 404</td></tr>
-          <tr><td>La vista previa en LinkedIn es genérica</td><td>no ejecuta JavaScript. Lo resuelve <code>add-server-rendered-head</code></td></tr>
+          <tr><td>La vista previa en LinkedIn es genérica</td><td>el borde no insertó el head del perfil: la API no respondió en 500&nbsp;ms y el sitio degradó al genérico, o el perfil no es <code>PUBLIC</code> (a propósito: <code>PROTECTED</code> y <code>PRIVATE</code> nunca exponen sus textos). Comprobar con <code>curl -s &lt;sitio&gt;/&lt;slug&gt; | grep og:title</code>. La imagen es la misma para todos los perfiles.</td></tr>
           <tr><td>El nuevo perfil no está en el sitemap</td><td>solo entran los <code>PUBLIC</code></td></tr>
           <tr><td><code>docker compose up</code> falla por el puerto</td><td>otro Postgres ocupa el 5434: <code>POSTGRES_PORT=5555 docker compose up -d</code></td></tr>
         </tbody>

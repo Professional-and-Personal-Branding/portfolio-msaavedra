@@ -782,5 +782,5 @@ echo "$SITIO/acme-tech-lead"
 | `400` al crear un perfil | campo de más o faltante: el pipe rechaza lo que no está en el DTO. El mensaje dice cuál |
 | `409` al crear un perfil | el `slug` ya existe |
 | El `?token=` no funciona | el perfil es `PRIVATE`, no `PROTECTED`. `PRIVATE` siempre da 404 |
-| La vista previa en LinkedIn es genérica | limitación conocida: no ejecuta JavaScript. La resuelve `add-server-rendered-head` |
+| La vista previa en LinkedIn es genérica | el borde no insertó el head del perfil: la API no respondió en 500 ms y el sitio degradó al genérico, o el perfil no es `PUBLIC` (a propósito: `PROTECTED` y `PRIVATE` nunca exponen sus textos). Comprobar con `curl -s <sitio>/<slug> \| grep og:title`. La imagen es la misma para todos los perfiles; una por vacante quedó fuera del change `add-server-rendered-head` |
 | El nuevo perfil no está en el sitemap | solo entran los `PUBLIC` |

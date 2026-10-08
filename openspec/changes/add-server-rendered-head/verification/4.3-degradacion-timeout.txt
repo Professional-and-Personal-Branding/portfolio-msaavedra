@@ -1,0 +1,5 @@
+# Degradación por timeout: la API acepta la conexión y nunca responde (Caddy en :8097)
+
+GET /tech-lead-dotnet -> HTTP 200 en 0.504902 s · <title>Manuel Saavedra · Portafolio profesional</title>
+GET /tech-lead-dotnet -> HTTP 200 en 0.003175 s · <title>Manuel Saavedra · Portafolio profesional</title>
+GET /tech-lead-dotnet -> HTTP 200 en 0.003394 s · <title>Manuel Saavedra · Portafolio profesional</title>

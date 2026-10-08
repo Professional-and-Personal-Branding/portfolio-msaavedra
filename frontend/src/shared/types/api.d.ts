@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 3b249985b96d1fc42b88c3546ea0694520a51582e1c5770d70bb00b90c4469b1
+// openapi-sha256: 4f7c4e922137812753c67f155aafb8258833d72272d5610419628115c9e505e0
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -633,6 +633,26 @@ export interface paths {
         };
         /** Proyectos destacados visibles */
         get: operations["ProjectController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/profile-head": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Fragmento de head por perfil (HTML)
+         * @description Metadatos del perfil para el HTML inicial: title, description, canonical, Open Graph, Twitter Card, robots y JSON-LD. Siempre 200. Un perfil PROTECTED, PRIVATE o inexistente devuelve el fragmento genérico con `noindex, nofollow`. No acepta token ni registra visitas.
+         */
+        get: operations["ProfileHeadController_head"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3927,6 +3947,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectResponse"][];
+                };
+            };
+        };
+    };
+    ProfileHeadController_head: {
+        parameters: {
+            query?: {
+                /** @description Alias de `locale`. */
+                lang?: "es" | "en";
+                /** @description Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`). */
+                locale?: "es" | "en";
+                /** @description Slug del perfil curado */
+                slug?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Fragmento HTML para insertar dentro de <head> */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
                 };
             };
         };

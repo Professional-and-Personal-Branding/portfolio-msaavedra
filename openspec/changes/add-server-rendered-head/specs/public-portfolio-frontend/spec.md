@@ -1,6 +1,6 @@
 # public-portfolio-frontend Specification (delta)
 
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: El escritor de metadatos del cliente es idempotente
 `applyDocumentMeta` SHALL reutilizar la etiqueta existente para cada clave de metadato —buscándola por `name` o `property`, **sin exigir** que lleve el marcador `data-managed-meta`— y marcarla como gestionada al escribirla. Tras aplicarse sobre un head ya poblado por el servidor, el documento MUST contener **exactamente una** etiqueta por clave, un solo `<link rel="canonical">` y un solo `<script type="application/ld+json">`.

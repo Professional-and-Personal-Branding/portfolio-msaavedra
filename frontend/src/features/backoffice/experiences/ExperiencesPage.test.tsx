@@ -44,12 +44,18 @@ describe('ExperiencesPage', () => {
     await openPage();
     await user.click(screen.getByRole('button', { name: /Nueva experiencia/ }));
 
-    await user.type(screen.getByLabelText('Empresa *'), 'Umbrella');
-    await user.type(screen.getByLabelText('Ubicación *'), 'Remoto');
-    await user.type(screen.getByLabelText('Rol (es)'), 'Arquitecto');
+    // Pegar en vez de tipear: el test verifica el payload, no el tecleo, y cada tecla es un
+    // render del formulario (con ~55 teclas superaba el testTimeout con la CPU saturada).
+    const fill = async (label: string, text: string) => {
+      await user.click(screen.getByLabelText(label));
+      await user.paste(text);
+    };
+    await fill('Empresa *', 'Umbrella');
+    await fill('Ubicación *', 'Remoto');
+    await fill('Rol (es)', 'Arquitecto');
     await user.type(screen.getByLabelText('Inicio *'), '2024-01');
-    await user.type(screen.getByLabelText('Resumen (es)'), 'Diseño de plataformas');
-    await user.type(screen.getByLabelText('Tags'), 'java');
+    await fill('Resumen (es)', 'Diseño de plataformas');
+    await fill('Tags', 'java');
     await user.click(screen.getByRole('button', { name: 'Agregar Tags' }));
     await user.click(screen.getByRole('button', { name: 'Guardar' }));
 

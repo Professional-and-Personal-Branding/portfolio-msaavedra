@@ -352,7 +352,16 @@ Se agrega desde el canvas del proyecto (New → Database → PostgreSQL).
 El `Caddyfile` escucha en `:{$PORT}` —Railway inyecta `PORT`— y reparte así:
 
 - `/api/*`, `/health`, `/health/live`, `/robots.txt`, `/sitemap.xml` → `reverse_proxy {$API_ORIGIN}`, con `header_up X-Forwarded-Proto https` explícito para que la redirección a https del backend no entre en bucle (el TLS real lo terminó el borde de Railway).
-- todo lo demás → `try_files {path} /index.html` y `file_server`.
+- `/api/public/profile-head` → la misma API, en una ruta propia con `dial_timeout` y `response_header_timeout` de **500 ms**.
+- todo lo demás → `try_files {path} /index.html` y `file_server`; `index.html` pasa además por `templates`.
+
+**Head por perfil en el HTML inicial** (change `add-server-rendered-head`). Las vistas previas de LinkedIn, WhatsApp y Slack no ejecutan JavaScript, así que el título y la imagen del perfil tienen que estar en el HTML que entrega Caddy. Para eso `index.html` se procesa con la directiva `templates` (delimitadores `<!--#` y `-->`, que en el archivo son comentarios HTML) y pide con `httpInclude` el fragmento `GET /api/public/profile-head?slug=…&lang=…`. Si llega, lo emite en lugar del head de fallback; si no, entrega el fallback. Nunca quedan dos etiquetas por clave.
+
+- `httpInclude` hace una **sub-petición al mismo Caddy**, no a `API_ORIGIN` directo: por eso existe la ruta propia de arriba, que es la que llega a la API.
+- **Degradación:** si la API falla o no responde en 500 ms, un `handle_errors` hace que el fragmento llegue vacío con 200 y el sitio sirve el head de fallback. Sin eso, el error de la sub-petición haría fallar el template y con él **todo el HTML**. Verificado con la API apagada y con una API que acepta la conexión y no responde (`openspec/changes/archive/*-add-server-rendered-head/verification/`).
+- **Costo:** una petición más por carga de HTML; medido en local, el p95 sube unos 8 ms.
+- **No hay variable nueva.** Usa `API_ORIGIN`, y las URLs absolutas del fragmento (`canonical`, `og:image`) salen del `FRONTEND_URL` del servicio `api`, que tiene que ser el dominio público del sitio.
+- Un perfil `PROTECTED` o `PRIVATE` emite `robots: noindex, nofollow` en el HTML inicial y nunca sus textos, ni siquiera con `?token=`.
 
 Caddy preserva el `Host` original al hacer proxy, así que la cookie de sesión queda ligada al dominio del sitio, que es justamente lo que permite `SameSite=strict`.
 
