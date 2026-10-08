@@ -6,6 +6,7 @@
  */
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { Prisma } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 import request from 'supertest';
@@ -253,7 +254,8 @@ describe('Perfiles curados (e2e)', () => {
       } finally {
         await prisma.curatedProfile.update({
           where: { id: row.id },
-          data: { themeOverrides: row.themeOverrides ?? undefined },
+          // `undefined` en Prisma es "no tocar": un original nulo se repone con DbNull.
+          data: { themeOverrides: row.themeOverrides ?? Prisma.DbNull },
         });
       }
     });
