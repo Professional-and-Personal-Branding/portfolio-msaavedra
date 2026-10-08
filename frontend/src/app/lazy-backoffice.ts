@@ -6,5 +6,5 @@ import { lazyWithPreload } from '@/shared/lib/lazy-with-preload';
  */
 export const BackofficeApp = lazyWithPreload(() => import('@/features/backoffice/BackofficeApp'));
 
-/** Carga el chunk del panel antes de navegar a `/admin/*` (los tests lo usan en `beforeAll`). */
+/** Carga el chunk del panel antes de navegar a `/admin/*` (`src/test/setup.ts` lo usa en los tests de pantallas del panel). */
 export const preloadBackoffice = BackofficeApp.preload;

@@ -1,7 +1,6 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { preloadBackoffice } from '@/app/lazy-backoffice';
 import { AppRouter } from '@/app/router';
 import { makeAdminCuratedProfile } from '@/test/fixtures/admin';
 import { makeCuratedProfile } from '@/test/fixtures/curated-profile';
@@ -10,7 +9,6 @@ import { adminHandlers } from '@/test/msw-admin';
 import { renderWithProviders } from '@/test/render';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
-beforeAll(preloadBackoffice);
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
