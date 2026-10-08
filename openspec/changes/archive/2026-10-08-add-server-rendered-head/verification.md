@@ -2,7 +2,7 @@
 
 Fecha: 2026-10-05 · Verifier: Claude (Opus 5.5) · Ciclos de reparación: 1 (las pruebas del borde obligaron a cambiar el mecanismo de inserción; ver `design.md`, *Cómo quedaron D3 y D6*).
 
-**Estado: 17 de 18 tareas.** Falta la 5.4, la verificación con el Post Inspector de LinkedIn y el unfurl de Slack, porque necesita el sitio desplegado en una URL pública (ver al final).
+**Estado: 18 de 19 tareas** (#11 sumó una). Falta la 5.4, la verificación con el Post Inspector de LinkedIn y el unfurl de Slack, porque necesita el sitio desplegado en una URL pública (ver al final). **Archivado el 2026-10-08 con la 5.4 pendiente**, por decisión de Manuel: queda en la verificación posterior al deploy de `docs/RELEASE-1.0.0-CHECKLIST.md`.
 
 ## Automatizado
 
