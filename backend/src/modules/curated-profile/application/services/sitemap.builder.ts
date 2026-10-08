@@ -13,6 +13,11 @@ export interface SitemapProfile {
 
 const HOME_SLUG = 'all';
 
+/** Ruta pública de un perfil: la home es `all`. La comparten el sitemap y el head. */
+export function profilePath(slug: string): string {
+  return slug === HOME_SLUG ? '/' : `/${slug}`;
+}
+
 /** Solo los perfiles públicos entran; el resto no debe ni insinuarse. */
 export function toSitemapEntries(profiles: readonly SitemapProfile[]): SitemapEntry[] {
   const publicos = profiles.filter((profile) => profile.visibility === 'PUBLIC');
@@ -22,7 +27,7 @@ export function toSitemapEntries(profiles: readonly SitemapProfile[]): SitemapEn
     { path: '/', lastModified: home?.updatedAt },
     ...publicos
       .filter((profile) => profile.slug !== HOME_SLUG)
-      .map((profile) => ({ path: `/${profile.slug}`, lastModified: profile.updatedAt })),
+      .map((profile) => ({ path: profilePath(profile.slug), lastModified: profile.updatedAt })),
   ];
 }
 

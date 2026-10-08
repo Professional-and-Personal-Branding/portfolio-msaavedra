@@ -29,8 +29,8 @@ Parámetros: `slug` (requerido) y `lang`. Siempre responde **200 con `text/html;
 
 | Perfil | Fragmento |
 |---|---|
-| `PUBLIC` | metadatos completos del perfil, `robots: index,follow`, JSON-LD |
-| `PROTECTED` | título y descripción **genéricos**, `robots: noindex,nofollow`, sin JSON-LD |
+| `PUBLIC` | metadatos completos del perfil, `robots: index, follow`, JSON-LD |
+| `PROTECTED` | título y descripción **genéricos**, `robots: noindex, nofollow`, sin JSON-LD |
 | `PRIVATE` | idéntico a inexistente: genérico y `noindex` |
 | inexistente | genérico y `noindex` |
 
@@ -63,6 +63,23 @@ Un PNG de 1200×630 en `frontend/public/og-default.png`, con nombre y titular, r
 Dos `<title>` en un documento son inválidos. El fragmento emite el suyo y el marcador se coloca **después** del `<title>` estático; los navegadores y los rastreadores toman el primero, así que el marcador va **antes**. Decisión: el marcador se coloca inmediatamente antes del `<title>` estático, y el fragmento emite su propio `<title>`; cuando el include funciona hay dos y gana el del fragmento por ser el primero. Alternativa descartada: quitar el `<title>` estático, porque dejaría el documento sin título cuando el include degrada.
 
 > Esta es la parte más frágil del diseño y se verifica explícitamente en la spec: con include y sin include, el título efectivo tiene que ser el correcto.
+
+## Cómo quedaron D3 y D6 al implementar (2026-10-05)
+
+La implementación se apartó del texto de D3 y D6 en tres puntos. Los tres salieron de probar la directiva `templates` de Caddy, y el resultado cumple las specs:
+
+1. **`httpInclude` no apunta a `{$API_ORIGIN}`.** Hace una sub-petición virtual al mismo Caddy, así que recibe una ruta (`/api/public/profile-head?...`). Esa ruta tiene su propio `handle` en el `Caddyfile`, con `reverse_proxy {$API_ORIGIN}` y timeouts de 500 ms.
+2. **Un include que falla no deja el marcador vacío: hace fallar el template y con él todo el HTML (500).** La degradación la garantiza un `handle_errors` que responde `200` vacío para esa ruta. Se verificó con la API apagada y con una API que acepta la conexión y no responde: el HTML sale en 0,505 s con el fallback.
+3. **No hay un marcador que se sustituya, sino un condicional.** Un comentario HTML no se reemplaza solo: el archivo tiene que contener la acción del template. `index.html` usa los delimitadores `<!--#` … `-->`, que para Vite y el navegador son comentarios, y envuelve el head de fallback en `if $head … else … end`. Si el fragmento llega se emite **solo** el fragmento, y si no, **solo** el fallback. Así se resuelve la contradicción de D6 con la spec del cliente: con D6 tal como estaba escrito, el documento tenía dos `<title>` y **dos etiquetas por cada clave** (las del fragmento y las del fallback), y la spec exige exactamente una.
+
+Una corrección más, sobre D4: `setMeta` ya buscaba la etiqueta sin exigir `data-managed-meta`, así que el cliente no duplicaba etiquetas tampoco antes. El cambio real es que ahora marca como gestionada la etiqueta que reutiliza.
+
+## Ajustes tras la revisión del PR #8 (2026-10-08)
+
+La revisión encontró dos huecos. Los dos se cierran sin cambiar las specs:
+
+1. **Un 4xx o 5xx de la API tumbaba todo el HTML.** `handle_errors` solo corre ante errores de Caddy: no conectar o pasarse del tiempo. Un 500 de la API (la base caída, por ejemplo) se reenviaba tal cual, `httpInclude` fallaba por el estado y el template devolvía 500 en todas las rutas, `/admin` incluido. Ahora el `reverse_proxy` de `@head` convierte con `handle_response` cualquier 4xx o 5xx en el mismo fragmento vacío con 200. Verificado en Docker contra una API falsa que responde 500: antes 500, ahora 200 con el head de respaldo ([`verification/revision-api-500.txt`](verification/revision-api-500.txt)).
+2. **La ruta exenta del límite recomponía el perfil en cada petición.** La spec la exime del límite porque el borde la pide en cada carga de HTML, y eso se mantiene. Lo que cambia es el costo: `GetProfileHeadUseCase` guarda un minuto el fragmento de cada perfil público (`ProfileHeadCache`, hasta 200 entradas, sale la más vieja). Repetir la petición cuesta una lectura de mapa; un slug inexistente cuesta una consulta por índice y no entra en la caché, así que pedir slugs al azar no desaloja a los reales. Contrapartida: una edición del perfil tarda hasta un minuto en verse en las vistas previas de los links; la página en sí no cambia.
 
 ## Risks
 

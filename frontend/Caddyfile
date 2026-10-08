@@ -19,6 +19,30 @@
 :{$PORT:8080} {
 	encode zstd gzip
 
+	# Fragmento de head por perfil (change `add-server-rendered-head`). Lo pide el
+	# propio Caddy desde `index.html` con `httpInclude`, que hace una sub-petición a
+	# este mismo servidor: por eso es una ruta y no `{$API_ORIGIN}` directo. Va
+	# antes que @backend y con su propio presupuesto, para que una API lenta no
+	# demore el HTML más de medio segundo por fase.
+	@head path /api/public/profile-head
+	handle @head {
+		reverse_proxy {$API_ORIGIN} {
+			header_up X-Forwarded-Proto https
+			transport http {
+				dial_timeout 500ms
+				response_header_timeout 500ms
+			}
+			# Un 4xx o 5xx de la API (la base caída, por ejemplo) no es un error de
+			# Caddy: se reenviaría tal cual, `httpInclude` fallaría por el estado y
+			# con él todo el HTML. Se cambia por el mismo fragmento vacío con 200 que
+			# deja `handle_errors` cuando la API no responde.
+			@apiFailed status 4xx 5xx
+			handle_response @apiFailed {
+				respond "" 200
+			}
+		}
+	}
+
 	# `/health*` también va al proxy: si no, el fallback de la SPA responde 200 con
 	# HTML y la verificación del § 5 del runbook pasaría sin haber tocado la API.
 	@backend path /api/* /health /health/live /robots.txt /sitemap.xml
@@ -34,7 +58,25 @@
 		root * /srv
 		# El fallback de la SPA: sin esto, /tech-lead-dotnet daría 404.
 		try_files {path} /index.html
+		# Solo `index.html` pasa por templates, con delimitadores que en el archivo
+		# son comentarios HTML: así sigue siendo válido para Vite y el navegador.
+		@index path /index.html
+		templates @index {
+			mime text/html
+			between <!--# -->
+		}
 		file_server
+	}
+
+	# Degradación: si la API no responde a tiempo o rechaza la conexión, el
+	# fragmento llega vacío con 200 y `index.html` entrega su head de fallback (si
+	# responde con error, lo cubre `handle_response` arriba). Un error acá haría
+	# fallar el template y, con él, todo el HTML: el sitio no depende de la API.
+	handle_errors {
+		@headError path /api/public/profile-head
+		handle @headError {
+			respond "" 200
+		}
 	}
 
 	# Los assets de Vite llevan hash en el nombre: son inmutables.

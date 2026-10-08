@@ -1,15 +1,25 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup, configure } from '@testing-library/react';
-import { afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import { afterEach, beforeAll, expect } from 'vitest';
 
 afterEach(() => {
   cleanup();
 });
 
-// Las pantallas del backoffice cargan un chunk lazy y después responden por MSW:
-// con la suite en paralelo, el primer `findBy` de cada archivo a veces pasa del
-// segundo por defecto y falla sin que haya un defecto.
-configure({ asyncUtilTimeout: 5000 });
+// Los tests de pantallas del backoffice precargan el chunk lazy del panel. Sin esto, el primer
+// render de `/admin/*` de cada archivo paga la importación del chunk y el throttle de Suspense de
+// React 19 (300 ms) dentro del timeout del primer `findBy`, y falla con la máquina cargada. Va acá,
+// y no en cada archivo, para que una pantalla nueva no tenga que acordarse de hacerlo.
+const BACKOFFICE_SCREEN_TEST = /[\\/]features[\\/]backoffice[\\/].+\.test\.tsx$/;
+
+beforeAll(async () => {
+  if (!BACKOFFICE_SCREEN_TEST.test(expect.getState().testPath ?? '')) return;
+  const { preloadBackoffice } = await import('@/app/lazy-backoffice');
+  await preloadBackoffice();
+});
+
+// `asyncUtilTimeout` queda en el segundo por defecto a propósito: con la precarga de arriba, un
+// `findBy` que tarda más señala un problema real.
 
 // jsdom no implementa matchMedia (lo usa `useReducedMotion` de Motion).
 if (typeof window !== 'undefined' && !window.matchMedia) {
