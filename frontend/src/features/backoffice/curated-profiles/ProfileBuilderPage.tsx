@@ -25,6 +25,7 @@ import {
 } from '@/shared/components/ui/select';
 import { Switch } from '@/shared/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import type { Locale } from '@/shared/i18n/locale';
 import { isHttpError } from '@/shared/lib/api-client';
 import { profilePath } from '@/shared/lib/profile-link';
 import { cn } from '@/shared/lib/utils';
@@ -47,6 +48,7 @@ import {
   useSkillCategories,
   useThemes,
 } from '../shared/use-admin-api';
+import { MissingTranslationsNotice } from './MissingTranslationsNotice';
 import { PreviewPanel } from './PreviewPanel';
 import {
   allSections,
@@ -125,7 +127,9 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
   const [errors, setErrors] = useState<ReturnType<typeof validateDraft>>({});
   const [copied, setCopied] = useState(false);
 
-  const preview = usePreview(draft);
+  // Estado de vista (D1): no entra en el borrador ni en el PATCH, y vuelve a 'es' al recargar.
+  const [previewLocale, setPreviewLocale] = useState<Locale>('es');
+  const preview = usePreview(draft, previewLocale);
 
   const baseTheme = themes.data?.find((theme) => theme.id === draft.themeId);
   const baseTokens = useMemo(() => baseTokensOf(baseTheme), [baseTheme]);
@@ -583,6 +587,11 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
                     : 'Este link no resuelve: un perfil privado responde 404. Usalo para borradores.'}
                 </p>
               )}
+              <MissingTranslationsNotice
+                data={preview.data}
+                locale={previewLocale}
+                pending={preview.isPlaceholderData}
+              />
             </div>
 
             {saved && (
@@ -599,6 +608,8 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
           layout={draft.layout}
           isFetching={preview.isFetching}
           error={preview.error}
+          locale={previewLocale}
+          onLocaleChange={setPreviewLocale}
         />
       </div>
     </>

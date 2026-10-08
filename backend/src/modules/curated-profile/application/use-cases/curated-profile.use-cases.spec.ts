@@ -610,7 +610,11 @@ describe('PreviewCuratedProfileUseCase', () => {
     const publico = await resolveOk(useCase);
 
     expect(preview.value.experiences.map((e) => e.id)).toEqual(['novacomp', 'vidoomy']);
-    expect(preview.value).toEqual(publico);
+    // el informe de faltantes es lo único que el preview añade a la vista pública
+    const { missingTranslations, ...vista } = preview.value;
+    expect(Array.isArray(missingTranslations)).toBe(true);
+    expect(vista).toEqual(publico);
+    expect(publico).not.toHaveProperty('missingTranslations');
     // el preview no necesitó buscar el perfil por slug
     expect(curatedRepo.findBySlugOrAlias).toHaveBeenCalledTimes(1); // solo la ruta pública
   });

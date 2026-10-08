@@ -126,7 +126,59 @@ describe('Backoffice: preview y catálogo de temas (e2e)', () => {
 
       expect(publico.status).toBe(200);
       expect(previewed.status).toBe(200);
-      expect(previewed.body).toEqual(publico.body);
+      // todo igual salvo el informe de faltantes, que solo existe en el preview
+      const { missingTranslations, ...vista } = previewed.body;
+      expect(Array.isArray(missingTranslations)).toBe(true);
+      expect(vista).toEqual(publico.body);
+      expect(publico.body).not.toHaveProperty('missingTranslations');
+    });
+
+    describe('missingTranslations (add-bilingual-builder-parity)', () => {
+      const missing = (body: { missingTranslations: { id: string; field: string }[] }) =>
+        body.missingTranslations;
+      let expId: string;
+
+      beforeAll(async () => {
+        const created = await prisma.experience.create({
+          data: {
+            company: 'E2E Faltantes',
+            role: { es: 'Rol e2e', en: 'E2E role' },
+            startDate: '2099-01',
+            location: 'Remoto',
+            summary: { es: 'Resumen', en: 'Summary' },
+            highlights: { es: ['Logro en español'], en: [] },
+            technologies: [],
+            tags: ['e2e-faltantes'],
+            sector: [],
+          },
+        });
+        expId = created.id;
+      });
+
+      afterAll(async () => {
+        await prisma.experience.delete({ where: { id: expId } });
+      });
+
+      it('el preview en EN lista la experiencia sin highlights.en; en ES no', async () => {
+        const draft = { filterTags: ['e2e-faltantes'] };
+        const en = await preview().query({ locale: 'en' }).send(draft);
+        const es = await preview().query({ locale: 'es' }).send(draft);
+
+        expect(en.status).toBe(200);
+        expect(Array.isArray(en.body.missingTranslations)).toBe(true);
+        expect(missing(en.body)).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ entity: 'experience', id: expId, field: 'highlights' }),
+          ]),
+        );
+        expect(missing(es.body).filter((m) => m.id === expId)).toEqual([]);
+      });
+
+      it('la ruta pública no trae el informe', async () => {
+        const res = await get(`/api/curated-profiles/${SLUG}?locale=en`);
+        expect(res.status).toBe(200);
+        expect(res.body).not.toHaveProperty('missingTranslations');
+      });
     });
 
     it('no registra visitas ni mueve el contador del perfil', async () => {

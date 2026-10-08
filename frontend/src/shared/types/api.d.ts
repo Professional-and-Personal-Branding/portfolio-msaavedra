@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: b7c003c0c1b7772dbd2843eaf851997d4fa588ad082c1d10782fbb573cdc29e7
+// openapi-sha256: 6b09e22765fa77835aa9720afbde043fbc180a1a288ec73d6ae3fffe2e81e1cf
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -170,7 +170,7 @@ export interface paths {
         put?: never;
         /**
          * Previsualizar un borrador (no persiste)
-         * @description Resuelve un perfil curado sin guardarlo, con el mismo pipeline que la ruta pública: misma selección por tags, mismo tema mergeado, mismas secciones y el mismo cuerpo de respuesta. No registra visitas y no evalúa la visibilidad.
+         * @description Resuelve un perfil curado sin guardarlo, con el mismo pipeline que la ruta pública: misma selección por tags, mismo tema mergeado y mismas secciones; el cuerpo es el de la ruta pública más `missingTranslations` (campos bilingües vacíos en el idioma pedido). No registra visitas y no evalúa la visibilidad.
          */
         post: operations["AdminCuratedProfileController_previewDraft"];
         delete?: never;
@@ -1371,6 +1371,20 @@ export interface components {
             tokenType: "Bearer";
             user: components["schemas"]["AdminResponse"];
         };
+        MissingTranslationResponse: {
+            /**
+             * @example experience
+             * @enum {string}
+             */
+            entity: "curatedProfile" | "profile" | "experience" | "skillCategory" | "project" | "education" | "certification" | "socialLink";
+            /**
+             * @description Campo bilingüe; los anidados con punto.
+             * @example highlights
+             */
+            field: string;
+            /** @description Id de la entidad (en el perfil curado en borrador: `preview`). */
+            id: string;
+        };
         PreviewCuratedProfileDto: {
             /**
              * @default #1A365D
@@ -1415,6 +1429,63 @@ export interface components {
             title?: components["schemas"]["LocalizedTextDto"];
             /**
              * @default PUBLIC
+             * @enum {string}
+             */
+            visibility: "PUBLIC" | "PRIVATE" | "PROTECTED";
+        };
+        PreviewCuratedProfileResponse: {
+            /** @example #5B2C87 */
+            accentColor: string;
+            certifications: components["schemas"]["CertificationResponse"][];
+            /** @description Resuelto al locale. */
+            description: string;
+            education: components["schemas"]["EducationResponse"][];
+            /** @description Filtradas por tags/overrides, orden cronológico. */
+            experiences: components["schemas"]["ExperienceResponse"][];
+            /** @description Resuelto al locale. */
+            headline: string;
+            /**
+             * @example [
+             *       "education"
+             *     ]
+             */
+            hiddenSections: string[];
+            /** @example classic */
+            layout: string;
+            /** @description Campos bilingües vacíos en el idioma del preview que caen al fallback. Solo existe en el preview; la ruta pública no lo expone. */
+            missingTranslations: components["schemas"]["MissingTranslationResponse"][];
+            profile: components["schemas"]["ProfileResponse"] | null;
+            /** @description Seleccionados por tags/overrides. */
+            projects: components["schemas"]["ProjectResponse"][];
+            /**
+             * @description Tipo de rol para agrupar el menú. Resuelto al locale.
+             * @example Tech Lead
+             */
+            roleType: string;
+            /**
+             * @example [
+             *       "hero",
+             *       "stats",
+             *       "experience",
+             *       "skills",
+             *       "contact"
+             *     ]
+             */
+            sections: string[];
+            skillCategories: components["schemas"]["SkillCategoryResponse"][];
+            /** @example tech-lead-dotnet */
+            slug: string;
+            socialLinks: components["schemas"]["SocialLinkResponse"][];
+            /** @example .NET */
+            techFocus: string | null;
+            theme: components["schemas"]["ResolvedThemeResponse"] | null;
+            /**
+             * @description Resuelto al locale.
+             * @example Tech Lead · .NET
+             */
+            title: string;
+            /**
+             * @example PUBLIC
              * @enum {string}
              */
             visibility: "PUBLIC" | "PRIVATE" | "PROTECTED";
@@ -2404,7 +2475,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CuratedProfileResponse"];
+                    "application/json": components["schemas"]["PreviewCuratedProfileResponse"];
                 };
             };
             400: {

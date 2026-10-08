@@ -1255,7 +1255,7 @@
     },
     "/api/admin/curated-profiles/preview": {
       "post": {
-        "description": "Resuelve un perfil curado sin guardarlo, con el mismo pipeline que la ruta pública: misma selección por tags, mismo tema mergeado, mismas secciones y el mismo cuerpo de respuesta. No registra visitas y no evalúa la visibilidad.",
+        "description": "Resuelve un perfil curado sin guardarlo, con el mismo pipeline que la ruta pública: misma selección por tags, mismo tema mergeado y mismas secciones; el cuerpo es el de la ruta pública más `missingTranslations` (campos bilingües vacíos en el idioma pedido). No registra visitas y no evalúa la visibilidad.",
         "operationId": "AdminCuratedProfileController_previewDraft",
         "parameters": [
           {
@@ -1302,7 +1302,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CuratedProfileResponse"
+                  "$ref": "#/components/schemas/PreviewCuratedProfileResponse"
                 }
               }
             }
@@ -5236,6 +5236,195 @@
             "description": "Obligatorio si visibility = PROTECTED"
           }
         }
+      },
+      "MissingTranslationResponse": {
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string",
+            "enum": [
+              "curatedProfile",
+              "profile",
+              "experience",
+              "skillCategory",
+              "project",
+              "education",
+              "certification",
+              "socialLink"
+            ],
+            "example": "experience"
+          },
+          "id": {
+            "type": "string",
+            "description": "Id de la entidad (en el perfil curado en borrador: `preview`)."
+          },
+          "field": {
+            "type": "string",
+            "description": "Campo bilingüe; los anidados con punto.",
+            "example": "highlights"
+          }
+        },
+        "required": [
+          "entity",
+          "id",
+          "field"
+        ]
+      },
+      "PreviewCuratedProfileResponse": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "tech-lead-dotnet"
+          },
+          "title": {
+            "type": "string",
+            "description": "Resuelto al locale.",
+            "example": "Tech Lead · .NET"
+          },
+          "headline": {
+            "type": "string",
+            "description": "Resuelto al locale."
+          },
+          "description": {
+            "type": "string",
+            "description": "Resuelto al locale."
+          },
+          "roleType": {
+            "type": "string",
+            "description": "Tipo de rol para agrupar el menú. Resuelto al locale.",
+            "example": "Tech Lead"
+          },
+          "techFocus": {
+            "type": "string",
+            "nullable": true,
+            "example": ".NET"
+          },
+          "accentColor": {
+            "type": "string",
+            "example": "#5B2C87"
+          },
+          "layout": {
+            "type": "string",
+            "example": "classic"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE",
+              "PROTECTED"
+            ],
+            "example": "PUBLIC"
+          },
+          "sections": {
+            "example": [
+              "hero",
+              "stats",
+              "experience",
+              "skills",
+              "contact"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "hiddenSections": {
+            "example": [
+              "education"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "theme": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ResolvedThemeResponse"
+              }
+            ]
+          },
+          "profile": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProfileResponse"
+              }
+            ]
+          },
+          "experiences": {
+            "description": "Filtradas por tags/overrides, orden cronológico.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExperienceResponse"
+            }
+          },
+          "skillCategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillCategoryResponse"
+            }
+          },
+          "projects": {
+            "description": "Seleccionados por tags/overrides.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectResponse"
+            }
+          },
+          "education": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EducationResponse"
+            }
+          },
+          "certifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CertificationResponse"
+            }
+          },
+          "socialLinks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SocialLinkResponse"
+            }
+          },
+          "missingTranslations": {
+            "description": "Campos bilingües vacíos en el idioma del preview que caen al fallback. Solo existe en el preview; la ruta pública no lo expone.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MissingTranslationResponse"
+            }
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "headline",
+          "description",
+          "roleType",
+          "techFocus",
+          "accentColor",
+          "layout",
+          "visibility",
+          "sections",
+          "hiddenSections",
+          "theme",
+          "profile",
+          "experiences",
+          "skillCategories",
+          "projects",
+          "education",
+          "certifications",
+          "socialLinks",
+          "missingTranslations"
+        ]
       },
       "AdminCuratedProfileResponse": {
         "type": "object",

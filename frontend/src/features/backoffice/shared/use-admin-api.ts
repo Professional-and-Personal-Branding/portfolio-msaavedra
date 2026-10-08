@@ -28,7 +28,7 @@ export const adminKeys = {
   projects: ['admin', 'projects'] as const,
   socialLinks: ['admin', 'social-links'] as const,
   analytics: (from: string, to: string) => ['admin', 'analytics', from, to] as const,
-  preview: (draftKey: string) => ['admin', 'preview', draftKey] as const,
+  preview: (draftKey: string, locale: string) => ['admin', 'preview', draftKey, locale] as const,
 };
 
 /** Aviso de éxito o de error para cada escritura (spec `admin-content-management`). */
