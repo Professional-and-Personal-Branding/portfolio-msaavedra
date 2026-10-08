@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { AppRouter } from '@/app/router';
@@ -121,6 +121,89 @@ describe('ExperiencesPage', () => {
     await user.click(screen.getByRole('button', { name: 'Guardar' }));
     await waitFor(() => expect(body).toBeDefined());
     expect(body).toMatchObject({ current: true, endDate: null });
+  });
+
+  describe('logros bilingües', () => {
+    const capturePatch = () => {
+      const state: { body?: Record<string, unknown> } = {};
+      server.use(
+        http.patch(`${API}/admin/experiences/:id`, async ({ request }) => {
+          state.body = (await request.json()) as Record<string, unknown>;
+          return HttpResponse.json(makeAdminExperience());
+        }),
+        ...adminHandlers,
+      );
+      return state;
+    };
+
+    it('escribe los logros en los dos idiomas y los envía en el cuerpo', async () => {
+      const state = capturePatch();
+      const user = userEvent.setup();
+
+      await openPage();
+      await user.click(screen.getByRole('button', { name: 'Editar Globex' }));
+
+      await user.click(screen.getByLabelText('Logros (es)'));
+      await user.paste('Migró el monolito');
+      await user.click(screen.getByRole('button', { name: 'Agregar Logros (es)' }));
+      await user.click(screen.getByLabelText('Logros (en)'));
+      await user.paste('Migrated the monolith');
+      await user.click(screen.getByRole('button', { name: 'Agregar Logros (en)' }));
+      await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+      await waitFor(() => expect(state.body).toBeDefined());
+      expect(state.body?.highlights).toEqual({
+        es: ['Redujo latencia', 'Migró el monolito'],
+        en: ['Reduced latency', 'Migrated the monolith'],
+      });
+    });
+
+    it('editar solo el español conserva highlights.en en el PATCH', async () => {
+      const state = capturePatch();
+      const user = userEvent.setup();
+
+      await openPage();
+      await user.click(screen.getByRole('button', { name: 'Editar Globex' }));
+      expect(screen.getByLabelText('Logros (en) 1')).toHaveValue('Reduced latency');
+
+      const first = screen.getByLabelText('Logros (es) 1');
+      // `change` y no clear+paste: al vaciar la fila cambia su key y se pierde el foco.
+      fireEvent.change(first, { target: { value: 'Redujo la latencia a la mitad' } });
+      await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+      await waitFor(() => expect(state.body).toBeDefined());
+      expect(state.body?.highlights).toEqual({
+        es: ['Redujo la latencia a la mitad'],
+        en: ['Reduced latency'],
+      });
+    });
+
+    it('una experiencia sin logros en inglés abre el campo vacío y editable', async () => {
+      const state = capturePatch();
+      server.use(
+        http.get(`${API}/admin/experiences`, () =>
+          HttpResponse.json([
+            makeAdminExperience({ highlights: { es: ['Solo español'], en: [] } }),
+          ]),
+        ),
+      );
+      const user = userEvent.setup();
+
+      await openPage();
+      await user.click(screen.getByRole('button', { name: 'Editar Acme Corp' }));
+
+      expect(screen.queryByLabelText('Logros (en) 1')).not.toBeInTheDocument();
+      const field = screen.getByLabelText('Logros (en)');
+      expect(field).toHaveValue('');
+      expect(field).toBeEnabled();
+
+      await user.click(field);
+      await user.paste('English only now');
+      await user.click(screen.getByRole('button', { name: 'Agregar Logros (en)' }));
+      await user.click(screen.getByRole('button', { name: 'Guardar' }));
+      await waitFor(() => expect(state.body).toBeDefined());
+      expect(state.body?.highlights).toEqual({ es: ['Solo español'], en: ['English only now'] });
+    });
   });
 
   it('borra solo tras confirmar', async () => {

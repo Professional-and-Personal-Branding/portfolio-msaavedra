@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import type { Locale } from '@/shared/i18n/locale';
 import { api, unwrap } from '@/shared/lib/api-client';
-import type { CuratedProfile } from '@/shared/types/portfolio';
+import type { PreviewCuratedProfile } from '@/shared/types/portfolio';
 import { adminKeys } from '../shared/use-admin-api';
 import { previewKey, toProfileBody, type ProfileDraft } from './profile-draft';
 
@@ -20,7 +20,7 @@ export function useDebounced<T>(value: T, delay = PREVIEW_DEBOUNCE_MS): T {
   return debounced;
 }
 
-export async function fetchPreview(draft: ProfileDraft, locale: Locale): Promise<CuratedProfile> {
+export async function fetchPreview(draft: ProfileDraft, locale: Locale): Promise<PreviewCuratedProfile> {
   const body = toProfileBody(draft);
   // El token de acceso no hace falta para previsualizar y no debe viajar de más.
   body.accessToken = null;
@@ -42,9 +42,11 @@ export function usePreview(draft: ProfileDraft, locale: Locale = 'es') {
   const debouncedKey = useDebounced(previewKey(draft));
 
   return useQuery({
-    queryKey: adminKeys.preview(`${debouncedKey}|${locale}`),
+    queryKey: adminKeys.preview(debouncedKey, locale),
     queryFn: () => fetchPreview(draft, locale),
     placeholderData: (previous) => previous,
     staleTime: 60_000,
+    // Los dos idiomas conviven en caché (D2): volver al anterior no re-consulta.
+    gcTime: 5 * 60_000,
   });
 }

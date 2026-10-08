@@ -31,7 +31,6 @@ import { LocaleQueryDto } from '../../../../shared/infrastructure/http/locale-qu
 import { RequestLocale } from '../../../../shared/infrastructure/http/request-locale.decorator';
 import { JwtAuthGuard } from '../../../auth/infrastructure/security/jwt-auth.guard';
 import { AdminCuratedProfileOutput } from '../../application/dto/curated-profile.admin-output';
-import { CuratedProfileOutput } from '../../application/dto/curated-profile.output';
 import {
   CreateCuratedProfileUseCase,
   DeleteCuratedProfileUseCase,
@@ -44,9 +43,12 @@ import {
   DuplicateCuratedProfileUseCase,
   UnarchiveCuratedProfileUseCase,
 } from '../../application/use-cases/admin/curated-profile-lifecycle.use-cases';
-import { PreviewCuratedProfileUseCase } from '../../application/use-cases/admin/preview-curated-profile.use-case';
+import {
+  PreviewCuratedProfileOutput,
+  PreviewCuratedProfileUseCase,
+} from '../../application/use-cases/admin/preview-curated-profile.use-case';
 import { AdminCuratedProfileResponse } from './docs/admin-curated-profile.response';
-import { CuratedProfileResponse } from './docs/curated-profile.response';
+import { PreviewCuratedProfileResponse } from './docs/preview-curated-profile.response';
 import {
   CreateCuratedProfileDto,
   DuplicateCuratedProfileDto,
@@ -82,16 +84,16 @@ export class AdminCuratedProfileController {
     summary: 'Previsualizar un borrador (no persiste)',
     description:
       'Resuelve un perfil curado sin guardarlo, con el mismo pipeline que la ruta pública: ' +
-      'misma selección por tags, mismo tema mergeado, mismas secciones y el mismo cuerpo de respuesta. ' +
-      'No registra visitas y no evalúa la visibilidad.',
+      'misma selección por tags, mismo tema mergeado y mismas secciones; el cuerpo es el de la ruta pública ' +
+      'más `missingTranslations` (campos bilingües vacíos en el idioma pedido). No registra visitas y no evalúa la visibilidad.',
   })
-  @ApiOkResponse({ type: CuratedProfileResponse })
+  @ApiOkResponse({ type: PreviewCuratedProfileResponse })
   @ApiBadRequestResponse({ type: ErrorResponseDto })
   async previewDraft(
     @Body() dto: PreviewCuratedProfileDto,
     @Query() _query: LocaleQueryDto,
     @RequestLocale() locale: Locale,
-  ): Promise<CuratedProfileOutput> {
+  ): Promise<PreviewCuratedProfileOutput> {
     const result = await this.preview.execute({ draft: toDraftCuratedProfileProps(dto), locale });
     return result.value;
   }

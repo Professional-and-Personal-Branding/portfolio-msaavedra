@@ -1,5 +1,7 @@
 import { RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/shared/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import type { Locale } from '@/shared/i18n/locale';
 import type { CuratedProfile } from '@/shared/types/portfolio';
 import { ProfileLayout } from '@/themes/layouts/ProfileLayout';
 import { renderableSections } from '@/themes/layouts/sections';
@@ -12,6 +14,8 @@ interface PreviewPanelProps {
   layout: string;
   isFetching: boolean;
   error: Error | null;
+  locale: Locale;
+  onLocaleChange: (locale: Locale) => void;
 }
 
 /**
@@ -19,7 +23,15 @@ interface PreviewPanelProps {
  * (spec `curated-profile-builder`). El tema se aplica en el cliente, así que
  * cambiar un color no vuelve a pedir los datos.
  */
-export function PreviewPanel({ data, tokens, layout, isFetching, error }: PreviewPanelProps) {
+export function PreviewPanel({
+  data,
+  tokens,
+  layout,
+  isFetching,
+  error,
+  locale,
+  onLocaleChange,
+}: PreviewPanelProps) {
   return (
     <section aria-label="Vista previa" className="flex flex-col gap-3">
       <header className="flex items-center gap-2">
@@ -30,6 +42,16 @@ export function PreviewPanel({ data, tokens, layout, isFetching, error }: Previe
             actualizando
           </span>
         )}
+        <Tabs value={locale} onValueChange={(next) => onLocaleChange(next as Locale)}>
+          <TabsList aria-label="Idioma de la vista previa" className="h-7">
+            <TabsTrigger value="es" className="px-2 py-0.5 text-xs uppercase">
+              es
+            </TabsTrigger>
+            <TabsTrigger value="en" className="px-2 py-0.5 text-xs uppercase">
+              en
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
         {data && (
           <p className="ml-auto text-xs text-text-dim" data-testid="preview-counts">
             {data.experiences.length} experiencias · {data.skillCategories.length} categorías ·{' '}
