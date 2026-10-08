@@ -53,6 +53,9 @@
 1. Crear el proyecto en Railway y seguir **`docs/DEPLOY-RAILWAY.md`** (la guía corta, con checkboxes). El detalle de cada paso está en `docs/DEPLOY.md`.
 2. Activar backups y **probar una restauración** (§ 7), y anotar la fecha en este documento.
 3. Correr la verificación posterior al despliegue (§ 5).
-4. Recién entonces, etiquetar `v1.0.0`.
+4. Pendientes de la ronda 1.1 que necesitan el sitio arriba:
+   - **Vista previa de los links** (tarea 5.4 de `add-server-rendered-head`): pegar dos perfiles distintos en el [Post Inspector de LinkedIn](https://www.linkedin.com/post-inspector/) y en un canal de Slack. Las tarjetas tienen que mostrar títulos distintos y la imagen. Capturas en `openspec/changes/archive/2026-10-08-add-server-rendered-head/verification/`.
+   - **Migración `curated_profile_lifecycle`**: antes del primer deploy que la incluya, probar `prisma migrate deploy` sobre una restauración del backup de producción (la prueba hecha fue sobre una copia de la base de desarrollo).
+5. Recién entonces, etiquetar `v1.0.0`.
 
 > Regla de oro: el deploy real es el último paso, no el primero.

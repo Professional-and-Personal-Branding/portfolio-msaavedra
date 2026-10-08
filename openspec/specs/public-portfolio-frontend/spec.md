@@ -28,11 +28,19 @@ La cara visible del producto: una SPA que muestra la home y cada perfil curado c
 - **THEN** se muestra la página "perfil no encontrado" con enlace a la home
 
 ### Requirement: Navegación por perfiles curados
-La barra superior SHALL ofrecer un menú con los perfiles de `GET /api/curated-profiles` agrupados por `roleType` y mostrando `techFocus`, con el perfil activo resaltado; en móvil SHALL abrirse en un panel lateral.
+La barra superior SHALL ofrecer el menú de perfiles **únicamente en la home** (`/`), con los perfiles de `GET /api/curated-profiles` —públicos, enumerados y no archivados— agrupados por `roleType` y mostrando `techFocus`; en móvil SHALL abrirse en un panel lateral. En `/:slug` MUST NOT renderizarse ningún enlace a otro slug de perfil curado, cualquiera sea el valor de `listed` de los demás: un perfil enviado no ofrece navegación a los otros.
 
 #### Scenario: Menú agrupado
-- **WHEN** se abre el menú
-- **THEN** aparecen 14 perfiles agrupados por `roleType` (ej. "Tech Lead", "Backend") y cada uno muestra su `techFocus`
+- **WHEN** se abre el menú en la home
+- **THEN** aparecen los perfiles del listado público agrupados por `roleType` (ej. "Tech Lead", "Backend") y cada uno muestra su `techFocus`
+
+#### Scenario: Un perfil enviado no enumera a los demás
+- **WHEN** se abre `/tech-lead-dotnet`
+- **THEN** el DOM no contiene ningún enlace a otro slug de perfil curado
+
+#### Scenario: La home sí ofrece el menú
+- **WHEN** se abre `/`
+- **THEN** el menú lista los perfiles públicos, enumerados y no archivados, agrupados por `roleType`
 
 ### Requirement: Perfiles protegidos
 Si la API responde 401 para `/:slug`, el frontend SHALL mostrar un formulario para ingresar el token; al enviarlo SHALL reintentar con `X-Access-Token` y, si es válido, renderizar el perfil y reflejar `?token=` en la URL para compartir. `?token=` presente en la URL SHALL usarse automáticamente.
@@ -65,3 +73,24 @@ La vista SHALL ser usable en 375 px y en 1280 px: sin desbordes horizontales, me
 #### Scenario: Build
 - **WHEN** se ejecuta `npm run build`
 - **THEN** termina con código 0 y el reporte de Vite muestra un JS inicial menor a 400 KB gzip
+
+### Requirement: El escritor de metadatos del cliente es idempotente
+`applyDocumentMeta` SHALL reutilizar la etiqueta existente para cada clave de metadato —buscándola por `name` o `property`, **sin exigir** que lleve el marcador `data-managed-meta`— y marcarla como gestionada al escribirla. Tras aplicarse sobre un head ya poblado por el servidor, el documento MUST contener **exactamente una** etiqueta por clave, un solo `<link rel="canonical">` y un solo `<script type="application/ld+json">`.
+
+`restoreDocumentMeta` SHALL seguir limpiando únicamente lo marcado como gestionado.
+
+#### Scenario: Head pre-poblado por el servidor
+- **WHEN** el documento ya trae `og:title`, `description` y `canonical` del fragmento del servidor y el cliente resuelve el perfil
+- **THEN** esas mismas etiquetas se actualizan y no se agrega ninguna duplicada
+
+#### Scenario: Navegación entre perfiles sin recargar
+- **WHEN** se navega de un perfil a otro dentro de la SPA
+- **THEN** cada clave de metadato sigue teniendo una sola etiqueta, con los valores del perfil nuevo
+
+#### Scenario: Head vacío (desarrollo, sin borde)
+- **WHEN** el documento no trae metadatos del servidor
+- **THEN** el cliente los crea y el resultado es el mismo que antes de este change
+
+#### Scenario: Los textos del cliente y del servidor coinciden
+- **WHEN** se comparan el fragmento del backend y el resultado de `metaFromProfile` para el mismo perfil e idioma
+- **THEN** título, descripción y canonical son iguales

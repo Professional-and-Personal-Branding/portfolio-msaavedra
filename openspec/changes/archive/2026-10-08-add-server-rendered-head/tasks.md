@@ -12,7 +12,7 @@
 ## 2. Head estático e imagen (D5, D6)
 
 - [x] 2.1 `frontend/public/og-default.png` de 1200×630 con nombre y titular. Verificar: dimensiones y peso < 300 KB.
-- [ ] 2.2 `index.html`: marcador `<!--#head-include-->` inmediatamente antes del `<title>`, `og:image` apuntando al PNG absoluto, `og:image:width/height/alt`, y textos de fallback honestos. Verificar: `npm run dev` carga sin Caddy y el cliente escribe los metadatos como hoy.
+- [x] 2.2 `index.html` (implementado como condicional de template en lugar de marcador, ver `design.md`, *Cómo quedaron D3 y D6*): marcador `<!--#head-include-->` inmediatamente antes del `<title>`, `og:image` apuntando al PNG absoluto, `og:image:width/height/alt`, y textos de fallback honestos. Verificar: `npm run dev` carga sin Caddy y el cliente escribe los metadatos como hoy.
 
 ## 3. Cliente idempotente (D4)
 

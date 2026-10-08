@@ -1,5 +1,21 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (ronda 1.1, changes 2 y 3 — `add-server-rendered-head` y `add-curated-profile-lifecycle`)
+
+Mergeados en PR #7 y #8, más la corrección de #11 sobre el head. Archivados en `openspec/changes/archive/2026-10-08-*`, con sus specs sincronizadas.
+
+### Change 2 — el link compartido dice quién es Manuel
+- `GET /api/public/profile-head?slug=&lang=` devuelve el fragmento de `<head>` de cada perfil (title, description, canonical, Open Graph, Twitter, robots y JSON-LD). Siempre responde 200 y lo arma el mismo composer de la ruta pública. Los perfiles no públicos dan el genérico con `noindex`.
+- Caddy procesa `index.html` con `templates` y lo inserta con `httpInclude`. Si la API falla o tarda más de 500 ms, el sitio sirve el head de fallback (#11 cubrió también los 4xx/5xx). El fragmento de cada perfil público se cachea un minuto.
+- `og:image` pasa a ser un PNG de 1200×630 en lugar del SVG. El cliente reutiliza las etiquetas del servidor en lugar de duplicarlas.
+- Pendiente: la verificación con LinkedIn y Slack, que necesita el sitio desplegado (`docs/RELEASE-1.0.0-CHECKLIST.md`).
+
+### Change 3 — duplicar, archivar, enumerar y renombrar
+- Tres ejes disjuntos: `visibility` (quién puede abrirlo), `archivedAt` (si sigue vivo: archivado da 404, siempre) y `listed` (si se enumera). La decisión de acceso está en una sola función, `resolvability`, con la tabla de verdad de doce casos.
+- Duplicar (`POST …/{id}/duplicate`): la copia nace privada y no enumerada. Archivar y desarchivar con endpoints propios: se conservan las visitas.
+- Alias de slug: renombrar no rompe los links ya enviados. El menú de perfiles solo aparece en la home.
+- Primera migración incremental, aditiva: `20261005201934_curated_profile_lifecycle`.
+
 ## Update — Octubre 2026 (ronda 1.1, change 1 — `unify-section-catalog`; CI)
 
 Primer change de la ronda 1.1 (`docs/ROADMAP-1.1.md` § 4), mergeado en PR #4 y archivado en `openspec/changes/archive/2026-10-05-unify-section-catalog/`. Antes, en PR #2, se agregó el CI.
