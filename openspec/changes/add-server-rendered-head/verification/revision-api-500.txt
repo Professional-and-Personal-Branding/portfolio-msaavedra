@@ -1,0 +1,23 @@
+Revisión del PR #8 — degradación del borde ante errores HTTP de la API (2026-10-08)
+
+Montaje: dos contenedores caddy:2-alpine en una red de Docker.
+  api  → Caddyfile mínimo que responde 500 en /api/public/profile-head
+  web  → frontend/Caddyfile (antes / después) + frontend/index.html en /srv
+
+caddy validate (después): Valid configuration
+caddy fmt (después):      sin cambios
+
+== Caddyfile antes (API responde 500 en profile-head)
+GET /tech-lead-dotnet -> 500 en 0.064331s
+GET /api/public/profile-head directo -> 500
+
+== Caddyfile después (API responde 500 en profile-head)
+GET /tech-lead-dotnet -> 200 en 0.012364s
+<title>Manuel Saavedra · Portafolio profesional</title>
+GET /api/public/profile-head directo -> 200
+
+== Caddyfile después, sin regresiones
+API 200 -> GET /tech-lead-dotnet 200
+<title>Tech Lead .NET · Ada</title>
+API apagada -> GET /tech-lead-dotnet 200 en 0.508334s
+<title>Manuel Saavedra · Portafolio profesional</title>

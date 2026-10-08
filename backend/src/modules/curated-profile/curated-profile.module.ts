@@ -17,6 +17,7 @@ import {
   UpdateCuratedProfileUseCase,
 } from './application/use-cases/admin/curated-profile-admin.use-cases';
 import { PreviewCuratedProfileUseCase } from './application/use-cases/admin/preview-curated-profile.use-case';
+import { ProfileHeadCache } from './application/services/profile-head.cache';
 import { BuildSitemapUseCase } from './application/use-cases/build-sitemap.use-case';
 import { GetProfileHeadUseCase } from './application/use-cases/get-profile-head.use-case';
 import { ListCuratedProfilesUseCase } from './application/use-cases/list-curated-profiles.use-case';
@@ -64,6 +65,8 @@ import { PrismaCuratedProfileRepository } from './infrastructure/persistence/pri
     PreviewCuratedProfileUseCase,
     BuildSitemapUseCase,
     GetProfileHeadUseCase,
+    // Una sola instancia por proceso: la caché vive lo que vive la API.
+    { provide: ProfileHeadCache, useValue: new ProfileHeadCache() },
   ],
   exports: [ResolveCuratedProfileUseCase, ListCuratedProfilesUseCase],
 })
