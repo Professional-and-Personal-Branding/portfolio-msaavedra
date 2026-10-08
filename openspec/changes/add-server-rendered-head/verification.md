@@ -54,6 +54,11 @@ La imagen del servicio `web` se construyó con `frontend/Dockerfile` y se corri�
 
 El p95 sube **8,0 ms**, por debajo del límite de 50 ms. La medición es en local: en Railway la API va por la red privada, así que conviene repetirla después del deploy.
 
+## Revisión del PR #8 (2026-10-08)
+
+- **API que responde 500**: con el `Caddyfile` anterior, `GET /tech-lead-dotnet` daba **500**; con el nuevo da **200** con el título de respaldo. Con la API sana se sigue insertando el fragmento, y con la API apagada sale el respaldo en 0,508 s. Transcripción en [`verification/revision-api-500.txt`](verification/revision-api-500.txt). `caddy validate` y `caddy fmt` sin cambios.
+- **Caché del fragmento**: `profile-head.cache.spec.ts` (TTL, tope, renovación) y tres casos nuevos en `get-profile-head.use-case.spec.ts`: seis peticiones iguales componen una sola vez, vencido el TTL vuelve a componer y lo que no resuelve no se guarda. Unitarios 335/335 y e2e 123/123, incluido `el fragmento de head nunca se limita`.
+
 ## Pendiente: 5.4 (verificación externa)
 
 El Post Inspector de LinkedIn y el unfurl de Slack necesitan una URL pública, y el sitio todavía no está desplegado (el deploy 1.0.0 sigue pendiente). Para hacerlo después del deploy:

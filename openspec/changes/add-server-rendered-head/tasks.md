@@ -32,5 +32,6 @@
 - [x] 5.1 `docs/DEPLOY.md` § 9.5 y `docs/DEPLOY-RAILWAY.md`: la variable y el comportamiento del include, con la degradación explicada.
 - [x] 5.2 `docs/MANUAL.md` caso 9: reemplazar la limitación conocida por el comportamiento nuevo, y dejar anotado que la imagen es la misma para todos los perfiles.
 - [x] 5.3 Medición: p95 de la ruta HTML antes y después, con la API arriba. Verificar: no sube más de 50 ms.
+- [x] 5.6 Ajustes de la revisión del PR #8: un 4xx/5xx de la API degrada al head de respaldo (`handle_response`) y el fragmento de los perfiles públicos se guarda un minuto (`ProfileHeadCache`). Verificar: transcripción `verification/revision-api-500.txt` y unitarios.
 - [ ] 5.4 Verificación externa: Post Inspector de LinkedIn y unfurl de Slack sobre dos perfiles distintos muestran títulos distintos. Verificar: capturas en `verification/`.
 - [x] 5.5 Suite completa: `npm run test:all` en backend y `npm run test` en frontend. Verificar: en verde.
