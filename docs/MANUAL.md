@@ -734,7 +734,7 @@ POST /api/admin/skill-categories  sin "name"     -> 400  ["name should not be nu
 POST /api/admin/experiences       completo       -> 201  (control)
 ```
 
-**Regresión:** `backend/test/dto-validation.spec.ts` corre `class-validator` sobre cada DTO de entrada con las mismas opciones que `adminValidationPipe` y exige un error por cada campo obligatorio — con el cuerpo vacío, con el campo ausente y con el campo en `null` — más un control con el cuerpo completo. Es un test de comportamiento en vez del test estático que se había propuesto: no depende de qué decorador arregle el problema y cubre todos los campos obligatorios, no solo los anidados. Sin los `@IsDefined()` fallan 8 de sus 34 casos.
+**Regresión:** `backend/test/dto-validation.spec.ts` corre `class-validator` sobre cada DTO de entrada con las mismas opciones que `adminValidationPipe` y exige un error por cada campo obligatorio — con el cuerpo vacío, con el campo ausente y con el campo en `null` — más un control con el cuerpo completo. Es un test de comportamiento: no depende de qué decorador arregle el problema y cubre todos los campos obligatorios, no solo los anidados. Sin los `@IsDefined()` fallan 8 de sus 34 casos. Desde el PR #3 lo complementan una guarda estática en `backend/test/security.spec.ts`, que exige `@IsDefined()` en todo `@ValidateNested()` no opcional de cualquier clase validada en `src/`, y un e2e en `admin.e2e-spec.ts` que prueba las seis omisiones por HTTP.
 
 ---
 
