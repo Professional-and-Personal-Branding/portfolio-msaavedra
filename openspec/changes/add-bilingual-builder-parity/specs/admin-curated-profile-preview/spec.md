@@ -26,17 +26,11 @@ La caché del preview SHALL indexarse por borrador **y** por idioma, de modo que
 ### Requirement: Informe de faltantes de traducción
 La respuesta del preview SHALL incluir el conjunto de campos bilingües que, en el idioma resuelto, caen al fallback por estar vacíos, identificando entidad, id y campo. El cálculo SHALL hacerse en un servicio puro, sin acceso a persistencia.
 
-Un campo cuenta como faltante **solo** cuando su valor en el idioma pedido está ausente, es cadena vacía o es una lista vacía. Un valor idéntico al del otro idioma MUST NOT contar como faltante: hay nombres propios, siglas y títulos que no se traducen.
-
 Este informe MUST viajar únicamente en la respuesta del preview y MUST NOT exponerse en la ruta pública.
 
 #### Scenario: Experiencia sin logros en inglés
 - **WHEN** se previsualiza en EN un perfil que incluye una experiencia con `highlights.en` vacío
 - **THEN** el informe la lista con su id y el campo `highlights`
-
-#### Scenario: Texto que no se traduce
-- **WHEN** una experiencia tiene `role` idéntico en ES y EN (`Tech Lead`)
-- **THEN** el informe no la marca como faltante
 
 #### Scenario: Perfil completo
 - **WHEN** se previsualiza en EN un perfil cuyas entidades tienen todo el contenido en inglés
@@ -49,3 +43,10 @@ Este informe MUST viajar únicamente en la respuesta del preview y MUST NOT expo
 #### Scenario: El informe acompaña al idioma pedido
 - **WHEN** se previsualiza en ES un perfil con el español completo y el inglés a medias
 - **THEN** el informe en ES viene vacío, y al conmutar a EN lista los faltantes
+
+### Requirement: Qué cuenta como faltante de traducción
+Un campo cuenta como faltante **solo** cuando su valor en el idioma pedido está ausente, es cadena vacía o es una lista vacía. Un valor idéntico al del otro idioma MUST NOT contar como faltante: hay nombres propios, siglas y títulos que no se traducen.
+
+#### Scenario: Texto que no se traduce
+- **WHEN** una experiencia tiene `role` idéntico en ES y EN (`Tech Lead`)
+- **THEN** el informe no la marca como faltante

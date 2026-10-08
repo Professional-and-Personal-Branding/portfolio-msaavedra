@@ -49,7 +49,16 @@ El rango `from`/`to` SHALL ser cerrado: una fecha sin hora se resuelve al borde 
 ### Requirement: Agregado por origen de la visita
 El agregado de visitas SHALL incluir `byReferrer: { referrer, views }[]`, construido **sobre el `referrer` que ya se persiste** desde la Fase 3. MUST NOT capturarse ningún dato nuevo, ni cookies, ni la URL completa del origen: solo su host.
 
-La normalización SHALL ser una función pura de dominio con estas reglas:
+#### Scenario: Solo el host
+- **WHEN** el `referrer` trae path y query
+- **THEN** el agregado guarda únicamente el host, sin path ni parámetros
+
+#### Scenario: El total no cambia
+- **WHEN** se compara la suma de `byReferrer` con `total` en el mismo rango
+- **THEN** son iguales
+
+### Requirement: Normalización del origen de la visita
+La normalización del `referrer` SHALL ser una función pura de dominio con estas reglas:
 
 - `referrer` nulo, vacío o no parseable → `"directo"`.
 - Una URL válida → su host en minúsculas, sin el prefijo `www.`.
@@ -70,11 +79,3 @@ La normalización SHALL ser una función pura de dominio con estas reglas:
 #### Scenario: Referrer basura
 - **WHEN** el `referrer` no es una URL parseable
 - **THEN** cuenta bajo `directo` y no rompe el agregado
-
-#### Scenario: Solo el host
-- **WHEN** el `referrer` trae path y query
-- **THEN** el agregado guarda únicamente el host, sin path ni parámetros
-
-#### Scenario: El total no cambia
-- **WHEN** se compara la suma de `byReferrer` con `total` en el mismo rango
-- **THEN** son iguales

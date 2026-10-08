@@ -105,27 +105,15 @@ Un perfil `PUBLIC` SHALL resolverse sin credenciales. Un perfil `PRIVATE` o un s
 - **THEN** se obtiene la vista resuelta
 
 ### Requirement: Secciones ordenadas y ocultas
-La resolución SHALL devolver el orden final, con relleno aplicado: el composer SHALL devolver en `sections` el orden **final** que se renderiza. Para eso, después de aplicar `sectionsOrder` y `sectionsHidden`, SHALL agregar al final las secciones del catálogo que (a) tengan datos tras el filtrado, (b) no estén ocultas y (c) no figuren ya en el orden. El relleno MUST NOT duplicar ids ni reordenar los que ya venían. Una sección sin datos MUST NOT aparecer en `sections`, aunque figure en `sectionsOrder`. El cliente MUST NOT recalcular el orden ni completarlo. Las secciones de `sectionsHidden` MUST NOT figurar en `sections` y SHALL informarse aparte, sin duplicados, en `hiddenSections`.
+La resolución SHALL devolver en `sections` el orden **final** que se renderiza, con relleno aplicado: después de aplicar `sectionsOrder` y `sectionsHidden`, SHALL agregar al final las secciones del catálogo que (a) tengan datos tras el filtrado, (b) no estén ocultas y (c) no figuren ya en el orden. El relleno MUST NOT duplicar ids ni reordenar los que ya venían. El cliente MUST NOT recalcular el orden ni completarlo.
 
 #### Scenario: Orden vacío usa el default
 - **WHEN** `sectionsOrder = []`, `sectionsHidden = []` y hay datos en todas las colecciones
 - **THEN** `sections` es el catálogo completo, en orden canónico
 
-#### Scenario: Orden personalizado con ocultas
-- **WHEN** `sectionsOrder = ["hero","skills","experience","contact"]`, `sectionsHidden = ["skills"]` y hay datos en todas las colecciones
-- **THEN** `sections` empieza con `["hero","experience","contact"]`, no contiene `skills`, sigue con el relleno en orden canónico, y `hiddenSections = ["skills"]`
-
 #### Scenario: Sección con datos omitida del orden
 - **WHEN** un perfil declara `sectionsOrder: ["hero", "experience"]`, tiene proyectos que pasan el filtro y no oculta nada
 - **THEN** `sections` empieza con `hero` y `experience`, e incluye `projects` después de ellas
-
-#### Scenario: Sección sin datos no se rellena
-- **WHEN** un perfil declara `sectionsOrder: ["hero"]` y ningún proyecto pasa el filtro
-- **THEN** `sections` no contiene `projects`
-
-#### Scenario: Sección oculta no se rellena
-- **WHEN** un perfil declara `sectionsOrder: ["hero"]`, `sectionsHidden: ["projects"]` y tiene proyectos que pasan el filtro
-- **THEN** `sections` no contiene `projects` y `hiddenSections` sí
 
 #### Scenario: El orden declarado no se altera
 - **WHEN** un perfil declara `sectionsOrder: ["contact", "hero", "experience"]`
@@ -135,12 +123,37 @@ La resolución SHALL devolver el orden final, con relleno aplicado: el composer 
 - **WHEN** un perfil declara `sectionsOrder: ["hero", "hero", "experience"]`
 - **THEN** `sections` contiene `hero` una sola vez
 
+### Requirement: Secciones vacías y ocultas
+Una sección sin datos MUST NOT aparecer en `sections`, aunque figure en `sectionsOrder`. Las secciones de `sectionsHidden` MUST NOT figurar en `sections` y SHALL informarse aparte, sin duplicados, en `hiddenSections`.
+
+#### Scenario: Orden personalizado con ocultas
+- **WHEN** `sectionsOrder = ["hero","skills","experience","contact"]`, `sectionsHidden = ["skills"]` y hay datos en todas las colecciones
+- **THEN** `sections` empieza con `["hero","experience","contact"]`, no contiene `skills`, sigue con el relleno en orden canónico, y `hiddenSections = ["skills"]`
+
+#### Scenario: Sección sin datos no se rellena
+- **WHEN** un perfil declara `sectionsOrder: ["hero"]` y ningún proyecto pasa el filtro
+- **THEN** `sections` no contiene `projects`
+
+#### Scenario: Sección oculta no se rellena
+- **WHEN** un perfil declara `sectionsOrder: ["hero"]`, `sectionsHidden: ["projects"]` y tiene proyectos que pasan el filtro
+- **THEN** `sections` no contiene `projects` y `hiddenSections` sí
+
 ### Requirement: Resultado listo para presentación
-La vista resuelta SHALL contener: metadatos del perfil curado (`slug`, `title`, `headline`, `description`, `roleType`, `techFocus`, `accentColor`, `layout`, `visibility`), `sections`/`hiddenSections`, el `theme` resuelto (ver `theme-resolution`), el perfil base (`profile`, misma forma que `public-profile-api`), las `experiences` (misma forma que `public-experience-api`), `skillCategories[] { name, skills[] }`, `projects` (seleccionados por tags/overrides), `education`, `certifications` y `socialLinks` (misma forma que `public-portfolio-sections-api`). Todos los campos traducibles SHALL venir resueltos al locale pedido; la salida MUST NOT contener `accessToken`, `includeIds`, `excludeIds` ni `filterTags`.
+La vista resuelta SHALL contener los metadatos del perfil curado (`slug`, `title`, `headline`, `description`, `roleType`, `techFocus`, `accentColor`, `layout`, `visibility`), `sections`/`hiddenSections` y el `theme` resuelto (ver `theme-resolution`).
 
 #### Scenario: Forma completa
 - **WHEN** se resuelve un perfil `PUBLIC`
 - **THEN** el resultado tiene las claves `slug, title, headline, description, roleType, techFocus, accentColor, layout, visibility, sections, hiddenSections, theme, profile, experiences, skillCategories, projects, education, certifications, socialLinks`
+
+### Requirement: Contenido del portafolio en el resultado
+La vista resuelta SHALL incluir el perfil base (`profile`, misma forma que `public-profile-api`), las `experiences` (misma forma que `public-experience-api`), `skillCategories[] { name, skills[] }`, `projects` (seleccionados por tags/overrides), `education`, `certifications` y `socialLinks` (misma forma que `public-portfolio-sections-api`).
+
+#### Scenario: Colecciones con la forma de las rutas públicas
+- **WHEN** se resuelve un perfil `PUBLIC`
+- **THEN** cada elemento de `experiences` tiene la forma de `GET /api/experiences`, cada `skillCategories[]` trae `name` y `skills[]`, y `projects` contiene solo los seleccionados por tags y overrides
+
+### Requirement: Resultado resuelto al idioma y sin datos internos
+Todos los campos traducibles de la vista resuelta SHALL venir resueltos al locale pedido; la salida MUST NOT contener `accessToken`, `includeIds`, `excludeIds` ni `filterTags`.
 
 #### Scenario: Sin datos sensibles ni internos
 - **WHEN** se resuelve un perfil `PROTECTED` con token válido
@@ -210,7 +223,7 @@ El dominio SHALL declarar **un único** catálogo de secciones, `SECTION_IDS`, c
 - **THEN** el frontend no compila hasta que el registro de secciones implemente ese id
 
 ### Requirement: Tabla de verdad de la resolución de ruta
-La decisión de si un slug resuelve SHALL tomarse en **una única** función pura de dominio sobre `(visibility, archivedAt, token presente y válido)`, y ningún caso de uso ni controller SHALL replicarla. Un perfil **archivado** MUST resolver siempre como inexistente, cualquiera sea su visibilidad y aunque se presente un token válido; MUST NOT devolver 401, porque un 401 confirmaría que el slug existió.
+La decisión de si un slug resuelve SHALL tomarse en **una única** función pura de dominio sobre `(visibility, archivedAt, token válido)` según esta tabla; ningún caso de uso ni controller SHALL replicarla.
 
 | `visibility` | `archivedAt` | sin token | con token válido |
 |---|---|---|---|
@@ -221,6 +234,17 @@ La decisión de si un slug resuelve SHALL tomarse en **una única** función pur
 | `PRIVATE` | null | 404 | 404 |
 | `PRIVATE` | fecha | 404 | 404 |
 
+#### Scenario: Protegido no archivado sigue igual
+- **WHEN** un perfil `PROTECTED` no archivado se pide sin token y luego con token válido
+- **THEN** responde 401 y después 200
+
+#### Scenario: Los doce casos están cubiertos
+- **WHEN** se ejecuta la tabla de verdad como test
+- **THEN** las seis combinaciones de `visibility` × `archivedAt`, con y sin token, dan el resultado de la tabla
+
+### Requirement: Un perfil archivado resuelve como inexistente
+Un perfil **archivado** MUST resolver siempre como inexistente, cualquiera sea su visibilidad y aunque se presente un token válido; MUST NOT devolver 401, porque un 401 confirmaría que el slug existió.
+
 #### Scenario: Público archivado
 - **WHEN** un perfil `PUBLIC` se archiva y se pide `GET /api/curated-profiles/{slug}`
 - **THEN** responde 404, sin distinguirse de un slug inexistente
@@ -229,17 +253,9 @@ La decisión de si un slug resuelve SHALL tomarse en **una única** función pur
 - **WHEN** un perfil `PROTECTED` archivado se pide con su `?token=` correcto
 - **THEN** responde 404 y no 401 ni 200
 
-#### Scenario: Protegido no archivado sigue igual
-- **WHEN** un perfil `PROTECTED` no archivado se pide sin token y luego con token válido
-- **THEN** responde 401 y después 200
-
 #### Scenario: Desarchivar restituye el comportamiento
 - **WHEN** un perfil `PUBLIC` archivado se desarchiva y se vuelve a pedir
 - **THEN** responde 200 con el mismo contenido que antes de archivarse
-
-#### Scenario: Los doce casos están cubiertos
-- **WHEN** se ejecuta la tabla de verdad como test
-- **THEN** las seis combinaciones de `visibility` × `archivedAt`, con y sin token, dan el resultado de la tabla
 
 ### Requirement: Un perfil archivado conserva sus visitas
 Archivar MUST NOT borrar `ProfileView` ni reiniciar `views`. Un perfil archivado SHALL seguir apareciendo en la analítica agregada, identificable como archivado. Mientras está archivado, la ruta pública no resuelve, así que MUST NOT registrarse ninguna visita nueva.
@@ -253,7 +269,7 @@ Archivar MUST NOT borrar `ProfileView` ni reiniciar `views`. Un perfil archivado
 - **THEN** responde 404 y no se crea ningún `ProfileView`
 
 ### Requirement: Resolución por slug anterior
-Al renombrarse el `slug` de un perfil, el anterior SHALL registrarse como alias en la misma transacción. La búsqueda por slug SHALL consultar primero los slugs vigentes y después los alias. Cuando resuelve por un alias, la respuesta MUST contener el **slug canónico** del perfil y SHALL incluir la cabecera `Content-Location` con la ruta canónica. Un alias MUST NOT colisionar con el slug vigente de otro perfil ni con otro alias; si el slug vuelve a usarse para el mismo perfil, su alias SHALL eliminarse.
+Al renombrarse el `slug` de un perfil, el anterior SHALL registrarse como alias en la misma transacción. La búsqueda por slug SHALL consultar primero los slugs vigentes y después los alias. Cuando resuelve por un alias, la respuesta MUST contener el **slug canónico** del perfil y SHALL incluir la cabecera `Content-Location` con la ruta canónica.
 
 #### Scenario: El link viejo sigue funcionando
 - **WHEN** un perfil pasa de `acme-tech-lead` a `acme-lead` y se pide el slug anterior
@@ -263,6 +279,13 @@ Al renombrarse el `slug` de un perfil, el anterior SHALL registrarse como alias 
 - **WHEN** se pide `GET /sitemap.xml` después del renombrado
 - **THEN** figura solo la URL canónica y no la del alias
 
+#### Scenario: Un alias de un perfil archivado no resuelve
+- **WHEN** se pide el alias de un perfil que está archivado
+- **THEN** responde 404, igual que su slug canónico
+
+### Requirement: Unicidad de los alias de slug
+Un alias MUST NOT colisionar con el slug vigente de otro perfil ni con otro alias; si el slug vuelve a usarse para el mismo perfil, su alias SHALL eliminarse.
+
 #### Scenario: Colisión de slug con un alias existente
 - **WHEN** se intenta crear un perfil con un slug que es alias de otro
 - **THEN** responde 409 y no se crea
@@ -270,7 +293,3 @@ Al renombrarse el `slug` de un perfil, el anterior SHALL registrarse como alias 
 #### Scenario: Reusar el slug propio borra el alias
 - **WHEN** un perfil vuelve a su slug anterior
 - **THEN** ese alias desaparece y no queda duplicado
-
-#### Scenario: Un alias de un perfil archivado no resuelve
-- **WHEN** se pide el alias de un perfil que está archivado
-- **THEN** responde 404, igual que su slug canónico

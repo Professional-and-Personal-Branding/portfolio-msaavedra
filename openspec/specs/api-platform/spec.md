@@ -17,7 +17,7 @@ Todas las rutas HTTP de la API SHALL exponerse bajo el prefijo `/api`. Una ruta 
 - **THEN** la API responde 404 con cuerpo JSON
 
 ### Requirement: Configuración por variables de entorno validada al arranque
-La API SHALL leer su configuración desde variables de entorno (`DATABASE_URL`, `PORT`, `NODE_ENV`, `FRONTEND_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `ANALYTICS_SALT`) y MUST fallar al arrancar, con un mensaje que identifique la variable, si falta una obligatoria o es inválida. `PORT` SHALL tener valor por defecto 3000. `JWT_SECRET` es obligatoria y MUST tener al menos 16 caracteres. `JWT_EXPIRES_IN` SHALL aceptar segundos o notación `1d`/`12h`/`30m` (default `1d`). `ANALYTICS_SALT` es opcional y SHALL usar `JWT_SECRET` como valor por defecto.
+La API SHALL leer su configuración desde variables de entorno (`DATABASE_URL`, `PORT`, `NODE_ENV`, `FRONTEND_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `ANALYTICS_SALT`) y MUST fallar al arrancar, con un mensaje que identifique la variable, si falta una obligatoria o es inválida. `PORT` SHALL tener valor por defecto 3000.
 
 #### Scenario: Falta DATABASE_URL
 - **WHEN** la API arranca sin `DATABASE_URL` definida
@@ -26,6 +26,9 @@ La API SHALL leer su configuración desde variables de entorno (`DATABASE_URL`, 
 #### Scenario: Puerto configurable
 - **WHEN** la API arranca con `PORT=3300`
 - **THEN** acepta conexiones en el puerto 3300
+
+### Requirement: Reglas de las variables de sesión y analítica
+`JWT_SECRET` es obligatoria y MUST tener al menos 16 caracteres. `JWT_EXPIRES_IN` SHALL aceptar segundos o notación `1d`/`12h`/`30m` (default `1d`). `ANALYTICS_SALT` es opcional y SHALL usar `JWT_SECRET` como valor por defecto.
 
 #### Scenario: JWT_SECRET ausente o corta
 - **WHEN** la API arranca sin `JWT_SECRET` o con una de 8 caracteres
