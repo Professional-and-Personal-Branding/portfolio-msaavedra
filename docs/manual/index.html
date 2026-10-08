@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Manual del Portafolio Administrable</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -112,7 +113,7 @@
   .dot.fail { background: var(--fail); }
 
   /* ── Tarjetas ── */
-  section { scroll-margin-top: 90px; }
+  section, .case, .shot { scroll-margin-top: 80px; }
   .block { margin-bottom: 36px; }
   .block > h2 {
     font-size: 20px; letter-spacing: -.015em; margin-bottom: 4px;
@@ -175,7 +176,7 @@
   /* ── Capturas ── */
   .shot { margin: 12px 0 0; }
   .shot img {
-    width: 100%; border: 1px solid var(--border); border-radius: 8px; cursor: zoom-in;
+    width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; cursor: zoom-in;
     background: var(--surface-2);
   }
   .shot figcaption { font-size: 12px; color: var(--fg-muted); margin-top: 6px; }
@@ -234,7 +235,8 @@
   <nav class="side" aria-label="Índice">
     <h3>Empezar</h3>
     <a href="#entorno"><span class="id">§0</span> Entorno y puertos</a>
-    <a href="#resumen"><span class="id">§1</span> Resumen</a>
+    <a href="#mapa"><span class="id">§1</span> Mapa de la plataforma</a>
+    <a href="#resumen"><span class="id">§2</span> Resumen</a>
     <h3>Vista pública</h3>
     <a href="#tc01"><span class="dot ok"></span><span class="id">TC-01</span> Home</a>
     <a href="#tc02"><span class="dot ok"></span><span class="id">TC-02</span> Idioma</a>
@@ -260,7 +262,9 @@
     <h3>Cierre</h3>
     <a href="#defectos"><span class="dot ok"></span><span class="id">§6</span> Defectos</a>
     <a href="#noadmin"><span class="id">§7</span> Sin administrar</a>
-    <a href="#fallas"><span class="id">§8</span> Qué falla y por qué</a>
+    <a href="#operacion"><span class="id">§8</span> Operación</a>
+    <a href="#receta"><span class="id">§9</span> Receta completa</a>
+    <a href="#fallas"><span class="id">§10</span> Qué falla y por qué</a>
   </nav>
 
   <main>
@@ -312,6 +316,47 @@ AUTH="Authorization: Bearer $TOKEN"
 curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
     </section>
 
+    <!-- ───────────── Mapa ───────────── -->
+    <section id="mapa" class="block">
+      <h2>Mapa de la plataforma</h2>
+      <p class="lede">Dónde está cada cosa: lo público, lo que viaja en la URL y el panel.</p>
+
+      <p><span class="lbl">Rutas públicas</span></p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Ruta</th><th>Qué es</th></tr></thead>
+        <tbody>
+          <tr><td><code>/</code></td><td>La home. Es el perfil curado con slug <code>all</code></td></tr>
+          <tr><td><code>/:slug</code></td><td>Un perfil curado. Ej. <code>/tech-lead-dotnet</code></td></tr>
+          <tr><td>cualquier otra</td><td>404 propio</td></tr>
+          <tr><td><code>/robots.txt</code>, <code>/sitemap.xml</code></td><td>Los genera el backend con los perfiles <code>PUBLIC</code></td></tr>
+        </tbody>
+      </table></div>
+
+      <p><span class="lbl">Parámetros de URL</span> · viven en la URL, nunca en <code>localStorage</code>, así que se comparten.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Parámetro</th><th>Valores</th><th>Por defecto</th></tr></thead>
+        <tbody>
+          <tr><td><code>?lang=</code></td><td>es, en</td><td><code>Accept-Language</code> y después es. La API también acepta <code>?locale=</code>, con prioridad</td></tr>
+          <tr><td><code>?theme=</code></td><td>modern-dark, modern-light, minimal, elegant, corporate</td><td>modern-dark</td></tr>
+          <tr><td><code>?layout=</code></td><td>classic, sidebar</td><td>classic</td></tr>
+          <tr><td><code>?token=</code></td><td>el token del perfil</td><td>—</td></tr>
+        </tbody>
+      </table></div>
+
+      <p><span class="lbl">Panel</span> · en <code>/admin</code>, detrás de la cookie de sesión.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Ruta</th><th>Pantalla</th></tr></thead>
+        <tbody>
+          <tr><td><code>/admin/login</code></td><td>Entrada</td></tr>
+          <tr><td><code>/admin</code></td><td>Dashboard de analítica</td></tr>
+          <tr><td><code>/admin/experiencias</code></td><td>CRUD de experiencias</td></tr>
+          <tr><td><code>/admin/skills</code></td><td>CRUD de categorías y skills</td></tr>
+          <tr><td><code>/admin/perfiles</code></td><td>Lista de perfiles curados</td></tr>
+          <tr><td><code>/admin/perfiles/:id</code></td><td><b>El constructor</b>: Identidad, Selección, Diseño y Publicación, con preview en vivo</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
     <!-- ───────────── Resumen ───────────── -->
     <section id="resumen" class="block">
       <h2>Resumen de la última ejecución</h2>
@@ -361,7 +406,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
         <p><span class="lbl">Pasos</span> · Abrir <code>http://localhost:5173/?lang=es</code>.</p>
         <p><span class="lbl">Esperado</span> · Se renderiza el perfil <code>all</code> con el hero, el badge de disponibilidad, los datos de contacto y la fila de métricas. El título del documento es <code>Perfil Completo · &lt;nombre&gt;</code>.</p>
         <p><span class="lbl">Observado</span> · 15 experiencias, 80 tecnologías, 8 certificaciones.</p>
-        <figure class="shot"><img src="tc01-home-es.jpg" alt="Home del portafolio en español" loading="lazy"><figcaption>La home es el perfil curado <code>all</code>.</figcaption></figure>
+        <figure class="shot" id="img-tc01-home-es"><img src="tc01-home-es.jpg" width="800" height="455" alt="Home del portafolio en español"><figcaption>La home es el perfil curado <code>all</code>.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc02">
@@ -369,7 +414,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
           <label class="run"><input type="checkbox" data-run="tc02"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · Abrir <code>/</code> sin parámetros con el navegador en inglés, y después <code>/?lang=es</code>.</p>
         <p><span class="lbl">Esperado</span> · Sin parámetro, el contenido sale en el idioma del <code>Accept-Language</code> y el selector marca EN. Con <code>?lang=es</code> todo pasa a español, incluido el título del documento. Los datos no se duplican: es el mismo registro resuelto en otro idioma.</p>
-        <figure class="shot"><img src="tc02-home-en.jpg" alt="Home del portafolio en inglés" loading="lazy"><figcaption>Mismo registro, idioma negociado por <code>Accept-Language</code>.</figcaption></figure>
+        <figure class="shot" id="img-tc02-home-en"><img src="tc02-home-en.jpg" width="800" height="455" alt="Home del portafolio en inglés"><figcaption>Mismo registro, idioma negociado por <code>Accept-Language</code>.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc03">
@@ -378,7 +423,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
         <p><span class="lbl">Pasos</span> · Abrir <code>/tech-lead-dotnet?lang=es</code>.</p>
         <p><span class="lbl">Esperado</span> · El titular pasa a ser el del perfil, se antepone su descripción al resumen general y las métricas bajan respecto de la home porque el contenido está filtrado por <code>filterTags</code>.</p>
         <div class="note"><b>Cómo se comprueba el filtro sin mirar.</b> Comparar las métricas con TC-01: en un perfil con <code>filterTags: ["dotnet"]</code> se pasa de 15 experiencias y 80 tecnologías a 7 y 57.</div>
-        <figure class="shot"><img src="tc03-perfil-curado.jpg" alt="Perfil curado Tech Lead .NET" loading="lazy"><figcaption>Titular y descripción propios del perfil curado.</figcaption></figure>
+        <figure class="shot" id="img-tc03-perfil-curado"><img src="tc03-perfil-curado.jpg" width="800" height="450" alt="Perfil curado Tech Lead .NET"><figcaption>Titular y descripción propios del perfil curado.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc04">
@@ -395,7 +440,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
             <tr><td><code>?token=</code></td><td>el token del perfil</td><td>—</td></tr>
           </tbody>
         </table></div>
-        <figure class="shot"><img src="tc04-tema-layout.jpg" alt="Perfil con tema corporate y layout sidebar" loading="lazy"><figcaption>Preset <code>corporate</code> con layout <code>sidebar</code>.</figcaption></figure>
+        <figure class="shot" id="img-tc04-tema-layout"><img src="tc04-tema-layout.jpg" width="800" height="455" alt="Perfil con tema corporate y layout sidebar"><figcaption>Preset <code>corporate</code> con layout <code>sidebar</code>.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc05">
@@ -404,7 +449,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
         <p><span class="lbl">Pasos</span> · En cualquier vista, abrir el desplegable <b>Perfiles</b>.</p>
         <p><span class="lbl">Esperado</span> · Lista todos los perfiles <code>PUBLIC</code> agrupados por <code>roleType</code>, cada uno con su <code>techFocus</code> debajo.</p>
         <div class="note warn"><b>Comportamiento a tener en cuenta.</b> El menú se monta también en <code>/:slug</code>, así que quien recibe un link ve los otros perfiles hechos para otras vacantes. Lo resuelve el change <code>add-curated-profile-lifecycle</code>.</div>
-        <figure class="shot"><img src="tc05-menu-perfiles.jpg" alt="Menú de perfiles abierto sobre un perfil curado" loading="lazy"><figcaption>El desplegable abierto sobre <code>/tech-lead-dotnet</code>.</figcaption></figure>
+        <figure class="shot" id="img-tc05-menu-perfiles"><img src="tc05-menu-perfiles.jpg" width="792" height="802" alt="Menú de perfiles abierto sobre un perfil curado"><figcaption>El desplegable abierto sobre <code>/tech-lead-dotnet</code>.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc06">
@@ -412,7 +457,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
           <label class="run"><input type="checkbox" data-run="tc06"> ejecutado</label></div>
         <p><span class="lbl">Precondición</span> · Un perfil con <code>visibility: PROTECTED</code> y <code>accessToken</code>.</p>
         <p><span class="lbl">Esperado</span> · La API responde <b>401</b> y la vista muestra el formulario de token, sin filtrar ningún dato del perfil.</p>
-        <figure class="shot"><img src="tc06-token-form.jpg" alt="Formulario de token de acceso" loading="lazy"><figcaption>Nada del perfil se filtra antes de validar el token.</figcaption></figure>
+        <figure class="shot" id="img-tc06-token-form"><img src="tc06-token-form.jpg" width="533" height="540" alt="Formulario de token de acceso"><figcaption>Nada del perfil se filtra antes de validar el token.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc07">
@@ -420,21 +465,21 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
           <label class="run"><input type="checkbox" data-run="tc07"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · Escribir el token y pulsar <b>Acceder</b>.</p>
         <p><span class="lbl">Esperado</span> · El token pasa a la URL como <code>?token=</code>, la API responde 200 y el perfil se renderiza. El link con el token es compartible tal cual.</p>
-        <figure class="shot"><img src="tc07-token-resuelto.jpg" alt="Perfil protegido ya resuelto" loading="lazy"><figcaption>Resuelto, y con las métricas ya filtradas.</figcaption></figure>
+        <figure class="shot" id="img-tc07-token-resuelto"><img src="tc07-token-resuelto.jpg" width="792" height="802" alt="Perfil protegido ya resuelto"><figcaption>Resuelto, y con las métricas ya filtradas.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc08">
         <div class="case-head"><span class="case-id">TC-08</span><h3>Un slug inexistente o privado da 404</h3><span class="pill ok">pasa</span>
           <label class="run"><input type="checkbox" data-run="tc08"> ejecutado</label></div>
         <p><span class="lbl">Esperado</span> · La API responde <b>404</b> y la vista muestra el 404 propio. Un perfil <code>PRIVATE</code> responde exactamente igual, <b>a propósito</b>: un 403 confirmaría que el slug existe.</p>
-        <figure class="shot"><img src="tc08-404.jpg" alt="Página 404 del portafolio" loading="lazy"><figcaption>Indistinguible de un perfil privado.</figcaption></figure>
+        <figure class="shot" id="img-tc08-404"><img src="tc08-404.jpg" width="792" height="802" alt="Página 404 del portafolio"><figcaption>Indistinguible de un perfil privado.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc09">
         <div class="case-head"><span class="case-id">TC-09</span><h3>La vista funciona en móvil</h3><span class="pill ok">pasa</span>
           <label class="run"><input type="checkbox" data-run="tc09"> ejecutado</label></div>
         <p><span class="lbl">Esperado</span> · Una sola columna, el menú colapsa en hamburguesa, los selectores de tema e idioma siguen accesibles y no hay scroll horizontal.</p>
-        <figure class="shot"><img src="tc09-movil.jpg" alt="Vista móvil del perfil" loading="lazy" style="max-width:375px"><figcaption>375 × 812.</figcaption></figure>
+        <figure class="shot" id="img-tc09-movil"><img src="tc09-movil.jpg" width="375" height="812" alt="Vista móvil del perfil" style="max-width:375px"><figcaption>375 × 812.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc10">
@@ -462,7 +507,7 @@ curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
           <label class="run"><input type="checkbox" data-run="tc11"> ejecutado</label></div>
         <p><span class="lbl">Esperado</span> · <code>/admin</code> redirige a <code>/admin/login</code>. Tras entrar, se llega al Dashboard y se vuelve al destino original si se había pedido otra ruta.</p>
         <p>La sesión es una cookie <b>httpOnly</b>: el cliente nunca guarda el JWT y el estado se deriva de <code>GET /api/auth/me</code>. Al expirar, el panel vuelve al login en la siguiente petición.</p>
-        <figure class="shot"><img src="tc10-login.jpg" alt="Pantalla de login del backoffice" loading="lazy" style="max-width:480px"><figcaption>El panel vive en el mismo frontend, en un chunk aparte.</figcaption></figure>
+        <figure class="shot" id="img-tc10-login"><img src="tc10-login.jpg" width="792" height="802" alt="Pantalla de login del backoffice" style="max-width:480px"><figcaption>El panel vive en el mismo frontend, en un chunk aparte.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc12">
@@ -487,8 +532,8 @@ POST con un campo fuera del DTO        -> 400
 POST omitiendo "title" (obligatorio)   -> 500  ❌ antes del arreglo de D-02
 POST omitiendo "title" (obligatorio)   -> 400  ✅ después: "title should not be null or undefined"</pre></div>
         <div class="note"><b>Recomendado.</b> Crealo <code>PRIVATE</code> y pasalo a <code>PUBLIC</code> recién cuando esté listo. Un <code>PRIVATE</code> devuelve 404, así que nadie lo encuentra mientras lo armás.</div>
-        <figure class="shot"><img src="tc12a-perfiles-lista.jpg" alt="Lista de perfiles curados en el panel" loading="lazy"><figcaption>Slug, visibilidad, taxonomía y visitas de cada perfil.</figcaption></figure>
-        <figure class="shot"><img src="tc12b-identidad.jpg" alt="Pestaña Identidad del constructor" loading="lazy"><figcaption>Pestaña Identidad, con la vista previa en vivo: <code>12 experiencias · 10 categorías · 1 proyectos</code> ya filtradas.</figcaption></figure>
+        <figure class="shot" id="img-tc12a-perfiles-lista"><img src="tc12a-perfiles-lista.jpg" width="800" height="455" alt="Lista de perfiles curados en el panel"><figcaption>Slug, visibilidad, taxonomía y visitas de cada perfil.</figcaption></figure>
+        <figure class="shot" id="img-tc12b-identidad"><img src="tc12b-identidad.jpg" width="800" height="455" alt="Pestaña Identidad del constructor"><figcaption>Pestaña Identidad, con la vista previa en vivo: <code>12 experiencias · 10 categorías · 1 proyectos</code> ya filtradas.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc13">
@@ -509,7 +554,7 @@ filterTags=[suite-tag]                    -> 1; la visible entró, la oculta no
 includeIds sobre una experiencia oculta   -> no entró  (no fuerza invisibles)
 mismo id en includeIds y excludeIds       -> no entró  (excludeIds siempre gana)</pre></div>
         <p>El orden de salida siempre es cronológico: <code>startDate</code> descendente, <code>order</code> ascendente como desempate. No se reordena item por item, a propósito.</p>
-        <figure class="shot"><img src="tc13-seleccion.jpg" alt="Pestaña Selección con los chips de tags" loading="lazy"><figcaption>Los tags activos arriba y el universo disponible debajo, sacado de los datos reales.</figcaption></figure>
+        <figure class="shot" id="img-tc13-seleccion"><img src="tc13-seleccion.jpg" width="800" height="455" alt="Pestaña Selección con los chips de tags"><figcaption>Los tags activos arriba y el universo disponible debajo, sacado de los datos reales.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc14">
@@ -523,7 +568,7 @@ sectionsOrder=[hero,skills,experience,contact]
                                                    hiddenSections=[skills]</pre></div>
         <div class="note"><b>Dos reglas.</b> Una sección <b>con datos</b> que no figure en <code>sectionsOrder</code> se agrega al final; para ocultarla hay que ponerla en <code>sectionsHidden</code>. Una sección <b>sin datos</b> no se renderiza aunque esté en el orden.</div>
         <div class="note">Desde el change <code>unify-section-catalog</code> el catálogo es uno solo, con <b>9</b> secciones, y el backend aplica el relleno: <code>sections</code> trae al final, en orden canónico, las secciones con datos que no figuran en el orden ni están ocultas. La transcripción de arriba es anterior al change. Un id fuera del catálogo ahora responde 400.</div>
-        <figure class="shot"><img src="tc14-secciones.jpg" alt="Pestaña Diseño con la lista de secciones" loading="lazy"><figcaption><code>projects</code> y <code>presence</code> quedan en las posiciones 8 y 9 porque el orden guardado trae solo siete.</figcaption></figure>
+        <figure class="shot" id="img-tc14-secciones"><img src="tc14-secciones.jpg" width="800" height="455" alt="Pestaña Diseño con la lista de secciones"><figcaption><code>projects</code> y <code>presence</code> quedan en las posiciones 8 y 9 porque el orden guardado trae solo siete.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc15">
@@ -533,7 +578,7 @@ sectionsOrder=[hero,skills,experience,contact]
         <p><span class="lbl">Esperado</span> · El preview cambia al instante, porque los tokens se aplican como variables CSS <code>--t-*</code> en el contenedor del preview y no en el documento. Y <b>solo se guardan las diferencias</b> contra el tema base, en <code>themeOverrides</code>: si mañana cambia el preset, el perfil hereda la mejora y conserva su ajuste.</p>
         <div class="codewrap"><pre>GET /api/admin/themes  -> 5 temas: corporate, elegant, minimal, modern-dark, modern-light
 PATCH themeOverrides   -> se guarda {"colors":{"accent":"#5B2C87"}}, solo la diferencia</pre></div>
-        <figure class="shot"><img src="tc15-tema.jpg" alt="Customizador de tema" loading="lazy"><figcaption>Tema base, los ocho colores con su hexadecimal, y <b>Restablecer</b> para volver al preset.</figcaption></figure>
+        <figure class="shot" id="img-tc15-tema"><img src="tc15-tema.jpg" width="800" height="455" alt="Customizador de tema"><figcaption>Tema base, los ocho colores con su hexadecimal, y <b>Restablecer</b> para volver al preset.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc16">
@@ -555,7 +600,7 @@ PRIVATE   sin token -> 404
 PRIVATE   con token -> 404   (no revela que existe)
 slug inexistente    -> 404   (indistinguible del PRIVATE)
 el PRIVATE figura en el sitemap -> no</pre></div>
-        <figure class="shot"><img src="tc16-publicacion.jpg" alt="Pestaña Publicación" loading="lazy"><figcaption>Visibilidad, el link público con copiar y abrir, y el contador de visitas.</figcaption></figure>
+        <figure class="shot" id="img-tc16-publicacion"><img src="tc16-publicacion.jpg" width="800" height="455" alt="Pestaña Publicación"><figcaption>Visibilidad, el link público con copiar y abrir, y el contador de visitas.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc17">
@@ -584,7 +629,7 @@ tras un preview del panel              -> 4   ✅ el preview no cuenta como visi
 GET analytics/views?from=hoy&amp;to=hoy    -> total=0   ❌ antes del arreglo de D-01
 GET analytics/views?from=hoy&amp;to=hoy    -> total=4   ✅ después</pre></div>
         <div class="note"><b>Fallaba el rango, no el registro.</b> El contador del perfil y el registro de <code>ProfileView</code> siempre funcionaron. <code>to</code> era exclusivo y el dashboard pide <code>[hoy-29, hoy]</code>, así que las visitas de hoy no aparecían. Corregido: ver <a href="#defectos">D-01</a>.</div>
-        <figure class="shot"><img src="tc18-dashboard.jpg" alt="Dashboard de analítica" loading="lazy"><figcaption>516 visitas en el rango, 6 perfiles y 2 idiomas. Captura anterior al arreglo de D-01: los datos más recientes son de septiembre porque las visitas de hoy todavía no entraban. Se renueva en la próxima ejecución.</figcaption></figure>
+        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="800" height="455" alt="Dashboard de analítica, antes del arreglo"><figcaption>516 visitas en el rango, 6 perfiles y 2 idiomas. Captura anterior al arreglo de D-01: los datos más recientes son de septiembre porque las visitas de hoy todavía no entraban. Se renueva en la próxima ejecución.</figcaption></figure>
         <p>De cada visita se guarda el perfil, el idioma, la fecha y la IP <b>solo como HMAC</b> con <code>ANALYTICS_SALT</code>. No hay cookies de seguimiento, y si el registro falla la respuesta al visitante no se altera.</p>
       </article>
 
@@ -609,8 +654,8 @@ GET /api/experiences (público)           -> la oculta no aparece
 GET /api/admin/experiences               -> la oculta aparece, con visible=false
 POST omitiendo "summary" (obligatorio)   -> 500  ❌ antes del arreglo de D-02
 POST omitiendo "summary" (obligatorio)   -> 400  ✅ después: "summary should not be null or undefined"</pre></div>
-        <figure class="shot"><img src="tc19a-experiencias.jpg" alt="Lista de experiencias" loading="lazy"><figcaption>Cada fila con su empresa, periodo, tags y orden.</figcaption></figure>
-        <figure class="shot"><img src="tc19b-formulario.jpg" alt="Formulario de experiencia" loading="lazy"><figcaption>Los campos bilingües llevan conmutador ES/EN. <b>Logros (es)</b> no lo tiene: la limitación de abajo, a la vista.</figcaption></figure>
+        <figure class="shot" id="img-tc19a-experiencias"><img src="tc19a-experiencias.jpg" width="800" height="455" alt="Lista de experiencias"><figcaption>Cada fila con su empresa, periodo, tags y orden.</figcaption></figure>
+        <figure class="shot" id="img-tc19b-formulario"><img src="tc19b-formulario.jpg" width="800" height="450" alt="Formulario de experiencia"><figcaption>Los campos bilingües llevan conmutador ES/EN. <b>Logros (es)</b> no lo tiene: la limitación de abajo, a la vista.</figcaption></figure>
         <div class="note warn"><b>Limitación actual.</b> El formulario expone los logros solo en español. El inglés se conserva al guardar, pero no se puede editar desde el panel. Lo resuelve el change <code>add-bilingual-builder-parity</code>.</div>
       </article>
 
@@ -623,7 +668,7 @@ POST omitiendo "summary" (obligatorio)   -> 400  ✅ después: "summary should n
 POST skill "SuiteSkill" con tags=[suite-tag]  -> 201
 preview con filterTags=[suite-tag]            -> la categoría entra por el tag de su skill
 DELETE de la categoría                        -> se lleva sus skills</pre></div>
-        <figure class="shot"><img src="tc20-skills.jpg" alt="Skills agrupadas por categoría" loading="lazy"><figcaption>Cada skill lleva los tags que deciden en qué perfiles aparece.</figcaption></figure>
+        <figure class="shot" id="img-tc20-skills"><img src="tc20-skills.jpg" width="800" height="455" alt="Skills agrupadas por categoría"><figcaption>Cada skill lleva los tags que deciden en qué perfiles aparece.</figcaption></figure>
         <p>Una categoría entra en un perfil curado si <b>alguna de sus skills</b> comparte un tag con <code>filterTags</code>; dentro, se muestran solo las skills que pasan el filtro.</p>
       </article>
     </section>
@@ -656,7 +701,7 @@ POST /api/admin/curated-profiles  sin "title"    -> 400  ["title should not be n
 POST /api/admin/curated-profiles  sin "headline" -> 400  ["headline should not be null or undefined"]
 POST /api/admin/skill-categories  sin "name"     -> 400  ["name should not be null or undefined"]
 POST /api/admin/experiences       completo       -> 201  (control)</pre></div>
-        <p><span class="lbl">Regresión</span> · <code>backend/test/dto-validation.spec.ts</code>, un test de comportamiento que exige un error por cada campo obligatorio de cada DTO de entrada (cuerpo vacío, campo ausente y campo en <code>null</code>). Sin el arreglo fallan 8 de sus 34 casos.</p>
+        <p><span class="lbl">Regresión</span> · <code>backend/test/dto-validation.spec.ts</code>, un test de comportamiento que exige un error por cada campo obligatorio de cada DTO de entrada (cuerpo vacío, campo ausente y campo en <code>null</code>). Sin el arreglo fallan 8 de sus 34 casos. Desde el PR #3 lo complementan una guarda estática en <code>backend/test/security.spec.ts</code>, que exige <code>@IsDefined()</code> en todo <code>@ValidateNested()</code> no opcional, y un e2e por HTTP de las seis omisiones.</p>
       </article>
     </section>
 
@@ -675,6 +720,66 @@ POST /api/admin/experiences       completo       -> 201  (control)</pre></div>
       </table></div>
       <div class="note danger"><b><code>seed</code> sobrescribe.</b> No borra los perfiles curados creados desde el panel, pero sí reemplaza el contenido que administra. Antes de correrlo en producción, hacé el <code>pg_dump</code> del § 7 de <code>DEPLOY.md</code>.</div>
       <p>Es la deuda más visible del producto y la resuelve el change <code>add-profile-content-admin</code>.</p>
+    </section>
+
+    <!-- ───────────── Operación ───────────── -->
+    <section id="operacion" class="block">
+      <h2>Operación</h2>
+      <p class="lede">Salud de la API, cómo seguir un error concreto y qué hacer en las situaciones que más se repiten.</p>
+      <div class="codewrap"><pre># ¿Vive y ve la base?
+curl -s $API/health | jq            # 200, o 503 si Postgres no responde
+curl -s $API/health/live            # 200 mientras viva el proceso, sin tocar la base
+
+# Seguir un error concreto: cada respuesta de error trae requestId,
+# y el mismo id está en la cabecera X-Request-Id y en el log.
+curl -sD - $API/api/curated-profiles/no-existe -o /dev/null | grep -i x-request-id</pre></div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+        <tbody>
+          <tr><td>Olvidaste la contraseña del admin</td><td><code>npm run admin:bootstrap</code> con <code>ADMIN_PASSWORD</code> nuevo</td></tr>
+          <tr><td>Rotar el <code>JWT_SECRET</code></td><td>cambiá la variable y redesplegá: invalida todas las sesiones</td></tr>
+          <tr><td>Un perfil quedó mal publicado</td><td>pasalo a <code>PRIVATE</code> (404 al instante) y arreglalo con calma</td></tr>
+          <tr><td>Perdiste datos</td><td>restaurá del backup, § 7 de <code>DEPLOY.md</code></td></tr>
+          <tr><td>Deploy roto</td><td>Rollback en Deployments, dentro de las 72 h del plan Hobby</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ───────────── Receta ───────────── -->
+    <section id="receta" class="block">
+      <h2>Receta completa: de la vacante al link</h2>
+      <p class="lede">Seis llamadas a la API que recorren el caso de punta a punta: crear en privado, elegir qué entra, probar sin tocar nada, ajustar, publicar y comprobar.</p>
+      <div class="codewrap"><pre># 1. Crear en privado
+ID=$(curl -s -X POST $API/api/admin/curated-profiles -H "$AUTH" -H 'Content-Type: application/json' -d '{
+  "slug":"acme-tech-lead",
+  "title":{"es":"Tech Lead .NET","en":"Tech Lead .NET"},
+  "headline":{"es":"14 años en .NET y liderazgo","en":"14 years in .NET and leadership"},
+  "roleType":{"es":"Tech Lead","en":"Tech Lead"},"techFocus":".NET","visibility":"PRIVATE"}' | jq -r .id)
+
+# 2. Ver qué tags hay
+curl -s $API/api/admin/experiences -H "$AUTH" | jq -r '[.[].tags[]]|unique|join(", ")'
+
+# 3. Probar el filtro sin tocar nada
+curl -s -X POST $API/api/admin/curated-profiles/preview -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"title":{"es":"x","en":"x"},"headline":{"es":"x","en":"x"},"filterTags":["dotnet"]}' \
+  | jq '.experiences | length'
+
+# 4. Aplicar filtro, secciones y tema
+curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" -H 'Content-Type: application/json' -d '{
+  "filterTags":["dotnet","leadership"],
+  "sectionsOrder":["hero","experience","skills","projects","contact"],
+  "sectionsHidden":["education"],
+  "themeOverrides":{"colors":{"accent":"#5B2C87"}},
+  "layout":"sidebar"}' &gt; /dev/null
+
+# 5. Publicar
+curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"visibility":"PUBLIC"}' | jq .visibility
+
+# 6. Comprobar y compartir
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/acme-tech-lead
+echo "$SITIO/acme-tech-lead"</pre></div>
+      <div class="note"><b>Antes de empezar.</b> Necesitás <code>$API</code>, <code>$AUTH</code> y <code>$SITIO</code>: se arman en <a href="#entorno">Entorno y puertos</a>.</div>
     </section>
 
     <!-- ───────────── Fallas ───────────── -->
@@ -802,6 +907,41 @@ POST /api/admin/experiences       completo       -> 201  (control)</pre></div>
       paint();
     });
     paint();
+
+    /* ── Ir a un caso ──
+       Dentro del visor de artifacts la página vive en un iframe aislado: la
+       navegación nativa por #ancla no siempre desplaza. Se resuelve por script,
+       tanto al hacer clic en el índice como al abrir un enlace con #tc08. */
+    function goTo(id, smooth) {
+      var el = id && document.getElementById(id);
+      if (!el) return false;
+      if (el.hidden || (el.closest && el.closest('[hidden]'))) {
+        active = 'all'; q.value = '';
+        chips.forEach(function (c) { c.setAttribute('aria-pressed', String(c.getAttribute('data-filter') === 'all')); });
+        apply();
+      }
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({ behavior: smooth && !reduce ? 'smooth' : 'auto', block: 'start' });
+      return true;
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('a[href^="#"]'), function (a) {
+      a.addEventListener('click', function (e) {
+        var id = a.getAttribute('href').slice(1);
+        if (goTo(id, true)) e.preventDefault();
+      });
+    });
+    /* El visor puede entregar el #ancla al iframe después de cargar la página,
+       como un cambio de ancla y no como parte de la carga: se atienden ambos. */
+    function fromHash(smooth) {
+      var id = (location.hash || '').replace(/^#/, '');
+      if (/^[A-Za-z0-9._~-]+$/.test(id)) goTo(id, smooth);
+    }
+    fromHash(false);
+    window.addEventListener('hashchange', function () { fromHash(true); });
+    /* Otra pasada cuando terminan de cargar las imágenes y las fuentes: el cambio
+       de tipografía modifica la altura del texto y desplaza el objetivo. */
+    window.addEventListener('load', function () { fromHash(false); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fromHash(false); });
 
     /* ── Índice activo ── */
     var links = Array.prototype.slice.call(document.querySelectorAll('.side a'));
