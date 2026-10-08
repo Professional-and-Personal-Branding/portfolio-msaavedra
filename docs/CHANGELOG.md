@@ -1,5 +1,15 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (ronda 1.1, change 4 — `add-profile-content-admin`)
+
+Mergeado en PR #9 y archivado en `openspec/changes/archive/2026-10-08-add-profile-content-admin/`, con sus specs sincronizadas. Ahora el portafolio se administra desde el panel donde más se ve: hasta este change, el hero, la formación, los proyectos y los enlaces solo se cambiaban por seed o SQL.
+
+- **Perfil base**: `GET` y `PUT /api/admin/profile` (titular, resumen, contacto y disponibilidad, bilingües), con la página `/admin/portada`, que previsualiza el hero antes de guardar.
+- **CRUD** de idiomas, enlaces sociales, educación, certificaciones y proyectos, con la plantilla de capas de `admin-experience-crud`. Páginas `/admin/formacion` y `/admin/proyectos`.
+- **Analítica por origen**: el agregado suma `byReferrer`, con el origen normalizado a su dominio y lo vacío agrupado como "directo". Lee lo que ya estaba guardado, sin capturar nada nuevo. El dashboard lo muestra en una tabla.
+- Un perfil curado puede dejar el titular vacío y heredar el del perfil base.
+- Sin migración: todos los campos ya existían. Verificado: 420 unitarios, 140 e2e y 153 del frontend.
+
 ## Update — Octubre 2026 (ronda 1.1, changes 2 y 3 — `add-server-rendered-head` y `add-curated-profile-lifecycle`)
 
 Mergeados en PR #7 y #8, más la corrección de #11 sobre el head. Archivados en `openspec/changes/archive/2026-10-08-*`, con sus specs sincronizadas.
