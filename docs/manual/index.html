@@ -458,8 +458,8 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
           <label class="run"><input type="checkbox" data-run="tc05"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · En la home (<code>/</code>), abrir el desplegable <b>Perfiles</b>. Después abrir un perfil por su link, por ejemplo <code>/tech-lead-dotnet</code>.</p>
         <p><span class="lbl">Esperado</span> · En la home, el menú lista los perfiles públicos, enumerados y no archivados, agrupados por <code>roleType</code>, cada uno con su <code>techFocus</code> debajo. En <code>/:slug</code> no hay menú.</p>
-        <div class="note"><b>Desde el change <code>add-curated-profile-lifecycle</code></b> el menú solo se monta en la home: quien recibe un link no ve los otros perfiles. La captura de abajo es anterior y muestra el menú sobre <code>/tech-lead-dotnet</code>, que ya no ocurre; se renueva en la próxima ejecución.</div>
-        <figure class="shot" id="img-tc05-menu-perfiles"><img src="tc05-menu-perfiles.jpg" width="792" height="802" alt="Menú de perfiles abierto sobre un perfil curado"><figcaption>El desplegable abierto sobre <code>/tech-lead-dotnet</code>.</figcaption></figure>
+        <div class="note"><b>Desde el change <code>add-curated-profile-lifecycle</code></b> el menú solo se monta en la home: quien recibe un link no ve los otros perfiles.</div>
+        <figure class="shot" id="img-tc05-menu-perfiles"><img src="tc05-menu-perfiles.jpg" width="792" height="802" alt="Menú de perfiles abierto en la home"><figcaption>El desplegable en la home, agrupado por tipo de rol. En la misma ejecución, <code>/tech-lead-dotnet</code> no tenía el botón Perfiles.</figcaption></figure>
       </article>
 
       <article class="case" data-status="ok" id="tc06">
@@ -652,7 +652,7 @@ tras un preview del panel              -> 4   ✅ el preview no cuenta como visi
 GET analytics/views?from=hoy&amp;to=hoy    -> total=0   ❌ antes del arreglo de D-01
 GET analytics/views?from=hoy&amp;to=hoy    -> total=4   ✅ después</pre></div>
         <div class="note"><b>Fallaba el rango, no el registro.</b> El contador del perfil y el registro de <code>ProfileView</code> siempre funcionaron. <code>to</code> era exclusivo y el dashboard pide <code>[hoy-29, hoy]</code>, así que las visitas de hoy no aparecían. Corregido: ver <a href="#defectos">D-01</a>.</div>
-        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="800" height="455" alt="Dashboard de analítica, antes del arreglo"><figcaption>516 visitas en el rango, 6 perfiles y 2 idiomas. Captura anterior al arreglo de D-01: los datos más recientes son de septiembre porque las visitas de hoy todavía no entraban. Se renueva en la próxima ejecución.</figcaption></figure>
+        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="1280" height="1098" alt="Dashboard de analítica"><figcaption>381 visitas en el rango, 7 perfiles y 2 idiomas, con las de hoy incluidas (D-01 corregido). Las cuatro tablas: por día, por perfil, por idioma y por origen.</figcaption></figure>
         <p>De cada visita se guarda el perfil, el idioma, la fecha y la IP <b>solo como HMAC</b> con <code>ANALYTICS_SALT</code>. No hay cookies de seguimiento, y si el registro falla la respuesta al visitante no se altera.</p>
       </article>
 
