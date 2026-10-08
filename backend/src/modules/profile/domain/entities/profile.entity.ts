@@ -17,6 +17,12 @@ export interface ProfileProps {
 }
 
 /**
+ * Contenido editable del perfil base (add-profile-content-admin, D1): todo menos
+ * el id y los idiomas, que tienen su propia API. Un `PUT` lo reemplaza entero.
+ */
+export type ProfileContent = Omit<ProfileProps, 'id' | 'languages'>;
+
+/**
  * Perfil profesional base (agregado raíz). Los campos traducibles se guardan
  * bilingües; la proyección a un idioma ocurre en la capa de aplicación.
  */
@@ -25,6 +31,27 @@ export class Profile {
 
   static create(props: ProfileProps): Profile {
     return new Profile({ ...props, languages: [...props.languages] });
+  }
+
+  /** Copia con el contenido reemplazado; conserva id e idiomas. */
+  withContent(content: ProfileContent): Profile {
+    return Profile.create({ ...content, id: this.props.id, languages: this.props.languages });
+  }
+
+  /** El contenido editable, tal como lo persiste el adaptador. */
+  content(): ProfileContent {
+    const p = this.props;
+    return {
+      fullName: p.fullName,
+      headline: p.headline,
+      location: p.location,
+      timezone: p.timezone,
+      email: p.email,
+      phone: p.phone,
+      summary: p.summary,
+      yearsOfExperience: p.yearsOfExperience,
+      availability: p.availability,
+    };
   }
 
   get id(): string {

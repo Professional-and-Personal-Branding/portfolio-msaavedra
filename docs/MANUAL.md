@@ -102,9 +102,12 @@ curl -s $API/api/auth/me -H "$AUTH" | jq
 | Ruta | Pantalla |
 |---|---|
 | `/admin/login` | Entrada |
-| `/admin` | Dashboard de analítica |
+| `/admin` | Dashboard de analítica, con la tabla **Por origen** |
+| `/admin/portada` | Perfil base (titular, resumen, contacto, disponibilidad) e idiomas, con vista previa del hero |
 | `/admin/experiencias` | CRUD de experiencias |
 | `/admin/skills` | CRUD de categorías y skills |
+| `/admin/formacion` | Educación y certificaciones |
+| `/admin/proyectos` | Proyectos destacados y enlaces sociales |
 | `/admin/perfiles` | Lista de perfiles curados |
 | `/admin/perfiles/:id` | **El constructor**: Identidad, Selección, Diseño y Publicación, con preview en vivo |
 
@@ -220,7 +223,7 @@ La sesión es una cookie **httpOnly**: el cliente nunca guarda el JWT y el estad
 **Precondición:** sesión iniciada.
 **Pasos:**
 1. `/admin/perfiles` → **Nuevo perfil**.
-2. Pestaña **Identidad**: `slug` en kebab-case (es la URL, y se valida), `title`, `headline` y `description` en ES y EN, `roleType` (agrupa el menú) y `techFocus`.
+2. Pestaña **Identidad**: `slug` en kebab-case (es la URL, y se valida), `title`, `headline` (opcional: vacío usa el titular del perfil base) y `description` en ES y EN, `roleType` (agrupa el menú) y `techFocus`.
 3. Guardar.
 
 **Resultado esperado:** el perfil se crea y el constructor queda abierto sobre él. Un slug repetido devuelve **409**.
@@ -612,26 +615,78 @@ curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
 curl -s -D - -o /dev/null $API/api/curated-profiles/el-slug-viejo | grep -i content-location
 ```
 
-## 4. Lo que hoy NO se administra desde el panel
+## 4. Administrar el resto del contenido
 
-Conviene saberlo antes de necesitarlo. Estas entidades se muestran en el sitio y **solo se cargan por seed**:
+Desde el change `add-profile-content-admin`, todo lo que el sitio muestra se edita en el panel. El seed queda para **poblar una base vacía**, no para editar.
 
-| Entidad | Dónde se edita hoy |
-|---|---|
-| Perfil base (nombre, titular, resumen, contacto, disponibilidad) | `docs/cv-data.json` → `npm run seed` |
-| Educación, certificaciones | ídem |
-| Proyectos destacados, enlaces sociales | ídem |
-| Temas (los cinco presets) | ídem |
+### TC-25 — Cambiar el titular y la disponibilidad ✅
+
+**Pasos:** `/admin/portada`.
+
+1. Editar **Titular** o **Fecha de inicio** (pestañas ES/EN). La vista previa del hero, a la derecha, cambia sin guardar: la resuelve el backend con el mismo mapper que la ruta pública.
+2. **Guardar portada.** El cambio se ve en `/` y en cada perfil curado, sin correr el seed.
+3. Un obligatorio vacío (nombre, titular o resumen en español, email, ubicación) no se envía; si llega a la API, es 400 y el perfil queda como estaba.
+4. **Idiomas**, en la misma página: agregar, editar y borrar con confirmación.
+
+> El titular base se ve en la home y en todo perfil curado **sin titular propio** (decisión D7). Las 13 plantillas del seed traen el suyo, pensado para su rol, y lo conservan; la home `all` no tiene ninguno. Para que un perfil curado vuelva a usar el titular base, vaciá su titular en la pestaña Identidad del constructor.
 
 ```bash
-# 1. Editar docs/cv-data.json
-# 2. Recargar (CUIDADO: sobrescribe el contenido del portafolio)
+# El perfil es un singleton: no hay id en la ruta. El PUT reemplaza todo.
+curl -s $API/api/admin/profile -H "$AUTH" | jq '{headline, availability}'
+curl -s -X PUT $API/api/admin/profile -H "$AUTH" -H 'Content-Type: application/json'   -d "$(curl -s $API/api/admin/profile -H "$AUTH" | jq 'del(.id) | .availability.startDate={"es":"En dos semanas","en":"In two weeks"}')"
+```
+
+**Ejecutado** (e2e `content-admin.e2e-spec.ts`):
+
+```
+PUT con headline nuevo                     -> 200 y el hero de / lo muestra (all no tiene titular propio)
+PUT con startDate nuevo                    -> el perfil curado lo sirve en el idioma pedido
+PUT con un campo desconocido               -> 400 y el perfil queda idéntico
+PUT con email vacío                        -> 400 y conserva el email anterior
+POST /api/admin/profile/preview            -> 200 resuelto, sin escribir nada
+```
+
+![Portada con la vista previa del hero](manual/tc25-portada.jpg)
+
+### TC-26 — Formación: ocultar sin borrar ✅
+
+**Pasos:** `/admin/formacion`. Dos listas: **Educación** y **Certificaciones**, con el mismo patrón de lista y diálogo que Skills.
+
+1. **Nueva** → completar → **Guardar**. Las fechas aceptan `YYYY-MM` o `YYYY`; *en curso* excluye la fecha de fin.
+2. Para retirar un ítem sin perderlo, desmarcar **Visible en el sitio**: sale de la vista pública y sigue en el panel con la marca *Oculto*.
+3. Borrar pide confirmación.
+
+```
+POST certificación + PATCH {visible:false} -> fuera de GET /api/certifications, sigue en /api/admin/certifications
+GET /api/admin/education                   -> incluye la oculta, con visible y order
+```
+
+![Formación en el panel](manual/tc26-formacion.jpg)
+
+### TC-27 — Proyectos y enlaces sociales ✅
+
+**Pasos:** `/admin/proyectos`.
+
+1. Un proyecto con **tags** que coincidan con los `filterTags` de un perfil curado aparece en ese perfil, con su **url** como enlace. Es la forma de completar la `url` de los dos proyectos del seed.
+2. Enlaces sociales: plataforma (`github`, `linkedin`, …), handle, url, etiqueta bilingüe, *destacado*, y `stats` como JSON (un objeto; un array o un texto es 400).
+
+```
+POST proyecto con tags del perfil          -> aparece en /api/curated-profiles/tech-lead-dotnet con su url
+DELETE enlace social                       -> 204 y desaparece de /api/social-links
+POST enlace con stats=[1,2]                -> 400
+POST de cualquiera de las cinco entidades con un campo extra -> 400
+```
+
+![Proyectos y enlaces sociales](manual/tc27-proyectos.jpg)
+
+### El seed ya no es la forma de editar
+
+```bash
+# Solo para una base vacía (o para volver al estado del CV a propósito)
 cd backend && npm run seed && npm run seed:verify
 ```
 
-> `seed` **sobrescribe**. No borra los perfiles curados creados desde el panel, pero sí reemplaza el contenido que administra. Antes de correrlo en producción, hacé el `pg_dump` del § 7 de [`DEPLOY.md`](DEPLOY.md).
-
-Es la deuda más visible del producto y la resuelve el change `add-profile-content-admin`.
+> `seed` **sobrescribe**: correrlo sobre una base con contenido administrado desde el panel **pisa ese trabajo** (portada, formación, proyectos, enlaces, experiencias y skills). Antes de correrlo en producción, hacé el `pg_dump` del § 7 de [`DEPLOY.md`](DEPLOY.md).
 
 ---
 
@@ -693,8 +748,11 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-22 | Archivar sin perder visitas | 🔍 | e2e · app real con capturas en el archivo del change |
 | TC-23 | Link dirigido (`listed`) | 🔍 | e2e |
 | TC-24 | Renombrar sin romper links | 🔍 | e2e |
+| TC-25 | Portada: titular, disponibilidad, idiomas | ✅ | captura · e2e · 200 / 400 sin cambios · preview sin escribir |
+| TC-26 | Formación: ocultar sin borrar | ✅ | captura · e2e · visible:false sale del sitio y queda en el panel |
+| TC-27 | Proyectos y enlaces sociales | ✅ | captura · e2e · el proyecto entra por tags con su url · stats inválido 400 |
 
-**Los 24 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. La captura de TC-18 es anterior al arreglo de D-01 y la de TC-05 al cambio del menú: las dos se renuevan en la próxima ejecución con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change.
+**Los 27 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. La captura de TC-18 es anterior al arreglo de D-01 y la de TC-05 al cambio del menú: las dos se renuevan en la próxima ejecución con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real: 23 capturas en total.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
@@ -733,6 +791,8 @@ POST /api/admin/curated-profiles  sin "headline" -> 400  ["headline should not b
 POST /api/admin/skill-categories  sin "name"     -> 400  ["name should not be null or undefined"]
 POST /api/admin/experiences       completo       -> 201  (control)
 ```
+
+> Desde `add-profile-content-admin` (decisión D7), `headline` es **opcional**: un perfil curado sin titular propio responde 201 y su hero muestra el titular del perfil base. La línea de `headline` de arriba queda como registro del defecto; hoy esa omisión da 201.
 
 **Regresión:** `backend/test/dto-validation.spec.ts` corre `class-validator` sobre cada DTO de entrada con las mismas opciones que `adminValidationPipe` y exige un error por cada campo obligatorio — con el cuerpo vacío, con el campo ausente y con el campo en `null` — más un control con el cuerpo completo. Es un test de comportamiento: no depende de qué decorador arregle el problema y cubre todos los campos obligatorios, no solo los anidados. Sin los `@IsDefined()` fallan 8 de sus 34 casos. Desde el PR #3 lo complementan una guarda estática en `backend/test/security.spec.ts`, que exige `@IsDefined()` en todo `@ValidateNested()` no opcional de cualquier clase validada en `src/`, y un e2e en `admin.e2e-spec.ts` que prueba las seis omisiones por HTTP.
 

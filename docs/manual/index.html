@@ -263,9 +263,12 @@
     <a href="#tc22"><span class="dot ok"></span><span class="id">TC-22</span> Archivar</a>
     <a href="#tc23"><span class="dot ok"></span><span class="id">TC-23</span> Link dirigido</a>
     <a href="#tc24"><span class="dot ok"></span><span class="id">TC-24</span> Renombrar</a>
+    <a href="#tc25"><span class="dot ok"></span><span class="id">TC-25</span> Portada</a>
+    <a href="#tc26"><span class="dot ok"></span><span class="id">TC-26</span> Formación</a>
+    <a href="#tc27"><span class="dot ok"></span><span class="id">TC-27</span> Proyectos</a>
     <h3>Cierre</h3>
     <a href="#defectos"><span class="dot ok"></span><span class="id">§6</span> Defectos</a>
-    <a href="#noadmin"><span class="id">§7</span> Sin administrar</a>
+    <a href="#noadmin"><span class="id">§7</span> El seed</a>
     <a href="#operacion"><span class="id">§8</span> Operación</a>
     <a href="#receta"><span class="id">§9</span> Receta completa</a>
     <a href="#fallas"><span class="id">§10</span> Qué falla y por qué</a>
@@ -352,9 +355,12 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
         <thead><tr><th>Ruta</th><th>Pantalla</th></tr></thead>
         <tbody>
           <tr><td><code>/admin/login</code></td><td>Entrada</td></tr>
-          <tr><td><code>/admin</code></td><td>Dashboard de analítica</td></tr>
+          <tr><td><code>/admin</code></td><td>Dashboard de analítica, con la tabla <b>Por origen</b></td></tr>
+          <tr><td><code>/admin/portada</code></td><td>Perfil base e idiomas, con vista previa del hero</td></tr>
           <tr><td><code>/admin/experiencias</code></td><td>CRUD de experiencias</td></tr>
           <tr><td><code>/admin/skills</code></td><td>CRUD de categorías y skills</td></tr>
+          <tr><td><code>/admin/formacion</code></td><td>Educación y certificaciones</td></tr>
+          <tr><td><code>/admin/proyectos</code></td><td>Proyectos destacados y enlaces sociales</td></tr>
           <tr><td><code>/admin/perfiles</code></td><td>Lista de perfiles curados</td></tr>
           <tr><td><code>/admin/perfiles/:id</code></td><td><b>El constructor</b>: Identidad, Selección, Diseño y Publicación, con preview en vivo</td></tr>
         </tbody>
@@ -367,13 +373,13 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
       <p class="lede">5 de octubre de 2026, contra la base del seed: 14 perfiles curados y 15 experiencias.</p>
 
       <div class="stats">
-        <div class="stat"><b>24</b><span>casos</span></div>
-        <div class="stat ok"><b>24</b><span>pasan</span></div>
+        <div class="stat"><b>27</b><span>casos</span></div>
+        <div class="stat ok"><b>27</b><span>pasan</span></div>
         <div class="stat"><b>2</b><span>defectos corregidos</span></div>
-        <div class="stat"><b>20</b><span>capturas</span></div>
+        <div class="stat"><b>23</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Los 24 casos pasan.</b> TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Los 27 casos pasan.</b> TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -725,6 +731,38 @@ curl -s -X POST $API/api/admin/curated-profiles/$ID/unarchive -H "$AUTH" | jq .a
         <p><span class="lbl">Esperado</span> · El slug anterior <b>sigue funcionando</b>: responde el mismo perfil con su slug canónico en el cuerpo y en <code>Content-Location</code>, y el navegador corrige la URL solo. El sitemap y el <code>canonical</code> usan solo el slug nuevo. Tomar el slug anterior de otro perfil da 409; volver al propio borra el alias; el alias de un archivado también da 404.</p>
         <div class="codewrap"><pre>curl -s -D - -o /dev/null $API/api/curated-profiles/el-slug-viejo | grep -i content-location</pre></div>
       </article>
+
+      <article class="case" data-status="ok" id="tc25">
+        <div class="case-head"><span class="case-id">TC-25</span><h3>Cambiar el titular y la disponibilidad</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc25"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · <code>/admin/portada</code>. Editar el titular o la fecha de inicio: la vista previa del hero cambia sin guardar, con su selector ES/EN. <b>Guardar portada</b> y el cambio se ve en <code>/</code> y en cada perfil curado, sin correr el seed. Los idiomas se administran en la misma página.</p>
+        <p><span class="lbl">Observado</span></p>
+        <div class="codewrap"><pre>preview con startDate "Desde noviembre 2026"  -> el badge cambia, nada se guarda
+PUT /api/admin/profile                        -> 200; all, fullstack-nest-react y tech-lead-dotnet lo sirven
+PUT con un campo desconocido                  -> 400 y el perfil queda idéntico
+PUT con email vacío                           -> 400 y conserva el anterior</pre></div>
+        <figure class="shot" id="img-tc25-portada"><img src="tc25-portada.jpg" width="560" height="420" alt="Portada con la vista previa del hero"><figcaption>La vista previa la resuelve el backend con el mismo mapper que la ruta pública.</figcaption></figure>
+        <div class="note">El titular base se ve en la home y en todo perfil curado <b>sin titular propio</b> (decisión D7). Las plantillas del seed traen el suyo y lo conservan; para volver al titular base, vaciá el del perfil en la pestaña Identidad.</div>
+      </article>
+
+      <article class="case" data-status="ok" id="tc26">
+        <div class="case-head"><span class="case-id">TC-26</span><h3>Formación: ocultar sin borrar</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc26"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · <code>/admin/formacion</code>. Educación y certificaciones con lista y diálogo. Fechas <code>YYYY-MM</code> o <code>YYYY</code>; <i>en curso</i> excluye el fin. Desmarcar <b>Visible en el sitio</b> lo saca de la vista pública y lo deja en el panel con la marca <i>Oculto</i>.</p>
+        <div class="codewrap"><pre>PATCH {visible:false}       -> fuera de /api/certifications, sigue en /api/admin/certifications
+GET /api/admin/education    -> incluye las ocultas, con visible y order</pre></div>
+        <figure class="shot" id="img-tc26-formacion"><img src="tc26-formacion.jpg" width="560" height="426" alt="Formación en el panel"><figcaption>La formación del seed, editable desde el panel.</figcaption></figure>
+      </article>
+
+      <article class="case" data-status="ok" id="tc27">
+        <div class="case-head"><span class="case-id">TC-27</span><h3>Proyectos y enlaces sociales</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc27"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · <code>/admin/proyectos</code>. Un proyecto con tags que coincidan con los <code>filterTags</code> de un perfil curado aparece en él con su url; «Sin enlace» marca los que todavía no la tienen. Los enlaces sociales llevan <code>stats</code> como JSON: un objeto, nunca un array.</p>
+        <div class="codewrap"><pre>POST proyecto con tags del perfil  -> aparece en tech-lead-dotnet con su url
+DELETE enlace social               -> 204 y sale de /api/social-links
+POST enlace con stats=[1,2]        -> 400</pre></div>
+        <figure class="shot" id="img-tc27-proyectos"><img src="tc27-proyectos.jpg" width="560" height="426" alt="Proyectos y enlaces sociales en el panel"><figcaption>Los dos proyectos del seed, todavía sin enlace.</figcaption></figure>
+      </article>
     </section>
 
     <!-- ───────────── Defectos ───────────── -->
@@ -755,25 +793,19 @@ POST /api/admin/curated-profiles  sin "title"    -> 400  ["title should not be n
 POST /api/admin/curated-profiles  sin "headline" -> 400  ["headline should not be null or undefined"]
 POST /api/admin/skill-categories  sin "name"     -> 400  ["name should not be null or undefined"]
 POST /api/admin/experiences       completo       -> 201  (control)</pre></div>
+        <div class="note">Desde <code>add-profile-content-admin</code> (D7), <code>headline</code> es opcional: sin él la creación da 201 y el hero usa el titular del perfil base. La línea de arriba queda como registro del defecto.</div>
         <p><span class="lbl">Regresión</span> · <code>backend/test/dto-validation.spec.ts</code>, un test de comportamiento que exige un error por cada campo obligatorio de cada DTO de entrada (cuerpo vacío, campo ausente y campo en <code>null</code>). Sin el arreglo fallan 8 de sus 34 casos. Desde el PR #3 lo complementan una guarda estática en <code>backend/test/security.spec.ts</code>, que exige <code>@IsDefined()</code> en todo <code>@ValidateNested()</code> no opcional, y un e2e por HTTP de las seis omisiones.</p>
       </article>
     </section>
 
     <!-- ───────────── No administrado ───────────── -->
     <section class="block" id="noadmin">
-      <h2>Lo que hoy no se administra desde el panel</h2>
-      <p class="lede">Conviene saberlo antes de necesitarlo. Estas entidades se muestran en el sitio y solo se cargan por seed.</p>
-      <div class="tablewrap"><table>
-        <thead><tr><th>Entidad</th><th>Dónde se edita hoy</th></tr></thead>
-        <tbody>
-          <tr><td>Perfil base (nombre, titular, resumen, contacto, disponibilidad)</td><td><code>docs/cv-data.json</code> → <code>npm run seed</code></td></tr>
-          <tr><td>Educación, certificaciones</td><td>ídem</td></tr>
-          <tr><td>Proyectos destacados, enlaces sociales</td><td>ídem</td></tr>
-          <tr><td>Temas (los cinco presets)</td><td>ídem</td></tr>
-        </tbody>
-      </table></div>
-      <div class="note danger"><b><code>seed</code> sobrescribe.</b> No borra los perfiles curados creados desde el panel, pero sí reemplaza el contenido que administra. Antes de correrlo en producción, hacé el <code>pg_dump</code> del § 7 de <code>DEPLOY.md</code>.</div>
-      <p>Es la deuda más visible del producto y la resuelve el change <code>add-profile-content-admin</code>.</p>
+      <h2>El seed ya no es la forma de editar</h2>
+      <p class="lede">Desde <code>add-profile-content-admin</code>, todo lo que el sitio muestra se edita en el panel. El seed queda para poblar una base vacía.</p>
+      <div class="codewrap"><pre># Solo para una base vacía (o para volver al estado del CV a propósito)
+cd backend &amp;&amp; npm run seed &amp;&amp; npm run seed:verify</pre></div>
+      <div class="note danger"><b><code>seed</code> sobrescribe.</b> Sobre una base con contenido administrado desde el panel, pisa ese trabajo: portada, formación, proyectos, enlaces, experiencias y skills. Antes de correrlo en producción, hacé el <code>pg_dump</code> del § 7 de <code>DEPLOY.md</code>.</div>
+      <p>Los cinco temas siguen viniendo del seed: el customizador por perfil cubre la necesidad real.</p>
     </section>
 
     <!-- ───────────── Operación ───────────── -->

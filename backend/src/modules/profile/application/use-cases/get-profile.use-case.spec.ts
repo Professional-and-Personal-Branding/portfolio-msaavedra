@@ -35,7 +35,7 @@ function buildProfile(): Profile {
 }
 
 function repoWith(profile: Profile | null): ProfileRepository {
-  return { findOne: jest.fn().mockResolvedValue(profile) };
+  return { findOne: jest.fn().mockResolvedValue(profile), save: jest.fn() };
 }
 
 describe('GetProfileUseCase', () => {

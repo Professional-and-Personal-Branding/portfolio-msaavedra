@@ -23,8 +23,16 @@ export interface ProfileViewAggregate {
   readonly byDay: readonly { day: string; views: number }[];
 }
 
+/** Conteo por `referrer` tal como se guardó (sin normalizar: eso es del dominio). */
+export interface ReferrerCount {
+  readonly referrer: string | null;
+  readonly views: number;
+}
+
 export interface ProfileViewRepository {
   /** Crea la visita e incrementa `views` del perfil de forma atómica. */
   record(view: NewProfileView): Promise<void>;
   aggregate(range: DateRange): Promise<ProfileViewAggregate>;
+  /** Visitas del rango agrupadas por `referrer` crudo. */
+  countByReferrer(range: DateRange): Promise<ReferrerCount[]>;
 }

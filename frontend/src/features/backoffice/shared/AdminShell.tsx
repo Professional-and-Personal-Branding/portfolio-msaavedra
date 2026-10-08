@@ -1,5 +1,8 @@
 import {
   ExternalLink,
+  FolderGit2,
+  GraduationCap,
+  IdCard,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -26,8 +29,11 @@ import { useLogout, useSession } from '../auth/use-session';
 
 const NAV = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/admin/portada', label: 'Portada', icon: IdCard, end: false },
   { to: '/admin/experiencias', label: 'Experiencias', icon: Wrench, end: false },
   { to: '/admin/skills', label: 'Skills', icon: Sparkles, end: false },
+  { to: '/admin/formacion', label: 'Formación', icon: GraduationCap, end: false },
+  { to: '/admin/proyectos', label: 'Proyectos', icon: FolderGit2, end: false },
   { to: '/admin/perfiles', label: 'Perfiles curados', icon: Palette, end: false },
 ] as const;
 

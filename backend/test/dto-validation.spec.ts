@@ -44,11 +44,11 @@ const DTOS: Array<{
   {
     nombre: 'CreateCuratedProfileDto',
     dto: CreateCuratedProfileDto,
-    obligatorios: ['slug', 'title', 'headline'],
+    // `headline` es opcional desde add-profile-content-admin (D7): vacío = titular base.
+    obligatorios: ['slug', 'title'],
     valido: {
       slug: 'qa-lead',
       title: { es: 'QA Lead' },
-      headline: { es: 'Liderazgo de calidad' },
     },
   },
   {

@@ -1,5 +1,9 @@
 import { Certification } from '../../domain/entities/certification.entity';
 import { Education } from '../../domain/entities/education.entity';
+import {
+  CertificationRepository,
+  EducationRepository,
+} from '../../domain/repositories/education.repository';
 import { ListCertificationsUseCase, ListEducationUseCase } from './education.use-cases';
 
 const edu = (id: string, order: number, visible = true) =>
@@ -19,7 +23,9 @@ const cert = (id: string, visible = true) =>
 
 describe('ListEducationUseCase / ListCertificationsUseCase', () => {
   it('educación: resuelve locale, excluye ocultas, sin campo visible', async () => {
-    const repo = { findAllVisible: jest.fn().mockResolvedValue([edu('a', 0), edu('h', 1, false)]) };
+    const repo = {
+      findAllVisible: jest.fn().mockResolvedValue([edu('a', 0), edu('h', 1, false)]),
+    } as unknown as EducationRepository;
     const r = await new ListEducationUseCase(repo).execute({ locale: 'en' });
     expect(r.value).toEqual([
       {
@@ -35,7 +41,9 @@ describe('ListEducationUseCase / ListCertificationsUseCase', () => {
   });
 
   it('certificaciones: fallback a español y year nulo', async () => {
-    const repo = { findAllVisible: jest.fn().mockResolvedValue([cert('c1')]) };
+    const repo = {
+      findAllVisible: jest.fn().mockResolvedValue([cert('c1')]),
+    } as unknown as CertificationRepository;
     const r = await new ListCertificationsUseCase(repo).execute({ locale: 'en' });
     expect(r.value).toEqual([{ id: 'c1', name: 'Cert', issuer: 'X', year: null, order: 0 }]);
   });

@@ -174,6 +174,10 @@ export const ANALYTICS: ProfileViews = {
     { day: '2026-09-07', views: 5 },
     { day: '2026-09-08', views: 2 },
   ],
+  byReferrer: [
+    { referrer: 'directo', views: 7 },
+    { referrer: 'linkedin.com', views: 5 },
+  ],
 };
 
 export const EMPTY_ANALYTICS: ProfileViews = {
@@ -183,4 +187,135 @@ export const EMPTY_ANALYTICS: ProfileViews = {
   byProfile: [],
   byLocale: [],
   byDay: [],
+  byReferrer: [],
 };
+
+// add-profile-content-admin: formación (educación y certificaciones).
+type AdminEducationFixture = components['schemas']['AdminEducationResponse'];
+type AdminCertificationFixture = components['schemas']['AdminCertificationResponse'];
+
+export function makeAdminEducation(
+  overrides: Partial<AdminEducationFixture> = {},
+): AdminEducationFixture {
+  return {
+    id: 'edu-1',
+    degree: { es: 'Ingeniería de Sistemas', en: 'Systems Engineering' },
+    institution: 'Universidad Nacional',
+    startDate: '2010-03',
+    endDate: '2015-12',
+    inProgress: false,
+    order: 0,
+    visible: true,
+    ...overrides,
+  };
+}
+
+export const ADMIN_EDUCATION: AdminEducationFixture[] = [
+  makeAdminEducation(),
+  makeAdminEducation({
+    id: 'edu-2',
+    degree: { es: 'Maestría en Arquitectura de Software' },
+    institution: 'Instituto Tecnológico',
+    startDate: '2024',
+    endDate: null,
+    inProgress: true,
+    order: 1,
+    visible: false,
+  }),
+];
+
+export function makeAdminCertification(
+  overrides: Partial<AdminCertificationFixture> = {},
+): AdminCertificationFixture {
+  return {
+    id: 'cert-1',
+    name: { es: 'Scrum Master', en: 'Scrum Master' },
+    issuer: 'Scrum Alliance',
+    year: '2021',
+    order: 0,
+    visible: true,
+    ...overrides,
+  };
+}
+
+export const ADMIN_CERTIFICATIONS: AdminCertificationFixture[] = [
+  makeAdminCertification(),
+  makeAdminCertification({
+    id: 'cert-2',
+    name: { es: 'Arquitecto Cloud', en: 'Cloud Architect' },
+    issuer: 'Nube S.A.',
+    year: null,
+    order: 1,
+  }),
+];
+
+// ── Proyectos destacados y enlaces sociales (add-profile-content-admin) ────
+type AdminProjectFixture = components['schemas']['AdminProjectResponse'];
+type AdminSocialLinkFixture = components['schemas']['AdminSocialLinkResponse'];
+
+export function makeAdminProject(
+  overrides: Partial<AdminProjectFixture> = {},
+): AdminProjectFixture {
+  return {
+    id: 'proj-1',
+    name: 'Portafolio Administrable',
+    role: { es: 'Autor', en: 'Author' },
+    period: '2026',
+    summary: { es: 'Portafolio con perfiles curados.', en: 'Portfolio with curated profiles.' },
+    technologies: ['NestJS', 'React'],
+    tags: ['nodejs', 'react'],
+    url: null,
+    order: 0,
+    visible: true,
+    ...overrides,
+  };
+}
+
+export const ADMIN_PROJECTS: AdminProjectFixture[] = [
+  makeAdminProject(),
+  makeAdminProject({
+    id: 'proj-2',
+    name: 'Bot de Pagos',
+    role: { es: 'Líder técnico', en: 'Tech lead' },
+    period: '2019-2020',
+    technologies: ['Java'],
+    tags: ['java'],
+    url: 'https://github.com/acme/pagos',
+    order: 1,
+    visible: false,
+  }),
+];
+
+export function makeAdminSocialLink(
+  overrides: Partial<AdminSocialLinkFixture> = {},
+): AdminSocialLinkFixture {
+  return {
+    id: 'sl-1',
+    platform: 'github',
+    handle: 'ada',
+    url: 'https://github.com/ada',
+    label: { es: 'GitHub', en: 'GitHub' },
+    description: { es: 'Código abierto', en: 'Open source' },
+    stats: { repos: 67 },
+    featured: true,
+    order: 0,
+    visible: true,
+    ...overrides,
+  };
+}
+
+export const ADMIN_SOCIAL_LINKS: AdminSocialLinkFixture[] = [
+  makeAdminSocialLink(),
+  makeAdminSocialLink({
+    id: 'sl-2',
+    platform: 'youtube',
+    handle: 'ada-tv',
+    url: 'https://youtube.com/@ada-tv',
+    label: { es: 'YouTube', en: 'YouTube' },
+    description: null,
+    stats: null,
+    featured: false,
+    order: 1,
+    visible: false,
+  }),
+];

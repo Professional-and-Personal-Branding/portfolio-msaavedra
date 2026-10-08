@@ -4,6 +4,11 @@ import { Project } from '../../../project/domain/entities/project.entity';
 import { SocialLink } from '../../../social-link/domain/entities/social-link.entity';
 import { PortfolioSectionsLoader } from './portfolio-sections.loader';
 
+/** El loader solo lee: los puertos también escriben (backoffice), pero acá basta la lectura. */
+function readOnly<R>(items: unknown[]): R {
+  return { findAllVisible: jest.fn().mockResolvedValue(items) } as unknown as R;
+}
+
 describe('PortfolioSectionsLoader', () => {
   it('carga las cuatro secciones en paralelo y descarta ocultos', async () => {
     const edu = Education.create({
@@ -49,10 +54,10 @@ describe('PortfolioSectionsLoader', () => {
       visible: true,
     });
     const loader = new PortfolioSectionsLoader(
-      { findAllVisible: jest.fn().mockResolvedValue([edu]) },
-      { findAllVisible: jest.fn().mockResolvedValue([hiddenCert]) },
-      { findAllVisible: jest.fn().mockResolvedValue([project]) },
-      { findAllVisible: jest.fn().mockResolvedValue([link]) },
+      readOnly([edu]),
+      readOnly([hiddenCert]),
+      readOnly([project]),
+      readOnly([link]),
     );
     const sections = await loader.load();
     expect(sections.education).toEqual([edu]);

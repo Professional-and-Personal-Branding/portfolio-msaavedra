@@ -1,4 +1,5 @@
 import { SocialLink, SocialLinkProps } from '../../domain/entities/social-link.entity';
+import { SocialLinkRepository } from '../../domain/repositories/social-link.repository';
 import { ListSocialLinksUseCase } from './list-social-links.use-case';
 
 const base: SocialLinkProps = {
@@ -18,7 +19,9 @@ describe('ListSocialLinksUseCase', () => {
   it('resuelve label/description, stats objeto o null, excluye ocultos', async () => {
     const github = SocialLink.create(base);
     const hidden = SocialLink.create({ ...base, id: 'h', visible: false });
-    const repo = { findAllVisible: jest.fn().mockResolvedValue([github, hidden]) };
+    const repo = {
+      findAllVisible: jest.fn().mockResolvedValue([github, hidden]),
+    } as unknown as SocialLinkRepository;
     const r = await new ListSocialLinksUseCase(repo).execute({ locale: 'en' });
     expect(r.value).toEqual([
       {

@@ -4,10 +4,14 @@ export interface CertificationProps {
   readonly id: string;
   readonly name: LocalizedText | string;
   readonly issuer: string;
+  /** YYYY; null si no se conoce. */
   readonly year: string | null;
   readonly order: number;
   readonly visible: boolean;
 }
+
+/** Datos para crear una certificación: el id lo genera la persistencia. */
+export type NewCertificationProps = Omit<CertificationProps, 'id'>;
 
 /** Certificación o curso. Bilingüe en `name`. */
 export class Certification {
@@ -15,6 +19,15 @@ export class Certification {
 
   static create(props: CertificationProps): Certification {
     return new Certification({ ...props });
+  }
+
+  /** Copia con cambios parciales (edición desde el backoffice). */
+  with(changes: Partial<NewCertificationProps>): Certification {
+    return Certification.create({ ...this.props, ...changes });
+  }
+
+  toProps(): CertificationProps {
+    return { ...this.props };
   }
 
   get id(): string {

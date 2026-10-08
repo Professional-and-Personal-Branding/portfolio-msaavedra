@@ -102,6 +102,31 @@ describe('DashboardPage', () => {
 
     expect(await screen.findByText('Todavía no hay visitas')).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Por perfil' })).not.toBeInTheDocument();
+    // Tampoco una tabla de orígenes con ceros.
+    expect(screen.queryByRole('region', { name: 'Por origen' })).not.toBeInTheDocument();
+  });
+
+  it('la tabla por origen lista los orígenes de mayor a menor', async () => {
+    server.use(
+      http.get(`${API}/admin/analytics/views`, () =>
+        HttpResponse.json({
+          ...ANALYTICS,
+          byReferrer: [
+            { referrer: 'linkedin.com', views: 5 },
+            { referrer: 'directo', views: 7 },
+          ],
+        }),
+      ),
+      ...adminHandlers,
+    );
+
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    const byReferrer = await screen.findByRole('region', { name: 'Por origen' });
+    const rows = within(byReferrer)
+      .getAllByRole('listitem')
+      .map((item) => item.textContent);
+    expect(rows).toEqual(['directo7', 'linkedin.com5']);
   });
 
   it('un error de la API ofrece reintentar', async () => {

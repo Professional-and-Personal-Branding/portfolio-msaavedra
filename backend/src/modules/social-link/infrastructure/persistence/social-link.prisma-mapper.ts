@@ -1,8 +1,9 @@
 import { Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import type { SocialLink as SocialLinkRecord } from '@prisma/client';
 import { toLocalizedText } from '../../../../shared/infrastructure/persistence/json.guards';
 import { isPlainObject } from '../../../theme/domain/services/merge-theme-tokens';
-import { SocialLink } from '../../domain/entities/social-link.entity';
+import { NewSocialLinkProps, SocialLink } from '../../domain/entities/social-link.entity';
 
 export type { SocialLinkRecord };
 
@@ -27,4 +28,26 @@ export function toSocialLinkEntity(r: SocialLinkRecord): SocialLink {
     order: r.order,
     visible: r.visible,
   });
+}
+
+/** Json opcional: `null` se persiste como DbNull (columna SQL NULL). */
+function nullableJson(
+  value: Record<string, unknown> | NewSocialLinkProps['description'],
+): Prisma.InputJsonValue | typeof Prisma.DbNull {
+  return value === null ? Prisma.DbNull : (value as Prisma.InputJsonValue);
+}
+
+/** Props de dominio → datos de escritura Prisma (Json para bilingües y stats). */
+export function toSocialLinkData(props: NewSocialLinkProps): Prisma.SocialLinkUncheckedCreateInput {
+  return {
+    platform: props.platform,
+    handle: props.handle,
+    url: props.url,
+    label: props.label,
+    description: nullableJson(props.description),
+    stats: nullableJson(props.stats),
+    featured: props.featured,
+    order: props.order,
+    visible: props.visible,
+  };
 }

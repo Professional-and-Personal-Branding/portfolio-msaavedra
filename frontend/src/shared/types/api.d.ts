@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 078a948c9c883415c5e7d88494756dacba8c26762e6077f56e84eb17b71a92ef
+// openapi-sha256: b7c003c0c1b7772dbd2843eaf851997d4fa588ad082c1d10782fbb573cdc29e7
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -10,8 +10,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Visitas agregadas por perfil, idioma y día
-         * @description El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso.
+         * Visitas agregadas por perfil, idioma, día y origen
+         * @description El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso. El origen se normaliza al host del `referrer` guardado; las visitas desde el propio sitio cuentan como `interno`.
          */
         get: operations["AdminAnalyticsController_views"];
         put?: never;
@@ -20,6 +20,43 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/admin/certifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar certificaciones (incluye ocultas, datos bilingües crudos) */
+        get: operations["AdminCertificationController_list"];
+        put?: never;
+        /** Crear certificación */
+        post: operations["AdminCertificationController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/certifications/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver certificación */
+        get: operations["AdminCertificationController_find"];
+        put?: never;
+        post?: never;
+        /** Borrar certificación */
+        delete: operations["AdminCertificationController_remove"];
+        options?: never;
+        head?: never;
+        /** Editar certificación (parcial) */
+        patch: operations["AdminCertificationController_update"];
         trace?: never;
     };
     "/api/admin/curated-profiles": {
@@ -142,6 +179,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/education": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar formación (incluye oculta, datos bilingües crudos) */
+        get: operations["AdminEducationController_list"];
+        put?: never;
+        /** Crear formación */
+        post: operations["AdminEducationController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/education/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver formación */
+        get: operations["AdminEducationController_find"];
+        put?: never;
+        post?: never;
+        /** Borrar formación */
+        delete: operations["AdminEducationController_remove"];
+        options?: never;
+        head?: never;
+        /** Editar formación (parcial) */
+        patch: operations["AdminEducationController_update"];
+        trace?: never;
+    };
     "/api/admin/experiences": {
         parameters: {
             query?: never;
@@ -177,6 +251,121 @@ export interface paths {
         head?: never;
         /** Editar experiencia (parcial) */
         patch: operations["AdminExperienceController_update"];
+        trace?: never;
+    };
+    "/api/admin/languages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar idiomas (datos bilingües crudos) */
+        get: operations["AdminLanguageController_list"];
+        put?: never;
+        /** Crear idioma (en el perfil base) */
+        post: operations["AdminLanguageController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/languages/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver idioma */
+        get: operations["AdminLanguageController_find"];
+        put?: never;
+        post?: never;
+        /** Borrar idioma */
+        delete: operations["AdminLanguageController_remove"];
+        options?: never;
+        head?: never;
+        /** Editar idioma (parcial) */
+        patch: operations["AdminLanguageController_update"];
+        trace?: never;
+    };
+    "/api/admin/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver el perfil base (datos bilingües crudos) */
+        get: operations["AdminProfileController_find"];
+        /**
+         * Reemplazar el perfil base
+         * @description Reemplazo completo: lo opcional que no se manda queda vacío. Un campo desconocido es 400. Los idiomas no van acá: tienen su propia ruta (`/api/admin/languages`).
+         */
+        put: operations["AdminProfileController_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/profile/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Previsualizar el perfil base sin guardarlo
+         * @description Resuelve el borrador al idioma negociado con el mismo mapper que `GET /api/profile`, sobre los idiomas ya guardados. No escribe nada.
+         */
+        post: operations["AdminProfileController_previewDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar proyectos (incluye ocultos, datos bilingües crudos) */
+        get: operations["AdminProjectController_list"];
+        put?: never;
+        /** Crear proyecto */
+        post: operations["AdminProjectController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/projects/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver proyecto */
+        get: operations["AdminProjectController_find"];
+        put?: never;
+        post?: never;
+        /** Borrar proyecto */
+        delete: operations["AdminProjectController_remove"];
+        options?: never;
+        head?: never;
+        /** Editar proyecto (parcial) */
+        patch: operations["AdminProjectController_update"];
         trace?: never;
     };
     "/api/admin/skill-categories": {
@@ -248,6 +437,43 @@ export interface paths {
         head?: never;
         /** Editar skill (nombre, tags, orden, categoría) */
         patch: operations["AdminSkillController_editSkill"];
+        trace?: never;
+    };
+    "/api/admin/social-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar enlaces sociales (incluye ocultos, datos bilingües crudos) */
+        get: operations["AdminSocialLinkController_list"];
+        put?: never;
+        /** Crear enlace social */
+        post: operations["AdminSocialLinkController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/social-links/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver enlace social */
+        get: operations["AdminSocialLinkController_find"];
+        put?: never;
+        post?: never;
+        /** Borrar enlace social */
+        delete: operations["AdminSocialLinkController_remove"];
+        options?: never;
+        head?: never;
+        /** Editar enlace social (parcial) */
+        patch: operations["AdminSocialLinkController_update"];
         trace?: never;
     };
     "/api/admin/themes": {
@@ -519,6 +745,21 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AdminAvailabilityResponse: {
+            contractType: components["schemas"]["LocalizedTextDto"] | null;
+            modality: components["schemas"]["LocalizedTextDto"] | null;
+            startDate: components["schemas"]["LocalizedTextDto"] | null;
+        };
+        AdminCertificationResponse: {
+            id: string;
+            /** @example CertifPro, Sunrise Florida, EEUU */
+            issuer: string;
+            name: components["schemas"]["LocalizedTextDto"];
+            order: number;
+            visible: boolean;
+            /** @example 2021 */
+            year: string | null;
+        };
         AdminCuratedProfileResponse: {
             /** @example #5B2C87 */
             accentColor: string;
@@ -552,6 +793,18 @@ export interface components {
             /** @enum {string} */
             visibility: "PUBLIC" | "PRIVATE" | "PROTECTED";
         };
+        AdminEducationResponse: {
+            degree: components["schemas"]["LocalizedTextDto"];
+            endDate: string | null;
+            id: string;
+            inProgress: boolean;
+            /** @example UAGRM School of Engineering */
+            institution: string;
+            order: number;
+            /** @example 2024-02 */
+            startDate: string;
+            visible: boolean;
+        };
         AdminExperienceResponse: {
             company: string;
             createdAt: string | null;
@@ -569,6 +822,41 @@ export interface components {
             tags: string[];
             technologies: string[];
             updatedAt: string | null;
+            visible: boolean;
+        };
+        AdminLanguageResponse: {
+            detail: components["schemas"]["LocalizedTextDto"] | null;
+            id: string;
+            /** @example B2 */
+            level: string;
+            /** @example Inglés */
+            name: string;
+            nameI18n: components["schemas"]["LocalizedTextDto"] | null;
+        };
+        AdminProfileResponse: {
+            availability: components["schemas"]["AdminAvailabilityResponse"];
+            email: string;
+            fullName: string;
+            headline: components["schemas"]["LocalizedTextDto"];
+            id: string;
+            location: string;
+            phone: string | null;
+            summary: components["schemas"]["LocalizedTextDto"];
+            timezone: string;
+            yearsOfExperience: number;
+        };
+        AdminProjectResponse: {
+            id: string;
+            /** @example Portafolio Web Administrable */
+            name: string;
+            order: number;
+            /** @example 2026 */
+            period: string;
+            role: components["schemas"]["LocalizedTextDto"];
+            summary: components["schemas"]["LocalizedTextDto"];
+            tags: string[];
+            technologies: string[];
+            url: string | null;
             visible: boolean;
         };
         AdminResponse: {
@@ -592,6 +880,39 @@ export interface components {
             name: string;
             order: number;
             tags: string[];
+        };
+        AdminSocialLinkResponse: {
+            description: components["schemas"]["LocalizedTextDto"] | null;
+            featured: boolean;
+            /** @example manuXD270516 */
+            handle: string;
+            id: string;
+            label: components["schemas"]["LocalizedTextDto"];
+            order: number;
+            /** @example github */
+            platform: string;
+            /**
+             * @example {
+             *       "repos": 67,
+             *       "achievements": [
+             *         "Pull Shark"
+             *       ]
+             *     }
+             */
+            stats: {
+                [key: string]: unknown;
+            } | null;
+            /** @example https://github.com/manuXD270516 */
+            url: string;
+            visible: boolean;
+        };
+        AvailabilityDto: {
+            /** @description Tipo de contrato */
+            contractType?: components["schemas"]["LocalizedTextDto"] | null;
+            /** @description Modalidad */
+            modality?: components["schemas"]["LocalizedTextDto"] | null;
+            /** @description Fecha de inicio */
+            startDate?: components["schemas"]["LocalizedTextDto"] | null;
         };
         AvailabilityResponse: {
             /** @example Relación de dependencia · Freelance / Contractor */
@@ -623,9 +944,31 @@ export interface components {
             locale: string;
             views: number;
         };
+        CountByReferrer: {
+            /**
+             * @description Host del origen sin `www.`, o `directo` / `interno`
+             * @example linkedin.com
+             */
+            referrer: string;
+            views: number;
+        };
         CountBySlug: {
             slug: string;
             views: number;
+        };
+        CreateCertificationDto: {
+            /** @example CertifPro, Sunrise Florida, EEUU */
+            issuer: string;
+            name: components["schemas"]["LocalizedTextDto"];
+            /** @default 0 */
+            order: number;
+            /** @default true */
+            visible: boolean;
+            /**
+             * @description YYYY; omitir o null si no se conoce
+             * @example 2021
+             */
+            year?: string | null;
         };
         CreateCuratedProfileDto: {
             /**
@@ -640,7 +983,8 @@ export interface components {
             excludeIds: string[];
             /** @default [] */
             filterTags: string[];
-            headline: components["schemas"]["LocalizedTextDto"];
+            /** @description Titular propio del perfil. Omitido o vacío, el hero muestra el titular del perfil base (add-profile-content-admin, D7). */
+            headline?: components["schemas"]["LocalizedTextDto"];
             /** @default [] */
             includeIds: string[];
             /** @default classic */
@@ -673,6 +1017,27 @@ export interface components {
              * @enum {string}
              */
             visibility: "PUBLIC" | "PRIVATE" | "PROTECTED";
+        };
+        CreateEducationDto: {
+            degree: components["schemas"]["LocalizedTextDto"];
+            /**
+             * @description YYYY-MM o YYYY; omitir o null si está en curso
+             * @example 2021-04
+             */
+            endDate?: string | null;
+            /** @default false */
+            inProgress: boolean;
+            /** @example UAGRM School of Engineering */
+            institution: string;
+            /** @default 0 */
+            order: number;
+            /**
+             * @description YYYY-MM o YYYY
+             * @example 2024-02
+             */
+            startDate: string;
+            /** @default true */
+            visible: boolean;
         };
         CreateExperienceDto: {
             /** @example ACME Corp */
@@ -708,6 +1073,41 @@ export interface components {
             /** @default true */
             visible: boolean;
         };
+        CreateLanguageDto: {
+            detail?: components["schemas"]["LocalizedTextDto"] | null;
+            /** @example B2 */
+            level: string;
+            /**
+             * @description Nombre canónico; fallback de nameI18n
+             * @example Inglés
+             */
+            name: string;
+            nameI18n?: components["schemas"]["LocalizedTextDto"] | null;
+        };
+        CreateProjectDto: {
+            /** @example Portafolio Web Administrable */
+            name: string;
+            /** @default 0 */
+            order: number;
+            /** @example 2026 */
+            period: string;
+            role: components["schemas"]["LocalizedTextDto"];
+            summary: components["schemas"]["LocalizedTextDto"];
+            /**
+             * @description Tags para el filtrado de perfiles curados
+             * @default []
+             */
+            tags: string[];
+            /** @default [] */
+            technologies: string[];
+            /**
+             * @description URL http(s) absoluta; null para quitarla
+             * @example https://github.com/manu/portafolio
+             */
+            url?: string | null;
+            /** @default true */
+            visible: boolean;
+        };
         CreateSkillCategoryDto: {
             name: components["schemas"]["LocalizedTextDto"];
             /** @default 0 */
@@ -723,6 +1123,41 @@ export interface components {
              * @default []
              */
             tags: string[];
+        };
+        CreateSocialLinkDto: {
+            /** @description null para quitarla */
+            description?: components["schemas"]["LocalizedTextDto"] | null;
+            /** @default false */
+            featured: boolean;
+            /** @example manuXD270516 */
+            handle: string;
+            label: components["schemas"]["LocalizedTextDto"];
+            /** @default 0 */
+            order: number;
+            /**
+             * @description Minúsculas, dígitos y guiones
+             * @example github
+             */
+            platform: string;
+            /**
+             * @description Objeto JSON libre; null para quitarlo. Arrays y primitivos → 400
+             * @example {
+             *       "repos": 67,
+             *       "achievements": [
+             *         "Pull Shark"
+             *       ]
+             *     }
+             */
+            stats?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * @description URL http(s) absoluta
+             * @example https://github.com/manuXD270516
+             */
+            url: string;
+            /** @default true */
+            visible: boolean;
         };
         CuratedProfileResponse: {
             /** @example #5B2C87 */
@@ -949,6 +1384,7 @@ export interface components {
             excludeIds: string[];
             /** @default [] */
             filterTags: string[];
+            /** @description Titular propio del perfil. Omitido o vacío, el hero muestra el titular del perfil base (add-profile-content-admin, D7). */
             headline?: components["schemas"]["LocalizedTextDto"];
             /** @default [] */
             includeIds: string[];
@@ -983,6 +1419,23 @@ export interface components {
              */
             visibility: "PUBLIC" | "PRIVATE" | "PROTECTED";
         };
+        PreviewProfileDto: {
+            availability?: components["schemas"]["AvailabilityDto"];
+            /** @example manuel@example.com */
+            email: string;
+            /** @example Manuel Saavedra */
+            fullName: string;
+            headline: components["schemas"]["LocalizedTextDto"];
+            /** @example Santa Cruz, Bolivia */
+            location: string;
+            /** @example +591 70000000 */
+            phone?: string | null;
+            summary: components["schemas"]["LocalizedTextDto"];
+            /** @default GMT-4 */
+            timezone: string;
+            /** @default 0 */
+            yearsOfExperience: number;
+        };
         ProfileResponse: {
             availability: components["schemas"]["AvailabilityResponse"];
             /** @example correo@example.com */
@@ -1012,6 +1465,8 @@ export interface components {
             byDay: components["schemas"]["CountByDay"][];
             byLocale: components["schemas"]["CountByLocale"][];
             byProfile: components["schemas"]["CountBySlug"][];
+            /** @description Por origen, descendente. Su suma es `total`; solo se agrega el host */
+            byReferrer: components["schemas"]["CountByReferrer"][];
             from: string;
             to: string;
             total: number;
@@ -1031,6 +1486,23 @@ export interface components {
             tags: string[];
             technologies: string[];
             url: string | null;
+        };
+        ReplaceProfileDto: {
+            availability?: components["schemas"]["AvailabilityDto"];
+            /** @example manuel@example.com */
+            email: string;
+            /** @example Manuel Saavedra */
+            fullName: string;
+            headline: components["schemas"]["LocalizedTextDto"];
+            /** @example Santa Cruz, Bolivia */
+            location: string;
+            /** @example +591 70000000 */
+            phone?: string | null;
+            summary: components["schemas"]["LocalizedTextDto"];
+            /** @default GMT-4 */
+            timezone: string;
+            /** @default 0 */
+            yearsOfExperience: number;
         };
         ResolvedThemeResponse: {
             /** @example true */
@@ -1118,6 +1590,20 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        UpdateCertificationDto: {
+            /** @example CertifPro, Sunrise Florida, EEUU */
+            issuer?: string;
+            name?: components["schemas"]["LocalizedTextDto"];
+            /** @default 0 */
+            order: number;
+            /** @default true */
+            visible: boolean;
+            /**
+             * @description YYYY; omitir o null si no se conoce
+             * @example 2021
+             */
+            year?: string | null;
+        };
         UpdateCuratedProfileDto: {
             /**
              * @default #1A365D
@@ -1131,6 +1617,7 @@ export interface components {
             excludeIds: string[];
             /** @default [] */
             filterTags: string[];
+            /** @description Titular propio del perfil. Omitido o vacío, el hero muestra el titular del perfil base (add-profile-content-admin, D7). */
             headline?: components["schemas"]["LocalizedTextDto"];
             /** @default [] */
             includeIds: string[];
@@ -1164,6 +1651,27 @@ export interface components {
              * @enum {string}
              */
             visibility: "PUBLIC" | "PRIVATE" | "PROTECTED";
+        };
+        UpdateEducationDto: {
+            degree?: components["schemas"]["LocalizedTextDto"];
+            /**
+             * @description YYYY-MM o YYYY; omitir o null si está en curso
+             * @example 2021-04
+             */
+            endDate?: string | null;
+            /** @default false */
+            inProgress: boolean;
+            /** @example UAGRM School of Engineering */
+            institution?: string;
+            /** @default 0 */
+            order: number;
+            /**
+             * @description YYYY-MM o YYYY
+             * @example 2024-02
+             */
+            startDate?: string;
+            /** @default true */
+            visible: boolean;
         };
         UpdateExperienceDto: {
             /** @example ACME Corp */
@@ -1199,6 +1707,41 @@ export interface components {
             /** @default true */
             visible: boolean;
         };
+        UpdateLanguageDto: {
+            detail?: components["schemas"]["LocalizedTextDto"] | null;
+            /** @example B2 */
+            level?: string;
+            /**
+             * @description Nombre canónico; fallback de nameI18n
+             * @example Inglés
+             */
+            name?: string;
+            nameI18n?: components["schemas"]["LocalizedTextDto"] | null;
+        };
+        UpdateProjectDto: {
+            /** @example Portafolio Web Administrable */
+            name?: string;
+            /** @default 0 */
+            order: number;
+            /** @example 2026 */
+            period?: string;
+            role?: components["schemas"]["LocalizedTextDto"];
+            summary?: components["schemas"]["LocalizedTextDto"];
+            /**
+             * @description Tags para el filtrado de perfiles curados
+             * @default []
+             */
+            tags: string[];
+            /** @default [] */
+            technologies: string[];
+            /**
+             * @description URL http(s) absoluta; null para quitarla
+             * @example https://github.com/manu/portafolio
+             */
+            url?: string | null;
+            /** @default true */
+            visible: boolean;
+        };
         UpdateSkillCategoryDto: {
             name?: components["schemas"]["LocalizedTextDto"];
             /** @default 0 */
@@ -1216,6 +1759,41 @@ export interface components {
              * @default []
              */
             tags: string[];
+        };
+        UpdateSocialLinkDto: {
+            /** @description null para quitarla */
+            description?: components["schemas"]["LocalizedTextDto"] | null;
+            /** @default false */
+            featured: boolean;
+            /** @example manuXD270516 */
+            handle?: string;
+            label?: components["schemas"]["LocalizedTextDto"];
+            /** @default 0 */
+            order: number;
+            /**
+             * @description Minúsculas, dígitos y guiones
+             * @example github
+             */
+            platform?: string;
+            /**
+             * @description Objeto JSON libre; null para quitarlo. Arrays y primitivos → 400
+             * @example {
+             *       "repos": 67,
+             *       "achievements": [
+             *         "Pull Shark"
+             *       ]
+             *     }
+             */
+            stats?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * @description URL http(s) absoluta
+             * @example https://github.com/manuXD270516
+             */
+            url?: string;
+            /** @default true */
+            visible: boolean;
         };
     };
     responses: never;
@@ -1257,6 +1835,198 @@ export interface operations {
                 };
             };
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminCertificationController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCertificationResponse"][];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminCertificationController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCertificationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCertificationResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminCertificationController_find: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCertificationResponse"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminCertificationController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminCertificationController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCertificationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCertificationResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1656,6 +2426,198 @@ export interface operations {
             };
         };
     };
+    AdminEducationController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEducationResponse"][];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminEducationController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEducationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEducationResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminEducationController_find: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEducationResponse"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminEducationController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminEducationController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateEducationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEducationResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
     AdminExperienceController_list: {
         parameters: {
             query?: never;
@@ -1819,6 +2781,530 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminExperienceResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminLanguageController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLanguageResponse"][];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminLanguageController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateLanguageDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLanguageResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description No hay perfil cargado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminLanguageController_find: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLanguageResponse"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminLanguageController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminLanguageController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateLanguageDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLanguageResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminProfileController_find: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProfileResponse"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description No hay perfil cargado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminProfileController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProfileResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description No hay perfil cargado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminProfileController_previewDraft: {
+        parameters: {
+            query?: {
+                /** @description Alias de `locale`. */
+                lang?: "es" | "en";
+                /** @description Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`). */
+                locale?: "es" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminProjectController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProjectResponse"][];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminProjectController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProjectDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProjectResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminProjectController_find: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProjectResponse"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminProjectController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminProjectController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProjectDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProjectResponse"];
                 };
             };
             400: {
@@ -2094,6 +3580,198 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminSkillResponse"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminSocialLinkController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSocialLinkResponse"][];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminSocialLinkController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSocialLinkDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSocialLinkResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminSocialLinkController_find: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSocialLinkResponse"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminSocialLinkController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminSocialLinkController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSocialLinkDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSocialLinkResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
                 };
             };
             /** @description Sin Bearer válido */

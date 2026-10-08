@@ -15,12 +15,27 @@ export interface SocialLinkProps {
   readonly visible: boolean;
 }
 
+/** Datos para crear un enlace social: el id lo genera la persistencia. */
+export type NewSocialLinkProps = Omit<SocialLinkProps, 'id'>;
+
+const cloneStats = (stats: Record<string, unknown> | null): Record<string, unknown> | null =>
+  stats ? structuredClone(stats) : null;
+
 /** Presencia pública (redes, código, video). */
 export class SocialLink {
   private constructor(private readonly props: SocialLinkProps) {}
 
   static create(props: SocialLinkProps): SocialLink {
-    return new SocialLink({ ...props, stats: props.stats ? structuredClone(props.stats) : null });
+    return new SocialLink({ ...props, stats: cloneStats(props.stats) });
+  }
+
+  /** Copia con cambios parciales (edición desde el backoffice). */
+  with(changes: Partial<NewSocialLinkProps>): SocialLink {
+    return SocialLink.create({ ...this.props, ...changes });
+  }
+
+  toProps(): SocialLinkProps {
+    return { ...this.props, stats: cloneStats(this.props.stats) };
   }
 
   get id(): string {
@@ -42,7 +57,7 @@ export class SocialLink {
     return this.props.description;
   }
   get stats(): Record<string, unknown> | null {
-    return this.props.stats ? structuredClone(this.props.stats) : null;
+    return cloneStats(this.props.stats);
   }
   get featured(): boolean {
     return this.props.featured;

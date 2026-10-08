@@ -7,6 +7,10 @@ describe('AggregateProfileViewsUseCase', () => {
   const repo: ProfileViewRepository = {
     record: jest.fn(),
     aggregate: jest.fn().mockResolvedValue({ ...EMPTY, total: 3 }),
+    countByReferrer: jest.fn().mockResolvedValue([
+      { referrer: 'https://www.linkedin.com/feed/', views: 2 },
+      { referrer: null, views: 1 },
+    ]),
   };
 
   it('rango por defecto: últimos 30 días hasta ahora', async () => {
@@ -30,5 +34,18 @@ describe('AggregateProfileViewsUseCase', () => {
     expect(ok.ok).toBe(true);
     const bad = await new AggregateProfileViewsUseCase(repo).execute({ from: to, to: from });
     expect(bad.ok).toBe(false);
+  });
+
+  it('byReferrer normaliza el origen y suma lo mismo que total', async () => {
+    const result = await new AggregateProfileViewsUseCase(repo).execute({
+      siteUrl: 'https://manuel.dev',
+    });
+    if (!result.ok) throw new Error('debía agregar');
+    expect(result.value.byReferrer).toEqual([
+      { referrer: 'linkedin.com', views: 2 },
+      { referrer: 'directo', views: 1 },
+    ]);
+    const sum = result.value.byReferrer.reduce((acc, r) => acc + r.views, 0);
+    expect(sum).toBe(result.value.total);
   });
 });
