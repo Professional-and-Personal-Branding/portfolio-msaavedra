@@ -17,19 +17,21 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Runner fijo en vez de ubuntu-latest, que pasa a Ubuntu 26 desde el 19/10/2026: el
+# cambio de sistema operativo se hace a propósito, en un PR propio, y no por sorpresa.
 env:
   NODE_VERSION: '22'
 
 jobs:
   backend:
     name: Backend · lint, tipos, unitarios y build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -49,7 +51,7 @@ jobs:
 
   backend-e2e:
     name: Backend · e2e contra Postgres
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: backend
@@ -72,8 +74,8 @@ jobs:
       NODE_ENV: test
       FRONTEND_URL: http://localhost:5173
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -92,13 +94,13 @@ jobs:
 
   frontend:
     name: Frontend · lint, tipos, tests y build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
