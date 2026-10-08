@@ -2,7 +2,9 @@
 
 > Registro de la deliberación multiagente del 4 de octubre de 2026 y el set de changes que propone para después del 1.0.0.
 >
-> **Estado: propuesta. Nada de esto se implementa sin el Human Gate.** El orden de lectura es: § 1 cómo se decidió, § 2 qué salió, § 3 **la corrección**, § 4 el set final, § 5 lo diferido.
+> **Estado: completada.** Los cinco changes del § 4 se implementaron y archivaron entre el 5 y el 8 de octubre de 2026 (`openspec/changes/archive/`). Lo que sigue se conserva como registro de cómo se decidió; lo diferido del § 5 sigue pendiente.
+>
+> Estado original: propuesta. Nada de esto se implementa sin el Human Gate. El orden de lectura es: § 1 cómo se decidió, § 2 qué salió, § 3 **la corrección**, § 4 el set final, § 5 lo diferido.
 
 ---
 
