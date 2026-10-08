@@ -440,6 +440,14 @@ curl -s -X POST $API/api/admin/curated-profiles/preview -H "$AUTH" \
 
 No persiste nada. Sirve para tantear un filtro antes de tocar un perfil ya publicado.
 
+**Idioma de la vista previa.** En el constructor, el conmutador **ES / EN** del panel de vista previa pide el preview en el otro idioma (`?locale=en`). Es estado de vista, no del perfil: no se guarda ni viaja en el guardado, y al recargar vuelve a español. Los dos idiomas conviven en caché, así que volver al anterior es instantáneo.
+
+**Aviso de faltantes.** El preview devuelve además `missingTranslations`: los campos bilingües que están vacíos en el idioma pedido y caerían al español. La pestaña **Publicación**, junto al link público, lo muestra con el conteo y la lista agrupada por entidad (por ejemplo, «Acme Corp — Backend: Logros»); si no falta nada, lo dice en una línea («Sin faltantes de traducción en EN»). Es solo informativo: no impide guardar ni publicar, porque hay perfiles que se mandan solo en español. Un texto igual en los dos idiomas (`Tech Lead`, `.NET`) no cuenta como faltante. La ruta pública no trae este informe.
+
+```bash
+curl -s -X POST "$API/api/admin/curated-profiles/preview?locale=en" -H "$AUTH"   -H 'Content-Type: application/json' -d '{ "filterTags": ["dotnet"] }'   | jq '.missingTranslations'
+```
+
 > **Cuidado con los nombres:** lo que **mandás** usa `sectionsOrder` y `sectionsHidden`; lo que **vuelve resuelto** trae `sections` (ya ordenadas y filtradas) y `hiddenSections`. Es la diferencia entre la configuración y el resultado.
 
 ### TC-18 — Medir qué pasó con los links ✅

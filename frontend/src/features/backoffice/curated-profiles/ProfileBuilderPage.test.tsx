@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { AppRouter } from '@/app/router';
 import { makeAdminCuratedProfile } from '@/test/fixtures/admin';
-import { makeCuratedProfile } from '@/test/fixtures/curated-profile';
+import { makeCuratedProfile, makeExperience } from '@/test/fixtures/curated-profile';
 import { API, http, HttpResponse, server } from '@/test/msw';
 import { adminHandlers } from '@/test/msw-admin';
 import { renderWithProviders } from '@/test/render';
@@ -406,5 +406,218 @@ describe('ThemeCustomizerPanel', () => {
       expect(screen.getByRole('combobox', { name: 'Tema base' })).toHaveTextContent('Elegant'),
     );
     expect(screen.getByRole('button', { name: /Restablecer/ })).toBeDisabled();
+  });
+
+  describe('idioma de la vista previa', () => {
+    type Call = { locale: string | null; body: Record<string, unknown> };
+
+    /** Cuenta las peticiones de preview por idioma (`?locale=`). */
+    function countByLocale(calls: Call[]) {
+      return http.post(`${API}/admin/curated-profiles/preview`, async ({ request }) => {
+        calls.push({
+          locale: new URL(request.url).searchParams.get('locale'),
+          body: (await request.json()) as Record<string, unknown>,
+        });
+        return HttpResponse.json(makeCuratedProfile());
+      });
+    }
+    const switcher = () => screen.getByRole('tablist', { name: 'Idioma de la vista previa' });
+
+    it('conmutar a EN pide el preview en inglés y el guardado no lleva el idioma', async () => {
+      const calls: Call[] = [];
+      let saved: Record<string, unknown> | undefined;
+      server.use(
+        http.patch(`${API}/admin/curated-profiles/:id`, async ({ request }) => {
+          saved = (await request.json()) as Record<string, unknown>;
+          return HttpResponse.json(makeAdminCuratedProfile());
+        }),
+        countByLocale(calls),
+        ...adminHandlers,
+      );
+      const user = userEvent.setup();
+
+      await openBuilder();
+      expect(within(switcher()).getByRole('tab', { name: 'es' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      await user.click(within(switcher()).getByRole('tab', { name: 'en' }));
+      await waitFor(() => expect(calls.at(-1)?.locale).toBe('en'));
+
+      await user.click(screen.getByRole('button', { name: /Guardar/ }));
+      await waitFor(() => expect(saved).toBeDefined());
+      expect(JSON.stringify(saved)).not.toMatch(/locale|lang/i);
+      // El borrador que viaja al preview tampoco lleva el idioma: va en la query.
+      expect(JSON.stringify(calls.at(-1)?.body)).not.toMatch(/locale|lang/i);
+    });
+
+    it('conmutar a EN y volver a ES no repite la petición (una por idioma)', async () => {
+      const calls: Call[] = [];
+      server.use(countByLocale(calls), ...adminHandlers);
+      const user = userEvent.setup();
+
+      await openBuilder();
+      await waitFor(() => expect(calls).toHaveLength(1));
+
+      await user.click(within(switcher()).getByRole('tab', { name: 'en' }));
+      await waitFor(() => expect(calls).toHaveLength(2));
+      await user.click(within(switcher()).getByRole('tab', { name: 'es' }));
+
+      // Dar margen a que una petición espuria (de haberla) llegue antes de afirmar.
+      await new Promise((resolve) => setTimeout(resolve, 700));
+      expect(calls.map((call) => call.locale)).toEqual(['es', 'en']);
+    });
+
+    it('editar un filtro con el preview en EN recalcula en EN', async () => {
+      const calls: Call[] = [];
+      server.use(countByLocale(calls), ...adminHandlers);
+      const user = userEvent.setup();
+
+      await openBuilder();
+      await user.click(within(switcher()).getByRole('tab', { name: 'en' }));
+      await waitFor(() => expect(calls.at(-1)?.locale).toBe('en'));
+      const before = calls.length;
+
+      await user.click(screen.getByRole('tab', { name: 'Selección' }));
+      await user.click(screen.getByRole('button', { name: 'java', pressed: false }));
+
+      await waitFor(() => expect(calls.length).toBe(before + 1), { timeout: 3000 });
+      expect(calls.at(-1)?.locale).toBe('en');
+      expect(calls.at(-1)?.body).toMatchObject({
+        filterTags: expect.arrayContaining(['nodejs', 'java']),
+      });
+    });
+  });
+});
+
+// add-bilingual-builder-parity: aviso de faltantes en la pestaña Publicación.
+describe('ProfileBuilderPage — aviso de faltantes de traducción', () => {
+  const MISSING_EN = ['exp-1', 'exp-2', 'exp-3'].map((id) => ({
+    entity: 'experience' as const,
+    id,
+    field: 'highlights',
+  }));
+
+  /** Responde por idioma: `missing` es el informe que devuelve para cada `?locale=`. */
+  function previewWith(missing: Partial<Record<'es' | 'en', typeof MISSING_EN>>) {
+    return http.post(`${API}/admin/curated-profiles/preview`, ({ request }) => {
+      const locale = new URL(request.url).searchParams.get('locale') === 'en' ? 'en' : 'es';
+      return HttpResponse.json({
+        ...makeCuratedProfile({
+          experiences: [
+            makeExperience({ id: 'exp-1', company: 'Acme Corp', role: 'Senior Backend' }),
+            makeExperience({ id: 'exp-2', company: 'Globex', role: 'Java Developer' }),
+          ],
+        }),
+        missingTranslations: missing[locale] ?? [],
+      });
+    });
+  }
+
+  const openPublication = async (user: ReturnType<typeof userEvent.setup>) => {
+    await openBuilder();
+    await user.click(screen.getByRole('tab', { name: 'Publicación' }));
+  };
+  const toEnglish = (user: ReturnType<typeof userEvent.setup>) =>
+    user.click(
+      within(screen.getByRole('tablist', { name: 'Idioma de la vista previa' })).getByRole('tab', {
+        name: 'en',
+      }),
+    );
+
+  it('perfil con faltantes en EN: conteo, tres entradas y Guardar habilitado', async () => {
+    server.use(previewWith({ en: MISSING_EN }), ...adminHandlers);
+    const user = userEvent.setup();
+
+    await openPublication(user);
+    await toEnglish(user);
+
+    const notice = screen.getByTestId('missing-translations');
+    await waitFor(() => expect(notice).toHaveTextContent('Faltan 3 traducciones en EN'));
+    expect(within(notice).getAllByRole('listitem')).toHaveLength(3);
+    expect(notice).toHaveTextContent('Acme Corp — Senior Backend: Logros');
+    // Sin datos del preview para exp-3, cae al id.
+    expect(notice).toHaveTextContent('exp-3: Logros');
+    expect(screen.getByRole('button', { name: /Guardar/ })).toBeEnabled();
+  });
+
+  it('perfil completo: lo dice explícitamente', async () => {
+    server.use(previewWith({}), ...adminHandlers);
+    const user = userEvent.setup();
+
+    await openPublication(user);
+    await toEnglish(user);
+
+    await waitFor(() =>
+      expect(screen.getByTestId('missing-translations')).toHaveTextContent(
+        'Sin faltantes de traducción en EN',
+      ),
+    );
+  });
+
+  it('mientras el preview carga muestra un estado neutro, no "sin faltantes"', async () => {
+    server.use(
+      http.post(`${API}/admin/curated-profiles/preview`, async ({ request }) => {
+        const en = new URL(request.url).searchParams.get('locale') === 'en';
+        if (en) await new Promise((resolve) => setTimeout(resolve, 600));
+        return HttpResponse.json({ ...makeCuratedProfile(), missingTranslations: [] });
+      }),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+
+    await openPublication(user);
+    await toEnglish(user);
+
+    const notice = screen.getByTestId('missing-translations');
+    expect(notice).toHaveTextContent('Comprobando traducciones en EN');
+    expect(notice).not.toHaveTextContent('Sin faltantes');
+    await waitFor(() => expect(notice).toHaveTextContent('Sin faltantes de traducción en EN'));
+  });
+
+  it('el aviso sigue al idioma del preview: de EN a ES pasa a sin faltantes', async () => {
+    server.use(previewWith({ en: MISSING_EN }), ...adminHandlers);
+    const user = userEvent.setup();
+
+    await openPublication(user);
+    await toEnglish(user);
+    await waitFor(() =>
+      expect(screen.getByTestId('missing-translations')).toHaveTextContent('Faltan 3'),
+    );
+
+    await user.click(
+      within(screen.getByRole('tablist', { name: 'Idioma de la vista previa' })).getByRole('tab', {
+        name: 'es',
+      }),
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('missing-translations')).toHaveTextContent(
+        'Sin faltantes de traducción en ES',
+      ),
+    );
+  });
+
+  it('publicar con faltantes en EN se completa con normalidad', async () => {
+    let saves = 0;
+    server.use(
+      previewWith({ en: MISSING_EN }),
+      http.patch(`${API}/admin/curated-profiles/:id`, () => {
+        saves += 1;
+        return HttpResponse.json(makeAdminCuratedProfile());
+      }),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+
+    await openPublication(user);
+    await toEnglish(user);
+    await waitFor(() =>
+      expect(screen.getByTestId('missing-translations')).toHaveTextContent('Faltan 3'),
+    );
+
+    await user.click(screen.getByRole('button', { name: /Guardar/ }));
+    await waitFor(() => expect(saves).toBe(1));
+    // Puede quedar el aviso de una prueba anterior en pantalla: basta con que haya alguno.
+    expect((await screen.findAllByText('Perfil guardado')).length).toBeGreaterThan(0);
   });
 });

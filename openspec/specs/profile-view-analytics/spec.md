@@ -23,7 +23,6 @@ Cuando `GET /api/curated-profiles/:slug` responde 200, el sistema SHALL crear un
 ### Requirement: Lectura agregada para el administrador
 `GET /api/admin/analytics/views` SHALL devolver `{ from, to, total, byProfile: [{ slug, views }], byLocale: [{ locale, views }], byDay: [{ day, views }] }` para el rango `from`/`to` (fechas ISO, default últimos 30 días), ordenando `byProfile` por vistas descendente y `byDay` ascendente. Requiere token de administrador.
 
-
 #### Scenario: Agregado tras visitas
 - **WHEN** se registraron 3 visitas a `all` (2 en `es`, 1 en `en`) dentro del rango y el administrador consulta
 - **THEN** `total ≥ 3`, `byProfile` contiene `{ slug: "all", views ≥ 3 }` y `byLocale` contiene `es` y `en`
@@ -46,3 +45,37 @@ El rango `from`/`to` SHALL ser cerrado: una fecha sin hora se resuelve al borde 
 #### Scenario: Ventana de horas
 - **WHEN** consulta `?from=2026-10-05T12:00:00Z&to=2026-10-05T13:00:00Z`
 - **THEN** solo cuenta las visitas de esa hora
+
+### Requirement: Agregado por origen de la visita
+El agregado de visitas SHALL incluir `byReferrer: { referrer, views }[]`, construido **sobre el `referrer` que ya se persiste** desde la Fase 3. MUST NOT capturarse ningún dato nuevo, ni cookies, ni la URL completa del origen: solo su host.
+
+#### Scenario: Solo el host
+- **WHEN** el `referrer` trae path y query
+- **THEN** el agregado guarda únicamente el host, sin path ni parámetros
+
+#### Scenario: El total no cambia
+- **WHEN** se compara la suma de `byReferrer` con `total` en el mismo rango
+- **THEN** son iguales
+
+### Requirement: Normalización del origen de la visita
+La normalización del `referrer` SHALL ser una función pura de dominio con estas reglas:
+
+- `referrer` nulo, vacío o no parseable → `"directo"`.
+- Una URL válida → su host en minúsculas, sin el prefijo `www.`.
+- Un host que coincide con el de `FRONTEND_URL` → `"interno"`, para no contar la navegación dentro del sitio como tráfico entrante.
+
+#### Scenario: Origen externo
+- **WHEN** una visita llega con `referrer: "https://www.linkedin.com/feed/"`
+- **THEN** cuenta bajo `linkedin.com`
+
+#### Scenario: Sin referrer
+- **WHEN** una visita llega sin `referrer`
+- **THEN** cuenta bajo `directo`
+
+#### Scenario: Navegación interna
+- **WHEN** el `referrer` es una URL del propio `FRONTEND_URL`
+- **THEN** cuenta bajo `interno` y no como tráfico entrante
+
+#### Scenario: Referrer basura
+- **WHEN** el `referrer` no es una URL parseable
+- **THEN** cuenta bajo `directo` y no rompe el agregado

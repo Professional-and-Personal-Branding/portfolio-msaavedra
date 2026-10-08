@@ -25,7 +25,10 @@ import { completeSections, resolveSections } from '../../domain/services/resolve
 import { selectByTags, SelectionCriteria } from '../../domain/services/select-by-tags';
 import { selectSkillCategories } from '../../domain/services/select-skill-categories';
 import { CuratedProfileOutput } from '../dto/curated-profile.output';
-import { toCuratedProfileOutput } from '../mappers/curated-profile.mapper';
+import {
+  CuratedProfileResolution,
+  toCuratedProfileOutput,
+} from '../mappers/curated-profile.mapper';
 import { PortfolioSectionsLoader } from './portfolio-sections.loader';
 import { sectionsWithData } from './sections-with-data';
 
@@ -50,6 +53,18 @@ export class CuratedProfileComposer {
   ) {}
 
   async compose(curated: CuratedProfile, locale: Locale): Promise<CuratedProfileOutput> {
+    return (await this.composeWithResolution(curated, locale)).output;
+  }
+
+  /**
+   * Igual que `compose`, pero además devuelve las entidades de dominio ya
+   * seleccionadas (bilingües, sin resolver). Solo lo usa el preview, para detectar
+   * faltantes de traducción sin repetir la selección por tags.
+   */
+  async composeWithResolution(
+    curated: CuratedProfile,
+    locale: Locale,
+  ): Promise<{ output: CuratedProfileOutput; resolution: CuratedProfileResolution }> {
     // Lecturas en paralelo.
     const [profile, allExperiences, allCategories, theme, portfolio] = await Promise.all([
       this.profiles.findOne(),
@@ -83,7 +98,7 @@ export class CuratedProfileComposer {
       : null;
     const sections = resolveSections(curated.sectionsOrder, curated.sectionsHidden);
 
-    const output = toCuratedProfileOutput({
+    const resolution: CuratedProfileResolution = {
       curated,
       locale,
       profile,
@@ -95,10 +110,14 @@ export class CuratedProfileComposer {
       socialLinks: portfolio.socialLinks,
       theme: resolvedTheme,
       sections,
-    });
+    };
+    const output = toCuratedProfileOutput(resolution);
     // El orden final, con relleno, se decide acá: el cliente lo renderiza tal cual
     // (spec `curated-profile-resolution`).
-    return { ...output, sections: completeSections(sections, sectionsWithData(output)) };
+    return {
+      output: { ...output, sections: completeSections(sections, sectionsWithData(output)) },
+      resolution,
+    };
   }
 
   /** Tema propio → preset por defecto → null (la resolución nunca falla por el tema). */

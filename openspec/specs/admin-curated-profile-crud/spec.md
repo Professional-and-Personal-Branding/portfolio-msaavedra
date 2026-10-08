@@ -13,11 +13,15 @@ Permite al administrador crear y ajustar perfiles curados: qué se filtra, qué 
 - **THEN** recibe 14 elementos (tras el seed) y cada uno incluye `filterTags`, `includeIds`, `excludeIds` y `visibility`
 
 ### Requirement: Creación validada con slug único
-`POST /api/admin/curated-profiles` SHALL crear un perfil (201) validando: `slug` en kebab-case (`^[a-z0-9]+(?:-[a-z0-9]+)*$`) y único (409 si ya existe); `title`, `headline` `{ es: string, en?: string }` obligatorios; `description`, `roleType` opcionales bilingües; `techFocus` string opcional; `filterTags`, `includeIds`, `excludeIds`, `sectionsOrder`, `sectionsHidden` arrays de strings (default `[]`); `accentColor` hex `#RRGGBB` (default `#1A365D`); `themeId` opcional que MUST existir (404 → 400 con mensaje); `themeOverrides` objeto opcional; `layout` string (default `classic`); `visibility` ∈ `PUBLIC|PRIVATE|PROTECTED` (default `PUBLIC`); `accessToken` string opcional. Un perfil `PROTECTED` MUST tener `accessToken` no vacío (400 si falta).
+`POST /api/admin/curated-profiles` SHALL crear un perfil (201) con `slug` en kebab-case (`^[a-z0-9]+(?:-[a-z0-9]+)*$`) y único (409 si ya existe) y `title` `{ es: string, en?: string }` obligatorio. `headline` `{ es: string, en?: string }` es **opcional** (decisión D7 de `add-profile-content-admin`): omitido o vacío, el perfil no tiene titular propio y su hero muestra el titular del perfil base.
 
 #### Scenario: Creación mínima
 - **WHEN** envía `{ slug: "qa-lead", title: { es: "QA Lead" }, headline: { es: "Calidad" }, filterTags: ["testing"] }`
 - **THEN** recibe 201 y `GET /api/curated-profiles/qa-lead` responde 200 con las experiencias que tengan `testing`
+
+#### Scenario: Sin titular propio
+- **WHEN** envía `{ slug: "qa-lead", title: { es: "QA Lead" } }` sin `headline`
+- **THEN** recibe 201, `GET /api/curated-profiles/qa-lead` responde `headline: ""` y `profile.headline` trae el titular del perfil base, que es el que muestra el hero
 
 #### Scenario: Slug duplicado
 - **WHEN** envía `slug: "all"`
@@ -26,6 +30,16 @@ Permite al administrador crear y ajustar perfiles curados: qué se filtra, qué 
 #### Scenario: Slug inválido
 - **WHEN** envía `slug: "QA Lead!"`
 - **THEN** recibe 400
+
+### Requirement: Campos opcionales de la creación y sus valores por defecto
+Al crear un perfil, `description` y `roleType` SHALL ser opcionales bilingües; `techFocus`, string opcional; `filterTags`, `includeIds`, `excludeIds`, `sectionsOrder` y `sectionsHidden`, arrays de strings (default `[]`); `accentColor`, hex `#RRGGBB` (default `#1A365D`); `themeOverrides`, objeto opcional; `layout`, string (default `classic`); `visibility` ∈ `PUBLIC|PRIVATE|PROTECTED` (default `PUBLIC`); y `accessToken`, string opcional.
+
+#### Scenario: Valores por defecto
+- **WHEN** se crea un perfil enviando solo `slug` y `title`
+- **THEN** el perfil creado tiene `visibility: "PUBLIC"`, `layout: "classic"`, `accentColor: "#1A365D"` y `filterTags`, `includeIds`, `excludeIds`, `sectionsOrder` y `sectionsHidden` vacíos
+
+### Requirement: Coherencia de tema y acceso al crear
+Al crear un perfil, `themeId` es opcional y, si se envía, MUST existir (404 → 400 con mensaje). Un perfil `PROTECTED` MUST tener `accessToken` no vacío (400 si falta).
 
 #### Scenario: PROTECTED sin token
 - **WHEN** envía `visibility: "PROTECTED"` sin `accessToken`
@@ -87,21 +101,9 @@ Permite al administrador crear y ajustar perfiles curados: qué se filtra, qué 
 ### Requirement: Duplicar un perfil curado
 `POST /api/admin/curated-profiles/{id}/duplicate` SHALL crear un perfil nuevo copiando `title`, `headline`, `description`, `roleType`, `techFocus`, `filterTags`, `includeIds`, `excludeIds`, `accentColor`, `themeId`, `themeOverrides`, `layout`, `sectionsOrder` y `sectionsHidden` del original, y SHALL responder 201 con el perfil creado.
 
-La copia MUST NOT heredar `accessToken` (queda nulo), `views` (queda en 0), sus `ProfileView` (ninguna) ni `archivedAt` (nulo). La copia SHALL forzarse a `visibility = PRIVATE` y `listed = false`, para que un duplicado a medio configurar no quede accesible por un slug adivinable.
-
-El `slug` SHALL derivarse del original agregando el primer sufijo numérico libre (`-2`, `-3`, …). El cuerpo de la petición MUST NOT aceptar un slug: renombrar es una operación aparte y ya no rompe links.
-
 #### Scenario: Duplicado de un perfil configurado
 - **WHEN** se duplica un perfil con `filterTags`, `sectionsOrder`, `sectionsHidden` y `themeOverrides` propios
 - **THEN** responde 201 y los cuatro campos del duplicado son idénticos a los del original
-
-#### Scenario: El duplicado nace retirado
-- **WHEN** se duplica un perfil `PUBLIC` con token de acceso y 40 visitas
-- **THEN** el duplicado tiene `visibility: "PRIVATE"`, `listed: false`, `accessToken: null`, `views: 0` y su slug responde 404 en la ruta pública
-
-#### Scenario: Slug derivado con colisión
-- **WHEN** ya existen `acme-lead` y `acme-lead-2` y se duplica `acme-lead`
-- **THEN** el nuevo slug es `acme-lead-3`
 
 #### Scenario: El original no se modifica
 - **WHEN** se duplica un perfil
@@ -110,6 +112,20 @@ El `slug` SHALL derivarse del original agregando el primer sufijo numérico libr
 #### Scenario: Id inexistente
 - **WHEN** se duplica un id que no existe
 - **THEN** responde 404
+
+### Requirement: El duplicado nace retirado
+La copia MUST NOT heredar `accessToken` (queda nulo), `views` (queda en 0), sus `ProfileView` (ninguna) ni `archivedAt` (nulo). La copia SHALL forzarse a `visibility = PRIVATE` y `listed = false`, para que un duplicado a medio configurar no quede accesible por un slug adivinable.
+
+#### Scenario: El duplicado nace retirado
+- **WHEN** se duplica un perfil `PUBLIC` con token de acceso y 40 visitas
+- **THEN** el duplicado tiene `visibility: "PRIVATE"`, `listed: false`, `accessToken: null`, `views: 0` y su slug responde 404 en la ruta pública
+
+### Requirement: Slug del duplicado
+El `slug` del duplicado SHALL derivarse del original agregando el primer sufijo numérico libre (`-2`, `-3`, …). El cuerpo de la petición MUST NOT aceptar un slug: renombrar es una operación aparte y ya no rompe links.
+
+#### Scenario: Slug derivado con colisión
+- **WHEN** ya existen `acme-lead` y `acme-lead-2` y se duplica `acme-lead`
+- **THEN** el nuevo slug es `acme-lead-3`
 
 ### Requirement: Archivar y desarchivar
 `POST /api/admin/curated-profiles/{id}/archive` SHALL registrar `archivedAt` con la hora del servidor, y `POST .../unarchive` SHALL dejarlo nulo. Ambas SHALL responder 200 con el perfil. `archivedAt` MUST NOT ser escribible desde el cuerpo de `POST` ni de `PATCH`: una fecha arbitraria o futura no tiene significado en el dominio.

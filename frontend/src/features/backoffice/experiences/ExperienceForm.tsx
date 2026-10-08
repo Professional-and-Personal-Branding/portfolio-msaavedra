@@ -186,6 +186,14 @@ export function ExperienceForm({
             onChange={(items) => set('highlights', { ...values.highlights, es: items })}
           />
 
+          <ChipListField
+            label="Logros (en)"
+            multiline
+            value={values.highlights.en ?? []}
+            placeholder="Add an achievement"
+            onChange={(items) => set('highlights', { ...values.highlights, en: items })}
+          />
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <ChipListField
               label="Tecnologías"

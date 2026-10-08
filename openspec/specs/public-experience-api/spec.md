@@ -6,15 +6,11 @@ Expone públicamente la trayectoria laboral visible, ordenada y resuelta al idio
 ## Requirements
 
 ### Requirement: Listado de experiencias visibles y ordenadas
-`GET /api/experiences` SHALL devolver 200 con un array de las experiencias marcadas visibles, ordenadas cronológicamente: por `startDate` descendente (más reciente primero) y, a igual `startDate`, por `order` ascendente. Es el mismo orden canónico que usan los perfiles curados. Cada elemento MUST contener: `id`, `company`, `role`, `startDate`, `endDate` (nulo si es actual), `current`, `location`, `sector[]`, `summary`, `highlights[]`, `technologies[]`, `tags[]`, `order`. Los campos `role`, `summary` y `highlights` SHALL venir resueltos al locale del request.
+`GET /api/experiences` SHALL devolver 200 con un array de las experiencias marcadas visibles, ordenadas cronológicamente: por `startDate` descendente (más reciente primero) y, a igual `startDate`, por `order` ascendente. Es el mismo orden canónico que usan los perfiles curados.
 
 #### Scenario: Listado tras el seed
 - **WHEN** un cliente hace `GET /api/experiences`
 - **THEN** recibe 200 con tantos elementos como experiencias tiene `docs/cv-data.json` (15) y el primero es la de `startDate` más reciente (`company: "Novacomp"`, `2026-03`)
-
-#### Scenario: Listado en inglés
-- **WHEN** un cliente hace `GET /api/experiences?locale=en`
-- **THEN** el primer elemento tiene `role` igual al valor `en` del JSON y `highlights` es un array de strings en inglés
 
 #### Scenario: Experiencias ocultas excluidas
 - **WHEN** una experiencia tiene `visible = false` y un cliente hace `GET /api/experiences`
@@ -27,6 +23,13 @@ Expone públicamente la trayectoria laboral visible, ordenada y resuelta al idio
 #### Scenario: Orden estable
 - **WHEN** dos experiencias comparten el mismo `startDate`
 - **THEN** la de menor `order` aparece primero
+
+### Requirement: Forma de cada experiencia del listado
+Cada elemento de `GET /api/experiences` MUST contener: `id`, `company`, `role`, `startDate`, `endDate` (nulo si es actual), `current`, `location`, `sector[]`, `summary`, `highlights[]`, `technologies[]`, `tags[]`, `order`. Los campos `role`, `summary` y `highlights` SHALL venir resueltos al locale del request.
+
+#### Scenario: Listado en inglés
+- **WHEN** un cliente hace `GET /api/experiences?locale=en`
+- **THEN** el primer elemento tiene `role` igual al valor `en` del JSON y `highlights` es un array de strings en inglés
 
 ### Requirement: Detalle de experiencia por id
 `GET /api/experiences/:id` SHALL devolver 200 con la experiencia visible indicada, con la misma forma que los elementos del listado. Si el id no existe o la experiencia no es visible, MUST responder 404 en el formato de error de `api-platform`.

@@ -4,6 +4,8 @@ import type { components } from './api';
 type Schemas = components['schemas'];
 
 export type CuratedProfile = Schemas['CuratedProfileResponse'];
+export type PreviewCuratedProfile = Schemas['PreviewCuratedProfileResponse'];
+export type MissingTranslation = Schemas['MissingTranslationResponse'];
 export type CuratedProfileSummary = Schemas['CuratedProfileSummaryResponse'];
 export type Profile = Schemas['ProfileResponse'];
 export type Experience = Schemas['ExperienceResponse'];

@@ -156,7 +156,7 @@ npm run api:types        # regenera src/shared/types/api.d.ts desde ../backend/o
   - [x] `unify-section-catalog` — un solo catálogo de secciones (archivado 2026-10-05)
   - [x] `add-server-rendered-head` — head SEO por perfil servido desde el servidor (archivado 2026-10-08; la verificación con LinkedIn y Slack queda para después del deploy)
   - [x] `add-curated-profile-lifecycle` — duplicar, archivar, `listed` y alias de slug (archivado 2026-10-08)
-  - [ ] `add-profile-content-admin` — hero, educación, certificaciones, proyectos y enlaces desde el panel
+  - [x] `add-profile-content-admin` — hero, educación, certificaciones, proyectos y enlaces desde el panel (archivado 2026-10-08)
   - [ ] `add-bilingual-builder-parity` — conmutador de idioma en el preview y `highlights.en` editable
 
 ---
