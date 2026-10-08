@@ -32,6 +32,14 @@
 				dial_timeout 500ms
 				response_header_timeout 500ms
 			}
+			# Un 4xx o 5xx de la API (la base caída, por ejemplo) no es un error de
+			# Caddy: se reenviaría tal cual, `httpInclude` fallaría por el estado y
+			# con él todo el HTML. Se cambia por el mismo fragmento vacío con 200 que
+			# deja `handle_errors` cuando la API no responde.
+			@apiFailed status 4xx 5xx
+			handle_response @apiFailed {
+				respond "" 200
+			}
 		}
 	}
 
@@ -60,8 +68,9 @@
 		file_server
 	}
 
-	# Degradación: si la API falla o no responde a tiempo, el fragmento llega
-	# vacío con 200 y `index.html` entrega su head de fallback. Un error acá haría
+	# Degradación: si la API no responde a tiempo o rechaza la conexión, el
+	# fragmento llega vacío con 200 y `index.html` entrega su head de fallback (si
+	# responde con error, lo cubre `handle_response` arriba). Un error acá haría
 	# fallar el template y, con él, todo el HTML: el sitio no depende de la API.
 	handle_errors {
 		@headError path /api/public/profile-head
