@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 import { TopBar } from '@/features/navigation/TopBar';
 import { Footer } from '@/shared/components/portfolio/Footer';
 import { useLocale } from '@/shared/i18n/use-locale';
@@ -7,6 +8,7 @@ import {
   metaFromProfile,
   restoreDocumentMeta,
 } from '@/shared/lib/document-meta';
+import { HOME_SLUG, profilePath } from '@/shared/lib/profile-link';
 import { useUrlState } from '@/shared/lib/url-state';
 import { resolveLayoutName } from '@/themes/layouts';
 import { ProfileLayout } from '@/themes/layouts/ProfileLayout';
@@ -30,6 +32,17 @@ export function CuratedProfileView({ slug }: CuratedProfileViewProps) {
   const data = state.status === 'success' ? state.data : null;
 
   const layoutName = resolveLayoutName(url.layout ?? data?.layout);
+
+  // Resuelto por un slug anterior: la URL pasa al canónico sin sumar una entrada al
+  // historial, para que se comparta y se marque el link vigente (decisión D5).
+  const navigate = useNavigate();
+  const { search } = useLocation();
+  const canonicalSlug = data?.slug;
+  useEffect(() => {
+    if (canonicalSlug && canonicalSlug !== slug) {
+      void navigate({ pathname: profilePath(canonicalSlug), search }, { replace: true });
+    }
+  }, [canonicalSlug, slug, search, navigate]);
 
   // Metadatos para buscadores y para las vistas previas de los links (spec `public-seo`).
   useEffect(() => {
@@ -70,7 +83,12 @@ export function CuratedProfileView({ slug }: CuratedProfileViewProps) {
       <div className="relative flex min-h-screen flex-col">
         <div aria-hidden className="pointer-events-none fixed inset-0 bg-glow" />
         <div className="relative z-10 flex flex-1 flex-col">
-          <TopBar activeSlug={slug} brand={data?.profile?.fullName} layout={layoutName} />
+          <TopBar
+            activeSlug={slug}
+            brand={data?.profile?.fullName}
+            layout={layoutName}
+            showProfileMenu={slug === HOME_SLUG}
+          />
           <main className="flex-1">{content}</main>
           <Footer name={data?.profile?.fullName} />
         </div>

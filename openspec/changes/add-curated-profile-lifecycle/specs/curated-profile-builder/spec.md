@@ -27,16 +27,3 @@ La pestaña Publicación SHALL permitir archivar y desarchivar, y conmutar `list
 #### Scenario: El link copiado advierte el estado
 - **WHEN** el perfil está archivado o es `PRIVATE`
 - **THEN** el bloque del link público advierte que ese link no resuelve
-
-## MODIFIED Requirements
-
-### Requirement: El menú de perfiles solo en la home
-La vista pública SHALL montar el menú de otros perfiles **únicamente** en la home (`/`). En `/:slug` MUST NOT renderizarse ningún enlace a otro slug de perfil curado, cualquiera sea el valor de `listed` de los demás.
-
-#### Scenario: Un perfil enviado no enumera a los demás
-- **WHEN** se abre `/tech-lead-dotnet`
-- **THEN** el DOM no contiene ningún enlace a otro slug de perfil curado
-
-#### Scenario: La home sí ofrece el menú
-- **WHEN** se abre `/`
-- **THEN** el menú lista los perfiles públicos, enumerados y no archivados, agrupados por `roleType`

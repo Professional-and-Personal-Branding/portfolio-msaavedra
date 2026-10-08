@@ -41,15 +41,21 @@ export function toCuratedProfileEntity(record: CuratedProfileRecord): CuratedPro
     sectionsHidden: record.sectionsHidden,
     visibility: toVisibility(record.visibility, record.slug),
     accessToken: AccessToken.create(record.accessToken),
+    archivedAt: record.archivedAt,
+    listed: record.listed,
     views: record.views,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   });
 }
 
-/** Props de dominio → datos de escritura Prisma. `null` en Json se persiste como DbNull. */
+/**
+ * Props de dominio → datos de escritura Prisma. `null` en Json se persiste como
+ * DbNull. `archivedAt` solo viaja al actualizar (lo fijan archivar y desarchivar);
+ * al crear queda nulo.
+ */
 export function toCuratedProfileData(
-  props: NewCuratedProfileProps,
+  props: NewCuratedProfileProps & { archivedAt?: Date | null },
 ): Prisma.CuratedProfileUncheckedCreateInput {
   const json = (v: unknown): Prisma.InputJsonValue | typeof Prisma.DbNull =>
     v === null || v === undefined ? Prisma.DbNull : v;
@@ -71,5 +77,7 @@ export function toCuratedProfileData(
     sectionsHidden: [...props.sectionsHidden],
     visibility: props.visibility,
     accessToken: props.accessToken.value,
+    listed: props.listed ?? true,
+    ...(props.archivedAt !== undefined ? { archivedAt: props.archivedAt } : {}),
   };
 }

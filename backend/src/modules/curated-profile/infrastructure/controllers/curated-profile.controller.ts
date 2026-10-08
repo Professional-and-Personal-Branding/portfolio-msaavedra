@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Req } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   ApiHeader,
@@ -9,7 +9,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { APP_CONFIG, AppConfig } from '../../../../config/configuration';
 import { Locale } from '../../../../shared/domain/i18n';
 import { toHttpException } from '../../../../shared/infrastructure/http/domain-error.mapper';
@@ -73,7 +73,8 @@ export class CuratedProfileController {
     summary: 'Perfil curado resuelto',
     description:
       'Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. ' +
-      'Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash).',
+      'Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash). ' +
+      'Un slug anterior (renombrado) también resuelve: el cuerpo trae el slug canónico y `Content-Location` su ruta. Un perfil archivado responde 404.',
   })
   @ApiParam({ name: 'slug', example: 'tech-lead-dotnet' })
   @ApiHeader({
@@ -81,15 +82,28 @@ export class CuratedProfileController {
     required: false,
     description: 'Token de acceso para perfiles PROTECTED (prioridad sobre `?token=`).',
   })
-  @ApiOkResponse({ type: CuratedProfileResponse, headers: CONTENT_LANGUAGE_HEADER })
+  @ApiOkResponse({
+    type: CuratedProfileResponse,
+    headers: {
+      ...CONTENT_LANGUAGE_HEADER,
+      'Content-Location': {
+        description: 'Solo si se pidió un slug anterior: ruta del slug canónico',
+        schema: { type: 'string' },
+      },
+    },
+  })
   @ApiUnauthorizedResponse({ type: ErrorResponseDto, description: 'PROTECTED sin token válido' })
-  @ApiNotFoundResponse({ type: ErrorResponseDto, description: 'Slug inexistente o perfil PRIVATE' })
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    description: 'Slug inexistente, perfil PRIVATE o archivado',
+  })
   async findBySlug(
     @Param('slug') slug: string,
     @Query() _query: CuratedProfileQueryDto,
     @RequestLocale() locale: Locale,
     @AccessToken() accessToken: string | undefined,
     @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<CuratedProfileOutput> {
     const viewContext: ViewContext = {
       locale,
@@ -104,6 +118,14 @@ export class CuratedProfileController {
       viewContext,
     });
     if (!result.ok) throw toHttpException(result.error);
+    // Resuelto por un slug anterior: se informa el canónico para que el cliente
+    // corrija la URL (spec `curated-profile-resolution`, decisión D5).
+    if (result.value.slug !== slug) {
+      res.setHeader(
+        'Content-Location',
+        `/api/curated-profiles/${encodeURIComponent(result.value.slug)}`,
+      );
+    }
     return result.value;
   }
 }

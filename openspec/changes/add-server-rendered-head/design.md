@@ -74,6 +74,13 @@ La implementación se apartó del texto de D3 y D6 en tres puntos. Los tres sali
 
 Una corrección más, sobre D4: `setMeta` ya buscaba la etiqueta sin exigir `data-managed-meta`, así que el cliente no duplicaba etiquetas tampoco antes. El cambio real es que ahora marca como gestionada la etiqueta que reutiliza.
 
+## Ajustes tras la revisión del PR #8 (2026-10-08)
+
+La revisión encontró dos huecos. Los dos se cierran sin cambiar las specs:
+
+1. **Un 4xx o 5xx de la API tumbaba todo el HTML.** `handle_errors` solo corre ante errores de Caddy: no conectar o pasarse del tiempo. Un 500 de la API (la base caída, por ejemplo) se reenviaba tal cual, `httpInclude` fallaba por el estado y el template devolvía 500 en todas las rutas, `/admin` incluido. Ahora el `reverse_proxy` de `@head` convierte con `handle_response` cualquier 4xx o 5xx en el mismo fragmento vacío con 200. Verificado en Docker contra una API falsa que responde 500: antes 500, ahora 200 con el head de respaldo ([`verification/revision-api-500.txt`](verification/revision-api-500.txt)).
+2. **La ruta exenta del límite recomponía el perfil en cada petición.** La spec la exime del límite porque el borde la pide en cada carga de HTML, y eso se mantiene. Lo que cambia es el costo: `GetProfileHeadUseCase` guarda un minuto el fragmento de cada perfil público (`ProfileHeadCache`, hasta 200 entradas, sale la más vieja). Repetir la petición cuesta una lectura de mapa; un slug inexistente cuesta una consulta por índice y no entra en la caché, así que pedir slugs al azar no desaloja a los reales. Contrapartida: una edición del perfil tarda hasta un minuto en verse en las vistas previas de los links; la página en sí no cambia.
+
 ## Risks
 
 | Riesgo | Mitigación |

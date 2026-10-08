@@ -204,6 +204,41 @@ export function useDeleteCuratedProfile() {
   });
 }
 
+/** Duplicar (add-curated-profile-lifecycle): la copia nace PRIVATE y no enumerada. */
+export function useDuplicateCuratedProfile() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string): Promise<AdminCuratedProfile> =>
+      unwrap(
+        await api.POST('/api/admin/curated-profiles/{id}/duplicate', {
+          params: { path: { id } },
+          body: {},
+        }),
+      ),
+    onSuccess: () => invalidate(client, adminKeys.curatedProfiles),
+  });
+}
+
+/** Archivar o desarchivar: la fecha la pone el servidor, nunca el panel. */
+export function useArchiveCuratedProfile() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; archive: boolean }): Promise<AdminCuratedProfile> =>
+      input.archive
+        ? unwrap(
+            await api.POST('/api/admin/curated-profiles/{id}/archive', {
+              params: { path: { id: input.id } },
+            }),
+          )
+        : unwrap(
+            await api.POST('/api/admin/curated-profiles/{id}/unarchive', {
+              params: { path: { id: input.id } },
+            }),
+          ),
+    onSuccess: () => invalidate(client, adminKeys.curatedProfiles),
+  });
+}
+
 // ── Temas y analítica ───────────────────────────────────────────────────────
 export function useThemes() {
   return useQuery({

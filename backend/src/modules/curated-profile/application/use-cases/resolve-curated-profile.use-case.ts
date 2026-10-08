@@ -11,6 +11,7 @@ import {
   CURATED_PROFILE_REPOSITORY,
   CuratedProfileRepository,
 } from '../../domain/repositories/curated-profile.repository';
+import { resolvability } from '../../domain/services/resolvability';
 import { CuratedProfileOutput } from '../dto/curated-profile.output';
 import { CuratedProfileComposer } from '../services/curated-profile.composer';
 
@@ -54,12 +55,18 @@ export class ResolveCuratedProfileUseCase {
   async execute(
     input: ResolveCuratedProfileInput,
   ): Promise<Result<CuratedProfileOutput, ResolveCuratedProfileError>> {
-    // 1. Existencia y visibilidad. PRIVATE se comporta como inexistente.
-    const curated = await this.curatedProfiles.findBySlug(input.slug);
-    if (!curated || curated.isPrivate) return fail(new CuratedProfileNotFoundError(input.slug));
-
-    // 2. Acceso para PROTECTED.
-    if (!curated.canAccess(input.accessToken)) return fail(new CuratedProfileAccessDeniedError());
+    // 1-2. Existencia (por slug vigente o anterior) y acceso. La decisión es la
+    // tabla de verdad de `resolvability`: archivado y PRIVATE se comportan como
+    // inexistentes; PROTECTED sin token válido es 401.
+    const curated = await this.curatedProfiles.findBySlugOrAlias(input.slug);
+    if (!curated) return fail(new CuratedProfileNotFoundError(input.slug));
+    const access = resolvability(
+      curated.visibility,
+      curated.archivedAt,
+      curated.accessToken.matches(input.accessToken),
+    );
+    if (access === 'not-found') return fail(new CuratedProfileNotFoundError(input.slug));
+    if (access === 'unauthorized') return fail(new CuratedProfileAccessDeniedError());
 
     // 3-5 y 7. Datos, selección, tema, secciones y DTO.
     const output = await this.composer.compose(curated, input.locale);

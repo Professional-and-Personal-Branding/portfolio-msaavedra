@@ -37,6 +37,9 @@ const NAV = [
   { to: '/admin/perfiles', label: 'Perfiles curados', icon: Palette, end: false },
 ] as const;
 
+/** Texto de las acciones del header: oculto en móvil y entre `lg` y `xl`. */
+const ACTION_LABEL = 'hidden sm:inline lg:hidden xl:inline';
+
 /**
  * Marco del backoffice. Fija el preset `modern-dark` para que el panel tenga
  * una apariencia estable, independiente del tema que se esté editando en el
@@ -78,7 +81,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               <Button
                 variant="outline"
                 size="icon-sm"
-                className="md:hidden"
+                className="lg:hidden"
                 aria-label="Abrir menú"
               >
                 <Menu aria-hidden />
@@ -99,25 +102,43 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             Backoffice
           </Link>
 
-          <nav aria-label="Secciones" className="ml-4 hidden items-center gap-1 md:flex">
+          {/* La barra completa solo cabe desde `lg`; por debajo, el menú lateral. */}
+          <nav
+            aria-label="Secciones"
+            className="ml-4 hidden min-w-0 items-center gap-1 overflow-x-auto lg:flex"
+          >
             <NavLinks />
           </nav>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
             {admin && (
-              <span className="hidden text-xs text-text-dim sm:inline" data-testid="admin-name">
+              <span className="hidden text-xs text-text-dim xl:inline" data-testid="admin-name">
                 {admin.name}
               </span>
             )}
+            {/* Entre `lg` y `xl` la navegación ocupa el ancho: solo íconos. */}
             <Button asChild variant="outline" size="sm">
-              <Link to="/" target="_blank" rel="noreferrer">
+              <Link
+                to="/"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Ver portafolio"
+                title="Ver portafolio"
+              >
                 <ExternalLink aria-hidden />
-                <span className="hidden sm:inline">Ver portafolio</span>
+                <span className={ACTION_LABEL}>Ver portafolio</span>
               </Link>
             </Button>
-            <Button variant="outline" size="sm" onClick={() => void logout()} disabled={isPending}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void logout()}
+              disabled={isPending}
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+            >
               <LogOut aria-hidden />
-              <span className="hidden sm:inline">Cerrar sesión</span>
+              <span className={ACTION_LABEL}>Cerrar sesión</span>
             </Button>
           </div>
         </div>

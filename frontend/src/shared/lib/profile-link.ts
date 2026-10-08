@@ -7,8 +7,11 @@ export interface ProfileLink {
   search: string;
 }
 
+/** El perfil curado que se sirve en la home (`/`). */
+export const HOME_SLUG = 'all';
+
 export function profilePath(slug: string): string {
-  return slug === 'all' ? '/' : `/${slug}`;
+  return slug === HOME_SLUG ? '/' : `/${slug}`;
 }
 
 /**

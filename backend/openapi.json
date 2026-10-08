@@ -1143,7 +1143,7 @@
     },
     "/api/curated-profiles/{slug}": {
       "get": {
-        "description": "Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash).",
+        "description": "Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash). Un slug anterior (renombrado) también resuelve: el cuerpo trae el slug canónico y `Content-Location` su ruta. Un perfil archivado responde 404.",
         "operationId": "CuratedProfileController_findBySlug",
         "parameters": [
           {
@@ -1209,6 +1209,12 @@
                 "schema": {
                   "type": "string"
                 }
+              },
+              "Content-Location": {
+                "description": "Solo si se pidió un slug anterior: ruta del slug canónico",
+                "schema": {
+                  "type": "string"
+                }
               }
             },
             "description": "",
@@ -1231,7 +1237,7 @@
             }
           },
           "404": {
-            "description": "Slug inexistente o perfil PRIVATE",
+            "description": "Slug inexistente, perfil PRIVATE o archivado",
             "content": {
               "application/json": {
                 "schema": {
@@ -1578,6 +1584,7 @@
         ]
       },
       "delete": {
+        "description": "Borra también su analítica. Para retirar un perfil conservándola, archivarlo.",
         "operationId": "AdminCuratedProfileController_remove",
         "parameters": [
           {
@@ -1620,6 +1627,207 @@
           }
         ],
         "summary": "Borrar perfil curado (y sus visitas)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/curated-profiles/{id}/duplicate": {
+      "post": {
+        "description": "Copia la configuración con un slug derivado (`-2`, `-3`, …). El duplicado nace PRIVATE y no enumerado, sin token, sin visitas y sin archivar. El cuerpo no lleva nada.",
+        "operationId": "AdminCuratedProfileController_duplicate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DuplicateCuratedProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCuratedProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El cuerpo no acepta campos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sin slug libre hasta -50",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Duplicar perfil curado",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/curated-profiles/{id}/archive": {
+      "post": {
+        "description": "Deja de resolver (404) y de enumerarse; conserva sus visitas. Idempotente: archivar dos veces conserva la primera fecha.",
+        "operationId": "AdminCuratedProfileController_archive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCuratedProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Archivar perfil curado",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/curated-profiles/{id}/unarchive": {
+      "post": {
+        "description": "Vuelve a resolver según su visibilidad. Idempotente.",
+        "operationId": "AdminCuratedProfileController_unarchive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCuratedProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Desarchivar perfil curado",
         "tags": [
           "admin"
         ]
@@ -4990,6 +5198,11 @@
             "nullable": true,
             "additionalProperties": true
           },
+          "listed": {
+            "type": "boolean",
+            "default": true,
+            "description": "Se enumera en el listado público, el menú y el sitemap. No afecta el acceso por slug. El archivado no se escribe acá: tiene sus propios endpoints."
+          },
           "layout": {
             "type": "string",
             "default": "classic"
@@ -5121,6 +5334,15 @@
             "type": "string",
             "nullable": true
           },
+          "listed": {
+            "type": "boolean",
+            "description": "Se enumera en el listado público, el menú y el sitemap"
+          },
+          "archivedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601 si está archivado (no resuelve: 404); null si está vivo"
+          },
           "views": {
             "type": "number"
           },
@@ -5152,6 +5374,8 @@
           "sectionsHidden",
           "visibility",
           "accessToken",
+          "listed",
+          "archivedAt",
           "views",
           "createdAt",
           "updatedAt"
@@ -5234,6 +5458,11 @@
             "type": "object",
             "nullable": true,
             "additionalProperties": true
+          },
+          "listed": {
+            "type": "boolean",
+            "default": true,
+            "description": "Se enumera en el listado público, el menú y el sitemap. No afecta el acceso por slug. El archivado no se escribe acá: tiene sus propios endpoints."
           },
           "layout": {
             "type": "string",
@@ -5351,6 +5580,11 @@
             "nullable": true,
             "additionalProperties": true
           },
+          "listed": {
+            "type": "boolean",
+            "default": true,
+            "description": "Se enumera en el listado público, el menú y el sitemap. No afecta el acceso por slug. El archivado no se escribe acá: tiene sus propios endpoints."
+          },
           "layout": {
             "type": "string",
             "default": "classic"
@@ -5384,6 +5618,10 @@
             "description": "Obligatorio si visibility = PROTECTED"
           }
         }
+      },
+      "DuplicateCuratedProfileDto": {
+        "type": "object",
+        "properties": {}
       },
       "AdminSkillResponse": {
         "type": "object",
