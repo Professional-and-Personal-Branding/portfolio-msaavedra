@@ -17,19 +17,22 @@ Permite al administrador gestionar la trayectoria laboral completa desde la API,
 - **THEN** recibe 404
 
 ### Requirement: Creación validada
-`POST /api/admin/experiences` SHALL crear una experiencia y responder 201 con el recurso creado (incluido `id`). El cuerpo MUST validarse: `company`, `location` no vacíos; `role`, `summary` objetos `{ es: string, en?: string }`; `highlights` `{ es: string[], en?: string[] }`; `startDate` y `endDate` con formato `YYYY-MM` (`endDate` nulo u omitido si `current`); `technologies`, `tags`, `sector` arrays de strings; `order` entero ≥ 0 (default 0); `visible` booleano (default true). Campos desconocidos MUST rechazarse. Un cuerpo inválido MUST responder 400 con los mensajes de validación.
+`POST /api/admin/experiences` SHALL crear una experiencia y responder 201 con el recurso creado (incluido `id`). Campos desconocidos MUST rechazarse, y un cuerpo inválido MUST responder 400 con los mensajes de validación.
 
 #### Scenario: Creación exitosa
 - **WHEN** envía un cuerpo válido con `company: "ACME"`, `role: { es: "Dev", en: "Dev" }`, `startDate: "2025-01"`, `tags: ["java"]`
 - **THEN** recibe 201 con `id` y la experiencia aparece en `GET /api/experiences` y en los perfiles curados cuyo `filterTags` incluya `java`
 
-#### Scenario: Fecha inválida
-- **WHEN** envía `startDate: "2025-13"` o `"enero 2025"`
-- **THEN** recibe 400 y el mensaje menciona `startDate`
-
 #### Scenario: Campo desconocido
 - **WHEN** envía `{ ..., hacker: true }`
 - **THEN** recibe 400
+
+### Requirement: Reglas de validación de una experiencia
+El cuerpo de una experiencia MUST validarse: `company`, `location` no vacíos; `role`, `summary` objetos `{ es: string, en?: string }`; `highlights` `{ es: string[], en?: string[] }`; `startDate` y `endDate` con formato `YYYY-MM` (`endDate` nulo u omitido si `current`); `technologies`, `tags`, `sector` arrays de strings; `order` entero ≥ 0 (default 0); `visible` booleano (default true).
+
+#### Scenario: Fecha inválida
+- **WHEN** envía `startDate: "2025-13"` o `"enero 2025"`
+- **THEN** recibe 400 y el mensaje menciona `startDate`
 
 #### Scenario: Traducción obligatoria en español
 - **WHEN** envía `role: { en: "Dev" }` sin `es`

@@ -82,8 +82,6 @@ Toda operación de escritura SHALL mostrar un aviso de éxito o de error y, al t
 ### Requirement: Administración del perfil base
 `GET /api/admin/profile` SHALL devolver el perfil base con sus campos bilingües **crudos** (sin resolver locale), y `PUT /api/admin/profile` SHALL reemplazarlo por completo. Ninguna de las dos rutas SHALL recibir un id: `Profile` es un singleton.
 
-El DTO SHALL exigir `fullName`, `headline`, `summary`, `email` y `location`, y SHALL aceptar `phone`, `timezone`, `yearsOfExperience` y los tres campos de disponibilidad (modalidad, tipo de contrato, fecha de inicio) como opcionales. Un payload con campos desconocidos MUST responder 400, nunca ignorarlos en silencio ni borrar lo que no se mandó por omisión no declarada.
-
 #### Scenario: Editar el titular y verlo en el sitio
 - **WHEN** se hace `PUT /api/admin/profile` cambiando `headline` y se abre la home
 - **THEN** el hero muestra el titular nuevo sin haber corrido `seed`
@@ -92,6 +90,13 @@ El DTO SHALL exigir `fullName`, `headline`, `summary`, `email` y `location`, y S
 - **WHEN** se hace `GET /api/admin/profile`
 - **THEN** `headline` y `summary` llegan como objetos `{ es, en }`, no como string resuelto
 
+#### Scenario: La disponibilidad llega al hero
+- **WHEN** se cambia la fecha de inicio de disponibilidad y se abre un perfil curado
+- **THEN** el badge del hero refleja el valor nuevo en el idioma activo
+
+### Requirement: Validación del reemplazo del perfil base
+El DTO del `PUT` SHALL exigir `fullName`, `headline`, `summary`, `email` y `location`, y SHALL aceptar `phone`, `timezone`, `yearsOfExperience` y los tres campos de disponibilidad (modalidad, tipo de contrato, fecha de inicio) como opcionales. Un payload con campos desconocidos MUST responder 400, nunca ignorarlos en silencio ni borrar lo que no se mandó por omisión no declarada.
+
 #### Scenario: Payload con campo desconocido
 - **WHEN** se hace `PUT` con una propiedad que no está en el DTO
 - **THEN** responde 400 y el perfil queda sin cambios
@@ -99,10 +104,6 @@ El DTO SHALL exigir `fullName`, `headline`, `summary`, `email` y `location`, y S
 #### Scenario: Obligatorio vacío
 - **WHEN** se hace `PUT` con `email` vacío
 - **THEN** responde 400 y el perfil conserva su email anterior
-
-#### Scenario: La disponibilidad llega al hero
-- **WHEN** se cambia la fecha de inicio de disponibilidad y se abre un perfil curado
-- **THEN** el badge del hero refleja el valor nuevo en el idioma activo
 
 ### Requirement: Administración de idiomas, enlaces sociales, formación y proyectos
 El backoffice SHALL exponer el juego completo de administración para `Language`, `SocialLink`, `Education`, `Certification` y `Project`, siguiendo el mismo contrato que experiencias: listado crudo que **incluye los no visibles**, creación, detalle, edición parcial y borrado, todos autenticados y con validación de whitelist.

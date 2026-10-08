@@ -75,7 +75,7 @@ La vista SHALL ser usable en 375 px y en 1280 px: sin desbordes horizontales, me
 - **THEN** termina con código 0 y el reporte de Vite muestra un JS inicial menor a 400 KB gzip
 
 ### Requirement: El escritor de metadatos del cliente es idempotente
-`applyDocumentMeta` SHALL reutilizar la etiqueta existente para cada clave de metadato —buscándola por `name` o `property`, **sin exigir** que lleve el marcador `data-managed-meta`— y marcarla como gestionada al escribirla. Tras aplicarse sobre un head ya poblado por el servidor, el documento MUST contener **exactamente una** etiqueta por clave, un solo `<link rel="canonical">` y un solo `<script type="application/ld+json">`.
+`applyDocumentMeta` SHALL reutilizar la etiqueta existente de cada clave de metadato (por `name` o `property`, aunque no lleve el marcador `data-managed-meta`) y marcarla como gestionada al escribirla. Tras aplicarse sobre un head ya poblado por el servidor, el documento MUST contener **exactamente una** etiqueta por clave, un solo `<link rel="canonical">` y un solo `<script type="application/ld+json">`.
 
 `restoreDocumentMeta` SHALL seguir limpiando únicamente lo marcado como gestionado.
 
