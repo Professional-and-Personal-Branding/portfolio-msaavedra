@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CLOCK, systemClock } from '../../shared/domain/clock';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { EducationModule } from '../education/education.module';
 import { ExperienceModule } from '../experience/experience.module';
@@ -16,6 +17,11 @@ import {
   ListAllCuratedProfilesUseCase,
   UpdateCuratedProfileUseCase,
 } from './application/use-cases/admin/curated-profile-admin.use-cases';
+import {
+  ArchiveCuratedProfileUseCase,
+  DuplicateCuratedProfileUseCase,
+  UnarchiveCuratedProfileUseCase,
+} from './application/use-cases/admin/curated-profile-lifecycle.use-cases';
 import { PreviewCuratedProfileUseCase } from './application/use-cases/admin/preview-curated-profile.use-case';
 import { ProfileHeadCache } from './application/services/profile-head.cache';
 import { BuildSitemapUseCase } from './application/use-cases/build-sitemap.use-case';
@@ -53,6 +59,7 @@ import { PrismaCuratedProfileRepository } from './infrastructure/persistence/pri
   ],
   providers: [
     { provide: CURATED_PROFILE_REPOSITORY, useClass: PrismaCuratedProfileRepository },
+    { provide: CLOCK, useValue: systemClock },
     PortfolioSectionsLoader,
     CuratedProfileComposer,
     ListCuratedProfilesUseCase,
@@ -63,6 +70,9 @@ import { PrismaCuratedProfileRepository } from './infrastructure/persistence/pri
     UpdateCuratedProfileUseCase,
     DeleteCuratedProfileUseCase,
     PreviewCuratedProfileUseCase,
+    DuplicateCuratedProfileUseCase,
+    ArchiveCuratedProfileUseCase,
+    UnarchiveCuratedProfileUseCase,
     BuildSitemapUseCase,
     GetProfileHeadUseCase,
     // Una sola instancia por proceso: la caché vive lo que vive la API.

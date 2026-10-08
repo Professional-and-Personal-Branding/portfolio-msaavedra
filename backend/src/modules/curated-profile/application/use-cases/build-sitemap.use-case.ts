@@ -19,6 +19,8 @@ export class BuildSitemapUseCase {
       profiles.map((profile) => ({
         slug: profile.slug,
         visibility: profile.visibility,
+        listed: profile.listed,
+        archivedAt: profile.archivedAt,
         updatedAt: profile.updatedAt,
       })),
     );

@@ -28,6 +28,14 @@ export class AdminCuratedProfileResponse implements AdminCuratedProfileOutput {
   @ApiProperty({ type: [String] }) sectionsHidden!: string[];
   @ApiProperty({ enum: CURATED_VISIBILITIES }) visibility!: CuratedVisibility;
   @ApiProperty({ nullable: true, type: String }) accessToken!: string | null;
+  @ApiProperty({ description: 'Se enumera en el listado público, el menú y el sitemap' })
+  listed!: boolean;
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description: 'ISO 8601 si está archivado (no resuelve: 404); null si está vivo',
+  })
+  archivedAt!: string | null;
   @ApiProperty() views!: number;
   @ApiProperty({ nullable: true, type: String }) createdAt!: string | null;
   @ApiProperty({ nullable: true, type: String }) updatedAt!: string | null;

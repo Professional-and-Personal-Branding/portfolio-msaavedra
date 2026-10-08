@@ -1,0 +1,26 @@
+# 1.2 — prisma migrate deploy sobre una copia restaurada
+No existe todavía un backup de producción (el deploy 1.0.0 está pendiente). Se usó lo más cercano: un pg_dump de la base de desarrollo, con uso real, restaurado en una base aparte (portfolio_restore_check). La base de desarrollo no se modificó.
+
+## Antes
+[{"perfiles":14,"visitas":757,"contador":757}]
+
+## migrate status
+2 migrations found in prisma/migrations
+Following migration have not yet been applied:
+To apply migrations in development run prisma migrate dev.
+To apply migrations in production run prisma migrate deploy.
+
+## migrate deploy
+2 migrations found in prisma/migrations
+Applying migration `20261005201934_curated_profile_lifecycle`
+The following migration(s) have been applied:
+migrations/
+    └─ migration.sql
+
+## Después
+[{"perfiles":14,"visitas":757,"contador":757}]
+[{"enumerados":14,"sin_archivar":14,"total":14}]
+[{"alias":0}]
+
+## migrate status final
+Database schema is up to date!

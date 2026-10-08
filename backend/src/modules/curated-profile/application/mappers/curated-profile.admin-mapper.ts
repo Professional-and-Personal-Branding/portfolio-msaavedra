@@ -21,6 +21,8 @@ export function toAdminCuratedProfileOutput(p: CuratedProfile): AdminCuratedProf
     sectionsHidden: [...p.sectionsHidden],
     visibility: p.visibility,
     accessToken: p.accessToken.value,
+    listed: p.listed,
+    archivedAt: p.archivedAt?.toISOString() ?? null,
     views: p.views,
     createdAt: p.createdAt?.toISOString() ?? null,
     updatedAt: p.updatedAt?.toISOString() ?? null,

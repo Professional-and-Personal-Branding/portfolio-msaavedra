@@ -147,14 +147,14 @@ curl -s $API/api/auth/me -H "$AUTH" | jq
 
 ![Tema corporate con layout sidebar](manual/tc04-tema-layout.jpg)
 
-### TC-05 — El menú ofrece los demás perfiles públicos ✅
+### TC-05 — El menú ofrece los demás perfiles, solo en la home 🔍
 
-**Pasos:** en cualquier vista, abrir el desplegable **Perfiles**.
-**Resultado esperado:** lista todos los perfiles `PUBLIC` agrupados por `roleType` (Perfil Completo, Backend, Fullstack, DevOps…), cada uno con su `techFocus` debajo.
+**Pasos:** en la home (`/`), abrir el desplegable **Perfiles**. Después abrir un perfil por su link, por ejemplo `/tech-lead-dotnet`.
+**Resultado esperado:** en la home, el menú lista los perfiles públicos, enumerados y no archivados, agrupados por `roleType` (Perfil Completo, Backend, Fullstack, DevOps…), cada uno con su `techFocus` debajo. En `/:slug` **no hay menú**: quien recibe un link no ve los otros perfiles hechos para otras vacantes.
 
 ![Menú de perfiles](manual/tc05-menu-perfiles.jpg)
 
-> **Comportamiento a tener en cuenta:** el menú se monta también en `/:slug`, así que quien recibe un link ve los otros perfiles hechos para otras vacantes. Está identificado y resuelto en el change `add-curated-profile-lifecycle` (ver `ROADMAP-1.1.md`).
+> **Desde el change `add-curated-profile-lifecycle`** el menú solo se monta en la home. La captura de arriba es anterior: muestra el menú abierto sobre `/tech-lead-dotnet`, que ya no ocurre, y se renueva en la próxima ejecución. Las capturas nuevas de los dos casos están en `openspec/changes/archive/*-add-curated-profile-lifecycle/verification/` (`05-perfil-sin-menu.png` y `06-home-con-menu.png`).
 
 ### TC-06 — Un perfil protegido pide token ✅
 
@@ -375,11 +375,20 @@ PATCH themeOverrides   -> se guarda {"colors":{"accent":"#5B2C87"}}, solo la dif
 
 ### TC-16 — Publicar, proteger o esconder ✅
 
+Un perfil tiene **tres ejes independientes**, y la pestaña **Publicación** los presenta por separado:
+
+| Eje | Decide | Dónde se cambia |
+|---|---|---|
+| **Visibilidad** (`PUBLIC` / `PROTECTED` / `PRIVATE`) | **quién puede abrir** el perfil por su link | selector *Visibilidad* |
+| **Enumeración** (`listed`) | **si se enumera** en el menú de la home, el listado público y el sitemap. No cambia el acceso | interruptor *Enumerar en la home y el sitemap* (TC-23) |
+| **Archivado** (`archivedAt`) | **si sigue vivo**: archivado responde 404 siempre y gana sobre los otros dos | botón *Archivar* (TC-22) |
+
 | Visibilidad | Sin token | Con token | En el sitemap |
 |---|---|---|---|
-| `PUBLIC` | 200 | — | **Sí** |
+| `PUBLIC` | 200 | — | **Sí**, si está enumerado |
 | `PROTECTED` | **401** | 200 | No |
 | `PRIVATE` | **404** | 404 | No |
+| cualquiera, **archivado** | **404** | **404** | No |
 
 **Pasos:** pestaña **Publicación** → selector *Visibilidad*. Al elegir `PROTECTED` aparece el campo del token, que pasa a ser obligatorio. El bloque del link ofrece copiarlo y abrirlo.
 
@@ -551,6 +560,58 @@ Una categoría entra en un perfil curado si **alguna de sus skills** comparte un
 
 ---
 
+### TC-21 — Duplicar un perfil para otra vacante 🔍
+
+**Pasos:** `/admin/perfiles` → botón **Duplicar** de un perfil → confirmar.
+
+**Resultado esperado:** se crea una copia con toda la configuración (tags, inclusiones, exclusiones, secciones, tema y layout) y el constructor se abre sobre ella. La copia nace **privada y no enumerada**, sin token, sin visitas y sin archivar, con el slug del original más el primer sufijo libre (`-2`, `-3`, …). Así una copia a medio configurar nunca queda accesible. Para publicarla alcanza con cambiar slug, título, titular y visibilidad.
+
+```bash
+curl -s -X POST $API/api/admin/curated-profiles/$ID/duplicate -H "$AUTH" \
+  | jq '{slug, visibility, listed, accessToken, views}'
+```
+
+**Ejecutado** en la app real (2026-10-05): duplicar `tech-lead-dotnet` dio `/tech-lead-dotnet-2`, privado; publicado como `acme-tech-lead` cambiando solo slug, título y titular, respondió 200 con sus 13 experiencias. El original quedó intacto. Transcripción y capturas: `openspec/changes/archive/*-add-curated-profile-lifecycle/verification/7.4-app-real.txt`.
+
+### TC-22 — Retirar un perfil sin perder sus visitas 🔍
+
+**Pasos:** pestaña **Publicación** → **Archivar** → confirmar. Para volver atrás, **Desarchivar**.
+
+**Resultado esperado:** el link responde **404**, igual que un slug que nunca existió, incluso si es `PROTECTED` y se presenta el token. El perfil sale del listado, del menú y del sitemap, pero **conserva sus visitas**, que siguen en el dashboard marcadas como *archivado*. Archivar dos veces conserva la primera fecha. Mientras está archivado no se registran visitas nuevas.
+
+```bash
+curl -s -X POST $API/api/admin/curated-profiles/$ID/archive -H "$AUTH" | jq .archivedAt
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/acme-tech-lead   # 404
+curl -s -X POST $API/api/admin/curated-profiles/$ID/unarchive -H "$AUTH" | jq .archivedAt   # null
+```
+
+> **Archivar en lugar de borrar.** Borrar se lleva las visitas con el perfil. Archivar lo retira conservándolas, y se puede deshacer. `archivedAt` no se escribe por `PATCH`: un `PATCH` con ese campo da 400.
+
+**Ejecutado** en la app real: archivado `acme-tech-lead` con 3 visitas, el link dio 404, el panel pasó a *Desarchivar* sin recargar y el dashboard siguió mostrando sus 3 visitas.
+
+### TC-23 — Un link dirigido que no aparece en ningún listado 🔍
+
+**Pasos:** pestaña **Publicación** → apagar **Enumerar en la home y el sitemap** → Guardar.
+
+**Resultado esperado:** el perfil sigue abriendo por su link (200 si es `PUBLIC`; 401 sin token y 200 con token si es `PROTECTED`), pero no figura en `GET /api/curated-profiles`, en el menú de la home ni en el `sitemap.xml`. Es la forma de mandar un perfil a una sola empresa sin que quede expuesto.
+
+```bash
+curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
+  -H 'Content-Type: application/json' -d '{"listed":false}' | jq .listed
+```
+
+> Los 13 perfiles del seed nacen enumerados, igual que antes: dejarlos de enumerar los retiraría de los buscadores. Es una decisión perfil por perfil, desde el panel.
+
+### TC-24 — Renombrar un slug sin romper los links ya enviados 🔍
+
+**Pasos:** pestaña **Identidad** → cambiar el **Slug** → Guardar.
+
+**Resultado esperado:** el slug anterior **sigue funcionando**. Responde el mismo perfil con su slug canónico en el cuerpo y en la cabecera `Content-Location`, y el navegador corrige la URL solo. El sitemap y el `canonical` usan únicamente el slug nuevo. Un slug que es el anterior de otro perfil no se puede tomar (409). Volver al slug anterior borra ese alias. El alias de un perfil archivado también da 404.
+
+```bash
+curl -s -D - -o /dev/null $API/api/curated-profiles/el-slug-viejo | grep -i content-location
+```
+
 ## 4. Lo que hoy NO se administra desde el panel
 
 Conviene saberlo antes de necesitarlo. Estas entidades se muestran en el sitio y **solo se cargan por seed**:
@@ -612,7 +673,7 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-02 | Idioma negociado y forzado | ✅ | captura |
 | TC-03 | Un perfil curado filtra el contenido | ✅ | captura + métricas 15→7 |
 | TC-04 | Tema y layout desde la URL | ✅ | captura |
-| TC-05 | Menú de perfiles públicos | ✅ | captura |
+| TC-05 | Menú de perfiles, solo en la home | 🔍 | captura anterior al cambio · comportamiento nuevo verificado en tests y en la app real |
 | TC-06 | Perfil protegido pide token | ✅ | captura |
 | TC-07 | Token correcto resuelve el perfil | ✅ | captura |
 | TC-08 | Slug inexistente o privado da 404 | ✅ | captura |
@@ -628,8 +689,12 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-18 | Dashboard de analítica | ✅ | captura previa al arreglo · el contador sube y el rango incluye hoy (D-01 corregido, verificado en e2e) |
 | TC-19 | Mantener experiencias | ✅ | 2 capturas · visible / oculta (D-02 corregido) |
 | TC-20 | Mantener skills | ✅ | captura · la categoría entra por el tag de su skill |
+| TC-21 | Duplicar un perfil | 🔍 | e2e · app real con capturas en el archivo del change |
+| TC-22 | Archivar sin perder visitas | 🔍 | e2e · app real con capturas en el archivo del change |
+| TC-23 | Link dirigido (`listed`) | 🔍 | e2e |
+| TC-24 | Renombrar sin romper links | 🔍 | e2e |
 
-**Los 20 casos pasan, y los 20 tienen evidencia.** 20 capturas en `docs/manual/` más las transcripciones de la API. La captura de TC-18 es anterior al arreglo de D-01 y todavía muestra el dashboard en cero: se renueva en la próxima ejecución con sesión iniciada.
+**Los 24 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. La captura de TC-18 es anterior al arreglo de D-01 y la de TC-05 al cambio del menú: las dos se renuevan en la próxima ejecución con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
@@ -708,6 +773,14 @@ curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/acme-tech-lea
 echo "$SITIO/acme-tech-lead"
 ```
 
+**Los tres ejes, al final de la receta** (TC-16):
+
+- La **visibilidad** decide quién puede abrirlo. `PUBLIC` para cualquiera con el link y `PROTECTED` para quien tenga el token.
+- La **enumeración** decide si aparece en la home y el sitemap. Para un envío a una sola empresa, `{"listed": false}`: el link funciona igual y el perfil no queda expuesto (TC-23).
+- El **archivado** decide si sigue vivo. Cuando la vacante se cierra, archivarlo: el link da 404 y las visitas se conservan (TC-22).
+
+**Atajo:** para la próxima vacante parecida, no hace falta empezar de cero. Duplicá este perfil (TC-21) y ajustá slug, título y titular.
+
 ---
 
 ## 8. Qué falla y por qué
@@ -723,4 +796,9 @@ echo "$SITIO/acme-tech-lead"
 | `409` al crear un perfil | el `slug` ya existe |
 | El `?token=` no funciona | el perfil es `PRIVATE`, no `PROTECTED`. `PRIVATE` siempre da 404 |
 | La vista previa en LinkedIn es genérica | el borde no insertó el head del perfil: la API no respondió en 500 ms y el sitio degradó al genérico, o el perfil no es `PUBLIC` (a propósito: `PROTECTED` y `PRIVATE` nunca exponen sus textos). Comprobar con `curl -s <sitio>/<slug> \| grep og:title`. La imagen es la misma para todos los perfiles; una por vacante quedó fuera del change `add-server-rendered-head` |
-| El nuevo perfil no está en el sitemap | solo entran los `PUBLIC` |
+| El nuevo perfil no está en el sitemap | solo entran los `PUBLIC`, enumerados y no archivados. Un duplicado nace `PRIVATE` y no enumerado |
+| El link que mandé da 404 | el perfil está archivado (TC-22) o es `PRIVATE`. El bloque del link en la pestaña Publicación lo advierte |
+| Un perfil público no aparece en el menú | no está enumerado (`listed: false`), o se está mirando un `/:slug`: el menú solo se muestra en la home |
+| Renombré un slug y el link viejo sigue respondiendo | es a propósito: el slug anterior queda como alias y redirige al nuevo (TC-24) |
+| `409` al usar un slug que nadie tiene | es el slug anterior de otro perfil |
+| `400` al mandar `archivedAt` | no se escribe por `PATCH`: usar `/archive` y `/unarchive` |

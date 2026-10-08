@@ -92,6 +92,8 @@ interface CvData {
     techFocus?: string;
     filterTags: string[];
     accentColor: string;
+    /** Explícito para no depender del default de la columna (add-curated-profile-lifecycle, D6). */
+    listed: boolean;
   }[];
   projects: {
     id: string;
@@ -473,6 +475,7 @@ async function main() {
         roleType: tpl.roleType ?? undefined,
         techFocus: tpl.techFocus ?? undefined,
         accentColor: tpl.accentColor,
+        listed: tpl.listed,
         themeId: themeBySlug['modern-dark'],
         layout: 'classic',
         // El catálogo completo del dominio: lo que se ve no depende del relleno.
@@ -493,6 +496,7 @@ async function main() {
         en: 'Complete view of the professional portfolio.',
       },
       filterTags: [], // vacío = mostrar todo
+      listed: true,
       accentColor: '#38bdf8',
       themeId: themeBySlug['modern-dark'],
       layout: 'classic',

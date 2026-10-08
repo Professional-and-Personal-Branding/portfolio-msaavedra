@@ -1,4 +1,5 @@
 import { LocalizedText } from '../../../../shared/domain/i18n';
+import { resolvability } from '../services/resolvability';
 import { AccessToken } from '../value-objects/access-token.vo';
 
 export const CURATED_VISIBILITIES = ['PUBLIC', 'PRIVATE', 'PROTECTED'] as const;
@@ -28,16 +29,31 @@ export interface CuratedProfileProps {
   readonly sectionsHidden: readonly string[];
   readonly visibility: CuratedVisibility;
   readonly accessToken: AccessToken;
+  /**
+   * Ciclo de vida (add-curated-profile-lifecycle). Tres ejes disjuntos:
+   * `visibility` decide quién puede abrirlo, `archivedAt` si sigue vivo y
+   * `listed` si se enumera. Opcionales al construir: `create()` los normaliza.
+   */
+  readonly archivedAt?: Date | null;
+  readonly listed?: boolean;
   readonly views: number;
   readonly createdAt?: Date;
   readonly updatedAt?: Date;
 }
 
-/** Datos para crear un perfil curado (id, vistas y metadatos los pone la persistencia). */
+/**
+ * Datos para crear un perfil curado (id, vistas y metadatos los pone la
+ * persistencia). `archivedAt` no está: solo lo escriben archivar y desarchivar.
+ */
 export type NewCuratedProfileProps = Omit<
   CuratedProfileProps,
-  'id' | 'views' | 'createdAt' | 'updatedAt'
+  'id' | 'views' | 'createdAt' | 'updatedAt' | 'archivedAt'
 >;
+
+/** Cambios aplicables con `with()`: lo editable más `archivedAt`, que fijan los casos de uso. */
+export type CuratedProfileChanges = Partial<NewCuratedProfileProps> & {
+  readonly archivedAt?: Date | null;
+};
 
 /** Perfil curado: vista filtrada y personalizada del perfil profesional (núcleo del producto). */
 export class CuratedProfile {
@@ -46,6 +62,8 @@ export class CuratedProfile {
   static create(props: CuratedProfileProps): CuratedProfile {
     return new CuratedProfile({
       ...props,
+      archivedAt: props.archivedAt ?? null,
+      listed: props.listed ?? true,
       filterTags: [...props.filterTags],
       includeIds: [...props.includeIds],
       excludeIds: [...props.excludeIds],
@@ -54,8 +72,8 @@ export class CuratedProfile {
     });
   }
 
-  /** Copia con cambios parciales (edición desde el backoffice). */
-  with(changes: Partial<NewCuratedProfileProps>): CuratedProfile {
+  /** Copia con cambios parciales (edición desde el backoffice, archivar, duplicar). */
+  with(changes: CuratedProfileChanges): CuratedProfile {
     return CuratedProfile.create({ ...this.props, ...changes });
   }
 
@@ -124,6 +142,15 @@ export class CuratedProfile {
   get accessToken(): AccessToken {
     return this.props.accessToken;
   }
+  get archivedAt(): Date | null {
+    return this.props.archivedAt ?? null;
+  }
+  get listed(): boolean {
+    return this.props.listed ?? true;
+  }
+  get isArchived(): boolean {
+    return this.archivedAt !== null;
+  }
   get views(): number {
     return this.props.views;
   }
@@ -145,12 +172,17 @@ export class CuratedProfile {
   }
 
   /**
-   * Regla de acceso: PUBLIC siempre; PROTECTED solo con token coincidente;
-   * PRIVATE nunca (se trata como inexistente hacia afuera).
+   * Regla de acceso, delegada en la tabla de verdad de `resolvability`: un
+   * archivado nunca es accesible, PUBLIC siempre, PROTECTED con token coincidente
+   * y PRIVATE nunca.
    */
   canAccess(candidateToken: string | null | undefined): boolean {
-    if (this.isPublic) return true;
-    if (this.isProtected) return this.props.accessToken.matches(candidateToken);
-    return false;
+    return (
+      resolvability(
+        this.props.visibility,
+        this.archivedAt,
+        this.props.accessToken.matches(candidateToken),
+      ) === 'ok'
+    );
   }
 }

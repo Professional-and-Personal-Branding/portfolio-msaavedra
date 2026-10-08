@@ -223,6 +223,13 @@ model CuratedProfile {
   visibility     Visibility @default(PUBLIC)
   accessToken    String?    // para perfiles PROTECTED
 
+  // Ciclo de vida (add-curated-profile-lifecycle): tres ejes disjuntos.
+  // `visibility` decide quién puede abrirlo, `archivedAt` si sigue vivo
+  // (archivado = 404, gana siempre) y `listed` si se enumera en listados y sitemap.
+  archivedAt     DateTime?
+  listed         Boolean    @default(true)
+  slugAliases    CuratedProfileSlugAlias[]
+
   // Analítica
   views          Int        @default(0)
   profileViews   ProfileView[]
@@ -242,6 +249,18 @@ enum Visibility {
 // ─────────────────────────────────────────────────────────────
 // ANALÍTICA DE VISITAS
 // ─────────────────────────────────────────────────────────────
+/// Slug anterior de un perfil renombrado: sigue resolviendo al perfil para que
+/// los links ya enviados no se rompan (add-curated-profile-lifecycle, D5).
+model CuratedProfileSlugAlias {
+  id               String         @id @default(cuid())
+  slug             String         @unique
+  curatedProfile   CuratedProfile @relation(fields: [curatedProfileId], references: [id], onDelete: Cascade)
+  curatedProfileId String
+  createdAt        DateTime       @default(now())
+
+  @@index([curatedProfileId])
+}
+
 model ProfileView {
   id               String          @id @default(cuid())
   curatedProfile   CuratedProfile  @relation(fields: [curatedProfileId], references: [id], onDelete: Cascade)

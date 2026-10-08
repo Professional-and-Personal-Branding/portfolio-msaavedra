@@ -26,6 +26,8 @@ export interface ProfileDraft {
   sectionsOrder: SectionId[];
   sectionsHidden: SectionId[];
   visibility: Visibility;
+  /** Se enumera en el listado público, el menú y el sitemap; no cambia el acceso. */
+  listed: boolean;
   accessToken: string;
 }
 
@@ -49,6 +51,7 @@ export const EMPTY_DRAFT: ProfileDraft = {
   sectionsOrder: [...DEFAULT_SECTIONS],
   sectionsHidden: [],
   visibility: 'PUBLIC',
+  listed: true,
   accessToken: '',
 };
 
@@ -76,6 +79,7 @@ export function toDraft(profile: AdminCuratedProfile): ProfileDraft {
         : [...DEFAULT_SECTIONS],
     sectionsHidden: profile.sectionsHidden.filter(isSectionId),
     visibility: profile.visibility,
+    listed: profile.listed,
     accessToken: profile.accessToken ?? '',
   };
 }
@@ -99,6 +103,7 @@ export function toProfileBody(draft: ProfileDraft): CreateCuratedProfileBody {
     sectionsOrder: draft.sectionsOrder,
     sectionsHidden: draft.sectionsHidden,
     visibility: draft.visibility,
+    listed: draft.listed,
     accessToken: draft.visibility === 'PROTECTED' ? draft.accessToken.trim() : null,
   };
 }

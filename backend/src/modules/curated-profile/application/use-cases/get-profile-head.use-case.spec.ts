@@ -7,8 +7,11 @@ import { GetProfileHeadUseCase } from './get-profile-head.use-case';
 
 const BASE = 'https://manuel.dev';
 
-function curated(visibility: 'PUBLIC' | 'PROTECTED' | 'PRIVATE'): CuratedProfile {
-  return { slug: 'tech-lead-dotnet', visibility } as unknown as CuratedProfile;
+function curated(
+  visibility: 'PUBLIC' | 'PROTECTED' | 'PRIVATE',
+  archivedAt: Date | null = null,
+): CuratedProfile {
+  return { slug: 'tech-lead-dotnet', visibility, archivedAt } as unknown as CuratedProfile;
 }
 
 const RESOLVED = {
@@ -23,7 +26,7 @@ const RESOLVED = {
 
 function build(found: CuratedProfile | null, cache = new ProfileHeadCache()) {
   const repo = {
-    findBySlug: jest.fn().mockResolvedValue(found),
+    findBySlugOrAlias: jest.fn().mockResolvedValue(found),
   } as unknown as CuratedProfileRepository;
   const compose = jest.fn().mockResolvedValue(RESOLVED);
   const composer = { compose } as unknown as CuratedProfileComposer;
@@ -53,6 +56,10 @@ describe('GetProfileHeadUseCase', () => {
     expect(html).not.toContain('Titular secreto');
   });
 
+  it('PUBLIC archivado: el mismo genérico que un slug inexistente', async () => {
+    expect(await run(curated('PUBLIC', new Date('2026-10-01')))).toBe(await run(null));
+  });
+
   it('PRIVATE e inexistente dan exactamente el mismo cuerpo', async () => {
     expect(await run(curated('PRIVATE'))).toBe(await run(null));
   });
@@ -60,7 +67,7 @@ describe('GetProfileHeadUseCase', () => {
   it('sin slug: genérico, sin consultar la base', async () => {
     const { useCase, repo } = build(curated('PUBLIC'));
     const html = (await useCase.execute({ slug: '', locale: 'es', baseUrl: BASE })).value;
-    expect(repo.findBySlug).not.toHaveBeenCalled();
+    expect(repo.findBySlugOrAlias).not.toHaveBeenCalled();
     expect(html).toContain('content="noindex, nofollow"');
   });
 
@@ -94,5 +101,19 @@ describe('GetProfileHeadUseCase', () => {
       baseUrl: BASE,
     });
     expect(cache.size).toBe(0);
+  });
+
+  // add-curated-profile-lifecycle + caché: la tabla de verdad va antes que la caché.
+  it('archivar un perfil ya cacheado corta sus textos al instante, sin esperar el TTL', async () => {
+    const cache = new ProfileHeadCache();
+    const input = { slug: 'tech-lead-dotnet', locale: 'es' as const, baseUrl: BASE };
+    const publico = (await build(curated('PUBLIC'), cache).useCase.execute(input)).value;
+    expect(publico).toContain('Tech Lead .NET');
+
+    const archivado = (
+      await build(curated('PUBLIC', new Date('2026-10-08')), cache).useCase.execute(input)
+    ).value;
+    expect(archivado).toContain('content="noindex, nofollow"');
+    expect(archivado).not.toContain('Tech Lead .NET');
   });
 });

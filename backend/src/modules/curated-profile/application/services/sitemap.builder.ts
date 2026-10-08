@@ -1,3 +1,5 @@
+import { isPubliclyListed, ListingState } from '../../domain/services/publicly-listed';
+
 /** Entrada del sitemap: URL absoluta y su última modificación. */
 export interface SitemapEntry {
   path: string;
@@ -5,9 +7,8 @@ export interface SitemapEntry {
 }
 
 /** Perfil tal como lo necesita el sitemap (spec `public-seo`). */
-export interface SitemapProfile {
+export interface SitemapProfile extends ListingState {
   slug: string;
-  visibility: string;
   updatedAt?: Date;
 }
 
@@ -18,9 +19,12 @@ export function profilePath(slug: string): string {
   return slug === HOME_SLUG ? '/' : `/${slug}`;
 }
 
-/** Solo los perfiles públicos entran; el resto no debe ni insinuarse. */
+/**
+ * Solo entra lo que el listado público enumera (`isPubliclyListed`); el resto no
+ * debe ni insinuarse. Los alias nunca: cada perfil aporta su slug canónico.
+ */
 export function toSitemapEntries(profiles: readonly SitemapProfile[]): SitemapEntry[] {
-  const publicos = profiles.filter((profile) => profile.visibility === 'PUBLIC');
+  const publicos = profiles.filter(isPubliclyListed);
   const home = publicos.find((profile) => profile.slug === HOME_SLUG);
 
   return [

@@ -214,6 +214,9 @@ function build(deps: Deps = {}) {
     ...stubs(),
     existsBySlug: jest.fn(),
     findBySlug: jest.fn().mockResolvedValue(deps.curated === undefined ? curated() : deps.curated),
+    findBySlugOrAlias: jest
+      .fn()
+      .mockResolvedValue(deps.curated === undefined ? curated() : deps.curated),
     findAllPublic: jest.fn().mockResolvedValue([]),
   };
   const profileRepo: ProfileRepository = {
@@ -604,7 +607,7 @@ describe('PreviewCuratedProfileUseCase', () => {
     expect(preview.value.experiences.map((e) => e.id)).toEqual(['novacomp', 'vidoomy']);
     expect(preview.value).toEqual(publico);
     // el preview no necesitó buscar el perfil por slug
-    expect(curatedRepo.findBySlug).toHaveBeenCalledTimes(1); // solo la ruta pública
+    expect(curatedRepo.findBySlugOrAlias).toHaveBeenCalledTimes(1); // solo la ruta pública
   });
 
   it('aplica includeIds y excludeIds del borrador', async () => {
@@ -671,6 +674,7 @@ describe('ListCuratedProfilesUseCase', () => {
       ...stubs(),
       existsBySlug: jest.fn(),
       findBySlug: jest.fn(),
+      findBySlugOrAlias: jest.fn(),
       findAllPublic: jest
         .fn()
         .mockResolvedValue([

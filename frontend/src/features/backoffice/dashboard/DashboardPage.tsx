@@ -1,6 +1,7 @@
 import { Eye, Globe, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
+import { Badge } from '@/shared/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -21,9 +22,11 @@ export function DashboardPage() {
   const analytics = useAnalytics(range.from, range.to);
   const profiles = useCuratedProfilesAdmin();
 
-  const idBySlug = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const profile of profiles.data ?? []) map.set(profile.slug, profile.id);
+  const profileBySlug = useMemo(() => {
+    const map = new Map<string, { id: string; archived: boolean }>();
+    for (const profile of profiles.data ?? []) {
+      map.set(profile.slug, { id: profile.id, archived: profile.archivedAt !== null });
+    }
     return map;
   }, [profiles.data]);
 
@@ -88,7 +91,10 @@ export function DashboardPage() {
                     {[...analytics.data.byProfile]
                       .sort((a, b) => b.views - a.views)
                       .map((row) => {
-                        const id = idBySlug.get(row.slug);
+                        // Un archivado conserva sus visitas y sigue en la tabla, marcado
+                        // (add-curated-profile-lifecycle, D8). Su link público ya no resuelve.
+                        const known = profileBySlug.get(row.slug);
+                        const id = known?.id;
                         return (
                           <li key={row.slug} className="flex items-center gap-3">
                             <span className="min-w-0 flex-1 truncate text-sm">
@@ -102,15 +108,22 @@ export function DashboardPage() {
                               ) : (
                                 row.slug
                               )}
+                              {known?.archived && (
+                                <Badge variant="outline" className="ml-2 text-text-muted">
+                                  archivado
+                                </Badge>
+                              )}
                             </span>
-                            <Link
-                              to={profilePath(row.slug)}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-xs text-text-dim hover:text-brand"
-                            >
-                              ver
-                            </Link>
+                            {!known?.archived && (
+                              <Link
+                                to={profilePath(row.slug)}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-xs text-text-dim hover:text-brand"
+                              >
+                                ver
+                              </Link>
+                            )}
                             <span className="w-10 text-right text-sm font-semibold tabular-nums">
                               {row.views}
                             </span>

@@ -12,9 +12,14 @@ interface TopBarProps {
   /** Nombre del perfil base (marca de la barra). */
   brand?: string | null;
   layout: LayoutName;
+  /**
+   * Menú de otros perfiles: solo en la home. Un perfil abierto por su link no
+   * ofrece navegación a los demás (spec `public-portfolio-frontend`).
+   */
+  showProfileMenu?: boolean;
 }
 
-export function TopBar({ activeSlug, brand, layout }: TopBarProps) {
+export function TopBar({ activeSlug, brand, layout, showProfileMenu = false }: TopBarProps) {
   const { t } = useLocale();
   const home = useProfileLink('all');
   return (
@@ -27,7 +32,7 @@ export function TopBar({ activeSlug, brand, layout }: TopBarProps) {
           {brand ?? t('app.title')}
         </Link>
         <div className="ml-auto flex items-center gap-2">
-          <ProfileMenu activeSlug={activeSlug} />
+          {showProfileMenu && <ProfileMenu activeSlug={activeSlug} />}
           <LayoutSwitcher current={layout} />
           <ThemeSwitcher />
           <LocaleSwitcher />

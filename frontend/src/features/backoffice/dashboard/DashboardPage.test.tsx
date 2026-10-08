@@ -2,7 +2,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { AppRouter } from '@/app/router';
-import { ANALYTICS, EMPTY_ANALYTICS } from '@/test/fixtures/admin';
+import { ANALYTICS, EMPTY_ANALYTICS, makeAdminCuratedProfile } from '@/test/fixtures/admin';
 import { API, http, HttpResponse, server } from '@/test/msw';
 import { adminHandlers } from '@/test/msw-admin';
 import { renderWithProviders } from '@/test/render';
@@ -10,6 +10,27 @@ import { renderWithProviders } from '@/test/render';
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
+
+describe('DashboardPage — perfiles archivados', () => {
+  // add-curated-profile-lifecycle, D8: archivar conserva las visitas y el perfil
+  // sigue en la tabla, marcado; su link público ya no resuelve.
+  it('un perfil archivado con visitas sigue en la tabla, marcado y sin link público', async () => {
+    server.use(
+      http.get(`${API}/admin/curated-profiles`, () =>
+        HttpResponse.json([makeAdminCuratedProfile({ archivedAt: '2026-10-01T00:00:00.000Z' })]),
+      ),
+      ...adminHandlers,
+    );
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    const byProfile = await screen.findByRole('region', { name: 'Por perfil' });
+    const fila = (await within(byProfile).findByText('acme-backend')).closest('li') as HTMLElement;
+    // La marca llega con la lista de perfiles, que puede resolver después de la analítica.
+    expect(await within(fila).findByText('archivado')).toBeInTheDocument();
+    expect(within(fila).queryByRole('link', { name: 'ver' })).toBeNull();
+    expect(within(fila).getByText('3')).toBeInTheDocument();
+  });
+});
 
 describe('DashboardPage', () => {
   it('muestra totales, perfiles ordenados por visitas, idiomas y la serie diaria', async () => {

@@ -259,6 +259,10 @@
     <a href="#tc18"><span class="dot ok"></span><span class="id">TC-18</span> Analítica</a>
     <a href="#tc19"><span class="dot ok"></span><span class="id">TC-19</span> Experiencias</a>
     <a href="#tc20"><span class="dot ok"></span><span class="id">TC-20</span> Skills</a>
+    <a href="#tc21"><span class="dot ok"></span><span class="id">TC-21</span> Duplicar</a>
+    <a href="#tc22"><span class="dot ok"></span><span class="id">TC-22</span> Archivar</a>
+    <a href="#tc23"><span class="dot ok"></span><span class="id">TC-23</span> Link dirigido</a>
+    <a href="#tc24"><span class="dot ok"></span><span class="id">TC-24</span> Renombrar</a>
     <h3>Cierre</h3>
     <a href="#defectos"><span class="dot ok"></span><span class="id">§6</span> Defectos</a>
     <a href="#noadmin"><span class="id">§7</span> Sin administrar</a>
@@ -363,13 +367,13 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
       <p class="lede">5 de octubre de 2026, contra la base del seed: 14 perfiles curados y 15 experiencias.</p>
 
       <div class="stats">
-        <div class="stat"><b>20</b><span>casos</span></div>
-        <div class="stat ok"><b>20</b><span>pasan</span></div>
+        <div class="stat"><b>24</b><span>casos</span></div>
+        <div class="stat ok"><b>24</b><span>pasan</span></div>
         <div class="stat"><b>2</b><span>defectos corregidos</span></div>
         <div class="stat"><b>20</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Los 20 casos pasan.</b> Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Los 24 casos pasan.</b> TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -385,7 +389,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
       <div class="progwrap">
         <div class="progbar"><i id="progfill"></i></div>
         <div class="proglabel">
-          <span id="progtext">0 de 20 marcados en esta corrida</span>
+          <span id="progtext">0 de 24 marcados en esta corrida</span>
           <button class="iconbtn" id="reset">Reiniciar corrida</button>
         </div>
       </div>
@@ -444,11 +448,11 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
       </article>
 
       <article class="case" data-status="ok" id="tc05">
-        <div class="case-head"><span class="case-id">TC-05</span><h3>El menú ofrece los demás perfiles públicos</h3><span class="pill ok">pasa</span>
+        <div class="case-head"><span class="case-id">TC-05</span><h3>El menú ofrece los demás perfiles, solo en la home</h3><span class="pill ok">pasa</span>
           <label class="run"><input type="checkbox" data-run="tc05"> ejecutado</label></div>
-        <p><span class="lbl">Pasos</span> · En cualquier vista, abrir el desplegable <b>Perfiles</b>.</p>
-        <p><span class="lbl">Esperado</span> · Lista todos los perfiles <code>PUBLIC</code> agrupados por <code>roleType</code>, cada uno con su <code>techFocus</code> debajo.</p>
-        <div class="note warn"><b>Comportamiento a tener en cuenta.</b> El menú se monta también en <code>/:slug</code>, así que quien recibe un link ve los otros perfiles hechos para otras vacantes. Lo resuelve el change <code>add-curated-profile-lifecycle</code>.</div>
+        <p><span class="lbl">Pasos</span> · En la home (<code>/</code>), abrir el desplegable <b>Perfiles</b>. Después abrir un perfil por su link, por ejemplo <code>/tech-lead-dotnet</code>.</p>
+        <p><span class="lbl">Esperado</span> · En la home, el menú lista los perfiles públicos, enumerados y no archivados, agrupados por <code>roleType</code>, cada uno con su <code>techFocus</code> debajo. En <code>/:slug</code> no hay menú.</p>
+        <div class="note"><b>Desde el change <code>add-curated-profile-lifecycle</code></b> el menú solo se monta en la home: quien recibe un link no ve los otros perfiles. La captura de abajo es anterior y muestra el menú sobre <code>/tech-lead-dotnet</code>, que ya no ocurre; se renueva en la próxima ejecución.</div>
         <figure class="shot" id="img-tc05-menu-perfiles"><img src="tc05-menu-perfiles.jpg" width="792" height="802" alt="Menú de perfiles abierto sobre un perfil curado"><figcaption>El desplegable abierto sobre <code>/tech-lead-dotnet</code>.</figcaption></figure>
       </article>
 
@@ -584,12 +588,22 @@ PATCH themeOverrides   -> se guarda {"colors":{"accent":"#5B2C87"}}, solo la dif
       <article class="case" data-status="ok" id="tc16">
         <div class="case-head"><span class="case-id">TC-16</span><h3>Publicar, proteger o esconder</h3><span class="pill ok">pasa</span>
           <label class="run"><input type="checkbox" data-run="tc16"> ejecutado</label></div>
+        <p>Un perfil tiene <b>tres ejes independientes</b>, y la pestaña <b>Publicación</b> los presenta por separado:</p>
+        <div class="tablewrap"><table>
+          <thead><tr><th>Eje</th><th>Decide</th><th>Dónde se cambia</th></tr></thead>
+          <tbody>
+            <tr><td><b>Visibilidad</b></td><td><b>quién puede abrir</b> el perfil por su link</td><td>selector <i>Visibilidad</i></td></tr>
+            <tr><td><b>Enumeración</b> (<code>listed</code>)</td><td><b>si se enumera</b> en el menú de la home, el listado público y el sitemap; no cambia el acceso</td><td>interruptor <i>Enumerar en la home y el sitemap</i> (<a href="#tc23">TC-23</a>)</td></tr>
+            <tr><td><b>Archivado</b> (<code>archivedAt</code>)</td><td><b>si sigue vivo</b>: archivado responde 404 siempre y gana sobre los otros dos</td><td>botón <i>Archivar</i> (<a href="#tc22">TC-22</a>)</td></tr>
+          </tbody>
+        </table></div>
         <div class="tablewrap"><table>
           <thead><tr><th>Visibilidad</th><th>Sin token</th><th>Con token</th><th>En el sitemap</th></tr></thead>
           <tbody>
-            <tr><td><code>PUBLIC</code></td><td class="num">200</td><td>—</td><td>Sí</td></tr>
+            <tr><td><code>PUBLIC</code></td><td class="num">200</td><td>—</td><td>Sí, si está enumerado</td></tr>
             <tr><td><code>PROTECTED</code></td><td class="num">401</td><td class="num">200</td><td>No</td></tr>
             <tr><td><code>PRIVATE</code></td><td class="num">404</td><td class="num">404</td><td>No</td></tr>
+            <tr><td>cualquiera, <b>archivado</b></td><td class="num">404</td><td class="num">404</td><td>No</td></tr>
           </tbody>
         </table></div>
         <p><span class="lbl">Observado</span> · recorriendo las tres visibilidades sobre el mismo perfil:</p>
@@ -670,6 +684,46 @@ preview con filterTags=[suite-tag]            -> la categoría entra por el tag 
 DELETE de la categoría                        -> se lleva sus skills</pre></div>
         <figure class="shot" id="img-tc20-skills"><img src="tc20-skills.jpg" width="800" height="455" alt="Skills agrupadas por categoría"><figcaption>Cada skill lleva los tags que deciden en qué perfiles aparece.</figcaption></figure>
         <p>Una categoría entra en un perfil curado si <b>alguna de sus skills</b> comparte un tag con <code>filterTags</code>; dentro, se muestran solo las skills que pasan el filtro.</p>
+      </article>
+
+      <article class="case" data-status="ok" id="tc21">
+        <div class="case-head"><span class="case-id">TC-21</span><h3>Duplicar un perfil para otra vacante</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc21"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · <code>/admin/perfiles</code> → botón <b>Duplicar</b> de un perfil → confirmar.</p>
+        <p><span class="lbl">Esperado</span> · Una copia con toda la configuración (tags, inclusiones, exclusiones, secciones, tema y layout) y el constructor abierto sobre ella. La copia nace <b>privada y no enumerada</b>, sin token, sin visitas y sin archivar, con el slug del original más el primer sufijo libre (<code>-2</code>, <code>-3</code>, …). Para publicarla alcanza con cambiar slug, título, titular y visibilidad.</p>
+        <div class="codewrap"><pre>curl -s -X POST $API/api/admin/curated-profiles/$ID/duplicate -H "$AUTH" \
+  | jq '{slug, visibility, listed, accessToken, views}'</pre></div>
+        <p><span class="lbl">Observado</span> · en la app real: duplicar <code>tech-lead-dotnet</code> dio <code>/tech-lead-dotnet-2</code>, privado; publicado como <code>acme-tech-lead</code> cambiando solo slug, título y titular, respondió 200 con sus 13 experiencias. El original quedó intacto.</p>
+      </article>
+
+      <article class="case" data-status="ok" id="tc22">
+        <div class="case-head"><span class="case-id">TC-22</span><h3>Retirar un perfil sin perder sus visitas</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc22"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · Pestaña <b>Publicación</b> → <b>Archivar</b> → confirmar. Para volver atrás, <b>Desarchivar</b>.</p>
+        <p><span class="lbl">Esperado</span> · El link responde <b>404</b>, igual que un slug que nunca existió, incluso con token si era <code>PROTECTED</code>. Sale del listado, del menú y del sitemap, pero <b>conserva sus visitas</b>, que siguen en el dashboard marcadas como <i>archivado</i>. Archivar dos veces conserva la primera fecha y no se registran visitas nuevas.</p>
+        <div class="codewrap"><pre>curl -s -X POST $API/api/admin/curated-profiles/$ID/archive -H "$AUTH" | jq .archivedAt
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/acme-tech-lead   # 404
+curl -s -X POST $API/api/admin/curated-profiles/$ID/unarchive -H "$AUTH" | jq .archivedAt   # null</pre></div>
+        <div class="note"><b>Archivar en lugar de borrar.</b> Borrar se lleva las visitas; archivar las conserva y se puede deshacer. <code>archivedAt</code> no se escribe por <code>PATCH</code> (400).</div>
+        <p><span class="lbl">Observado</span> · en la app real: archivado <code>acme-tech-lead</code> con 3 visitas, el link dio 404, el panel pasó a <i>Desarchivar</i> sin recargar y el dashboard siguió mostrando sus 3 visitas.</p>
+      </article>
+
+      <article class="case" data-status="ok" id="tc23">
+        <div class="case-head"><span class="case-id">TC-23</span><h3>Un link dirigido que no aparece en ningún listado</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc23"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · Pestaña <b>Publicación</b> → apagar <b>Enumerar en la home y el sitemap</b> → Guardar.</p>
+        <p><span class="lbl">Esperado</span> · El perfil sigue abriendo por su link (200 si es <code>PUBLIC</code>; 401 sin token y 200 con token si es <code>PROTECTED</code>), pero no figura en <code>GET /api/curated-profiles</code>, en el menú de la home ni en el <code>sitemap.xml</code>.</p>
+        <div class="codewrap"><pre>curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
+  -H 'Content-Type: application/json' -d '{"listed":false}' | jq .listed</pre></div>
+        <div class="note">Los 13 perfiles del seed nacen enumerados, igual que antes: dejarlos de enumerar los retiraría de los buscadores. Es una decisión perfil por perfil.</div>
+      </article>
+
+      <article class="case" data-status="ok" id="tc24">
+        <div class="case-head"><span class="case-id">TC-24</span><h3>Renombrar un slug sin romper los links ya enviados</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc24"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · Pestaña <b>Identidad</b> → cambiar el <b>Slug</b> → Guardar.</p>
+        <p><span class="lbl">Esperado</span> · El slug anterior <b>sigue funcionando</b>: responde el mismo perfil con su slug canónico en el cuerpo y en <code>Content-Location</code>, y el navegador corrige la URL solo. El sitemap y el <code>canonical</code> usan solo el slug nuevo. Tomar el slug anterior de otro perfil da 409; volver al propio borra el alias; el alias de un archivado también da 404.</p>
+        <div class="codewrap"><pre>curl -s -D - -o /dev/null $API/api/curated-profiles/el-slug-viejo | grep -i content-location</pre></div>
       </article>
     </section>
 
@@ -780,6 +834,8 @@ curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" -H 'Content-Type
 curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/acme-tech-lead
 echo "$SITIO/acme-tech-lead"</pre></div>
       <div class="note"><b>Antes de empezar.</b> Necesitás <code>$API</code>, <code>$AUTH</code> y <code>$SITIO</code>: se arman en <a href="#entorno">Entorno y puertos</a>.</div>
+      <p><b>Los tres ejes, al final de la receta</b> (<a href="#tc16">TC-16</a>): la <b>visibilidad</b> decide quién puede abrirlo; la <b>enumeración</b> decide si aparece en la home y el sitemap, y para un envío a una sola empresa se usa <code>{"listed": false}</code> (<a href="#tc23">TC-23</a>); el <b>archivado</b> decide si sigue vivo, y cuando la vacante se cierra se archiva: el link da 404 y las visitas se conservan (<a href="#tc22">TC-22</a>).</p>
+      <p><b>Atajo:</b> para la próxima vacante parecida, duplicá este perfil (<a href="#tc21">TC-21</a>) y ajustá slug, título y titular.</p>
     </section>
 
     <!-- ───────────── Fallas ───────────── -->
@@ -797,7 +853,12 @@ echo "$SITIO/acme-tech-lead"</pre></div>
           <tr><td><code>409</code> al crear un perfil</td><td>el <code>slug</code> ya existe</td></tr>
           <tr><td>El <code>?token=</code> no funciona</td><td>el perfil es <code>PRIVATE</code>, no <code>PROTECTED</code>. <code>PRIVATE</code> siempre da 404</td></tr>
           <tr><td>La vista previa en LinkedIn es genérica</td><td>el borde no insertó el head del perfil: la API no respondió en 500&nbsp;ms y el sitio degradó al genérico, o el perfil no es <code>PUBLIC</code> (a propósito: <code>PROTECTED</code> y <code>PRIVATE</code> nunca exponen sus textos). Comprobar con <code>curl -s &lt;sitio&gt;/&lt;slug&gt; | grep og:title</code>. La imagen es la misma para todos los perfiles.</td></tr>
-          <tr><td>El nuevo perfil no está en el sitemap</td><td>solo entran los <code>PUBLIC</code></td></tr>
+          <tr><td>El nuevo perfil no está en el sitemap</td><td>solo entran los <code>PUBLIC</code>, enumerados y no archivados. Un duplicado nace <code>PRIVATE</code> y no enumerado</td></tr>
+          <tr><td>El link que mandé da 404</td><td>el perfil está archivado (<a href="#tc22">TC-22</a>) o es <code>PRIVATE</code>. La pestaña Publicación lo advierte</td></tr>
+          <tr><td>Un perfil público no aparece en el menú</td><td>no está enumerado (<code>listed: false</code>), o se está mirando un <code>/:slug</code>: el menú solo se muestra en la home</td></tr>
+          <tr><td>Renombré un slug y el link viejo sigue respondiendo</td><td>a propósito: el slug anterior queda como alias del nuevo (<a href="#tc24">TC-24</a>)</td></tr>
+          <tr><td><code>409</code> al usar un slug que nadie tiene</td><td>es el slug anterior de otro perfil</td></tr>
+          <tr><td><code>400</code> al mandar <code>archivedAt</code></td><td>no se escribe por <code>PATCH</code>: usar <code>/archive</code> y <code>/unarchive</code></td></tr>
           <tr><td><code>docker compose up</code> falla por el puerto</td><td>otro Postgres ocupa el 5434: <code>POSTGRES_PORT=5555 docker compose up -d</code></td></tr>
         </tbody>
       </table></div>
