@@ -635,6 +635,9 @@ el PRIVATE figura en el sitemap -> no</pre></div>
   "layout": "sidebar"
 }' | jq '{experiencias: (.experiences|length), secciones: .sections}'</pre></div>
         <p><span class="lbl">Observado</span> · tras previsualizar con <code>layout: sidebar</code> y otros <code>filterTags</code>, el perfil guardado conserva <code>classic</code> y sus tags originales. No persiste nada.</p>
+        <p><span class="lbl">Idioma de la vista previa</span> · en el constructor, el conmutador <b>ES / EN</b> del panel pide el preview en el otro idioma (<code>?locale=en</code>). Es estado de vista: no se guarda ni viaja en el guardado, y al recargar vuelve a español. Volver al idioma anterior no repite la petición.</p>
+        <p><span class="lbl">Aviso de faltantes</span> · el preview devuelve además <code>missingTranslations</code>: los campos bilingües vacíos en el idioma pedido, que caerían al español. La pestaña <b>Publicación</b>, junto al link público, los muestra con el conteo y la lista agrupada por entidad; si no falta nada lo dice en una línea («Sin faltantes de traducción en EN»). Es informativo: no impide guardar ni publicar. Un texto igual en ambos idiomas (<code>Tech Lead</code>, <code>.NET</code>) no cuenta como faltante, y la ruta pública no trae el informe.</p>
+        <div class="codewrap"><pre>curl -s -X POST "$API/api/admin/curated-profiles/preview?locale=en" -H "$AUTH"   -H 'Content-Type: application/json' -d '{ "filterTags": ["dotnet"] }'   | jq '.missingTranslations'</pre></div>
         <div class="note"><b>Cuidado con los nombres.</b> Lo que mandás usa <code>sectionsOrder</code> y <code>sectionsHidden</code>; lo que vuelve resuelto trae <code>sections</code> y <code>hiddenSections</code>. Es la diferencia entre la configuración y el resultado.</div>
       </article>
 
