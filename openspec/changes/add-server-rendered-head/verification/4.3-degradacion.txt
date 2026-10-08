@@ -1,0 +1,22 @@
+# 4.3 / 4.4 — Degradación: API_ORIGIN apunta a un puerto muerto (Caddy en :8098)
+
+GET /tech-lead-dotnet -> HTTP 200 en 0.014110 s
+  <title> efectivo:           <title>Manuel Saavedra · Portafolio profesional</title>
+  cantidad de <title>:        1
+  og:image (absoluta, PNG):   property="og:image" content="https://localhost/og-default.png"
+  og:image:alt presente:      1
+  la SPA arranca (script):    1
+  restos de template:         0
+
+GET / -> HTTP 200 en 0.006521 s
+  <title> efectivo:           <title>Manuel Saavedra · Portafolio profesional</title>
+  cantidad de <title>:        1
+  og:image (absoluta, PNG):   property="og:image" content="https://localhost/og-default.png"
+  og:image:alt presente:      1
+  la SPA arranca (script):    1
+  restos de template:         0
+
+La ruta del fragmento, pedida directo por el borde con la API caída:
+  HTTP 200, 0 bytes
+Otra ruta de la API con la API caída (no cambia de comportamiento):
+  HTTP 502

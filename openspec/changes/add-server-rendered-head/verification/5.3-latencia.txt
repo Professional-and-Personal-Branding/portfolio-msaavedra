@@ -1,0 +1,5 @@
+# 5.3 — Latencia de la ruta HTML /tech-lead-dotnet, con la API arriba
+Mismo host, misma API (:3310, base portfolio_verify). 20 peticiones de calentamiento y 300 medidas por imagen, secuenciales.
+
+antes   (imagen de main, sin include):   p50=2.3 ms  p95=4.8 ms  p99=15.4 ms  (n=300)
+después (imagen del change, con include): p50=9.6 ms  p95=12.8 ms  p99=18.6 ms  (n=300)

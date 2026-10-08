@@ -92,6 +92,8 @@ VITE_API_URL=
 
 `API_ORIGIN` usa el **nombre del servicio `api`** tal como figura en el canvas. `VITE_API_URL` va vacía a propósito: el cliente usa rutas relativas que resuelve el proxy.
 
+`web` también inserta el head de cada perfil en el HTML inicial, pidiéndolo a `api` con un presupuesto de 500 ms; si `api` no responde, el sitio carga igual con el head genérico. No hace falta ninguna variable más, pero el `FRONTEND_URL` de `api` tiene que ser el dominio público: de ahí salen el `canonical` y la `og:image` (§ 9.5).
+
 - [ ] Deploy.
 
 ---
@@ -171,6 +173,9 @@ dropdb portafolio_restore_test
 | Bucle de redirecciones en la API | falta `header_up X-Forwarded-Proto https` en el proxy | § 9.5 |
 | El login del panel no persiste la sesión | la cookie viaja a otro origen: revisar `SESSION_COOKIE_SAMESITE` y que el navegador use el dominio de `web` | § 0 |
 | El proxy no encuentra la API | `API_ORIGIN` con otro nombre de servicio o otro puerto que el `PORT` de `api` | § 9.5 |
+| Todos los perfiles se previsualizan iguales al compartirlos | el head del servidor no llega: `api` caída o lenta (el sitio degrada al genérico a propósito) o `index.html` sin pasar por `templates` | `curl -s https://<dominio>/<slug> \| grep og:title` · § 9.5 |
+| `canonical` u `og:image` apuntan a `localhost` | `FRONTEND_URL` de `api` sin el dominio público | § 9.5 |
+| El HTML responde 500 | un error dentro del template de `index.html`: se tocó una acción `<!--# … -->` o se quitó el `handle_errors` del `Caddyfile` | `frontend/Caddyfile` |
 
 ## Nunca
 
