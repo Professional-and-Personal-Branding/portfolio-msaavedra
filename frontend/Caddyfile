@@ -66,6 +66,20 @@
 			between <!--# -->
 		}
 		file_server
+
+		# CSP del sitio (change `polish-builder-and-edge`, D7). Solo en este bloque:
+		# lo que pasa por el proxy (@backend, @head) no la recibe desde el borde.
+		# - script-src 'self' sin 'unsafe-inline': el build no deja scripts inline. El
+		#   JSON-LD es un data block (type="application/ld+json"): no se ejecuta y
+		#   script-src no se le aplica, así que no necesita hash ni nonce.
+		# - style-src 'unsafe-inline': `sonner` inserta un <style> y no admite nonce
+		#   (el riesgo residual es inyección de CSS, no de script); más la hoja de
+		#   Google Fonts, cuyos archivos salen de fonts.gstatic.com.
+		# - Sin upgrade-insecure-requests: Railway termina el TLS en el borde y, en
+		#   local por http, esa directiva rompería la carga de los propios assets.
+		# El nombre de la cabecera sale de CSP_HEADER: con
+		# `Content-Security-Policy-Report-Only` la política solo reporta, sin rebuild.
+		header {$CSP_HEADER:Content-Security-Policy} "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 	}
 
 	# Degradación: si la API no responde a tiempo o rechaza la conexión, el

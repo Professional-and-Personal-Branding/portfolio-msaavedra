@@ -59,6 +59,8 @@ FRONTEND_URL=https://PENDIENTE
 
 `FRONTEND_URL` se completa en el paso 5, cuando exista el dominio. `ENABLE_API_DOCS` **no se define** (Swagger queda cerrado).
 
+- [ ] Variables → agregar `RAILWAY_DEPLOYMENT_DRAINING_SECONDS=10` (recomendado). La API espera hasta 5 s a registrar las visitas en vuelo al apagarse; si Railway espera menos, esas visitas se pierden. Confirmá primero el valor que tiene hoy el servicio y que quede **por encima de 5**.
+
 - [ ] Deploy. El `preDeployCommand` corre `prisma migrate deploy`; el healthcheck `/health` decide si la versión entra. Si la migración falla, el despliegue se detiene y la versión vieja sigue sirviendo.
 - [ ] Settings → Networking → **Generate Domain** (opcional pero útil: sirve para verificar la API cruda en el paso 6).
 
@@ -88,11 +90,15 @@ railway run npm run admin:bootstrap
 ```ini
 API_ORIGIN=http://api.railway.internal:8080
 VITE_API_URL=
+# Opcional. Sin definir, la CSP del sitio bloquea. Para solo reportar:
+# CSP_HEADER=Content-Security-Policy-Report-Only
 ```
 
 `API_ORIGIN` usa el **nombre del servicio `api`** tal como figura en el canvas. `VITE_API_URL` va vacía a propósito: el cliente usa rutas relativas que resuelve el proxy.
 
 `web` también inserta el head de cada perfil en el HTML inicial, pidiéndolo a `api` con un presupuesto de 500 ms; si `api` no responde, el sitio carga igual con el head genérico. No hace falta ninguna variable más, pero el `FRONTEND_URL` de `api` tiene que ser el dominio público: de ahí salen el `canonical` y la `og:image` (§ 9.5).
+
+`web` sirve el sitio con una **Content-Security-Policy** que bloquea lo que no sea del propio origen (más Google Fonts). Si tras un deploy algo deja de cargar, poné `CSP_HEADER=Content-Security-Policy-Report-Only` en `web`, redesplegá y mirá la consola; el detalle está en el § 9.5.
 
 - [ ] Deploy.
 

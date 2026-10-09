@@ -207,3 +207,45 @@ describe('FormacionPage', () => {
     expect(called).toBe(false);
   });
 });
+
+describe('FormacionPage — aviso al descartar', () => {
+  const PROMPT = 'Tenés cambios sin guardar';
+
+  it('formación: volver al valor original cierra sin aviso; un cambio real avisa', async () => {
+    server.use(...adminHandlers);
+    const user = userEvent.setup();
+    await openPage();
+    await user.click(screen.getByRole('button', { name: 'Editar Ingeniería de Sistemas' }));
+
+    const institution = screen.getByLabelText('Institución *');
+    const original = (institution as HTMLInputElement).value;
+    await user.type(institution, 'X');
+    await user.keyboard('{Backspace}');
+    expect(institution).toHaveValue(original);
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.queryByText(PROMPT)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Editar Ingeniería de Sistemas' }));
+    await user.type(screen.getByLabelText('Institución *'), 'X');
+    await user.keyboard('{Escape}');
+    expect(await screen.findByText(PROMPT)).toBeInTheDocument();
+  });
+
+  it('certificación: sin cambios Cancelar cierra directo; con cambios avisa y Seguir editando conserva', async () => {
+    server.use(...adminHandlers);
+    const user = userEvent.setup();
+    await openPage();
+    await user.click(screen.getByRole('button', { name: 'Editar Scrum Master' }));
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.queryByText(PROMPT)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Editar Scrum Master' }));
+    await user.click(screen.getByLabelText('Visible en el sitio'));
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(await screen.findByText(PROMPT)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Seguir editando' }));
+    expect(screen.getByLabelText('Visible en el sitio')).not.toBeChecked();
+  });
+});

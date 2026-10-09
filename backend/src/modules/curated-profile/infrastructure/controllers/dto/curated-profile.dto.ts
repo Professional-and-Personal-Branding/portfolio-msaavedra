@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { ACCENT_COLOR_DEPRECATED } from '../docs/accent-color-deprecated';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -83,7 +84,12 @@ export class CreateCuratedProfileDto {
   @IsString({ each: true })
   excludeIds?: string[];
 
-  @ApiPropertyOptional({ default: '#1A365D', example: '#5B2C87' })
+  @ApiPropertyOptional({
+    default: '#1A365D',
+    example: '#5B2C87',
+    deprecated: true,
+    description: ACCENT_COLOR_DEPRECATED,
+  })
   @IsOptional()
   @Matches(HEX_COLOR_REGEX, { message: 'accentColor must be #RRGGBB' })
   accentColor?: string;

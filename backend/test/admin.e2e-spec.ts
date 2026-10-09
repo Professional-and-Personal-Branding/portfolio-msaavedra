@@ -13,6 +13,7 @@ import {
   createTestApp,
   deleteE2eAdmin,
   login,
+  settleBackgroundTasks,
 } from './e2e-helpers';
 
 interface CvData {
@@ -460,6 +461,7 @@ describe('Backoffice (e2e)', () => {
 
       const res = await get('/api/curated-profiles/all?locale=en').set('User-Agent', 'TestUA');
       expect(res.status).toBe(200);
+      await settleBackgroundTasks(app);
 
       const countAfter = await prisma.profileView.count({
         where: { curatedProfileId: profile.id },
@@ -492,6 +494,7 @@ describe('Backoffice (e2e)', () => {
       try {
         expect((await get('/api/curated-profiles/dotnet-backend')).status).toBe(401);
         expect((await get('/api/curated-profiles/no-existe')).status).toBe(404);
+        await settleBackgroundTasks(app);
         expect(await prisma.profileView.count()).toBe(before);
       } finally {
         await prisma.curatedProfile.update({
@@ -504,6 +507,7 @@ describe('Backoffice (e2e)', () => {
     it('GET /api/admin/analytics/views agrega por perfil, idioma y día; valida rango', async () => {
       await get('/api/curated-profiles/all?locale=es');
       await get('/api/curated-profiles/all?locale=es');
+      await settleBackgroundTasks(app);
       const res = await adminGet('/api/admin/analytics/views');
       expect(res.status).toBe(200);
       expect(res.body.total).toBeGreaterThanOrEqual(3);
@@ -530,6 +534,7 @@ describe('Backoffice (e2e)', () => {
         .total as number;
 
       await get('/api/curated-profiles/all?locale=es');
+      await settleBackgroundTasks(app);
 
       const res = await adminGet(`/api/admin/analytics/views?from=${hoy}&to=${hoy}`);
       expect(res.status).toBe(200);

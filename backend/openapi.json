@@ -4698,7 +4698,9 @@
           },
           "accentColor": {
             "type": "string",
-            "example": "#5B2C87"
+            "example": "#5B2C87",
+            "deprecated": true,
+            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
           },
           "layout": {
             "type": "string",
@@ -4990,7 +4992,9 @@
           },
           "accentColor": {
             "type": "string",
-            "example": "#5B2C87"
+            "example": "#5B2C87",
+            "deprecated": true,
+            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
           },
           "layout": {
             "type": "string",
@@ -5186,7 +5190,9 @@
           "accentColor": {
             "type": "string",
             "default": "#1A365D",
-            "example": "#5B2C87"
+            "example": "#5B2C87",
+            "deprecated": true,
+            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
           },
           "themeId": {
             "type": "string",
@@ -5302,7 +5308,9 @@
           },
           "accentColor": {
             "type": "string",
-            "example": "#5B2C87"
+            "example": "#5B2C87",
+            "deprecated": true,
+            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
           },
           "layout": {
             "type": "string",
@@ -5484,7 +5492,9 @@
           },
           "accentColor": {
             "type": "string",
-            "example": "#5B2C87"
+            "example": "#5B2C87",
+            "deprecated": true,
+            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
           },
           "themeId": {
             "type": "string",
@@ -5636,7 +5646,9 @@
           "accentColor": {
             "type": "string",
             "default": "#1A365D",
-            "example": "#5B2C87"
+            "example": "#5B2C87",
+            "deprecated": true,
+            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
           },
           "themeId": {
             "type": "string",
@@ -5757,7 +5769,9 @@
           "accentColor": {
             "type": "string",
             "default": "#1A365D",
-            "example": "#5B2C87"
+            "example": "#5B2C87",
+            "deprecated": true,
+            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
           },
           "themeId": {
             "type": "string",

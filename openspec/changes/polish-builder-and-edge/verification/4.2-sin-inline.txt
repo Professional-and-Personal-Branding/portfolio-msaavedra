@@ -1,0 +1,6 @@
+$ grep -c "<script" dist/index.html / scripts sin src
+<script type="module" crossorigin src="/assets/index-BkV6APAV.js">
+--- scripts sin src:
+0
+--- inline handlers (on*=):
+0

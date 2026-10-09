@@ -11,6 +11,7 @@ import { GLOBAL_PREFIX, PREFIX_EXCLUDED_ROUTES } from '../src/app.constants';
 import { AppModule } from '../src/app.module';
 import { Argon2PasswordHasher } from '../src/modules/auth/infrastructure/security/argon2-password-hasher';
 import { SESSION_COOKIE_NAME } from '../src/modules/auth/infrastructure/security/session-cookie';
+import { BACKGROUND_TASKS, BackgroundTasks } from '../src/shared/application/background-tasks';
 import { buildCorsOptions } from '../src/shared/infrastructure/http/cors.options';
 import { requestIdMiddleware } from '../src/shared/infrastructure/http/request-id';
 import { buildHelmet, httpsRedirect } from '../src/shared/infrastructure/http/security.middleware';
@@ -84,6 +85,15 @@ export async function createHardenedTestApp(
     process.env.THROTTLE_LOGIN_LIMIT = previous.loginLimit;
     process.env.FRONTEND_URL = previous.frontendUrl;
   }
+}
+
+/**
+ * Espera a que terminen las tareas en segundo plano (el registro de visitas ya
+ * no forma parte de la respuesta). Llamarlo antes de leer `ProfileView` o
+ * `views`, también al comprobar que NO se registró nada. Nunca usar `sleep`.
+ */
+export async function settleBackgroundTasks(app: INestApplication): Promise<void> {
+  await app.get<BackgroundTasks>(BACKGROUND_TASKS).whenIdle();
 }
 
 export async function createE2eAdmin(

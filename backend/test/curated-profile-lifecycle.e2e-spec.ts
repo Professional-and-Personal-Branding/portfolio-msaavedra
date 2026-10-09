@@ -7,7 +7,14 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { PrismaService } from '../src/shared/infrastructure/persistence/prisma.service';
-import { createE2eAdmin, createTestApp, deleteE2eAdmin, FRONTEND_URL, login } from './e2e-helpers';
+import {
+  createE2eAdmin,
+  createTestApp,
+  deleteE2eAdmin,
+  FRONTEND_URL,
+  login,
+  settleBackgroundTasks,
+} from './e2e-helpers';
 
 const PREFIX = 'lc-e2e';
 
@@ -82,6 +89,7 @@ describe('Ciclo de vida de perfiles curados (e2e)', () => {
         themeOverrides: { colors: { accent: '#5B2C87' } },
       });
       expect((await get(`/api/curated-profiles/${PREFIX}-dup-2`)).status).toBe(404);
+      await settleBackgroundTasks(app);
       expect(await prisma.profileView.count({ where: { curatedProfileId: res.body.id } })).toBe(0);
 
       const original = await prisma.curatedProfile.findUniqueOrThrow({ where: { id } });
@@ -115,6 +123,7 @@ describe('Ciclo de vida de perfiles curados (e2e)', () => {
       const antes = await get(`/api/curated-profiles/${slug}`);
       expect(antes.status).toBe(200);
       await get(`/api/curated-profiles/${slug}`);
+      await settleBackgroundTasks(app);
       const visitas = await prisma.profileView.count({ where: { curatedProfileId: id } });
       expect(visitas).toBe(2);
 
@@ -124,6 +133,7 @@ describe('Ciclo de vida de perfiles curados (e2e)', () => {
 
       const res = await get(`/api/curated-profiles/${slug}`);
       expect(res.status).toBe(404);
+      await settleBackgroundTasks(app);
       // Mismo 404 que un slug que nunca existió: solo cambia el slug nombrado.
       const inexistente = await get(`/api/curated-profiles/${PREFIX}-nada`);
       expect(res.body.statusCode).toBe(inexistente.body.statusCode);

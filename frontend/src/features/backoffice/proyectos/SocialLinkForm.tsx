@@ -12,9 +12,12 @@ import { Label } from '@/shared/components/ui/label';
 import { Switch } from '@/shared/components/ui/switch';
 import { Textarea } from '@/shared/components/ui/textarea';
 import type { CreateSocialLinkBody } from '../shared/admin-types';
+import { UnsavedChangesPrompt } from '../shared/UnsavedChangesPrompt';
+import { useDialogDiscardGuard } from '../shared/use-dialog-discard-guard';
 import { LocalizedField } from '../shared/fields/LocalizedField';
 import {
   EMPTY_SOCIAL_LINK,
+  isSocialLinkDirty,
   toSocialLinkBody,
   validateSocialLink,
   type SocialLinkFormValues,
@@ -37,7 +40,12 @@ export function SocialLinkForm({
   onOpenChange,
 }: SocialLinkFormProps) {
   const [values, setValues] = useState<SocialLinkFormValues>(initialValues ?? EMPTY_SOCIAL_LINK);
+  const [initial] = useState<SocialLinkFormValues>(initialValues ?? EMPTY_SOCIAL_LINK);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const guard = useDialogDiscardGuard({
+    dirty: isSocialLinkDirty(values, initial),
+    onClose: () => onOpenChange(false),
+  });
 
   const set = <K extends keyof SocialLinkFormValues>(key: K, value: SocialLinkFormValues[K]) =>
     setValues((current) => ({ ...current, [key]: value }));
@@ -51,7 +59,7 @@ export function SocialLinkForm({
   };
 
   return (
-    <Dialog open onOpenChange={onOpenChange}>
+    <Dialog open onOpenChange={(next) => !next && guard.requestClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -165,7 +173,7 @@ export function SocialLinkForm({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={guard.requestClose}>
               Cancelar
             </Button>
             <Button type="submit" disabled={saving}>
@@ -173,6 +181,7 @@ export function SocialLinkForm({
             </Button>
           </DialogFooter>
         </form>
+        <UnsavedChangesPrompt {...guard.promptProps} />
       </DialogContent>
     </Dialog>
   );

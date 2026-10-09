@@ -347,6 +347,7 @@ Se agrega desde el canvas del proyecto (New → Database → PostgreSQL).
 | Builder | **no tocar**: `frontend/railway.json` ya dice `DOCKERFILE` |
 | Variable `API_ORIGIN` | `http://api.railway.internal:8080` (el nombre del servicio `api`, tal como figura en el canvas) |
 | Variable `VITE_API_URL` | **vacía** |
+| Variable `CSP_HEADER` | opcional; sin definir, la CSP **bloquea** (ver *Content-Security-Policy* más abajo) |
 | Networking | acá va el dominio propio: es el que ve el navegador |
 
 El `Caddyfile` escucha en `:{$PORT}` —Railway inyecta `PORT`— y reparte así:
@@ -362,6 +363,14 @@ El `Caddyfile` escucha en `:{$PORT}` —Railway inyecta `PORT`— y reparte así
 - **Costo:** una petición más por carga de HTML; medido en local, el p95 sube unos 8 ms.
 - **No hay variable nueva.** Usa `API_ORIGIN`, y las URLs absolutas del fragmento (`canonical`, `og:image`) salen del `FRONTEND_URL` del servicio `api`, que tiene que ser el dominio público del sitio.
 - Un perfil `PROTECTED` o `PRIVATE` emite `robots: noindex, nofollow` en el HTML inicial y nunca sus textos, ni siquiera con `?token=`.
+
+**Content-Security-Policy del sitio** (change `polish-builder-and-edge`). Caddy la agrega a las respuestas que sirve él (el HTML y los estáticos); las que pasan por el proxy hacia la API no la reciben. El valor por defecto es `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'` (`frontend/Caddyfile`). Sin `'unsafe-inline'` en `script-src`: el JSON-LD del head es un bloque de datos y no se ejecuta.
+
+- **Variable `CSP_HEADER`** (servicio `web`, opcional). Es el *nombre* de la cabecera. Sin definir vale `Content-Security-Policy` y la política bloquea. Con `CSP_HEADER=Content-Security-Policy-Report-Only` la misma política solo reporta (el navegador deja pasar todo y anota las violaciones en la consola). Cambiarla es redesplegar `web`; no reconstruye la imagen.
+- **Si algo deja de cargar** tras un deploy (una fuente, un tema nuevo), pasá a `Report-Only`, abrí la consola, agregá el origen que falte al `Caddyfile` y volvé a `Content-Security-Policy`.
+- Si un tema agrega una familia que no está en Google Fonts, `fonts.ts` no la pide: la política no cambia eso.
+
+**Apagado de la API y visitas en vuelo.** La visita se registra en segundo plano, fuera del camino de la respuesta; al recibir `SIGTERM`, la API espera hasta **5 s** a que terminen las que quedan en vuelo (`drain`) y recién entonces cierra. **Recomendación (P3, no bloquea):** confirmar el valor actual de `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` en el servicio `api` y fijarlo **por encima de ese tope de 5 s**, por ejemplo en `10`. Si queda por debajo, Railway envía `SIGKILL` antes de que termine el drenaje y se pierden las visitas en vuelo (quedan solo en el log).
 
 Caddy preserva el `Host` original al hacer proxy, así que la cookie de sesión queda ligada al dominio del sitio, que es justamente lo que permite `SameSite=strict`.
 

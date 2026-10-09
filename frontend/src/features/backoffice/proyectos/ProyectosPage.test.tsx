@@ -187,3 +187,56 @@ describe('ProyectosPage', () => {
     expect(await screen.findByText('Enlace borrado')).toBeInTheDocument();
   });
 });
+
+describe('ProyectosPage — aviso al descartar', () => {
+  const PROMPT = 'Tenés cambios sin guardar';
+
+  it('proyecto: espacios al borde no ensucian; un cambio real avisa', async () => {
+    server.use(...adminHandlers);
+    const user = userEvent.setup();
+    await openPage();
+    await user.click(screen.getByRole('button', { name: 'Editar Portafolio Administrable' }));
+
+    await user.type(screen.getByLabelText('Nombre *'), ' ');
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.queryByText(PROMPT)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Editar Portafolio Administrable' }));
+    await user.type(screen.getByLabelText('Nombre *'), ' 2');
+    await user.keyboard('{Escape}');
+    expect(await screen.findByText(PROMPT)).toBeInTheDocument();
+  });
+
+  it('enlace social: un guardado fallido (400) deja el formulario con cambios', async () => {
+    server.use(
+      http.patch(`${API}/admin/social-links/:id`, () =>
+        HttpResponse.json({ message: 'inválido' }, { status: 400 }),
+      ),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openPage();
+    await user.click(screen.getByRole('button', { name: 'Editar enlace GitHub' }));
+    const dialog = await screen.findByRole('dialog');
+    await user.type(within(dialog).getByLabelText('Usuario *'), 'x');
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar' }));
+    await waitFor(() =>
+      expect(within(dialog).getByRole('button', { name: 'Guardar' })).toBeEnabled(),
+    );
+    await user.keyboard('{Escape}');
+    expect(await screen.findByText(PROMPT)).toBeInTheDocument();
+  });
+
+  it('enlace social: un JSON inválido en stats cuenta como cambio', async () => {
+    server.use(...adminHandlers);
+    const user = userEvent.setup();
+    await openPage();
+    await user.click(screen.getByRole('button', { name: 'Nuevo enlace' }));
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByLabelText('Estadísticas (JSON)'));
+    await user.paste('{');
+    await user.keyboard('{Escape}');
+    expect(await screen.findByText(PROMPT)).toBeInTheDocument();
+  });
+});

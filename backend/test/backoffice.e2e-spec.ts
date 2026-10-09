@@ -6,7 +6,14 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { PrismaService } from '../src/shared/infrastructure/persistence/prisma.service';
-import { createE2eAdmin, createTestApp, deleteE2eAdmin, login, loginCookie } from './e2e-helpers';
+import {
+  createE2eAdmin,
+  createTestApp,
+  deleteE2eAdmin,
+  login,
+  loginCookie,
+  settleBackgroundTasks,
+} from './e2e-helpers';
 
 const SLUG = 'tech-lead-dotnet';
 
@@ -188,6 +195,7 @@ describe('Backoffice: preview y catálogo de temas (e2e)', () => {
       });
 
       await preview().send(draftOf(profile));
+      await settleBackgroundTasks(app);
 
       const row = await prisma.curatedProfile.findUniqueOrThrow({ where: { id: profile.id } });
       const viewsAfter = await prisma.profileView.count({

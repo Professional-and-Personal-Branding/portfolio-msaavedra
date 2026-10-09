@@ -25,7 +25,7 @@ export class PrismaProfileRepository implements ProfileRepository {
 
   async findOne(): Promise<Profile | null> {
     const record = await this.prisma.profile.findFirst({
-      include: { languages: true },
+      include: { languages: { orderBy: { id: 'asc' } } },
       orderBy: { createdAt: 'asc' },
     });
     return record ? toProfileEntity(record) : null;
@@ -36,7 +36,7 @@ export class PrismaProfileRepository implements ProfileRepository {
       const record = await this.prisma.profile.update({
         where: { id: profile.id },
         data: toProfileData(profile.content()),
-        include: { languages: true },
+        include: { languages: { orderBy: { id: 'asc' } } },
       });
       return toProfileEntity(record);
     } catch (error) {

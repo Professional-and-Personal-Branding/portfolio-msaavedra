@@ -1,0 +1,10 @@
+3.9 — p95 de GET /api/curated-profiles/all?locale=es (2026-10-08)
+
+Método: 10 peticiones de calentamiento y 100 medidas, en serie, desde Node (fetch) contra la API local en 3300 y la base local 'portfolio'.
+Cada petición registra una visita (User-Agent latency-probe-3.9); al terminar se borraron las 220 y se descontó el contador de 'all'.
+
+{"label":"antes-main","n":100,"p50":"15.6","p95":"22.0","p99":"30.3","max":"30.6"}
+{"label":"despues-rama","n":100,"p50":"15.3","p95":"21.4","p99":"23.5","max":"24.8"}
+
+Las 220 visitas de prueba quedaron registradas (110 por corrida): la escritura en segundo plano no perdió ninguna.
+Con Postgres local la escritura cuesta pocos milisegundos, así que la mejora es chica en p50/p95 y se nota en la cola (p99 30.3 -> 23.5 ms). En producción, con la base por red, la diferencia debería ser mayor.

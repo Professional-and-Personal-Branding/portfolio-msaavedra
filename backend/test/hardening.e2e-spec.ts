@@ -13,6 +13,7 @@ import {
   deleteE2eAdmin,
   E2E_ADMIN,
   FRONTEND_URL,
+  settleBackgroundTasks,
 } from './e2e-helpers';
 
 describe('Hardening de producción (e2e)', () => {
@@ -295,6 +296,7 @@ describe('Hardening de producción (e2e)', () => {
     it('no registra visitas', async () => {
       const antes = await prisma.profileView.count();
       await head('slug=tech-lead-dotnet');
+      await settleBackgroundTasks(app);
       expect(await prisma.profileView.count()).toBe(antes);
     });
   });

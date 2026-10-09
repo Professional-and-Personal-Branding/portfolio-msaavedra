@@ -28,7 +28,9 @@ describe('validateDraft', () => {
     expect(validateDraft(draft({ slug: 'No Kebab' })).slug).toMatch(/kebab-case/);
     expect(validateDraft(draft({ title: { es: '  ', en: 'x' } })).title).toBeDefined();
     expect(validateDraft(draft({ headline: { es: '', en: '' } })).headline).toBeUndefined();
-    expect(validateDraft(draft({ headline: { es: '', en: 'Only english' } })).headline).toBeDefined();
+    expect(
+      validateDraft(draft({ headline: { es: '', en: 'Only english' } })).headline,
+    ).toBeDefined();
   });
 
   it('un perfil PROTECTED necesita token; los demás no', () => {
@@ -58,6 +60,15 @@ describe('toProfileBody', () => {
   });
 });
 
+describe('toProfileBody (D9)', () => {
+  it('no incluye accentColor (D9)', () => {
+    expect(toProfileBody(draft())).not.toHaveProperty('accentColor');
+    expect(
+      toProfileBody(toDraft(makeAdminCuratedProfile({ accentColor: '#5B2C87' }))),
+    ).not.toHaveProperty('accentColor');
+  });
+});
+
 describe('previewKey', () => {
   it('cambia con los criterios de selección', () => {
     const base = previewKey(draft());
@@ -70,7 +81,6 @@ describe('previewKey', () => {
   it('no cambia con los tokens del tema (los aplica el cliente)', () => {
     const base = previewKey(draft());
     expect(previewKey(draft({ themeOverrides: { colors: { accent: '#f00' } } }))).toBe(base);
-    expect(previewKey(draft({ accentColor: '#00ff00' }))).toBe(base);
   });
 
   it('no depende del orden en que se agregaron los tags', () => {

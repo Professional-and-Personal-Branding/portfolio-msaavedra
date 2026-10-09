@@ -266,6 +266,9 @@
     <a href="#tc25"><span class="dot ok"></span><span class="id">TC-25</span> Portada</a>
     <a href="#tc26"><span class="dot ok"></span><span class="id">TC-26</span> Formación</a>
     <a href="#tc27"><span class="dot ok"></span><span class="id">TC-27</span> Proyectos</a>
+    <a href="#tc28"><span class="dot ok"></span><span class="id">TC-28</span> Aviso en el constructor</a>
+    <a href="#tc29"><span class="dot ok"></span><span class="id">TC-29</span> Aviso en la Portada</a>
+    <a href="#tc30"><span class="dot ok"></span><span class="id">TC-30</span> Aviso en diálogos</a>
     <h3>Cierre</h3>
     <a href="#defectos"><span class="dot ok"></span><span class="id">§6</span> Defectos</a>
     <a href="#noadmin"><span class="id">§7</span> El seed</a>
@@ -373,13 +376,13 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
       <p class="lede">5 de octubre de 2026, contra la base del seed: 14 perfiles curados y 15 experiencias.</p>
 
       <div class="stats">
-        <div class="stat"><b>27</b><span>casos</span></div>
-        <div class="stat ok"><b>27</b><span>pasan</span></div>
+        <div class="stat"><b>30</b><span>casos</span></div>
+        <div class="stat ok"><b>30</b><span>pasan</span></div>
         <div class="stat"><b>2</b><span>defectos corregidos</span></div>
-        <div class="stat"><b>23</b><span>capturas</span></div>
+        <div class="stat"><b>26</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Los 27 casos pasan.</b> TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Los 30 casos pasan.</b> TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -766,6 +769,39 @@ DELETE enlace social               -> 204 y sale de /api/social-links
 POST enlace con stats=[1,2]        -> 400</pre></div>
         <figure class="shot" id="img-tc27-proyectos"><img src="tc27-proyectos.jpg" width="560" height="426" alt="Proyectos y enlaces sociales en el panel"><figcaption>Los dos proyectos del seed, todavía sin enlace.</figcaption></figure>
       </article>
+
+      <article class="case" data-status="ok" id="tc28">
+        <div class="case-head"><span class="case-id">TC-28</span><h3>El constructor avisa antes de descartar cambios</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc28"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · <code>/admin/perfiles/:id</code>. Editar el <b>Título</b> de la pestaña Identidad y pulsar <b>Volver</b> (o un enlace del menú lateral, o <i>Atrás</i>): aparece <i>Tenés cambios sin guardar</i> y la página no se mueve. <b>Seguir editando</b> conserva lo escrito; <b>Salir sin guardar</b> navega y descarta. Recargar o cerrar la pestaña con cambios dispara el aviso nativo del navegador.</p>
+        <p><span class="lbl">Esperado</span> · Escribir y borrar el mismo carácter, o un espacio final, vuelve a «limpio». Cambiar solo el idioma del preview o archivar el perfil no cuentan como cambio. Un perfil nuevo sin tocar sale sin diálogo y un guardado exitoso deja la ficha limpia.</p>
+        <p><span class="lbl">Observado</span></p>
+        <div class="codewrap"><pre>Título de tech-lead-dotnet editado -> Volver abre el aviso, sigue en /admin/perfiles/:id
+Salir sin guardar                  -> /admin/perfiles, el título guardado sigue "Tech Lead .NET"</pre></div>
+        <figure class="shot" id="img-tc28-constructor-con-cambios"><img src="tc28-constructor-con-cambios.jpg" width="742" height="586" alt="El constructor con el aviso de cambios sin guardar"><figcaption>El aviso aparece sobre el constructor sin salir de la página.</figcaption></figure>
+        <div class="note">El aviso nativo de <code>beforeunload</code> lo dibuja el navegador y no se capturó en la app real: lo cubren los tests del guardián y de <code>ProfileBuilderPage</code>.</div>
+      </article>
+
+      <article class="case" data-status="ok" id="tc29">
+        <div class="case-head"><span class="case-id">TC-29</span><h3>La Portada avisa; cambiar el idioma no</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc29"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · <code>/admin/portada</code>. Con el formulario en <i>Cambios sin guardar</i> (por ejemplo, un titular editado), elegir <i>Experiencias</i> en el menú lateral: aparece el mismo aviso que en el constructor, con <i>Seguir editando</i> / <i>Salir sin guardar</i>.</p>
+        <p><span class="lbl">Esperado</span> · Cambiar el idioma de la vista previa (<code>?lang=</code>) con cambios pendientes no pide confirmación, porque solo cambia la query. <b>Guardar portada</b> deja la página limpia.</p>
+        <p><span class="lbl">Observado</span> · Se editó la Ubicación: cambiar el idioma de la vista previa (EN y de vuelta a ES) no abrió el aviso y la edición se conservó. Ir a Skills desde el menú lateral abrió «Tenés cambios sin guardar»; <i>Salir sin guardar</i> llevó a <code>/admin/skills</code> y la ubicación guardada siguió «Santa Cruz de la Sierra, Bolivia».</p>
+        <figure class="shot" id="img-tc29-portada-con-cambios"><img src="tc29-portada-con-cambios.jpg" width="742" height="586" alt="La Portada con el aviso de cambios sin guardar"><figcaption>El aviso de la Portada es el mismo que el del constructor.</figcaption></figure>
+      </article>
+
+      <article class="case" data-status="ok" id="tc30">
+        <div class="case-head"><span class="case-id">TC-30</span><h3>Los formularios en diálogo avisan antes de descartar</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc30"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · Cualquier formulario en diálogo: experiencia, categoría y skill, formación y certificación, proyecto, enlace social e idioma. Ejemplo: <code>/admin/skills</code> → <b>Nueva categoría</b>, escribir un nombre y cerrar con <b>Escape</b>, un clic fuera, la X o <b>Cancelar</b>.</p>
+        <p><span class="lbl">Esperado</span> · Aparece <i>Tenés cambios sin guardar</i> («Si lo cerrás ahora, se descartan los cambios de este formulario.») con el formulario abierto detrás. <b>Seguir editando</b> conserva los valores; <b>Descartar</b> cierra sin crear nada. Sin cambios cierra directo y guardar con éxito cierra sin aviso. Con cambios, recargar dispara el aviso nativo.</p>
+        <p><span class="lbl">Observado</span></p>
+        <div class="codewrap"><pre>Skills > Nueva categoría > nombre escrito > Escape -> aviso con el formulario abierto detrás
+Descartar                                          -> cierra, la categoría no se crea</pre></div>
+        <figure class="shot" id="img-tc30-dialogo-con-cambios"><img src="tc30-dialogo-con-cambios.jpg" width="742" height="586" alt="Aviso al cerrar el formulario de categoría con cambios"><figcaption>El aviso se monta sobre el formulario, que sigue abierto.</figcaption></figure>
+        <div class="note"><i>Atrás</i> del navegador con un diálogo abierto no tiene aviso propio (decisión D11). En la app real se probó <i>Escape</i>; clic fuera, X y <i>Cancelar</i> los cubren los tests del guardián y de cada página.</div>
+      </article>
     </section>
 
     <!-- ───────────── Defectos ───────────── -->
@@ -830,6 +866,8 @@ curl -sD - $API/api/curated-profiles/no-existe -o /dev/null | grep -i x-request-
           <tr><td>Un perfil quedó mal publicado</td><td>pasalo a <code>PRIVATE</code> (404 al instante) y arreglalo con calma</td></tr>
           <tr><td>Perdiste datos</td><td>restaurá del backup, § 7 de <code>DEPLOY.md</code></td></tr>
           <tr><td>Deploy roto</td><td>Rollback en Deployments, dentro de las 72 h del plan Hobby</td></tr>
+          <tr><td>El sitio dejó de cargar algo (fuente, script) tras un deploy</td><td>La CSP del servicio <code>web</code> lo bloquea. Probá con <code>CSP_HEADER=Content-Security-Policy-Report-Only</code> en <code>web</code> (solo reporta, sin reconstruir) y mirá la consola. Detalle en <code>DEPLOY.md</code> § 9.5</td></tr>
+          <tr><td>Una visita no suma justo después de un deploy</td><td>La visita se registra en segundo plano y el apagado espera hasta 5 s; confirmá que <code>RAILWAY_DEPLOYMENT_DRAINING_SECONDS</code> del servicio <code>api</code> esté por encima (p. ej. 10)</td></tr>
         </tbody>
       </table></div>
     </section>

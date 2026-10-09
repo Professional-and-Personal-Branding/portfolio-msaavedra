@@ -13,6 +13,8 @@ import { Label } from '@/shared/components/ui/label';
 import { Switch } from '@/shared/components/ui/switch';
 import type { CreateCertificationBody, CreateEducationBody } from '../shared/admin-types';
 import { LocalizedField } from '../shared/fields/LocalizedField';
+import { UnsavedChangesPrompt } from '../shared/UnsavedChangesPrompt';
+import { useDialogDiscardGuard, type DialogDiscardGuard } from '../shared/use-dialog-discard-guard';
 import {
   certificationSchema,
   educationSchema,
@@ -47,7 +49,12 @@ export function EducationForm({
   onOpenChange,
 }: DialogFormProps<EducationFormValues, CreateEducationBody>) {
   const [values, setValues] = useState<EducationFormValues>(initialValues ?? EMPTY_EDUCATION);
+  const [initial] = useState<EducationFormValues>(initialValues ?? EMPTY_EDUCATION);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const guard = useDialogDiscardGuard({
+    dirty: JSON.stringify(toEducationBody(values)) !== JSON.stringify(toEducationBody(initial)),
+    onClose: () => onOpenChange(false),
+  });
 
   const set = <K extends keyof EducationFormValues>(key: K, value: EducationFormValues[K]) =>
     setValues((current) => ({ ...current, [key]: value }));
@@ -61,7 +68,7 @@ export function EducationForm({
   };
 
   return (
-    <FormDialog open={open} title={title} onOpenChange={onOpenChange}>
+    <FormDialog open={open} title={title} guard={guard}>
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <LocalizedField
           label="Título"
@@ -125,7 +132,7 @@ export function EducationForm({
             onChange={(checked) => set('visible', checked)}
           />
         </div>
-        <FormFooter saving={saving} onCancel={() => onOpenChange(false)} />
+        <FormFooter saving={saving} onCancel={guard.requestClose} />
       </form>
     </FormDialog>
   );
@@ -143,7 +150,13 @@ export function CertificationForm({
   const [values, setValues] = useState<CertificationFormValues>(
     initialValues ?? EMPTY_CERTIFICATION,
   );
+  const [initial] = useState<CertificationFormValues>(initialValues ?? EMPTY_CERTIFICATION);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const guard = useDialogDiscardGuard({
+    dirty:
+      JSON.stringify(toCertificationBody(values)) !== JSON.stringify(toCertificationBody(initial)),
+    onClose: () => onOpenChange(false),
+  });
 
   const set = <K extends keyof CertificationFormValues>(
     key: K,
@@ -159,7 +172,7 @@ export function CertificationForm({
   };
 
   return (
-    <FormDialog open={open} title={title} onOpenChange={onOpenChange}>
+    <FormDialog open={open} title={title} guard={guard}>
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <LocalizedField
           label="Nombre"
@@ -199,7 +212,7 @@ export function CertificationForm({
           checked={values.visible}
           onChange={(checked) => set('visible', checked)}
         />
-        <FormFooter saving={saving} onCancel={() => onOpenChange(false)} />
+        <FormFooter saving={saving} onCancel={guard.requestClose} />
       </form>
     </FormDialog>
   );
@@ -209,22 +222,23 @@ export function CertificationForm({
 function FormDialog({
   open,
   title,
-  onOpenChange,
+  guard,
   children,
 }: {
   open: boolean;
   title: string;
-  onOpenChange: (open: boolean) => void;
+  guard: DialogDiscardGuard;
   children: ReactNode;
 }) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(next) => !next && guard.requestClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{DESCRIPTION}</DialogDescription>
         </DialogHeader>
         {children}
+        <UnsavedChangesPrompt {...guard.promptProps} />
       </DialogContent>
     </Dialog>
   );

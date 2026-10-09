@@ -19,7 +19,6 @@ export interface ProfileDraft {
   filterTags: string[];
   includeIds: string[];
   excludeIds: string[];
-  accentColor: string;
   themeId: string | null;
   themeOverrides: Record<string, unknown> | null;
   layout: string;
@@ -44,7 +43,6 @@ export const EMPTY_DRAFT: ProfileDraft = {
   filterTags: [],
   includeIds: [],
   excludeIds: [],
-  accentColor: '#1A365D',
   themeId: null,
   themeOverrides: null,
   layout: 'classic',
@@ -66,7 +64,6 @@ export function toDraft(profile: AdminCuratedProfile): ProfileDraft {
     filterTags: [...profile.filterTags],
     includeIds: [...profile.includeIds],
     excludeIds: [...profile.excludeIds],
-    accentColor: profile.accentColor,
     themeId: profile.themeId,
     themeOverrides: (profile.themeOverrides as Record<string, unknown> | null) ?? null,
     layout: profile.layout,
@@ -96,7 +93,6 @@ export function toProfileBody(draft: ProfileDraft): CreateCuratedProfileBody {
     filterTags: draft.filterTags,
     includeIds: draft.includeIds,
     excludeIds: draft.excludeIds,
-    accentColor: draft.accentColor,
     themeId: draft.themeId,
     themeOverrides: draft.themeOverrides,
     layout: draft.layout,

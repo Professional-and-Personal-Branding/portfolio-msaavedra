@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 6b09e22765fa77835aa9720afbde043fbc180a1a288ec73d6ae3fffe2e81e1cf
+// openapi-sha256: 70d4d142a8de37f73f8e492d0f059296189bf881a6e9dab9c552b9ed29ef4da7
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -761,7 +761,11 @@ export interface components {
             year: string | null;
         };
         AdminCuratedProfileResponse: {
-            /** @example #5B2C87 */
+            /**
+             * @deprecated
+             * @description Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`.
+             * @example #5B2C87
+             */
             accentColor: string;
             accessToken: string | null;
             /** @description ISO 8601 si está archivado (no resuelve: 404); null si está vivo */
@@ -972,6 +976,8 @@ export interface components {
         };
         CreateCuratedProfileDto: {
             /**
+             * @deprecated
+             * @description Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`.
              * @default #1A365D
              * @example #5B2C87
              */
@@ -1160,7 +1166,11 @@ export interface components {
             visible: boolean;
         };
         CuratedProfileResponse: {
-            /** @example #5B2C87 */
+            /**
+             * @deprecated
+             * @description Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`.
+             * @example #5B2C87
+             */
             accentColor: string;
             certifications: components["schemas"]["CertificationResponse"][];
             /** @description Resuelto al locale. */
@@ -1215,7 +1225,11 @@ export interface components {
             visibility: "PUBLIC" | "PRIVATE" | "PROTECTED";
         };
         CuratedProfileSummaryResponse: {
-            /** @example #5B2C87 */
+            /**
+             * @deprecated
+             * @description Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`.
+             * @example #5B2C87
+             */
             accentColor: string;
             /** @description Resuelto al locale. */
             description: string;
@@ -1387,6 +1401,8 @@ export interface components {
         };
         PreviewCuratedProfileDto: {
             /**
+             * @deprecated
+             * @description Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`.
              * @default #1A365D
              * @example #5B2C87
              */
@@ -1434,7 +1450,11 @@ export interface components {
             visibility: "PUBLIC" | "PRIVATE" | "PROTECTED";
         };
         PreviewCuratedProfileResponse: {
-            /** @example #5B2C87 */
+            /**
+             * @deprecated
+             * @description Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`.
+             * @example #5B2C87
+             */
             accentColor: string;
             certifications: components["schemas"]["CertificationResponse"][];
             /** @description Resuelto al locale. */
@@ -1677,6 +1697,8 @@ export interface components {
         };
         UpdateCuratedProfileDto: {
             /**
+             * @deprecated
+             * @description Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`.
              * @default #1A365D
              * @example #5B2C87
              */

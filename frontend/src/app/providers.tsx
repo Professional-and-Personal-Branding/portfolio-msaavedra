@@ -8,7 +8,7 @@ interface AppProvidersProps {
   queryClient?: QueryClient;
 }
 
-/** Providers sin router: la app usa `BrowserRouter`, los tests `MemoryRouter`. */
+/** Providers sin router: la app monta un data router (`createBrowserRouter`), los tests uno en memoria. */
 export function AppProviders({ children, queryClient }: AppProvidersProps) {
   const [client] = useState(() => queryClient ?? createQueryClient());
   return (

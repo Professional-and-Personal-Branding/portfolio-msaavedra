@@ -256,3 +256,73 @@ describe('ExperiencesPage', () => {
     expect(screen.getByLabelText('Empresa *')).toHaveValue('Umbrella');
   });
 });
+
+describe('ExperiencesPage — aviso al descartar', () => {
+  const PROMPT = 'Tenés cambios sin guardar';
+
+  it('Escape con cambios abre el aviso y conserva lo editado; Seguir editando lo cierra', async () => {
+    server.use(...adminHandlers);
+    const user = userEvent.setup();
+    await openPage();
+    await user.click(screen.getByRole('button', { name: 'Editar Globex' }));
+
+    await user.type(screen.getByLabelText('Empresa *'), ' SA');
+    await user.keyboard('{Escape}');
+
+    expect(await screen.findByText(PROMPT)).toBeInTheDocument();
+    expect(screen.getByLabelText('Empresa *')).toHaveValue('Globex SA');
+    await user.click(screen.getByRole('button', { name: 'Seguir editando' }));
+    expect(screen.queryByText(PROMPT)).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Empresa *')).toHaveValue('Globex SA');
+  });
+
+  it('Descartar cierra sin guardar y al reabrir muestra lo guardado', async () => {
+    let patched = false;
+    server.use(
+      http.patch(`${API}/admin/experiences/:id`, () => {
+        patched = true;
+        return HttpResponse.json(makeAdminExperience());
+      }),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openPage();
+    await user.click(screen.getByRole('button', { name: 'Editar Globex' }));
+    await user.type(screen.getByLabelText('Empresa *'), ' SA');
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await user.click(await screen.findByRole('button', { name: 'Descartar' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(patched).toBe(false);
+    await user.click(screen.getByRole('button', { name: 'Editar Globex' }));
+    expect(screen.getByLabelText('Empresa *')).toHaveValue('Globex');
+  });
+
+  it('un alta con cambios también avisa; sin tocar nada cierra directo', async () => {
+    server.use(...adminHandlers);
+    const user = userEvent.setup();
+    await openPage();
+
+    await user.click(screen.getByRole('button', { name: /Nueva experiencia/ }));
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.queryByText(PROMPT)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Nueva experiencia/ }));
+    await user.type(screen.getByLabelText('Empresa *'), 'Umbrella');
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(await screen.findByText(PROMPT)).toBeInTheDocument();
+  });
+
+  it('un espacio al borde no ensucia', async () => {
+    server.use(...adminHandlers);
+    const user = userEvent.setup();
+    await openPage();
+    await user.click(screen.getByRole('button', { name: 'Editar Globex' }));
+
+    await user.type(screen.getByLabelText('Empresa *'), ' ');
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.queryByText(PROMPT)).not.toBeInTheDocument();
+  });
+});

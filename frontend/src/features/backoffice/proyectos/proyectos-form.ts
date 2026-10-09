@@ -187,3 +187,17 @@ export function validateSocialLink(values: SocialLinkFormValues): Record<string,
   const result = socialLinkSchema.safeParse(values);
   return result.success ? {} : toErrors(result.error.issues);
 }
+
+/**
+ * ¿Hay cambios respecto a los valores al abrir? Se mide sobre el cuerpo (D12) y, en `stats`,
+ * también sobre el texto recortado: un JSON inválido no llega al cuerpo y se perdería sin aviso.
+ */
+export function isSocialLinkDirty(
+  values: SocialLinkFormValues,
+  initial: SocialLinkFormValues,
+): boolean {
+  return (
+    JSON.stringify(toSocialLinkBody(values)) !== JSON.stringify(toSocialLinkBody(initial)) ||
+    values.stats.trim() !== initial.stats.trim()
+  );
+}

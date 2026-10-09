@@ -20,6 +20,8 @@ import {
   type ExperienceFormValues,
 } from './experience-form';
 import type { CreateExperienceBody } from '../shared/admin-types';
+import { UnsavedChangesPrompt } from '../shared/UnsavedChangesPrompt';
+import { useDialogDiscardGuard } from '../shared/use-dialog-discard-guard';
 
 interface ExperienceFormProps {
   open: boolean;
@@ -39,7 +41,12 @@ export function ExperienceForm({
   onOpenChange,
 }: ExperienceFormProps) {
   const [values, setValues] = useState<ExperienceFormValues>(initialValues ?? EMPTY_EXPERIENCE);
+  const [initial] = useState<ExperienceFormValues>(initialValues ?? EMPTY_EXPERIENCE);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const guard = useDialogDiscardGuard({
+    dirty: JSON.stringify(toExperienceBody(values)) !== JSON.stringify(toExperienceBody(initial)),
+    onClose: () => onOpenChange(false),
+  });
 
   const set = <K extends keyof ExperienceFormValues>(key: K, value: ExperienceFormValues[K]) =>
     setValues((current) => ({ ...current, [key]: value }));
@@ -53,7 +60,7 @@ export function ExperienceForm({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(next) => !next && guard.requestClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -216,7 +223,7 @@ export function ExperienceForm({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={guard.requestClose}>
               Cancelar
             </Button>
             <Button type="submit" disabled={saving}>
@@ -224,6 +231,7 @@ export function ExperienceForm({
             </Button>
           </DialogFooter>
         </form>
+        <UnsavedChangesPrompt {...guard.promptProps} />
       </DialogContent>
     </Dialog>
   );
