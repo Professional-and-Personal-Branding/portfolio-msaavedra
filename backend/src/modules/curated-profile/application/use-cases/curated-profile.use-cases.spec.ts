@@ -3,6 +3,7 @@ import { Certification } from '../../../education/domain/entities/certification.
 import { Education } from '../../../education/domain/entities/education.entity';
 import { Project } from '../../../project/domain/entities/project.entity';
 import { SocialLink } from '../../../social-link/domain/entities/social-link.entity';
+import { BackgroundTasks } from '../../../../shared/application/background-tasks';
 import { CuratedProfileComposer } from '../services/curated-profile.composer';
 import { PortfolioSectionsLoader } from '../services/portfolio-sections.loader';
 import { Experience } from '../../../experience/domain/entities/experience.entity';
@@ -270,8 +271,26 @@ function build(deps: Deps = {}) {
     themeRepo,
     loader,
   );
-  const useCase = new ResolveCuratedProfileUseCase(curatedRepo, viewsRepo, composer);
-  return { useCase, record, loader, composer, curatedRepo };
+  const background = new FakeBackgroundTasks();
+  const useCase = new ResolveCuratedProfileUseCase(curatedRepo, viewsRepo, background, composer);
+  return { useCase, record, loader, composer, curatedRepo, background };
+}
+
+/** Captura las tareas sin ejecutarlas: permite comprobar que la respuesta no las espera. */
+class FakeBackgroundTasks implements BackgroundTasks {
+  readonly captured: { name: string; task: () => Promise<void> }[] = [];
+  run(name: string, task: () => Promise<void>): void {
+    this.captured.push({ name, task });
+  }
+  async flush(): Promise<void> {
+    for (const { task } of this.captured) await task();
+  }
+  whenIdle(): Promise<void> {
+    return Promise.resolve();
+  }
+  drain(): Promise<void> {
+    return Promise.resolve();
+  }
 }
 
 async function resolveOk(useCase: ResolveCuratedProfileUseCase, input = {}) {
@@ -519,7 +538,9 @@ describe('ResolveCuratedProfileUseCase', () => {
         viewContext: { locale: 'es', referrer: 'https://x', userAgent: 'UA', ipHash: 'h' },
       });
       const b = await resolveOk(withoutCtx.useCase);
+      await withCtx.background.flush();
       expect(a).toEqual(b);
+      expect(withCtx.background.captured.map((t) => t.name)).toEqual(['record-profile-view']);
       expect(withCtx.record).toHaveBeenCalledWith({
         curatedProfileId: 'cp1',
         locale: 'es',
@@ -527,7 +548,18 @@ describe('ResolveCuratedProfileUseCase', () => {
         userAgent: 'UA',
         ipHash: 'h',
       });
+      expect(withoutCtx.background.captured).toHaveLength(0);
       expect(withoutCtx.record).not.toHaveBeenCalled();
+    });
+
+    it('responde antes de escribir: el repositorio no se llama hasta que corre la tarea', async () => {
+      const built = build();
+      const out = await resolveOk(built.useCase, { viewContext: { locale: 'es' } });
+      expect(out.slug).toBe('java-senior');
+      expect(built.background.captured).toHaveLength(1);
+      expect(built.record).not.toHaveBeenCalled();
+      await built.background.flush();
+      expect(built.record).toHaveBeenCalledTimes(1);
     });
 
     it('no registra cuando el acceso es denegado o el perfil no existe', async () => {
@@ -535,17 +567,20 @@ describe('ResolveCuratedProfileUseCase', () => {
         curated: curated({ visibility: 'PROTECTED', accessToken: AccessToken.create('t') }),
       });
       await denied.useCase.execute({ slug: 'x', locale: 'es', viewContext: { locale: 'es' } });
+      expect(denied.background.captured).toHaveLength(0);
       expect(denied.record).not.toHaveBeenCalled();
 
       const missing = build({ curated: null });
       await missing.useCase.execute({ slug: 'x', locale: 'es', viewContext: { locale: 'es' } });
+      expect(missing.background.captured).toHaveLength(0);
       expect(missing.record).not.toHaveBeenCalled();
     });
 
-    it('un fallo del registro no altera el resultado exitoso', async () => {
+    it('un fallo del registro no altera el resultado exitoso ni rechaza la tarea', async () => {
       const failing = build({ record: jest.fn().mockRejectedValue(new Error('db down')) });
       const out = await resolveOk(failing.useCase, { viewContext: { locale: 'en' } });
       expect(out.slug).toBe('java-senior');
+      await expect(failing.background.flush()).resolves.toBeUndefined();
       expect(failing.record).toHaveBeenCalled();
     });
   });

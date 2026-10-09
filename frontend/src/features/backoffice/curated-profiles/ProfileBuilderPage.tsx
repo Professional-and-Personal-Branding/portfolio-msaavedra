@@ -34,6 +34,8 @@ import { ThemeCustomizerPanel } from '../theme-customizer/ThemeCustomizerPanel';
 import { baseTokensOf, diffTokens, effectiveTokens } from '../theme-customizer/theme-draft';
 import type { AdminCuratedProfile, Visibility } from '../shared/admin-types';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { UnsavedChangesDialog } from '../shared/UnsavedChangesDialog';
+import { useUnsavedChangesGuard } from '../shared/use-unsaved-changes-guard';
 import { ChipListField } from '../shared/fields/ChipListField';
 import { LocalizedField } from '../shared/fields/LocalizedField';
 import { PageHeader } from '../shared/PageHeader';
@@ -108,6 +110,11 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
   const archive = useArchiveCuratedProfile();
 
   const [draft, setDraft] = useState<ProfileDraft>(initialDraft);
+  // Sucio = el cuerpo que enviaría Guardar difiere del último guardado (D3): deshacer a mano
+  // o un espacio final que `toProfileBody` recorta vuelven a "limpio".
+  const [baseline, setBaseline] = useState(() => JSON.stringify(toProfileBody(initialDraft)));
+  const dirty = JSON.stringify(toProfileBody(draft)) !== baseline;
+  const guard = useUnsavedChangesGuard(dirty);
   // Archivar no pasa por el borrador: tiene su propio endpoint y se aplica al instante.
   const [archivedAt, setArchivedAt] = useState<string | null>(saved?.archivedAt ?? null);
   const setArchived = (next: boolean) =>
@@ -176,10 +183,14 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
       notifyError(new Error('Revisá los campos marcados'), 'Revisá los campos marcados');
       return;
     }
+    const body = toProfileBody(draft);
     save.mutate(
-      { id, body: toProfileBody(draft) },
+      { id, body },
       {
         onSuccess: (result) => {
+          // Antes del `navigate` del alta: el blocker lee la ref y no debe ver el estado viejo.
+          guard.markSaved();
+          setBaseline(JSON.stringify(body));
           notifySuccess(isNew ? 'Perfil creado' : 'Perfil guardado');
           if (isNew) void navigate(`/admin/perfiles/${result.id}`, { replace: true });
         },
@@ -195,6 +206,7 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
 
   return (
     <>
+      <UnsavedChangesDialog guard={guard} />
       <PageHeader
         title={isNew ? 'Nuevo perfil curado' : draft.title.es || 'Perfil curado'}
         description="Elegí qué entra, cómo se ve y con quién lo compartís. La vista previa usa los componentes reales del portafolio."

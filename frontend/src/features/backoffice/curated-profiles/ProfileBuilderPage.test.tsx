@@ -621,3 +621,211 @@ describe('ProfileBuilderPage — aviso de faltantes de traducción', () => {
     expect((await screen.findAllByText('Perfil guardado')).length).toBeGreaterThan(0);
   });
 });
+
+describe('ProfileBuilderPage — aviso de cambios sin guardar', () => {
+  const DIALOG_TITLE = 'Tenés cambios sin guardar';
+
+  const patchOk = () =>
+    http.patch(`${API}/admin/curated-profiles/:id`, () =>
+      HttpResponse.json(makeAdminCuratedProfile()),
+    );
+
+  const editTitle = async (user: ReturnType<typeof userEvent.setup>, text = ' X') =>
+    user.type(screen.getByLabelText('Título (es)'), text);
+
+  /** Dispara `beforeunload` y dice si la página lo canceló. */
+  const unloadPrevented = () => {
+    const event = new Event('beforeunload', { cancelable: true });
+    act(() => {
+      window.dispatchEvent(event);
+    });
+    return event.defaultPrevented;
+  };
+
+  it('Volver con cambios abre el diálogo y la ruta no cambia', async () => {
+    server.use(trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openBuilder();
+
+    await editTitle(user);
+    await user.click(screen.getByRole('link', { name: /Volver/ }));
+
+    expect(await screen.findByText(DIALOG_TITLE)).toBeInTheDocument();
+    expect(screen.getByLabelText('Título (es)')).toBeInTheDocument();
+  });
+
+  it('Seguir editando cierra el diálogo y conserva el borrador', async () => {
+    server.use(trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openBuilder();
+
+    await editTitle(user);
+    await user.click(screen.getByRole('link', { name: /Volver/ }));
+    await user.click(await screen.findByRole('button', { name: 'Seguir editando' }));
+
+    await waitFor(() => expect(screen.queryByText(DIALOG_TITLE)).not.toBeInTheDocument());
+    expect(screen.getByLabelText('Título (es)')).toHaveValue('Backend en Acme X');
+  });
+
+  it('Salir sin guardar navega al listado sin modificar el perfil', async () => {
+    let patches = 0;
+    server.use(
+      http.patch(`${API}/admin/curated-profiles/:id`, () => {
+        patches += 1;
+        return HttpResponse.json(makeAdminCuratedProfile());
+      }),
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openBuilder();
+
+    await editTitle(user);
+    await user.click(screen.getByRole('link', { name: /Volver/ }));
+    await user.click(await screen.findByRole('button', { name: 'Salir sin guardar' }));
+
+    expect(await screen.findByRole('heading', { name: 'Perfiles curados' })).toBeInTheDocument();
+    expect(patches).toBe(0);
+  });
+
+  it('beforeunload se cancela con cambios y no sin ellos', async () => {
+    server.use(trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openBuilder();
+
+    expect(unloadPrevented()).toBe(false);
+    await editTitle(user);
+    expect(unloadPrevented()).toBe(true);
+  });
+
+  it('deshacer el cambio a mano vuelve a limpio: sin diálogo ni beforeunload', async () => {
+    server.use(trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openBuilder();
+
+    await editTitle(user, 'Z');
+    await user.type(screen.getByLabelText('Título (es)'), '{Backspace}');
+    expect(unloadPrevented()).toBe(false);
+
+    await user.click(screen.getByRole('link', { name: /Volver/ }));
+    expect(await screen.findByRole('heading', { name: 'Perfiles curados' })).toBeInTheDocument();
+    expect(screen.queryByText(DIALOG_TITLE)).not.toBeInTheDocument();
+  });
+
+  it('guardar deja la ficha limpia: navegar a otra sección no pregunta', async () => {
+    server.use(patchOk(), trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openBuilder();
+
+    await editTitle(user);
+    await user.click(screen.getByRole('button', { name: /Guardar/ }));
+    expect((await screen.findAllByText('Perfil guardado')).length).toBeGreaterThan(0);
+    expect(unloadPrevented()).toBe(false);
+
+    await user.click(screen.getAllByRole('link', { name: /Experiencias/ })[0]!);
+    expect(screen.queryByText(DIALOG_TITLE)).not.toBeInTheDocument();
+  });
+
+  it('crear un perfil no se bloquea a sí mismo', async () => {
+    const creado = makeAdminCuratedProfile({ id: 'cp-9', slug: 'perfil-nuevo' });
+    server.use(
+      http.post(`${API}/admin/curated-profiles`, () => HttpResponse.json(creado)),
+      http.get(`${API}/admin/curated-profiles`, () => HttpResponse.json([creado])),
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<AppRouter />, { route: '/admin/perfiles/nuevo' });
+
+    await user.type(await screen.findByLabelText('Slug *'), 'perfil-nuevo');
+    await user.type(screen.getByLabelText('Título (es)'), 'Perfil nuevo');
+    await user.click(screen.getByRole('button', { name: /Guardar/ }));
+
+    expect(await screen.findByText('Perfil creado')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByLabelText('Slug *')).toHaveValue('perfil-nuevo'));
+    expect(screen.queryByText(DIALOG_TITLE)).not.toBeInTheDocument();
+    expect(unloadPrevented()).toBe(false);
+  });
+
+  it('un guardado fallido (409) sigue sucio', async () => {
+    server.use(
+      http.patch(`${API}/admin/curated-profiles/:id`, () =>
+        HttpResponse.json(
+          { statusCode: 409, message: 'El slug ya existe', error: 'Conflict' },
+          { status: 409 },
+        ),
+      ),
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openBuilder();
+
+    await user.type(screen.getByLabelText('Slug *'), '-2');
+    await user.click(screen.getByRole('button', { name: /Guardar/ }));
+    expect(await screen.findByText('Ya existe un perfil con ese slug')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('link', { name: /Volver/ }));
+    expect(await screen.findByText(DIALOG_TITLE)).toBeInTheDocument();
+  });
+
+  it('el idioma del preview y el archivado no ensucian', async () => {
+    server.use(
+      http.post(`${API}/admin/curated-profiles/:id/archive`, () =>
+        HttpResponse.json(makeAdminCuratedProfile({ archivedAt: '2026-10-05T12:00:00.000Z' })),
+      ),
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openBuilder();
+
+    await user.click(
+      within(screen.getByRole('tablist', { name: 'Idioma de la vista previa' })).getByRole('tab', {
+        name: 'en',
+      }),
+    );
+    expect(unloadPrevented()).toBe(false);
+
+    await user.click(screen.getByRole('tab', { name: 'Publicación' }));
+    const archivado = screen.getByRole('region', { name: 'Archivado' });
+    await user.click(within(archivado).getByRole('button', { name: /Archivar/ }));
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Archivar' }),
+    );
+    await within(archivado).findByRole('button', { name: /Desarchivar/ });
+    expect(unloadPrevented()).toBe(false);
+
+    await user.click(screen.getByRole('link', { name: /Volver/ }));
+    expect(await screen.findByRole('heading', { name: 'Perfiles curados' })).toBeInTheDocument();
+    expect(screen.queryByText(DIALOG_TITLE)).not.toBeInTheDocument();
+  });
+
+  it('cerrar sesión con cambios llega al login sin diálogo', async () => {
+    let sesionActiva = true;
+    server.use(
+      http.get(`${API}/auth/me`, () =>
+        sesionActiva
+          ? HttpResponse.json({ id: 'a1', email: 'admin@example.com', name: 'Admin' })
+          : HttpResponse.json(
+              { statusCode: 401, message: 'Unauthorized', error: 'Unauthorized' },
+              { status: 401 },
+            ),
+      ),
+      http.post(`${API}/auth/logout`, () => {
+        sesionActiva = false;
+        return new HttpResponse(null, { status: 204 });
+      }),
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openBuilder();
+
+    await editTitle(user);
+    await user.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
+
+    expect(await screen.findByLabelText(/Contraseña/)).toBeInTheDocument();
+    expect(screen.queryByText(DIALOG_TITLE)).not.toBeInTheDocument();
+  });
+});

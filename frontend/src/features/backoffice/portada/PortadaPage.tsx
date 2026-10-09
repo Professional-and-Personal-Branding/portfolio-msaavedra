@@ -23,6 +23,8 @@ import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { LocalizedField } from '../shared/fields/LocalizedField';
 import { toLocalizedPayload } from '../shared/fields/localized';
 import { PageHeader } from '../shared/PageHeader';
+import { UnsavedChangesDialog } from '../shared/UnsavedChangesDialog';
+import { useUnsavedChangesGuard } from '../shared/use-unsaved-changes-guard';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
 import { notifyError, notifySuccess } from '../shared/use-admin-api';
 import {
@@ -75,6 +77,7 @@ function ProfileEditor({ initialDraft }: { initialDraft: PortadaDraft }) {
   const liveErrors = useMemo(() => validatePortada(draft), [draft]);
   const preview = useProfilePreview(draft, locale, Object.keys(liveErrors).length === 0);
   const dirty = JSON.stringify(draft) !== JSON.stringify(initialDraft);
+  const guard = useUnsavedChangesGuard(dirty);
 
   const update = <K extends keyof PortadaDraft>(key: K, value: PortadaDraft[K]) =>
     setDraft((current) => ({ ...current, [key]: value }));
@@ -92,6 +95,7 @@ function ProfileEditor({ initialDraft }: { initialDraft: PortadaDraft }) {
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <UnsavedChangesDialog guard={guard} />
       <form onSubmit={submit} noValidate className="surface flex flex-col gap-4 p-card">
         <h2 className="font-semibold">Identidad y contacto</h2>
         <TextField

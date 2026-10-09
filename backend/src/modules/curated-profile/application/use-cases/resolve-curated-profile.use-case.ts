@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Locale } from '../../../../shared/domain/i18n';
+import { BACKGROUND_TASKS, BackgroundTasks } from '../../../../shared/application/background-tasks';
 import { fail, ok, Result } from '../../../../shared/domain/result';
 import {
   PROFILE_VIEW_REPOSITORY,
@@ -40,7 +41,7 @@ export type ResolveCuratedProfileError =
  * Aquí viven los pasos 1, 2 y 6 (existencia/visibilidad, token de acceso y
  * registro de la visita); los pasos 3-5 y 7 los aporta `CuratedProfileComposer`,
  * compartido con el preview del backoffice.
- * El paso 6 nunca altera el resultado ni lo convierte en error.
+ * El paso 6 nunca altera el resultado ni lo convierte en error, y no lo retrasa.
  */
 @Injectable()
 export class ResolveCuratedProfileUseCase {
@@ -49,6 +50,7 @@ export class ResolveCuratedProfileUseCase {
   constructor(
     @Inject(CURATED_PROFILE_REPOSITORY) private readonly curatedProfiles: CuratedProfileRepository,
     @Inject(PROFILE_VIEW_REPOSITORY) private readonly profileViews: ProfileViewRepository,
+    @Inject(BACKGROUND_TASKS) private readonly background: BackgroundTasks,
     private readonly composer: CuratedProfileComposer,
   ) {}
 
@@ -71,8 +73,12 @@ export class ResolveCuratedProfileUseCase {
     // 3-5 y 7. Datos, selección, tema, secciones y DTO.
     const output = await this.composer.compose(curated, input.locale);
 
-    // 6. Registro de visita (solo con contexto; nunca rompe la respuesta).
-    if (input.viewContext) await this.recordView(curated.id, input.viewContext);
+    // 6. Registro de visita (solo con contexto): se entrega al puerto de tareas en
+    // segundo plano y la respuesta no lo espera; nunca rompe el resultado.
+    const { viewContext } = input;
+    if (viewContext) {
+      this.background.run('record-profile-view', () => this.recordView(curated.id, viewContext));
+    }
 
     return ok(output);
   }

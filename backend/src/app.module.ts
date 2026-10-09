@@ -16,6 +16,7 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { AllExceptionsFilter } from './shared/infrastructure/http/all-exceptions.filter';
 import { buildLoggerOptions } from './shared/infrastructure/http/logger.options';
 import { ContentLanguageInterceptor } from './shared/infrastructure/http/content-language.interceptor';
+import { BackgroundTasksModule } from './shared/infrastructure/background/background-tasks.module';
 import { PrismaModule } from './shared/infrastructure/persistence/prisma.module';
 
 @Module({
@@ -42,6 +43,7 @@ import { PrismaModule } from './shared/infrastructure/persistence/prisma.module'
         return { throttlers: [{ ttl: throttle.ttl * 1000, limit: throttle.limit }] };
       },
     }),
+    BackgroundTasksModule,
     PrismaModule,
     HealthModule,
     AuthModule,

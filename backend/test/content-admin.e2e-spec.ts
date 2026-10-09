@@ -6,7 +6,13 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { PrismaService } from '../src/shared/infrastructure/persistence/prisma.service';
-import { createE2eAdmin, createTestApp, deleteE2eAdmin, login } from './e2e-helpers';
+import {
+  createE2eAdmin,
+  createTestApp,
+  deleteE2eAdmin,
+  login,
+  settleBackgroundTasks,
+} from './e2e-helpers';
 
 const MARK = 'E2E contenido';
 
@@ -264,6 +270,7 @@ describe('Administración de contenido (e2e)', () => {
       };
       await ref('https://www.linkedin.com/feed/?trk=x').expect(200);
       await ref().expect(200);
+      await settleBackgroundTasks(app);
 
       const today = new Date().toISOString().slice(0, 10);
       const { body } = await auth(

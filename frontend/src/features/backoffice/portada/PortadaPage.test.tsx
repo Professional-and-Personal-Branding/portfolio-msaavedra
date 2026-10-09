@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { AppRouter } from '@/app/router';
@@ -165,5 +165,82 @@ describe('PortadaPage', () => {
     await user.click(within(section).getByRole('button', { name: 'Borrar Español' }));
     await user.click(await screen.findByRole('button', { name: 'Borrar' }));
     await waitFor(() => expect(deleted).toBe('l1'));
+  });
+});
+
+describe('PortadaPage — aviso de cambios sin guardar', () => {
+  const DIALOG_TITLE = 'Tenés cambios sin guardar';
+  const sidebarLink = () => screen.getAllByRole('link', { name: /Experiencias/ })[0]!;
+
+  const unloadPrevented = () => {
+    const event = new Event('beforeunload', { cancelable: true });
+    act(() => {
+      window.dispatchEvent(event);
+    });
+    return event.defaultPrevented;
+  };
+
+  it('ir a otra sección con cambios abre el diálogo y la ruta no cambia', async () => {
+    server.use(...handlers({ previews: [], puts: [] }));
+    const user = userEvent.setup();
+    await openPage();
+
+    await user.type(screen.getByLabelText('Titular (es)'), ' X');
+    await user.click(sidebarLink());
+
+    expect(await screen.findByText(DIALOG_TITLE)).toBeInTheDocument();
+    expect(screen.getByLabelText('Titular (es)')).toHaveValue('Ingeniera de software X');
+
+    await user.click(screen.getByRole('button', { name: 'Salir sin guardar' }));
+    expect(await screen.findByRole('heading', { name: 'Experiencias' })).toBeInTheDocument();
+  });
+
+  it('cambiar el idioma de la vista previa no abre el diálogo y conserva el borrador', async () => {
+    server.use(...handlers({ previews: [], puts: [] }));
+    const user = userEvent.setup();
+    await openPage();
+
+    await user.type(screen.getByLabelText('Titular (es)'), ' X');
+    await user.click(
+      within(screen.getByRole('tablist', { name: 'Idioma de la vista previa' })).getByRole('tab', {
+        name: 'en',
+      }),
+    );
+
+    expect(screen.queryByText(DIALOG_TITLE)).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Titular (es)')).toHaveValue('Ingeniera de software X');
+    expect(unloadPrevented()).toBe(true);
+  });
+
+  it('beforeunload se cancela solo con cambios', async () => {
+    server.use(...handlers({ previews: [], puts: [] }));
+    const user = userEvent.setup();
+    await openPage();
+
+    expect(unloadPrevented()).toBe(false);
+    await user.type(screen.getByLabelText('Titular (es)'), ' X');
+    expect(unloadPrevented()).toBe(true);
+  });
+
+  it('guardar deja la página limpia: navegar a otra sección no pregunta', async () => {
+    const log = { previews: [] as Body[], puts: [] as Body[] };
+    server.use(
+      // El GET refleja lo último guardado, como el backend real.
+      http.get(`${API}/admin/profile`, () =>
+        HttpResponse.json({ ...PROFILE, ...(log.puts.at(-1) ?? {}) }),
+      ),
+      ...handlers(log),
+    );
+    const user = userEvent.setup();
+    await openPage();
+
+    await user.type(screen.getByLabelText('Titular (es)'), ' X');
+    await user.click(screen.getByRole('button', { name: 'Guardar portada' }));
+    await waitFor(() => expect(log.puts).toHaveLength(1));
+    await waitFor(() => expect(unloadPrevented()).toBe(false));
+
+    await user.click(sidebarLink());
+    expect(await screen.findByRole('heading', { name: 'Experiencias' })).toBeInTheDocument();
+    expect(screen.queryByText(DIALOG_TITLE)).not.toBeInTheDocument();
   });
 });
