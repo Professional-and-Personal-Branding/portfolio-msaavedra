@@ -28,7 +28,6 @@ interface AdminProfile {
   filterTags: string[];
   includeIds: string[];
   excludeIds: string[];
-  accentColor: string;
   themeId: string | null;
   themeOverrides: unknown;
   layout: string;
@@ -64,7 +63,6 @@ describe('Backoffice: preview y catálogo de temas (e2e)', () => {
       filterTags: profile.filterTags,
       includeIds: profile.includeIds,
       excludeIds: profile.excludeIds,
-      accentColor: profile.accentColor,
       themeId: profile.themeId,
       themeOverrides: profile.themeOverrides,
       layout: profile.layout,
@@ -97,6 +95,12 @@ describe('Backoffice: preview y catálogo de temas (e2e)', () => {
     it('sin sesión → 401', async () => {
       const res = await post('/api/admin/curated-profiles/preview').send({ filterTags: ['java'] });
       expect(res.status).toBe(401);
+    });
+
+    it('un borrador con accentColor → 400 nombrando la propiedad (retire-accent-color, D2)', async () => {
+      const res = await preview().send({ filterTags: ['dotnet'], accentColor: '#5B2C87' });
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('accentColor');
     });
 
     it('con la cookie de sesión también autentica', async () => {

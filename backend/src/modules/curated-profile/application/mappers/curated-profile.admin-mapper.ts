@@ -13,7 +13,6 @@ export function toAdminCuratedProfileOutput(p: CuratedProfile): AdminCuratedProf
     filterTags: [...p.filterTags],
     includeIds: [...p.includeIds],
     excludeIds: [...p.excludeIds],
-    accentColor: p.accentColor,
     themeId: p.themeId,
     themeOverrides: p.themeOverrides ?? null,
     layout: p.layout,

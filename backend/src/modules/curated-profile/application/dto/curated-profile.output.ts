@@ -16,7 +16,6 @@ export interface CuratedProfileSummaryOutput {
   description: string;
   roleType: string;
   techFocus: string | null;
-  accentColor: string;
   layout: string;
 }
 

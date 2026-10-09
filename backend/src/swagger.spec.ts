@@ -4,16 +4,14 @@ import { GLOBAL_PREFIX } from './app.constants';
 import { buildOpenApiDocument } from './swagger';
 
 /**
- * `accentColor` está obsoleto en el contrato (D9 de `polish-builder-and-edge`,
- * spec `admin-curated-profile-crud`). El documento se arma con el mismo código
- * que `openapi:export`: la app se crea sin `init()`, así que no toca la base.
+ * `accentColor` está retirado del contrato (`retire-accent-color`, D8, spec
+ * `admin-curated-profile-crud`): ningún schema lo declara. El documento se arma
+ * con el mismo código que `openapi:export`: la app se crea sin `init()`, así
+ * que no toca la base.
  */
-describe('documento OpenAPI: accentColor obsoleto', () => {
+describe('documento OpenAPI: accentColor retirado', () => {
   const previous = { ...process.env };
-  let schemas: Record<
-    string,
-    { properties?: Record<string, { deprecated?: boolean; description?: string }> }
-  >;
+  let schemas: Record<string, { properties?: Record<string, unknown> }>;
 
   beforeAll(async () => {
     process.env.DATABASE_URL ||= 'postgresql://export:export@localhost:5432/export';
@@ -28,17 +26,15 @@ describe('documento OpenAPI: accentColor obsoleto', () => {
     process.env = previous;
   });
 
-  it.each([
-    'CreateCuratedProfileDto',
-    'UpdateCuratedProfileDto',
-    'PreviewCuratedProfileDto',
-    'AdminCuratedProfileResponse',
-    'CuratedProfileSummaryResponse',
-    'CuratedProfileResponse',
-    'PreviewCuratedProfileResponse',
-  ])('%s lo marca deprecated con su descripción', (name) => {
-    const property = schemas[name]?.properties?.accentColor;
-    expect(property?.deprecated).toBe(true);
-    expect(property?.description).toMatch(/Obsoleto/);
+  it('el documento declara schemas (la comprobación no es vacía)', () => {
+    expect(Object.keys(schemas).length).toBeGreaterThan(0);
+    expect(schemas.CreateCuratedProfileDto).toBeDefined();
+  });
+
+  it('ningún schema de components.schemas tiene la propiedad accentColor', () => {
+    const conAccentColor = Object.entries(schemas)
+      .filter(([, schema]) => schema.properties && 'accentColor' in schema.properties)
+      .map(([name]) => name);
+    expect(conAccentColor).toEqual([]);
   });
 });

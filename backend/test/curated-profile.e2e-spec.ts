@@ -28,6 +28,7 @@ interface CvData {
     title: Localized;
     roleType?: Localized;
     filterTags: string[];
+    themeOverrides?: { colors?: { accent?: string } };
   }[];
 }
 
@@ -85,16 +86,7 @@ describe('Perfiles curados (e2e)', () => {
       expect(res.headers['content-language']).toBe('es');
       for (const item of res.body as Record<string, unknown>[]) {
         expect(Object.keys(item).sort()).toEqual(
-          [
-            'slug',
-            'title',
-            'headline',
-            'description',
-            'roleType',
-            'techFocus',
-            'accentColor',
-            'layout',
-          ].sort(),
+          ['slug', 'title', 'headline', 'description', 'roleType', 'techFocus', 'layout'].sort(),
         );
       }
     });
@@ -187,7 +179,6 @@ describe('Perfiles curados (e2e)', () => {
           'description',
           'roleType',
           'techFocus',
-          'accentColor',
           'layout',
           'visibility',
           'sections',
@@ -223,6 +214,20 @@ describe('Perfiles curados (e2e)', () => {
       ]);
       expect(res.body.hiddenSections).toEqual([]);
       expect(res.body.profile.fullName).toBeDefined();
+    });
+
+    it('el acento migrado llega a theme.tokens.colors.accent y la respuesta no trae accentColor', async () => {
+      // retire-accent-color: el valor sale de cv-data.json (la base se migró desde accentColor
+      // o se sembró con la misma forma; D3/D11).
+      for (const slug of ['fullstack-nest-react', 'tech-lead-dotnet']) {
+        const res = await get('/api/curated-profiles/' + slug);
+        const expected = template(slug).themeOverrides?.colors?.accent;
+        expect(expected).toBeDefined();
+        expect(res.body.theme.tokens.colors.accent).toBe(expected);
+        expect(res.body).not.toHaveProperty('accentColor');
+      }
+      const all = await get('/api/curated-profiles/all');
+      expect(all.body.theme.tokens.colors.accent).toBe('#38bdf8');
     });
 
     it('locale en aplica a todo el árbol', async () => {

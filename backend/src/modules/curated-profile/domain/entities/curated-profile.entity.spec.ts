@@ -12,7 +12,6 @@ const BASE: CuratedProfileProps = {
   filterTags: [],
   includeIds: [],
   excludeIds: [],
-  accentColor: '#000000',
   themeId: null,
   themeOverrides: null,
   layout: 'classic',

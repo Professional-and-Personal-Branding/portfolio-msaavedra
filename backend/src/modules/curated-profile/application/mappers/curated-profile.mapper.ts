@@ -35,7 +35,6 @@ export function toCuratedProfileSummary(
     description: resolveLocale(curated.description, locale),
     roleType: resolveLocale(curated.roleType, locale),
     techFocus: curated.techFocus,
-    accentColor: curated.accentColor,
     layout: curated.layout,
   };
 }

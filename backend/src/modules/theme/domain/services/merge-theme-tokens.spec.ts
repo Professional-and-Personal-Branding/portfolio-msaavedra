@@ -14,6 +14,11 @@ describe('mergeThemeTokens (spec theme-resolution)', () => {
     expect(result.colors).toEqual({ bg: '#0a0e1a', accent: '#ff0000' });
   });
 
+  it('el override migrado de colors.accent cambia solo ese token (retire-accent-color)', () => {
+    const result = mergeThemeTokens(base, { colors: { accent: '#5B2C87' } });
+    expect(result).toEqual({ ...base, colors: { bg: '#0a0e1a', accent: '#5B2C87' } });
+  });
+
   it('override anidado no borra hermanos', () => {
     const result = mergeThemeTokens(base, { typography: { fontSans: 'Georgia' } });
     expect(result.typography).toEqual({

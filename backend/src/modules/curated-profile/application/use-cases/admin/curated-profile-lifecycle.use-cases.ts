@@ -55,7 +55,6 @@ export class DuplicateCuratedProfileUseCase {
       filterTags: [...source.filterTags],
       includeIds: [...source.includeIds],
       excludeIds: [...source.excludeIds],
-      accentColor: source.accentColor,
       themeId: source.themeId,
       themeOverrides: source.themeOverrides,
       layout: source.layout,

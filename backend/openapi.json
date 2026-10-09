@@ -4696,12 +4696,6 @@
             "nullable": true,
             "example": ".NET"
           },
-          "accentColor": {
-            "type": "string",
-            "example": "#5B2C87",
-            "deprecated": true,
-            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
-          },
           "layout": {
             "type": "string",
             "example": "classic"
@@ -4714,7 +4708,6 @@
           "description",
           "roleType",
           "techFocus",
-          "accentColor",
           "layout"
         ]
       },
@@ -4990,12 +4983,6 @@
             "nullable": true,
             "example": ".NET"
           },
-          "accentColor": {
-            "type": "string",
-            "example": "#5B2C87",
-            "deprecated": true,
-            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
-          },
           "layout": {
             "type": "string",
             "example": "classic"
@@ -5095,7 +5082,6 @@
           "description",
           "roleType",
           "techFocus",
-          "accentColor",
           "layout",
           "visibility",
           "sections",
@@ -5186,13 +5172,6 @@
             "items": {
               "type": "string"
             }
-          },
-          "accentColor": {
-            "type": "string",
-            "default": "#1A365D",
-            "example": "#5B2C87",
-            "deprecated": true,
-            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
           },
           "themeId": {
             "type": "string",
@@ -5306,12 +5285,6 @@
             "nullable": true,
             "example": ".NET"
           },
-          "accentColor": {
-            "type": "string",
-            "example": "#5B2C87",
-            "deprecated": true,
-            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
-          },
           "layout": {
             "type": "string",
             "example": "classic"
@@ -5418,7 +5391,6 @@
           "description",
           "roleType",
           "techFocus",
-          "accentColor",
           "layout",
           "visibility",
           "sections",
@@ -5490,12 +5462,6 @@
               "type": "string"
             }
           },
-          "accentColor": {
-            "type": "string",
-            "example": "#5B2C87",
-            "deprecated": true,
-            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
-          },
           "themeId": {
             "type": "string",
             "nullable": true
@@ -5565,7 +5531,6 @@
           "filterTags",
           "includeIds",
           "excludeIds",
-          "accentColor",
           "themeId",
           "themeOverrides",
           "layout",
@@ -5642,13 +5607,6 @@
             "items": {
               "type": "string"
             }
-          },
-          "accentColor": {
-            "type": "string",
-            "default": "#1A365D",
-            "example": "#5B2C87",
-            "deprecated": true,
-            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
           },
           "themeId": {
             "type": "string",
@@ -5765,13 +5723,6 @@
             "items": {
               "type": "string"
             }
-          },
-          "accentColor": {
-            "type": "string",
-            "default": "#1A365D",
-            "example": "#5B2C87",
-            "deprecated": true,
-            "description": "Obsoleto: no lo usa ningún cliente; se elimina en un change posterior. El acento del sitio es `tokens.colors.accent`."
           },
           "themeId": {
             "type": "string",
