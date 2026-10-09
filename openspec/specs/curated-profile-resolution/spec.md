@@ -139,11 +139,11 @@ Una sección sin datos MUST NOT aparecer en `sections`, aunque figure en `sectio
 - **THEN** `sections` no contiene `projects` y `hiddenSections` sí
 
 ### Requirement: Resultado listo para presentación
-La vista resuelta SHALL contener los metadatos del perfil curado (`slug`, `title`, `headline`, `description`, `roleType`, `techFocus`, `accentColor`, `layout`, `visibility`), `sections`/`hiddenSections` y el `theme` resuelto (ver `theme-resolution`).
+La vista resuelta SHALL contener los metadatos del perfil curado (`slug`, `title`, `headline`, `description`, `roleType`, `techFocus`, `layout`, `visibility`), `sections`/`hiddenSections` y el `theme` resuelto (ver `theme-resolution`). MUST NOT contener `accentColor`.
 
 #### Scenario: Forma completa
 - **WHEN** se resuelve un perfil `PUBLIC`
-- **THEN** el resultado tiene las claves `slug, title, headline, description, roleType, techFocus, accentColor, layout, visibility, sections, hiddenSections, theme, profile, experiences, skillCategories, projects, education, certifications, socialLinks`
+- **THEN** el resultado tiene exactamente las claves `slug, title, headline, description, roleType, techFocus, layout, visibility, sections, hiddenSections, theme, profile, experiences, skillCategories, projects, education, certifications, socialLinks`
 
 ### Requirement: Contenido del portafolio en el resultado
 La vista resuelta SHALL incluir el perfil base (`profile`, misma forma que `public-profile-api`), las `experiences` (misma forma que `public-experience-api`), `skillCategories[] { name, skills[] }`, `projects` (seleccionados por tags/overrides), `education`, `certifications` y `socialLinks` (misma forma que `public-portfolio-sections-api`).

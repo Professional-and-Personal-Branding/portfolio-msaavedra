@@ -183,18 +183,3 @@ La navegación a `/admin/login` (cierre de sesión o sesión vencida) MUST NOT p
 #### Scenario: Cerrar sesión con cambios
 - **WHEN** hay cambios sin guardar y se cierra la sesión
 - **THEN** se llega a `/admin/login` sin diálogo
-
-### Requirement: El constructor no envía `accentColor`
-El cuerpo que el constructor envía al crear, al guardar y al pedir el preview MUST NOT incluir `accentColor`, y ninguna pestaña lo edita. Al guardar un perfil existente, el valor almacenado SHALL conservarse; en un alta SHALL tomar el default del API.
-
-#### Scenario: Guardar no envía el color
-- **WHEN** se edita el título de un perfil con `accentColor` `#5B2C87` y se guarda
-- **THEN** el cuerpo del `PATCH` no tiene la clave `accentColor` y el perfil sigue teniendo `#5B2C87`
-
-#### Scenario: Alta sin color
-- **WHEN** se crea un perfil nuevo desde el constructor
-- **THEN** el cuerpo del `POST` no tiene la clave `accentColor` y el perfil creado tiene `#1A365D`
-
-#### Scenario: Preview sin color
-- **WHEN** el constructor pide el preview de un borrador
-- **THEN** el cuerpo de `POST /api/admin/curated-profiles/preview` no tiene la clave `accentColor`

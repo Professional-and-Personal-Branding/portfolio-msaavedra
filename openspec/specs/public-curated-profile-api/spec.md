@@ -6,11 +6,15 @@ Contrato HTTP público de los perfiles curados: listado para el menú de navegac
 ## Requirements
 
 ### Requirement: Listado de perfiles curados públicos
-`GET /api/curated-profiles` SHALL devolver 200 con los perfiles que cumplan **las tres** condiciones: `visibility = PUBLIC`, `listed = true` y `archivedAt` nulo. Un perfil que falle cualquiera de las tres MUST NOT aparecer, y el endpoint MUST NOT revelar su existencia de ninguna otra forma. Cada elemento conserva los campos ya especificados (`slug`, `title`, `headline`, `description`, `roleType`, `techFocus`, `accentColor`, `layout`), resueltos al locale del request.
+`GET /api/curated-profiles` SHALL devolver 200 con los perfiles que cumplan **las tres** condiciones: `visibility = PUBLIC`, `listed = true` y `archivedAt` nulo. Un perfil que falle cualquiera de las tres MUST NOT aparecer, y el endpoint MUST NOT revelar su existencia de ninguna otra forma. Cada elemento trae exactamente `slug`, `title`, `headline`, `description`, `roleType`, `techFocus` y `layout`, resueltos al locale del request.
 
 #### Scenario: Listado tras el seed
 - **WHEN** un cliente hace `GET /api/curated-profiles`
 - **THEN** recibe 200 con los perfiles públicos, enumerados y no archivados
+
+#### Scenario: Claves de cada elemento
+- **WHEN** un cliente hace `GET /api/curated-profiles`
+- **THEN** cada elemento tiene exactamente las claves `slug, title, headline, description, roleType, techFocus, layout` y ninguno trae `accentColor`
 
 #### Scenario: Listado en inglés
 - **WHEN** un cliente hace `GET /api/curated-profiles?locale=en`
