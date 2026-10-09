@@ -15,8 +15,17 @@ export type CreateSkillCategoryBody = Schemas['CreateSkillCategoryDto'];
 export type CreateSkillBody = Schemas['CreateSkillDto'];
 
 export type AdminCuratedProfile = Schemas['AdminCuratedProfileResponse'];
-export type CreateCuratedProfileBody = Schemas['CreateCuratedProfileDto'];
-export type UpdateCuratedProfileBody = Schemas['UpdateCuratedProfileDto'];
+// `accentColor` está obsoleto (D9 de `polish-builder-and-edge`): el generador lo
+// marca requerido por su `default`, pero el panel no lo envía y la API lo
+// completa, así que en el cuerpo es opcional.
+export type CreateCuratedProfileWire = Schemas['CreateCuratedProfileDto'];
+export type UpdateCuratedProfileWire = Schemas['UpdateCuratedProfileDto'];
+export type CreateCuratedProfileBody = Omit<Schemas['CreateCuratedProfileDto'], 'accentColor'> & {
+  accentColor?: string;
+};
+export type UpdateCuratedProfileBody = Omit<Schemas['UpdateCuratedProfileDto'], 'accentColor'> & {
+  accentColor?: string;
+};
 
 // add-profile-content-admin: perfil base, idiomas, formación, proyectos y enlaces.
 export type AdminProfile = Schemas['AdminProfileResponse'];

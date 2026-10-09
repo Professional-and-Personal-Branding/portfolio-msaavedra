@@ -21,9 +21,11 @@ import type { AdminLanguage, LocalizedText, ProfilePreview } from '../shared/adm
 import { es } from '../shared/admin-types';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { LocalizedField } from '../shared/fields/LocalizedField';
-import { toLocalizedPayload } from '../shared/fields/localized';
 import { PageHeader } from '../shared/PageHeader';
 import { UnsavedChangesDialog } from '../shared/UnsavedChangesDialog';
+import { UnsavedChangesPrompt } from '../shared/UnsavedChangesPrompt';
+import { useDialogDiscardGuard } from '../shared/use-dialog-discard-guard';
+import { EMPTY_LANGUAGE, editableText, toLanguageBody, type LanguageDraft } from './language-form';
 import { useUnsavedChangesGuard } from '../shared/use-unsaved-changes-guard';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
 import { notifyError, notifySuccess } from '../shared/use-admin-api';
@@ -279,7 +281,10 @@ function HeroPreview({
           No se pudo generar la vista previa: {error.message}
         </p>
       )}
-      <div className="overflow-hidden rounded-theme border border-border px-6" data-testid="hero-preview">
+      <div
+        className="overflow-hidden rounded-theme border border-border px-6"
+        data-testid="hero-preview"
+      >
         {data ? (
           <Hero data={heroData(data)} />
         ) : (
@@ -328,43 +333,28 @@ function TextField({ id, label, value, onChange, type = 'text', required, error 
 }
 
 // ── Idiomas (D2: cuelgan del perfil, se editan acá con su propia API) ──────
-interface LanguageDraft {
-  id?: string;
-  name: string;
-  nameI18n: LocalizedText;
-  level: string;
-  detail: LocalizedText;
-}
-
-const EMPTY_LANGUAGE: LanguageDraft = {
-  name: '',
-  nameI18n: { es: '', en: '' },
-  level: '',
-  detail: { es: '', en: '' },
-};
-
-function editableText(value: unknown): LocalizedText {
-  if (value == null) return { es: '', en: '' };
-  if (typeof value === 'string') return { es: value, en: '' };
-  const text = value as LocalizedText;
-  return { es: text.es ?? '', en: text.en ?? '' };
-}
-
-/** Bilingüe opcional: vacío en los dos idiomas → `null`. */
-function optionalPayload(value: LocalizedText): LocalizedText | null {
-  const payload = toLocalizedPayload(value);
-  return payload.es || payload.en ? payload : null;
-}
-
 function LanguagesSection() {
   const languages = useLanguages();
   const save = useSaveLanguage();
   const remove = useDeleteLanguage();
   const [draft, setDraft] = useState<LanguageDraft | null>(null);
+  // Borrador al abrir el diálogo: contra él se mide si hay cambios (D12).
+  const [base, setBase] = useState<LanguageDraft | null>(null);
+  const open = (next: LanguageDraft) => {
+    setBase(next);
+    setDraft(next);
+  };
+  const discard = useDialogDiscardGuard({
+    dirty:
+      draft !== null &&
+      base !== null &&
+      JSON.stringify(toLanguageBody(draft)) !== JSON.stringify(toLanguageBody(base)),
+    onClose: () => setDraft(null),
+  });
   const [error, setError] = useState<string | null>(null);
 
   const edit = (language: AdminLanguage) =>
-    setDraft({
+    open({
       id: language.id,
       name: language.name,
       nameI18n: editableText(language.nameI18n),
@@ -383,12 +373,7 @@ function LanguagesSection() {
     save.mutate(
       {
         id: draft.id,
-        body: {
-          name: draft.name.trim(),
-          nameI18n: optionalPayload(draft.nameI18n),
-          level: draft.level.trim(),
-          detail: optionalPayload(draft.detail),
-        },
+        body: toLanguageBody(draft),
       },
       {
         onSuccess: () => {
@@ -409,7 +394,7 @@ function LanguagesSection() {
           size="sm"
           onClick={() => {
             setError(null);
-            setDraft({ ...EMPTY_LANGUAGE });
+            open({ ...EMPTY_LANGUAGE });
           }}
         >
           <Plus aria-hidden />
@@ -462,7 +447,7 @@ function LanguagesSection() {
         </ul>
       )}
 
-      <Dialog open={draft !== null} onOpenChange={(open) => !open && setDraft(null)}>
+      <Dialog open={draft !== null} onOpenChange={(next) => !next && discard.requestClose()}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{draft?.id ? 'Editar idioma' : 'Nuevo idioma'}</DialogTitle>
@@ -501,7 +486,7 @@ function LanguagesSection() {
                 </p>
               )}
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setDraft(null)}>
+                <Button type="button" variant="outline" onClick={discard.requestClose}>
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={save.isPending}>
@@ -510,6 +495,7 @@ function LanguagesSection() {
               </DialogFooter>
             </form>
           )}
+          <UnsavedChangesPrompt {...discard.promptProps} />
         </DialogContent>
       </Dialog>
     </section>

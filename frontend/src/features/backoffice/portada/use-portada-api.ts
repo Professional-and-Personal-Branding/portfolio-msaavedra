@@ -74,7 +74,9 @@ export function useSaveLanguage() {
               body: input.body as UpdateLanguageBody,
             }),
           )
-        : unwrap(await api.POST('/api/admin/languages', { body: input.body as CreateLanguageBody })),
+        : unwrap(
+            await api.POST('/api/admin/languages', { body: input.body as CreateLanguageBody }),
+          ),
     onSuccess: () => invalidate(client, adminKeys.languages),
   });
 }

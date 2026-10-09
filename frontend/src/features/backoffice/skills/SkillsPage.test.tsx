@@ -113,3 +113,48 @@ describe('SkillsPage', () => {
     await waitFor(() => expect(deleted).toEqual(['cat-1']));
   });
 });
+
+describe('SkillsPage — aviso al descartar', () => {
+  const PROMPT = 'Tenés cambios sin guardar';
+
+  it('skill: la X con cambios avisa; Descartar cierra sin petición', async () => {
+    let patched = false;
+    server.use(
+      http.patch(`${API}/admin/skills/:id`, () => {
+        patched = true;
+        return HttpResponse.json({});
+      }),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openPage();
+    await user.click(screen.getByRole('button', { name: 'Editar Java' }));
+
+    await user.type(screen.getByLabelText('Nombre *'), '21');
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: /close|cerrar/i }),
+    );
+    expect(await screen.findByText(PROMPT)).toBeInTheDocument();
+    expect(screen.getByLabelText('Nombre *')).toHaveValue('Java21');
+
+    await user.click(screen.getByRole('button', { name: 'Descartar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(patched).toBe(false);
+  });
+
+  it('categoría: un alta sin tocar nada cierra directo y con texto avisa', async () => {
+    server.use(...adminHandlers);
+    const user = userEvent.setup();
+    await openPage();
+
+    await user.click(screen.getByRole('button', { name: /Nueva categoría/ }));
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.queryByText(PROMPT)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Nueva categoría/ }));
+    await user.type(screen.getByLabelText('Nombre (es)'), 'Cloud');
+    await user.keyboard('{Escape}');
+    expect(await screen.findByText(PROMPT)).toBeInTheDocument();
+  });
+});

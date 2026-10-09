@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ACCENT_COLOR_DEPRECATED } from './accent-color-deprecated';
 import { LocalizedText } from '../../../../../shared/domain/i18n';
 import { LocalizedTextDto } from '../../../../../shared/infrastructure/http/dto/localized.dto';
 import { AdminCuratedProfileOutput } from '../../../application/dto/curated-profile.admin-output';
@@ -19,7 +20,8 @@ export class AdminCuratedProfileResponse implements AdminCuratedProfileOutput {
   @ApiProperty({ type: [String] }) filterTags!: string[];
   @ApiProperty({ type: [String] }) includeIds!: string[];
   @ApiProperty({ type: [String] }) excludeIds!: string[];
-  @ApiProperty({ example: '#5B2C87' }) accentColor!: string;
+  @ApiProperty({ example: '#5B2C87', deprecated: true, description: ACCENT_COLOR_DEPRECATED })
+  accentColor!: string;
   @ApiProperty({ nullable: true, type: String }) themeId!: string | null;
   @ApiProperty({ nullable: true, type: 'object', additionalProperties: true })
   themeOverrides!: unknown;

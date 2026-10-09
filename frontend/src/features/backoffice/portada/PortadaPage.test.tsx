@@ -98,7 +98,9 @@ describe('PortadaPage', () => {
     await user.clear(headline);
     await user.type(headline, 'Tech Lead');
 
-    expect(await within(preview).findByText('Tech Lead', {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(
+      await within(preview).findByText('Tech Lead', {}, { timeout: 3000 }),
+    ).toBeInTheDocument();
     expect(log.previews.at(-1)?.headline).toEqual({ es: 'Tech Lead', en: 'Software engineer' });
     expect(log.puts).toHaveLength(0);
   });
@@ -242,5 +244,37 @@ describe('PortadaPage — aviso de cambios sin guardar', () => {
     await user.click(sidebarLink());
     expect(await screen.findByRole('heading', { name: 'Experiencias' })).toBeInTheDocument();
     expect(screen.queryByText(DIALOG_TITLE)).not.toBeInTheDocument();
+  });
+});
+
+describe('PortadaPage — aviso al descartar un idioma', () => {
+  const PROMPT = 'Tenés cambios sin guardar';
+
+  it('Cancelar con cambios avisa; sin cambios cierra directo; Descartar no guarda', async () => {
+    let patched = false;
+    server.use(
+      http.patch(`${API}/admin/languages/:id`, () => {
+        patched = true;
+        return HttpResponse.json({});
+      }),
+      ...handlers({ previews: [], puts: [] }),
+    );
+    const user = userEvent.setup();
+    await openPage();
+    const section = screen.getByRole('region', { name: 'Idiomas' });
+    await within(section).findByText(/Español/);
+
+    await user.click(within(section).getByRole('button', { name: 'Editar Español' }));
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.queryByText(PROMPT)).not.toBeInTheDocument();
+
+    await user.click(within(section).getByRole('button', { name: 'Editar Español' }));
+    await user.type(screen.getByLabelText('Nivel *'), 'x');
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(await screen.findByText(PROMPT)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Descartar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(patched).toBe(false);
   });
 });

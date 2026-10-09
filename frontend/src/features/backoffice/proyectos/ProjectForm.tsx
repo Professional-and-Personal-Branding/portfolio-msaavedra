@@ -11,6 +11,8 @@ import {
 import { Label } from '@/shared/components/ui/label';
 import { Switch } from '@/shared/components/ui/switch';
 import type { CreateProjectBody } from '../shared/admin-types';
+import { UnsavedChangesPrompt } from '../shared/UnsavedChangesPrompt';
+import { useDialogDiscardGuard } from '../shared/use-dialog-discard-guard';
 import { ChipListField } from '../shared/fields/ChipListField';
 import { LocalizedField } from '../shared/fields/LocalizedField';
 import {
@@ -37,7 +39,12 @@ export function ProjectForm({
   onOpenChange,
 }: ProjectFormProps) {
   const [values, setValues] = useState<ProjectFormValues>(initialValues ?? EMPTY_PROJECT);
+  const [initial] = useState<ProjectFormValues>(initialValues ?? EMPTY_PROJECT);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const guard = useDialogDiscardGuard({
+    dirty: JSON.stringify(toProjectBody(values)) !== JSON.stringify(toProjectBody(initial)),
+    onClose: () => onOpenChange(false),
+  });
 
   const set = <K extends keyof ProjectFormValues>(key: K, value: ProjectFormValues[K]) =>
     setValues((current) => ({ ...current, [key]: value }));
@@ -51,7 +58,7 @@ export function ProjectForm({
   };
 
   return (
-    <Dialog open onOpenChange={onOpenChange}>
+    <Dialog open onOpenChange={(next) => !next && guard.requestClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -151,7 +158,7 @@ export function ProjectForm({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={guard.requestClose}>
               Cancelar
             </Button>
             <Button type="submit" disabled={saving}>
@@ -159,6 +166,7 @@ export function ProjectForm({
             </Button>
           </DialogFooter>
         </form>
+        <UnsavedChangesPrompt {...guard.promptProps} />
       </DialogContent>
     </Dialog>
   );

@@ -11,11 +11,13 @@ import {
 } from '@/shared/components/ui/dialog';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
-import type { AdminSkill, AdminSkillCategory, LocalizedText } from '../shared/admin-types';
+import type { AdminSkill, AdminSkillCategory } from '../shared/admin-types';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { UnsavedChangesPrompt } from '../shared/UnsavedChangesPrompt';
+import { useDialogDiscardGuard } from '../shared/use-dialog-discard-guard';
+import { toCategoryBody, toSkillBody, type CategoryDraft, type SkillDraft } from './skills-form';
 import { ChipListField } from '../shared/fields/ChipListField';
 import { LocalizedField } from '../shared/fields/LocalizedField';
-import { toLocalizedPayload } from '../shared/fields/localized';
 import { PageHeader } from '../shared/PageHeader';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
 import {
@@ -28,21 +30,6 @@ import {
   useSkillCategories,
 } from '../shared/use-admin-api';
 
-interface CategoryDraft {
-  id?: string;
-  name: LocalizedText;
-  order: number;
-}
-
-interface SkillDraft {
-  id?: string;
-  categoryId: string;
-  categoryName: string;
-  name: string;
-  tags: string[];
-  order: number;
-}
-
 /** Gestión de categorías y skills (spec `admin-content-management`). */
 export function SkillsPage() {
   const categories = useSkillCategories();
@@ -53,6 +40,32 @@ export function SkillsPage() {
 
   const [categoryDraft, setCategoryDraft] = useState<CategoryDraft | null>(null);
   const [skillDraft, setSkillDraft] = useState<SkillDraft | null>(null);
+  // Borrador al abrir cada diálogo: contra él se mide si hay cambios (D12).
+  const [categoryBase, setCategoryBase] = useState<CategoryDraft | null>(null);
+  const [skillBase, setSkillBase] = useState<SkillDraft | null>(null);
+  const openCategory = (draft: CategoryDraft) => {
+    setCategoryBase(draft);
+    setCategoryDraft(draft);
+  };
+  const openSkill = (draft: SkillDraft) => {
+    setSkillBase(draft);
+    setSkillDraft(draft);
+  };
+  const categoryGuard = useDialogDiscardGuard({
+    dirty:
+      categoryDraft !== null &&
+      categoryBase !== null &&
+      JSON.stringify(toCategoryBody(categoryDraft)) !==
+        JSON.stringify(toCategoryBody(categoryBase)),
+    onClose: () => setCategoryDraft(null),
+  });
+  const skillGuard = useDialogDiscardGuard({
+    dirty:
+      skillDraft !== null &&
+      skillBase !== null &&
+      JSON.stringify(toSkillBody(skillDraft)) !== JSON.stringify(toSkillBody(skillBase)),
+    onClose: () => setSkillDraft(null),
+  });
 
   const submitCategory = (event: FormEvent) => {
     event.preventDefault();
@@ -60,7 +73,7 @@ export function SkillsPage() {
     saveCategory.mutate(
       {
         id: categoryDraft.id,
-        body: { name: toLocalizedPayload(categoryDraft.name), order: categoryDraft.order },
+        body: toCategoryBody(categoryDraft),
       },
       {
         onSuccess: () => {
@@ -79,7 +92,7 @@ export function SkillsPage() {
       {
         id: skillDraft.id,
         categoryId: skillDraft.categoryId,
-        body: { name: skillDraft.name.trim(), tags: skillDraft.tags, order: skillDraft.order },
+        body: toSkillBody(skillDraft),
       },
       {
         onSuccess: () => {
@@ -97,7 +110,7 @@ export function SkillsPage() {
         title="Skills"
         description="Categorías y habilidades técnicas; sus tags deciden qué aparece en cada perfil curado."
         actions={
-          <Button onClick={() => setCategoryDraft({ name: { es: '', en: '' }, order: 0 })}>
+          <Button onClick={() => openCategory({ name: { es: '', en: '' }, order: 0 })}>
             <Plus aria-hidden />
             Nueva categoría
           </Button>
@@ -119,7 +132,7 @@ export function SkillsPage() {
               key={category.id}
               category={category}
               onEdit={() =>
-                setCategoryDraft({
+                openCategory({
                   id: category.id,
                   name: { es: category.name.es, en: category.name.en ?? '' },
                   order: category.order,
@@ -132,7 +145,7 @@ export function SkillsPage() {
                 })
               }
               onAddSkill={() =>
-                setSkillDraft({
+                openSkill({
                   categoryId: category.id,
                   categoryName: category.name.es,
                   name: '',
@@ -141,7 +154,7 @@ export function SkillsPage() {
                 })
               }
               onEditSkill={(skill) =>
-                setSkillDraft({
+                openSkill({
                   id: skill.id,
                   categoryId: category.id,
                   categoryName: category.name.es,
@@ -164,7 +177,7 @@ export function SkillsPage() {
       {/* Categoría */}
       <Dialog
         open={categoryDraft !== null}
-        onOpenChange={(open) => !open && setCategoryDraft(null)}
+        onOpenChange={(open) => !open && categoryGuard.requestClose()}
       >
         <DialogContent>
           <DialogHeader>
@@ -196,7 +209,7 @@ export function SkillsPage() {
                 />
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setCategoryDraft(null)}>
+                <Button type="button" variant="outline" onClick={categoryGuard.requestClose}>
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={saveCategory.isPending}>
@@ -205,11 +218,15 @@ export function SkillsPage() {
               </DialogFooter>
             </form>
           )}
+          <UnsavedChangesPrompt {...categoryGuard.promptProps} />
         </DialogContent>
       </Dialog>
 
       {/* Skill */}
-      <Dialog open={skillDraft !== null} onOpenChange={(open) => !open && setSkillDraft(null)}>
+      <Dialog
+        open={skillDraft !== null}
+        onOpenChange={(open) => !open && skillGuard.requestClose()}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{skillDraft?.id ? 'Editar skill' : 'Nueva skill'}</DialogTitle>
@@ -249,7 +266,7 @@ export function SkillsPage() {
                 />
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setSkillDraft(null)}>
+                <Button type="button" variant="outline" onClick={skillGuard.requestClose}>
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={saveSkill.isPending}>
@@ -258,6 +275,7 @@ export function SkillsPage() {
               </DialogFooter>
             </form>
           )}
+          <UnsavedChangesPrompt {...skillGuard.promptProps} />
         </DialogContent>
       </Dialog>
     </>

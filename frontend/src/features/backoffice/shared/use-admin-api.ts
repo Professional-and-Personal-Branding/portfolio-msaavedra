@@ -7,11 +7,13 @@ import type {
   AdminSkillCategory,
   AdminTheme,
   CreateCuratedProfileBody,
+  CreateCuratedProfileWire,
   CreateExperienceBody,
   CreateSkillBody,
   CreateSkillCategoryBody,
   ProfileViews,
   UpdateCuratedProfileBody,
+  UpdateCuratedProfileWire,
   UpdateExperienceBody,
 } from './admin-types';
 
@@ -179,12 +181,14 @@ export function useSaveCuratedProfile() {
         ? unwrap(
             await api.PATCH('/api/admin/curated-profiles/{id}', {
               params: { path: { id: input.id } },
-              body: input.body as UpdateCuratedProfileBody,
+              // El contrato marca `accentColor` como requerido (por su default); el panel
+              // no lo envía y el PATCH es parcial.
+              body: input.body as UpdateCuratedProfileWire,
             }),
           )
         : unwrap(
             await api.POST('/api/admin/curated-profiles', {
-              body: input.body as CreateCuratedProfileBody,
+              body: input.body as CreateCuratedProfileWire,
             }),
           ),
     onSuccess: () => invalidate(client, adminKeys.curatedProfiles),

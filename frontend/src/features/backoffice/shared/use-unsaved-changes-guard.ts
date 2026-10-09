@@ -1,5 +1,6 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { useBlocker, type Blocker } from 'react-router';
+import { useWarnBeforeUnload } from './use-warn-before-unload';
 
 /** Ruta del fin de sesión: sin sesión el borrador ya no puede guardarse (P2). */
 const LOGIN_PATH = '/admin/login';
@@ -25,15 +26,7 @@ export function useUnsavedChangesGuard(dirty: boolean): UnsavedChangesGuard {
     dirtyRef.current = dirty;
   }, [dirty]);
 
-  useEffect(() => {
-    if (!dirty) return;
-    const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = '';
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [dirty]);
+  useWarnBeforeUnload(dirty);
 
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
