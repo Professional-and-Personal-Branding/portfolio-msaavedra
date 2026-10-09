@@ -97,11 +97,11 @@ Dos de los tres informes que alimentaron la votación contenían afirmaciones fa
 | Defecto | Evidencia |
 |---|---|
 | **El catálogo de secciones tiene dos fuentes de verdad y están desalineadas** | `backend/.../resolve-sections.ts:2` define `DEFAULT_SECTIONS` con **7** ids; `frontend/src/themes/layouts/sections.ts` define `KNOWN_SECTIONS` con **9** (`projects` y `presence` faltan en el backend). Un perfil sin `sectionsOrder` propio nunca las ordena: entran al final por el fallback del frontend |
-| **El registro de visita está en el camino crítico** | `resolve-curated-profile.use-case.ts:68` → `if (input.viewContext) await this.recordView(...)` antes del `return`. Protegido con try/catch, así que no rompe la respuesta, pero suma latencia a cada visita pública |
+| ✅ **El registro de visita está en el camino crítico** *(resuelto en `polish-builder-and-edge`: la visita corre en segundo plano y la respuesta no la espera)* | `resolve-curated-profile.use-case.ts:68` → `if (input.viewContext) await this.recordView(...)` antes del `return`. Protegido con try/catch, así que no rompe la respuesta, pero suma latencia a cada visita pública |
 | **`referrer` y `userAgent` se persisten y nunca se leen** | Los graba `curated-profile.controller.ts:96-97`; `ProfileViewsResponse` solo expone `total`, `byProfile`, `byLocale`, `byDay`. No se puede saber de dónde llegó una visita |
 | **El menú público delata la curaduría** | `TopBar.tsx:30` monta `ProfileMenu` siempre, también en `/:slug`: quien abre un perfil ve los otros doce hechos para otras vacantes |
-| **El borrador del constructor se pierde sin aviso** | Estado en `useState` sin `beforeunload` ni blocker de router |
-| **`accentColor` es un campo fantasma** | Viaja a la API desde `profile-draft.ts` pero ninguna pestaña lo edita: congelado en `#1A365D` |
+| ✅ **El borrador del constructor se pierde sin aviso** *(resuelto en `polish-builder-and-edge`: aviso en el constructor, la Portada y los formularios en diálogo)* | Estado en `useState` sin `beforeunload` ni blocker de router |
+| **`accentColor` es un campo fantasma** *(primera etapa hecha, D9 de `polish-builder-and-edge`: el panel ya no lo envía y el contrato lo marca obsoleto; falta el change posterior de § 5)* | Viaja a la API desde `profile-draft.ts` pero ninguna pestaña lo edita: congelado en `#1A365D` |
 
 ### 3.3 Las dos cosas que el set ganador no tocaba
 
@@ -155,9 +155,10 @@ Cinco changes, en este orden. La justificación de cada movimiento respecto del 
 | `cobertura-de-vacante` | Depende de que los tags estén bien poblados; hoy el cruce lo haría contra datos sin auditar | Después del change 4, que es cuando el contenido se mantiene de verdad |
 | `skills-con-respaldo-temporal` | Interesante y sin migración, pero cualquier badge que contradiga las fechas destruye la credibilidad que busca construir | Cuando haya un test de propiedad que lo garantice |
 | `analitica-visitas-honestas` / por `referrer` | Barato: los datos **ya se persisten** y nadie los lee. Debería entrar pronto para que la próxima priorización tenga medición y no intuición | Podría colarse en el change 4 como extensión del agregado |
-| `cache-de-lectura-y-visitas` | Corrige el `await recordView` del camino crítico, verificado | Cuando haya tráfico que lo justifique: hoy son visitas de a decenas |
+| `cache-de-lectura-y-visitas` | **La mitad de las visitas está hecha** (`polish-builder-and-edge` sacó `recordView` del camino crítico). Falta el cache de lectura | Cuando haya tráfico que lo justifique: hoy son visitas de a decenas |
 | CI/CD | **Ningún candidato lo propuso**, y hay 254 unitarios y 109 e2e que nadie corre automáticamente. Lo marcaron los dos críticos | Es el ítem "CI/CD" del checklist 1.0.x. No necesita deliberación: necesita un workflow |
-| Content-Security-Policy del sitio público | Helmet va sin CSP porque la API no sirve HTML; ahora **Caddy sí sirve el HTML** y podría ponerla | Junto al change 2, que ya toca el Caddyfile |
+| ✅ Content-Security-Policy del sitio público | **Resuelto en `polish-builder-and-edge`**: Caddy la sirve, con `CSP_HEADER` para pasar a `Report-Only` sin reconstruir | Hecho |
+| Retirar `accentColor` (segunda etapa de D9) | Primera etapa hecha: el panel no lo envía y el contrato lo marca obsoleto. Falta quitarlo de la salida y del DTO de entrada, una migración que borre la columna y el campo del seed | Change posterior, con los `MODIFIED` de `admin-curated-profile-crud` (*Campos opcionales de la creación y sus valores por defecto*, *Duplicar un perfil curado*), `admin-curated-profile-preview` (*Resolución de un borrador sin persistir*), `curated-profile-resolution` (*Resultado listo para presentación*), `public-curated-profile-api` (*Listado de perfiles curados públicos*) y `theme-resolution` (*Forma del tema resuelto*) |
 
 ---
 

@@ -689,6 +689,55 @@ POST de cualquiera de las cinco entidades con un campo extra -> 400
 
 ![Proyectos y enlaces sociales](manual/tc27-proyectos.jpg)
 
+### TC-28 — El constructor avisa antes de descartar cambios ✅
+
+**Pasos:** `/admin/perfiles/:id` (por ejemplo `tech-lead-dotnet`).
+
+1. Editar un campo, por ejemplo el **Título** de la pestaña Identidad. El botón *Guardar* sigue igual; lo que cambia es que salir ya no es gratis.
+2. Pulsar **Volver** (o un enlace del menú lateral, o *Atrás* del navegador): aparece **Tenés cambios sin guardar** y la página no se mueve.
+3. **Seguir editando** cierra el aviso y conserva lo escrito. **Salir sin guardar** navega y descarta: el título guardado sigue como estaba.
+4. Recargar o cerrar la pestaña con cambios dispara el aviso nativo del navegador (el texto lo pone el navegador).
+5. Escribir y borrar el mismo carácter, o un espacio final, vuelve a "limpio". Cambiar solo el idioma del preview o archivar el perfil nunca cuentan como cambio. Un perfil nuevo sin tocar sale sin diálogo, y un guardado exitoso deja la ficha limpia.
+
+```
+Título de tech-lead-dotnet editado -> Volver abre el aviso, sigue en /admin/perfiles/:id
+Salir sin guardar                  -> /admin/perfiles, el título guardado sigue "Tech Lead .NET"
+```
+
+> El aviso nativo de `beforeunload` lo dibuja el navegador y no se capturó en la app real: lo cubren los tests del guardián (`use-unsaved-changes-guard.test.tsx`, `ProfileBuilderPage.test.tsx`).
+
+![El constructor con cambios sin guardar](manual/tc28-constructor-con-cambios.jpg)
+
+### TC-29 — La Portada avisa; cambiar el idioma no ✅
+
+**Pasos:** `/admin/portada`.
+
+1. Con el formulario en *Cambios sin guardar* (por ejemplo, un titular editado), elegir *Experiencias* en el menú lateral: aparece el mismo aviso que en el constructor, con *Seguir editando* / *Salir sin guardar*.
+2. Cambiar el idioma de la vista previa (`?lang=`) con cambios pendientes **no** pide confirmación: es solo la query.
+3. **Guardar portada** deja la página limpia y salir ya no pregunta.
+
+**Ejecutado** el 8 de octubre de 2026 contra el contenedor `web`: se editó la Ubicación; cambiar el idioma de la vista previa (EN y de vuelta a ES, la URL pasó a `?lang=es`) no abrió el aviso y la edición se conservó; ir a Skills desde el menú lateral abrió «Tenés cambios sin guardar»; *Salir sin guardar* llevó a `/admin/skills` y la ubicación guardada siguió «Santa Cruz de la Sierra, Bolivia». Reusa el guardián y el diálogo de TC-28, con los tests de `PortadaPage.test.tsx`.
+
+![La Portada con cambios sin guardar](manual/tc29-portada-con-cambios.jpg)
+
+### TC-30 — Los formularios en diálogo avisan antes de descartar ✅
+
+**Pasos:** cualquier formulario en diálogo del panel: experiencia, categoría y skill, formación y certificación, proyecto, enlace social e idioma. Ejemplo: `/admin/skills` → **Nueva categoría**.
+
+1. Escribir un nombre y cerrar con **Escape**, con un clic fuera, con la X o con **Cancelar**: aparece **Tenés cambios sin guardar** ("Si lo cerrás ahora, se descartan los cambios de este formulario.") con el formulario abierto detrás.
+2. **Seguir editando** conserva los valores. **Descartar** cierra sin crear nada.
+3. Sin cambios, los cuatro caminos cierran directo. Guardar con éxito cierra sin aviso.
+4. Con el diálogo abierto y con cambios, recargar dispara el aviso nativo.
+
+```
+Skills > Nueva categoría > nombre escrito > Escape -> aviso con el formulario abierto detrás
+Descartar                                          -> cierra, la categoría no se crea
+```
+
+> *Atrás* del navegador con un diálogo abierto no tiene aviso propio (decisión D11 del change): el modal tapa la navegación del panel y *Atrás* con un modal abierto es raro. En la app real se probó *Escape*; clic fuera, X y *Cancelar* los cubren los tests del guardián y de cada página.
+
+![Aviso al cerrar un formulario en diálogo con cambios](manual/tc30-dialogo-con-cambios.jpg)
+
 ### El seed ya no es la forma de editar
 
 ```bash
@@ -719,6 +768,8 @@ curl -sD - $API/api/curated-profiles/no-existe -o /dev/null | grep -i x-request-
 | Un perfil quedó mal publicado | pasalo a `PRIVATE` (404 al instante) y arreglalo con calma |
 | Perdiste datos | restaurá del backup — § 7 de [`DEPLOY.md`](DEPLOY.md) |
 | Deploy roto | Rollback en Deployments, dentro de las 72 h del plan Hobby |
+| El sitio dejó de cargar algo (fuente, script) tras un deploy | La CSP del servicio `web` lo bloquea. Probá con `CSP_HEADER=Content-Security-Policy-Report-Only` en `web` (solo reporta, sin bloquear; no requiere reconstruir) y mirá la consola. Detalle en `DEPLOY.md` § 9.5 |
+| Una visita no suma justo después de un deploy | La visita se registra en segundo plano y el apagado espera hasta 5 s; confirmá que `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` del servicio `api` esté por encima (p. ej. 10) |
 
 ---
 
@@ -761,8 +812,11 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-25 | Portada: titular, disponibilidad, idiomas | ✅ | captura · e2e · 200 / 400 sin cambios · preview sin escribir |
 | TC-26 | Formación: ocultar sin borrar | ✅ | captura · e2e · visible:false sale del sitio y queda en el panel |
 | TC-27 | Proyectos y enlaces sociales | ✅ | captura · e2e · el proyecto entra por tags con su url · stats inválido 400 |
+| TC-28 | El constructor avisa antes de descartar | ✅ | captura · app real contra el contenedor · tests del guardián |
+| TC-29 | La Portada avisa; el idioma no | ✅ | captura · app real contra el contenedor · tests de `PortadaPage` |
+| TC-30 | Los formularios en diálogo avisan | ✅ | captura · app real contra el contenedor · tests por formulario |
 
-**Los 27 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real: 23 capturas en total.
+**Los 30 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 26 capturas en total.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
