@@ -75,6 +75,10 @@ describe('useDialogDiscardGuard', () => {
       await userEvent.setup().type(screen.getByLabelText('Nombre'), 'abc');
       await close();
       expect(await screen.findByText('Tenés cambios sin guardar')).toBeInTheDocument();
+      expect(
+        screen.getByText('Si lo cerrás ahora, se descartan los cambios de este formulario.'),
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/de esta página/)).not.toBeInTheDocument();
       expect(screen.getByLabelText('Nombre')).toHaveValue('abc');
     },
   );

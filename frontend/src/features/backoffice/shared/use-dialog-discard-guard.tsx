@@ -36,6 +36,7 @@ export function useDialogDiscardGuard({
         onClose();
       },
       leaveLabel: 'Descartar',
+      description: 'Si lo cerrás ahora, se descartan los cambios de este formulario.',
     },
   };
 }

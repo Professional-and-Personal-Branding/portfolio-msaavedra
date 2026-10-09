@@ -59,6 +59,9 @@ describe('useUnsavedChangesGuard', () => {
     await user.click(screen.getByText('Ir a otra'));
 
     expect(await screen.findByText('Tenés cambios sin guardar')).toBeInTheDocument();
+    expect(
+      screen.getByText('Si salís ahora, se descartan los cambios de esta página.'),
+    ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/editor');
 
     await user.click(screen.getByRole('button', { name: 'Seguir editando' }));

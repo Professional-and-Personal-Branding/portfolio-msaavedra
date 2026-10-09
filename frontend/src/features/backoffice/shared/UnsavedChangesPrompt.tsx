@@ -7,6 +7,8 @@ export interface UnsavedChangesPromptProps {
   /** Confirma la salida o el descarte. */
   onLeave: () => void;
   leaveLabel: string;
+  /** Texto del aviso; por defecto el de página (constructor y Portada). */
+  description?: string;
 }
 
 /** Aviso presentacional de cambios sin guardar; lo comparten el guardián de página y el de diálogo. */
@@ -15,6 +17,7 @@ export function UnsavedChangesPrompt({
   onStay,
   onLeave,
   leaveLabel,
+  description = 'Si salís ahora, se descartan los cambios de esta página.',
 }: UnsavedChangesPromptProps) {
   return (
     <ConfirmDialog
@@ -23,7 +26,7 @@ export function UnsavedChangesPrompt({
         if (!next && open) onStay();
       }}
       title="Tenés cambios sin guardar"
-      description="Si salís ahora, se descartan los cambios de esta página."
+      description={description}
       cancelLabel="Seguir editando"
       confirmLabel={leaveLabel}
       onConfirm={onLeave}
