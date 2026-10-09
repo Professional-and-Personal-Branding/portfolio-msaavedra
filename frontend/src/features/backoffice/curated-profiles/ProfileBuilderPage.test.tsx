@@ -726,6 +726,18 @@ describe('ProfileBuilderPage — aviso de cambios sin guardar', () => {
     expect(screen.queryByText(DIALOG_TITLE)).not.toBeInTheDocument();
   });
 
+  it('un perfil nuevo previsualiza sin slug y sin error', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    server.use(trackPreviews(bodies), ...adminHandlers);
+
+    renderWithProviders(<AppRouter />, { route: '/admin/perfiles/nuevo' });
+    await screen.findByTestId('preview-counts');
+
+    await waitFor(() => expect(bodies.length).toBeGreaterThan(0));
+    expect(bodies[0]).not.toHaveProperty('slug');
+    expect(screen.queryByText(/kebab-case/)).not.toBeInTheDocument();
+  });
+
   it('crear un perfil no se bloquea a sí mismo', async () => {
     const creado = makeAdminCuratedProfile({ id: 'cp-9', slug: 'perfil-nuevo' });
     server.use(

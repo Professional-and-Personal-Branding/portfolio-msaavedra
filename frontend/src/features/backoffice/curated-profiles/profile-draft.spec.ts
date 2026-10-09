@@ -8,6 +8,7 @@ import {
   previewKey,
   tagUniverse,
   toDraft,
+  toPreviewBody,
   toProfileBody,
   validateDraft,
   type ProfileDraft,
@@ -69,7 +70,29 @@ describe('toProfileBody (D9)', () => {
   });
 });
 
+describe('toPreviewBody', () => {
+  it('omite el slug vacío o inválido, que el backend rechazaría', () => {
+    expect(toPreviewBody(draft({ slug: '' }))).not.toHaveProperty('slug');
+    expect(toPreviewBody(draft({ slug: '  ' }))).not.toHaveProperty('slug');
+    expect(toPreviewBody(draft({ slug: 'mi-' }))).not.toHaveProperty('slug');
+    expect(toPreviewBody(draft({ slug: 'Mi Perfil' }))).not.toHaveProperty('slug');
+  });
+
+  it('manda el slug válido, recortado', () => {
+    expect(toPreviewBody(draft({ slug: ' acme-backend ' }))).toMatchObject({ slug: 'acme-backend' });
+  });
+
+  it('nunca manda el token de acceso', () => {
+    const body = toPreviewBody(draft({ visibility: 'PROTECTED', accessToken: 'secreto-largo-123' }));
+    expect(body.accessToken).toBeNull();
+  });
+});
+
 describe('previewKey', () => {
+  it('no cambia con el slug (no altera la vista)', () => {
+    expect(previewKey(draft({ slug: 'a' }))).toBe(previewKey(draft({ slug: 'acme-backend' })));
+  });
+
   it('cambia con los criterios de selección', () => {
     const base = previewKey(draft());
     expect(previewKey(draft({ filterTags: ['java'] }))).not.toBe(base);
