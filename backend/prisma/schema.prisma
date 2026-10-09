@@ -211,7 +211,6 @@ model CuratedProfile {
   excludeIds     String[]   // override: forzar exclusión de IDs
 
   // Personalización visual
-  accentColor    String     @default("#1A365D")
   theme          Theme?     @relation(fields: [themeId], references: [id])
   themeId        String?
   themeOverrides Json?      // override parcial de tokens del tema
