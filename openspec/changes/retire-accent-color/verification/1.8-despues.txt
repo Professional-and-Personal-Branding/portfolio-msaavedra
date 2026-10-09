@@ -1,0 +1,52 @@
+## SELECT colors.accent por perfil (portfolio)
+            id             |         slug          |  accent   |          themeOverrides           
+---------------------------+-----------------------+-----------+-----------------------------------
+ cmuw0feuy004vucosz97x9rde | ai-software-engineer  | "#6D28D9" | {"colors": {"accent": "#6D28D9"}}
+ cmuw0fev90059ucosdlzf2m4j | all                   | "#38bdf8" | {"colors": {"accent": "#38bdf8"}}
+ cmuw0fev50053ucosy75485l6 | backend-payments-ror  | "#9B1C2E" | {"colors": {"accent": "#9B1C2E"}}
+ cmuw0fev1004zucosdjrfnvcz | devops-azure          | "#0078D4" | {"colors": {"accent": "#0078D4"}}
+ cmuw0feus004nucosv3gfqt95 | devops-platform       | "#0F766E" | {"colors": {"accent": "#0F766E"}}
+ cmuw0feuu004pucos9dk0ouak | dotnet-backend        | "#0078D4" | {"colors": {"accent": "#0078D4"}}
+ cmuw0fev0004xucoseq3i0y25 | fullstack-microsoft   | "#0078D4" | {"colors": {"accent": "#0078D4"}}
+ cmuw0feup004lucosaw9q2g4n | fullstack-nest-react  | "#065F46" | {"colors": {"accent": "#065F46"}}
+ cmuw0fev80057ucos98m86a19 | generalist-polyglot   | "#0F766E" | {"colors": {"accent": "#0F766E"}}
+ cmuw0feux004tucosieax5yr0 | integration-architect | "#0E5263" | {"colors": {"accent": "#0E5263"}}
+ cmuw0feuw004rucosd7izb36h | it-leadership         | "#1B3A6B" | {"colors": {"accent": "#1B3A6B"}}
+ cmuw0feue004jucosg0wfx5jb | java-senior-backend   | "#1A365D" | {"colors": {"accent": "#1A365D"}}
+ cmuw0fev30051ucosk5w44nv2 | software-architect    | "#1E293B" | {"colors": {"accent": "#1E293B"}}
+ cmuw0fev60055ucos7ymn8ubk | tech-lead-dotnet      | "#5B2C87" | {"colors": {"accent": "#5B2C87"}}
+(14 rows)
+
+
+## information_schema (debe venir vacio)
+ column_name 
+-------------
+(0 rows)
+
+
+## prisma migrate diff
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+No difference detected.
+
+
+exit code: 0
+## prisma generate
+
+> portfolio-backend@0.1.0 prisma:generate
+> prisma generate
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to .\node_modules\@prisma\client in 103ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+
+

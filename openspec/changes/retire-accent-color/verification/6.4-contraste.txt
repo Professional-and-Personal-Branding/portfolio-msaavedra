@@ -1,0 +1,14 @@
+| ai-software-engineer | #6D28D9 | #0a0e1a | 2.71 | sí | sí |
+| all | #38bdf8 | #0a0e1a | 8.99 | no | no |
+| backend-payments-ror | #9B1C2E | #0a0e1a | 2.38 | sí | sí |
+| devops-azure | #0078D4 | #0a0e1a | 4.25 | no | sí |
+| devops-platform | #0F766E | #0a0e1a | 3.52 | no | sí |
+| dotnet-backend | #0078D4 | #0a0e1a | 4.25 | no | sí |
+| fullstack-microsoft | #0078D4 | #0a0e1a | 4.25 | no | sí |
+| fullstack-nest-react | #065F46 | #0a0e1a | 2.51 | sí | sí |
+| generalist-polyglot | #0F766E | #0a0e1a | 3.52 | no | sí |
+| integration-architect | #0E5263 | #0a0e1a | 2.21 | sí | sí |
+| it-leadership | #1B3A6B | #0a0e1a | 1.71 | sí | sí |
+| java-senior-backend | #1A365D | #0a0e1a | 1.59 | sí | sí |
+| software-architect | #1E293B | #0a0e1a | 1.32 | sí | sí |
+| tech-lead-dotnet | #5B2C87 | #0a0e1a | 1.98 | sí | sí |

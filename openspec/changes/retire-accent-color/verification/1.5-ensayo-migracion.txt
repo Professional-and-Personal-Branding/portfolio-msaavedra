@@ -1,0 +1,90 @@
+## prisma migrate status (antes) -> copia portfolio_retire_accent
+
+> portfolio-backend@0.1.0 prisma:status
+> prisma migrate status
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "portfolio_retire_accent", schema "public" at "localhost:5434"
+
+3 migrations found in prisma/migrations
+Following migration have not yet been applied:
+20261009120000_retire_accent_color
+
+To apply migrations in development run prisma migrate dev.
+To apply migrations in production run prisma migrate deploy.
+
+## prisma migrate deploy
+
+> portfolio-backend@0.1.0 prisma:deploy
+> prisma migrate deploy
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "portfolio_retire_accent", schema "public" at "localhost:5434"
+
+3 migrations found in prisma/migrations
+
+Applying migration `20261009120000_retire_accent_color`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261009120000_retire_accent_color/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+
+## prisma migrate status (despues)
+
+> portfolio-backend@0.1.0 prisma:status
+> prisma migrate status
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "portfolio_retire_accent", schema "public" at "localhost:5434"
+
+3 migrations found in prisma/migrations
+
+Database schema is up to date!
+
+## SELECT posterior (copia)
+         slug          |                           themeOverrides                            |  accent   
+-----------------------+---------------------------------------------------------------------+-----------
+ ai-software-engineer  | {"colors": {"accent": "#6D28D9"}}                                   | "#6D28D9"
+ all                   | {"colors": {"accent": "#38bdf8"}}                                   | "#38bdf8"
+ backend-payments-ror  | {"colors": {"accent": "#9B1C2E"}}                                   | "#9B1C2E"
+ devops-azure          | {"colors": {"accent": "#0078D4"}}                                   | "#0078D4"
+ devops-platform       | {"colors": {"accent": "#0F766E"}}                                   | "#0F766E"
+ dotnet-backend        | {"colors": {"accent": "#0078D4"}}                                   | "#0078D4"
+ fullstack-microsoft   | {"colors": {"accent": "#0078D4"}}                                   | "#0078D4"
+ fullstack-nest-react  | {"colors": {"accent": "#065F46"}}                                   | "#065F46"
+ generalist-polyglot   | {"colors": {"accent": "#0F766E"}}                                   | "#0F766E"
+ integration-architect | {"colors": {"accent": "#0E5263"}}                                   | "#0E5263"
+ it-leadership         | {"colors": {"accent": "#1B3A6B"}}                                   | "#1B3A6B"
+ java-senior-backend   | {"colors": {"accent": "#1A365D"}}                                   | "#1A365D"
+ software-architect    | {"colors": {"accent": "#1E293B"}}                                   | "#1E293B"
+ syn-accent-presente   | {"colors": {"accent": "#abcdef"}}                                   | "#abcdef"
+ syn-colors-sin-accent | {"colors": {"bg": "#000000", "accent": "#444444"}, "radius": "4px"} | "#444444"
+ syn-json-null         | {"colors": {"accent": "#222222"}}                                   | "#222222"
+ syn-sin-colors        | {"colors": {"accent": "#333333"}, "radius": "8px"}                  | "#333333"
+ syn-sql-null          | {"colors": {"accent": "#111111"}}                                   | "#111111"
+ tech-lead-dotnet      | {"colors": {"accent": "#5B2C87"}}                                   | "#5B2C87"
+(19 rows)
+
+
+## columna accentColor en information_schema (debe venir vacio)
+ column_name 
+-------------
+(0 rows)
+
+

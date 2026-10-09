@@ -1,0 +1,61 @@
+fecha de inicio: 2026-10-09T04:19:31.9633721-04:00
+## prisma:status (antes)
+
+> portfolio-backend@0.1.0 prisma:status
+> prisma migrate status
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "portfolio", schema "public" at "localhost:5434"
+
+3 migrations found in prisma/migrations
+Following migration have not yet been applied:
+20261009120000_retire_accent_color
+
+To apply migrations in development run prisma migrate dev.
+To apply migrations in production run prisma migrate deploy.
+
+## prisma:deploy
+
+> portfolio-backend@0.1.0 prisma:deploy
+> prisma migrate deploy
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "portfolio", schema "public" at "localhost:5434"
+
+3 migrations found in prisma/migrations
+
+Applying migration `20261009120000_retire_accent_color`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261009120000_retire_accent_color/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+
+## prisma:status (despues)
+
+> portfolio-backend@0.1.0 prisma:status
+> prisma migrate status
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "portfolio", schema "public" at "localhost:5434"
+
+3 migrations found in prisma/migrations
+
+Database schema is up to date!
+
+fecha de fin: 2026-10-09T04:19:36.5382149-04:00

@@ -1,0 +1,18 @@
+            id             |         slug          | accentColor |          themeId          | overrides_type | colors_type | override_accent 
+---------------------------+-----------------------+-------------+---------------------------+----------------+-------------+-----------------
+ cmuw0feuy004vucosz97x9rde | ai-software-engineer  | #6D28D9     | cmuw0feu4004ducose56vwy40 |                |             | 
+ cmuw0fev90059ucosdlzf2m4j | all                   | #38bdf8     | cmuw0feu4004ducose56vwy40 |                |             | 
+ cmuw0fev50053ucosy75485l6 | backend-payments-ror  | #9B1C2E     | cmuw0feu4004ducose56vwy40 |                |             | 
+ cmuw0fev1004zucosdjrfnvcz | devops-azure          | #0078D4     | cmuw0feu4004ducose56vwy40 |                |             | 
+ cmuw0feus004nucosv3gfqt95 | devops-platform       | #0F766E     | cmuw0feu4004ducose56vwy40 |                |             | 
+ cmuw0feuu004pucos9dk0ouak | dotnet-backend        | #0078D4     | cmuw0feu4004ducose56vwy40 |                |             | 
+ cmuw0fev0004xucoseq3i0y25 | fullstack-microsoft   | #0078D4     | cmuw0feu4004ducose56vwy40 |                |             | 
+ cmuw0feup004lucosaw9q2g4n | fullstack-nest-react  | #065F46     | cmuw0feu4004ducose56vwy40 |                |             | 
+ cmuw0fev80057ucos98m86a19 | generalist-polyglot   | #0F766E     | cmuw0feu4004ducose56vwy40 |                |             | 
+ cmuw0feux004tucosieax5yr0 | integration-architect | #0E5263     | cmuw0feu4004ducose56vwy40 |                |             | 
+ cmuw0feuw004rucosd7izb36h | it-leadership         | #1B3A6B     | cmuw0feu4004ducose56vwy40 |                |             | 
+ cmuw0feue004jucosg0wfx5jb | java-senior-backend   | #1A365D     | cmuw0feu4004ducose56vwy40 |                |             | 
+ cmuw0fev30051ucosk5w44nv2 | software-architect    | #1E293B     | cmuw0feu4004ducose56vwy40 |                |             | 
+ cmuw0fev60055ucos7ymn8ubk | tech-lead-dotnet      | #5B2C87     | cmuw0feu4004ducose56vwy40 |                |             | 
+(14 rows)
+
