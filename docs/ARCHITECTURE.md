@@ -198,7 +198,6 @@ model CuratedProfile {
   filterTags  String[] // tags que definen qué se muestra
   includeIds  String[] // overrides: forzar inclusión
   excludeIds  String[] // overrides: forzar exclusión
-  accentColor String   @default("#1A365D")
   theme       String   @default("modern")
   visibility  Visibility @default(PUBLIC)
   accessToken String?  // para perfiles protegidos

@@ -385,6 +385,15 @@ Caddy preserva el `Host` original al hacer proxy, así que la cookie de sesión 
 5. Asignar el dominio al servicio `web` y recién entonces fijar `FRONTEND_URL` en `api` (CORS y las URLs del sitemap dependen de él) y redesplegar `api`.
 6. Correr la verificación del § 5.
 
+#### Migración `retire_accent_color` (destructiva)
+
+La tercera migración (`init`, `curated_profile_lifecycle`, `retire_accent_color`) es la primera que borra datos: copia el `accentColor` de cada perfil a `themeOverrides.colors.accent` (sin pisar un `colors.accent` existente) y después hace `DROP COLUMN "accentColor"`.
+
+- Corre en el `preDeployCommand` con `prisma migrate deploy`, como las demás. Nunca con `migrate dev` ni `db push`.
+- Sobre una base vacía (el primer deploy) el `UPDATE` afecta 0 filas y la columna nace sin existir. Después se corre el seed, que ya trae los acentos en `themeOverrides`.
+- **Respaldo previo recomendado** si la base ya tiene datos: `pg_dump -Fc` como en el § 7, o un backup de Railway, antes del deploy que incluya esta migración.
+- **Rollback:** restaurar ese respaldo y volver a desplegar la imagen anterior. El código nuevo sin la migración no arranca, y el viejo no funciona con la columna borrada.
+
 #### Lo que cede Railway
 
 - **El rollback caduca**: 72 h en Hobby, 120 h en Pro (§ 6).

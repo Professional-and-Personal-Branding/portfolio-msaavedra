@@ -56,6 +56,7 @@
 4. Pendientes de la ronda 1.1 que necesitan el sitio arriba:
    - **Vista previa de los links** (tarea 5.4 de `add-server-rendered-head`): pegar dos perfiles distintos en el [Post Inspector de LinkedIn](https://www.linkedin.com/post-inspector/) y en un canal de Slack. Las tarjetas tienen que mostrar títulos distintos y la imagen. Capturas en `openspec/changes/archive/2026-10-08-add-server-rendered-head/verification/`.
    - **Migración `curated_profile_lifecycle`**: antes del primer deploy que la incluya, probar `prisma migrate deploy` sobre una restauración del backup de producción (la prueba hecha fue sobre una copia de la base de desarrollo).
+   - **Migración `retire_accent_color`** (destructiva: copia el acento a `themeOverrides` y borra la columna `accentColor`): respaldo previo con `pg_dump -Fc` o backup de Railway si la base ya tiene datos. Rollback: restaurar el respaldo y volver a desplegar la imagen anterior. Detalle en `docs/DEPLOY.md` § 9.5.
 5. Recién entonces, etiquetar `v1.0.0`.
 
 > Regla de oro: el deploy real es el último paso, no el primero.

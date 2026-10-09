@@ -62,6 +62,7 @@ FRONTEND_URL=https://PENDIENTE
 - [ ] Variables → agregar `RAILWAY_DEPLOYMENT_DRAINING_SECONDS=10` (recomendado). La API espera hasta 5 s a registrar las visitas en vuelo al apagarse; si Railway espera menos, esas visitas se pierden. Confirmá primero el valor que tiene hoy el servicio y que quede **por encima de 5**.
 
 - [ ] Deploy. El `preDeployCommand` corre `prisma migrate deploy`; el healthcheck `/health` decide si la versión entra. Si la migración falla, el despliegue se detiene y la versión vieja sigue sirviendo.
+- [ ] La migración `retire_accent_color` es **destructiva**: copia el acento de cada perfil a `themeOverrides.colors.accent` y borra la columna `accentColor`. Sobre una base vacía no toca filas. Si la base ya tiene datos, hacé un **respaldo antes** del deploy (`pg_dump -Fc` o un backup de Railway); el rollback es restaurarlo y volver a desplegar la imagen anterior. (§ 9.5)
 - [ ] Settings → Networking → **Generate Domain** (opcional pero útil: sirve para verificar la API cruda en el paso 6).
 
 ---
