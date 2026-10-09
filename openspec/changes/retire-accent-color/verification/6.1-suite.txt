@@ -1,0 +1,57 @@
+# 6.1 Suite completa contra portfolio (sin seed) - 2026-10-09T04:30:05.4850264-04:00
+## backend: npm run lint
+
+> portfolio-backend@0.1.0 lint
+> eslint "{src,test,scripts}/**/*.ts"
+
+
+## backend: npm run typecheck
+
+> portfolio-backend@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+## backend: npm test
+
+Test Suites: 76 passed, 76 total
+Tests:       529 passed, 529 total
+Snapshots:   0 total
+Time:        14.973 s, estimated 17 s
+Ran all test suites.
+
+
+## backend: npm run test:e2e
+
+Test Suites: 10 passed, 10 total
+Tests:       168 passed, 168 total
+Snapshots:   0 total
+Time:        11.235 s, estimated 13 s
+Ran all test suites.
+
+
+## backend: openapi:export + diff
+OpenAPI exportado a openapi.json: 39 rutas, 61 schemas
+
+ backend/openapi.json | 49 -------------------------------------------------
+ 1 file changed, 49 deletions(-)
+
+## frontend: npm run lint
+
+> portfolio-frontend@0.1.0 lint
+> eslint .
+
+
+## frontend: npm test
+
+ Test Files  34 passed (34)
+      Tests  243 passed (243)
+   Duration  30.14s (tests 45%, environment 27%, import 16%, setup 6%, transform 6%)
+
+
+## frontend: npm run build
+
+✓ built in 437ms
+
+
+## frontend: grep accentColor en api.d.ts
+ocurrencias: 0

@@ -20,7 +20,7 @@ interface CvDataCounts {
   education: unknown[];
   certifications: unknown[];
   projects: unknown[];
-  profileTemplates: unknown[];
+  profileTemplates: { slug: string; themeOverrides?: unknown }[];
 }
 
 const THEME_PRESETS_COUNT = 5; // definidos en scripts/seed.ts
@@ -80,6 +80,22 @@ async function main(): Promise<void> {
     const bilingual = !!role && typeof role['es'] === 'string' && typeof role['en'] === 'string';
     console.log(`  ${bilingual ? '✅' : '❌'} Experience.role bilingüe (es/en) en Novacomp`);
     if (!bilingual) failures++;
+
+    // El acento de cada plantilla vive en themeOverrides.colors.accent (retire-accent-color, D11).
+    const accentOf = (value: unknown): unknown => {
+      const colors = (value as { colors?: { accent?: unknown } } | null | undefined)?.colors;
+      return colors?.accent;
+    };
+    for (const tpl of data.profileTemplates) {
+      const row = await prisma.curatedProfile.findUnique({ where: { slug: tpl.slug } });
+      const expectedAccent = accentOf(tpl.themeOverrides);
+      const okAccent =
+        !!row && expectedAccent !== undefined && accentOf(row.themeOverrides) === expectedAccent;
+      if (!okAccent) failures++;
+      console.log(
+        `  ${okAccent ? '✅' : '❌'} ${tpl.slug.padEnd(22)} colors.accent=${String(accentOf(row?.themeOverrides))} (cv-data=${String(expectedAccent)})`,
+      );
+    }
 
     if (failures > 0) {
       console.error(`❌ ${failures} verificación(es) fallida(s).`);

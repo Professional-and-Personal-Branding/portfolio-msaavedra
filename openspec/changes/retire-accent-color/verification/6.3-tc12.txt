@@ -1,0 +1,20 @@
+## TC-12 - Crear un perfil curado
+  POST /api/admin/curated-profiles            -> 201  id=cmv0phe3k0001ucnw4da7emul slug=suite-demo visibility=PRIVATE
+  valores por defecto: layout=classic views=0 filterTags=[]
+  POST con el mismo slug                      -> 409  (esperado 409)
+  POST con un campo fuera del DTO             -> 400  (esperado 400)
+  POST con accentColor (retirado)             -> 400  (esperado 400)
+  POST omitiendo 'title' (obligatorio)        -> 400  (esperado 400)
+  POST experiencia omitiendo 'summary'        -> 400  (esperado 400)
+
+## TC-19 - Mantener experiencias
+  POST experiencia visible   -> id=cmv0phe5s0002ucnw77s01kp7 tags=[suite-tag] visible=True
+  POST experiencia oculta    -> id=cmv0phe660003ucnwmop896pp visible=False
+  GET /api/experiences (publico) incluye la oculta? False  (esperado False)
+  GET /api/admin/experiences incluye la oculta? True  (esperado True)
+
+## Limpieza
+  perfil cmv0phe3k0001ucnw4da7emul borrado
+  experiencia cmv0phe5s0002ucnw77s01kp7 borrada
+  experiencia cmv0phe660003ucnwmop896pp borrada
+  estado final: 14 perfiles, 15 experiencias

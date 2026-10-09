@@ -11,7 +11,6 @@ const record: CuratedProfileRecord = {
   filterTags: ['leadership', 'dotnet'],
   includeIds: ['a'],
   excludeIds: ['b'],
-  accentColor: '#5B2C87',
   themeId: 't1',
   themeOverrides: { colors: { accent: '#fff' } },
   layout: 'classic',

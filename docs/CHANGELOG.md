@@ -1,5 +1,16 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (ronda 1.1 — `retire-accent-color`)
+
+Segunda etapa de la decisión D9 de `polish-builder-and-edge`: `accentColor` deja de existir en todas las capas. El owner eligió **P1 = B**, así que los colores no se pierden: pasan al tema.
+
+- **Primera migración destructiva del proyecto** (`retire_accent_color`, escrita a mano): copia el `accentColor` de cada perfil a `themeOverrides.colors.accent` (un `colors.accent` que ya existía no se pisa) y después borra la columna. Es idempotente y se aplica con `prisma migrate deploy` (en Railway, desde el `preDeployCommand`); sobre una base vacía no toca filas. La base de desarrollo del owner se migró primero, con respaldo previo, ensayo y rollback probado en una copia (evidencia en `openspec/changes/retire-accent-color/verification.md`).
+- **Cambio visible:** los 13 perfiles de las plantillas dejan de verse con el `#38bdf8` del preset y pasan a su acento propio. Varios contrastan poco con el fondo `#0a0e1a` de `modern-dark` (8 de 13 quedan por debajo de 3:1): riesgo aceptado por el owner, se corrige desde el customizador.
+- **Contrato (BREAKING, sin clientes afectados):** `accentColor` sale de los DTO de entrada y de las cuatro respuestas del perfil curado; un cuerpo que lo traiga responde 400. Se regeneran `openapi.json` y `api.d.ts`.
+- **Dominio y frontend:** sale la regla hex y `HEX_COLOR_REGEX`; desaparecen los tipos `*Wire` y sus casts.
+- **Seed:** `docs/cv-data.json` guarda el color de cada plantilla como `themeOverrides.colors.accent`, y `seed:verify` lo comprueba.
+- Verificado: 529 unitarios, 168 e2e y 243 del frontend.
+
 ## Update — Octubre 2026 (ronda 1.1, change 4 — `add-profile-content-admin`)
 
 Mergeado en PR #9 y archivado en `openspec/changes/archive/2026-10-08-add-profile-content-admin/`, con sus specs sincronizadas. Ahora el portafolio se administra desde el panel donde más se ve: hasta este change, el hero, la formación, los proyectos y los enlaces solo se cambiaban por seed o SQL.

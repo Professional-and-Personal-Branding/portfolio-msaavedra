@@ -12,7 +12,7 @@
  * Idempotente: limpia las tablas relevantes antes de insertar.
  */
 
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 import { SECTION_IDS } from '../src/modules/curated-profile/domain/services/resolve-sections';
@@ -91,7 +91,8 @@ interface CvData {
     roleType?: LocalizedText;
     techFocus?: string;
     filterTags: string[];
-    accentColor: string;
+    /** Override parcial del tema; el acento de la plantilla vive en `colors.accent` (retire-accent-color, D11). */
+    themeOverrides?: Record<string, unknown>;
     /** Explícito para no depender del default de la columna (add-curated-profile-lifecycle, D6). */
     listed: boolean;
   }[];
@@ -474,7 +475,8 @@ async function main() {
         filterTags: tpl.filterTags,
         roleType: tpl.roleType ?? undefined,
         techFocus: tpl.techFocus ?? undefined,
-        accentColor: tpl.accentColor,
+        // Si la plantilla no lo trae, la columna queda en NULL.
+        themeOverrides: tpl.themeOverrides as Prisma.InputJsonObject | undefined,
         listed: tpl.listed,
         themeId: themeBySlug['modern-dark'],
         layout: 'classic',
@@ -499,7 +501,7 @@ async function main() {
       },
       filterTags: [], // vacío = mostrar todo
       listed: true,
-      accentColor: '#38bdf8',
+      themeOverrides: { colors: { accent: '#38bdf8' } },
       themeId: themeBySlug['modern-dark'],
       layout: 'classic',
       sectionsOrder: [...SECTION_IDS],

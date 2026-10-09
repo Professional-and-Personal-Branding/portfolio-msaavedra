@@ -249,11 +249,12 @@ curl -s -X POST $API/api/admin/curated-profiles -H "$AUTH" \
 
 ```
 POST /api/admin/curated-profiles       -> 201  slug=suite-demo visibility=PRIVATE
-  defaults: accentColor=#1A365D layout=classic views=0 filterTags=[]
+  defaults: layout=classic views=0 filterTags=[]
 POST con el mismo slug                 -> 409
 POST con un campo fuera del DTO        -> 400
 POST omitiendo "title" (obligatorio)   -> 500  ❌ antes del arreglo de D-02 — ver § 6.1
 POST omitiendo "title" (obligatorio)   -> 400  ✅ después: "title should not be null or undefined"
+POST con accentColor                   -> 400  campo retirado (retire-accent-color)
 ```
 
 > **Recomendado:** crealo `PRIVATE` y pasalo a `PUBLIC` recién cuando esté listo (TC-16). Un `PRIVATE` devuelve 404, así que nadie lo encuentra mientras lo armás.
@@ -266,7 +267,9 @@ POST omitiendo "title" (obligatorio)   -> 400  ✅ después: "title should not b
 
 *Pestaña Identidad, con la vista previa en vivo a la derecha: `12 experiencias · 10 categorías · 1 proyectos` ya filtradas.*
 
-Los campos que no mandás toman su valor por defecto: `filterTags`, `includeIds`, `excludeIds`, `sectionsOrder` y `sectionsHidden` vacíos, `accentColor` en `#1A365D`, `layout` en `classic`, `visibility` en `PUBLIC`.
+Los campos que no mandás toman su valor por defecto: `filterTags`, `includeIds`, `excludeIds`, `sectionsOrder` y `sectionsHidden` vacíos, `layout` en `classic`, `visibility` en `PUBLIC`.
+
+> **Nota.** `accentColor` se retiró en el change `retire-accent-color`: ya no existe en la API y un cuerpo que lo traiga responde 400. El acento de un perfil es `themeOverrides.colors.accent` (TC-15).
 
 ### TC-13 — Elegir qué entra con tags y overrides ✅
 
@@ -354,6 +357,8 @@ sectionsOrder=[hero,skills,experience,contact]
 2. **Colores** — ocho controles: Fondo, Fondo suave, Tarjeta, Borde, Texto, Texto tenue, Acento y Acento 2.
 3. **Densidad** — Compacta, Cómoda o Amplia.
 4. **Restablecer** — vuelve al preset y descarta los ajustes.
+
+> **Perfiles existentes.** Al retirarse `accentColor` (`retire-accent-color`), el color de cada perfil pasó a `themeOverrides.colors.accent`. Por eso el customizador muestra el **Acento** de esos perfiles como una diferencia respecto del preset, y **Restablecer** lo devuelve al del preset (`#38bdf8` en `modern-dark`). Varios de esos colores contrastan poco con el fondo oscuro: se corrigen desde este mismo control, perfil por perfil.
 
 **Resultado esperado:** el preview cambia al instante, porque los tokens se aplican como variables CSS `--t-*` en el contenedor del preview, no en el documento. Y **solo se guardan las diferencias** contra el tema base, en `themeOverrides`: si mañana cambia el preset, el perfil hereda la mejora y conserva su ajuste.
 

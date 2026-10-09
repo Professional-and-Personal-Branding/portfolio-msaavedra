@@ -1,5 +1,4 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { ACCENT_COLOR_DEPRECATED } from '../docs/accent-color-deprecated';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -22,7 +21,7 @@ import {
   CuratedVisibility,
   NewCuratedProfileProps,
 } from '../../../domain/entities/curated-profile.entity';
-import { HEX_COLOR_REGEX, SLUG_REGEX } from '../../../domain/services/validate-curated-profile';
+import { SLUG_REGEX } from '../../../domain/services/validate-curated-profile';
 import { SECTION_IDS, SectionId } from '../../../domain/services/resolve-sections';
 import { AccessToken } from '../../../domain/value-objects/access-token.vo';
 import { IsSectionIdList } from './is-section-id-list.validator';
@@ -83,16 +82,6 @@ export class CreateCuratedProfileDto {
   @IsArray()
   @IsString({ each: true })
   excludeIds?: string[];
-
-  @ApiPropertyOptional({
-    default: '#1A365D',
-    example: '#5B2C87',
-    deprecated: true,
-    description: ACCENT_COLOR_DEPRECATED,
-  })
-  @IsOptional()
-  @Matches(HEX_COLOR_REGEX, { message: 'accentColor must be #RRGGBB' })
-  accentColor?: string;
 
   @ApiPropertyOptional({ nullable: true, type: String, description: 'Id de Theme existente' })
   @IsOptional()
@@ -181,7 +170,6 @@ export function toNewCuratedProfileProps(dto: CreateCuratedProfileDto): NewCurat
     filterTags: dto.filterTags ?? [],
     includeIds: dto.includeIds ?? [],
     excludeIds: dto.excludeIds ?? [],
-    accentColor: dto.accentColor ?? '#1A365D',
     themeId: dto.themeId ?? null,
     themeOverrides: dto.themeOverrides ?? null,
     layout: dto.layout ?? 'classic',
@@ -205,7 +193,6 @@ export function toDraftCuratedProfileProps(dto: PreviewCuratedProfileDto): NewCu
     filterTags: dto.filterTags ?? [],
     includeIds: dto.includeIds ?? [],
     excludeIds: dto.excludeIds ?? [],
-    accentColor: dto.accentColor ?? '#1A365D',
     themeId: dto.themeId ?? null,
     themeOverrides: dto.themeOverrides ?? null,
     layout: dto.layout ?? 'classic',
@@ -235,7 +222,6 @@ export function toCuratedProfileChanges(
   if (dto.filterTags !== undefined) c.filterTags = dto.filterTags;
   if (dto.includeIds !== undefined) c.includeIds = dto.includeIds;
   if (dto.excludeIds !== undefined) c.excludeIds = dto.excludeIds;
-  if (dto.accentColor !== undefined) c.accentColor = dto.accentColor;
   if (dto.themeId !== undefined) c.themeId = dto.themeId;
   if (dto.themeOverrides !== undefined) c.themeOverrides = dto.themeOverrides;
   if (dto.layout !== undefined) c.layout = dto.layout;

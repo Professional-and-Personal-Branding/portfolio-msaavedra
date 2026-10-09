@@ -13,7 +13,6 @@ export interface AdminCuratedProfileOutput {
   filterTags: string[];
   includeIds: string[];
   excludeIds: string[];
-  accentColor: string;
   themeId: string | null;
   themeOverrides: unknown;
   layout: string;

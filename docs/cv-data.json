@@ -1425,7 +1425,7 @@
         "spring-boot",
         "microservices"
       ],
-      "accentColor": "#1A365D",
+      "themeOverrides": { "colors": { "accent": "#1A365D" } },
       "listed": true
     },
     {
@@ -1453,7 +1453,7 @@
         "fullstack",
         "java"
       ],
-      "accentColor": "#065F46",
+      "themeOverrides": { "colors": { "accent": "#065F46" } },
       "listed": true
     },
     {
@@ -1481,7 +1481,7 @@
         "iac",
         "serverless"
       ],
-      "accentColor": "#0F766E",
+      "themeOverrides": { "colors": { "accent": "#0F766E" } },
       "listed": true
     },
     {
@@ -1508,7 +1508,7 @@
         "azure",
         "integration"
       ],
-      "accentColor": "#0078D4",
+      "themeOverrides": { "colors": { "accent": "#0078D4" } },
       "listed": true
     },
     {
@@ -1537,7 +1537,7 @@
         "cto",
         "migration"
       ],
-      "accentColor": "#1B3A6B",
+      "themeOverrides": { "colors": { "accent": "#1B3A6B" } },
       "listed": true
     },
     {
@@ -1565,7 +1565,7 @@
         "fintech",
         "messaging"
       ],
-      "accentColor": "#0E5263",
+      "themeOverrides": { "colors": { "accent": "#0E5263" } },
       "listed": true
     },
     {
@@ -1595,7 +1595,7 @@
         "fullstack",
         "python"
       ],
-      "accentColor": "#6D28D9",
+      "themeOverrides": { "colors": { "accent": "#6D28D9" } },
       "listed": true
     },
     {
@@ -1625,7 +1625,7 @@
         "reporting",
         "integration"
       ],
-      "accentColor": "#0078D4",
+      "themeOverrides": { "colors": { "accent": "#0078D4" } },
       "listed": true
     },
     {
@@ -1654,7 +1654,7 @@
         "iac",
         "microsoft"
       ],
-      "accentColor": "#0078D4",
+      "themeOverrides": { "colors": { "accent": "#0078D4" } },
       "listed": true
     },
     {
@@ -1684,7 +1684,7 @@
         "integration",
         "cloud"
       ],
-      "accentColor": "#1E293B",
+      "themeOverrides": { "colors": { "accent": "#1E293B" } },
       "listed": true
     },
     {
@@ -1714,7 +1714,7 @@
         "messaging",
         "integration"
       ],
-      "accentColor": "#9B1C2E",
+      "themeOverrides": { "colors": { "accent": "#9B1C2E" } },
       "listed": true
     },
     {
@@ -1745,7 +1745,7 @@
         "integration",
         "fullstack"
       ],
-      "accentColor": "#5B2C87",
+      "themeOverrides": { "colors": { "accent": "#5B2C87" } },
       "listed": true
     },
     {
@@ -1777,7 +1777,7 @@
         "fintech",
         "leadership"
       ],
-      "accentColor": "#0F766E",
+      "themeOverrides": { "colors": { "accent": "#0F766E" } },
       "listed": true
     }
   ]

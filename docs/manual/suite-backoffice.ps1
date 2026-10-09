@@ -45,11 +45,13 @@ $body = @{
 $p = J POST "$API/api/admin/curated-profiles" $H $body
 $created.profiles += $p.id
 "  POST /api/admin/curated-profiles            -> 201  id=$($p.id) slug=$($p.slug) visibility=$($p.visibility)"
-"  valores por defecto: accentColor=$($p.accentColor) layout=$($p.layout) views=$($p.views) filterTags=[$($p.filterTags -join ',')]"
+"  valores por defecto: layout=$($p.layout) views=$($p.views) filterTags=[$($p.filterTags -join ',')]"
 $c = Code POST "$API/api/admin/curated-profiles" $H $body
 "  POST con el mismo slug                      -> $c  (esperado 409)"
 $c = Code POST "$API/api/admin/curated-profiles" $H (@{slug='x';title=@{es='a';en='a'};headline=@{es='a';en='a'};campoInventado='x'}|ConvertTo-Json -Depth 5)
 "  POST con un campo fuera del DTO             -> $c  (esperado 400)"
+$c = Code POST "$API/api/admin/curated-profiles" $H (@{slug='x';title=@{es='a';en='a'};accentColor='#5B2C87'}|ConvertTo-Json -Depth 5)
+"  POST con accentColor (retirado)             -> $c  (esperado 400)"
 $c = Code POST "$API/api/admin/curated-profiles" $H (@{slug='x';headline=@{es='a';en='a'}}|ConvertTo-Json -Depth 5)
 "  POST omitiendo 'title' (obligatorio)        -> $c  (esperado 400)"
 $c = Code POST "$API/api/admin/experiences" $H (@{company='X';location='Y';role=@{es='a';en='a'};startDate='2025-01'}|ConvertTo-Json -Depth 5)

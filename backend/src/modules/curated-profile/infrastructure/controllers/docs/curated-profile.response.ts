@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ACCENT_COLOR_DEPRECATED } from './accent-color-deprecated';
 import {
   CertificationResponse,
   EducationResponse,
@@ -40,9 +39,6 @@ export class CuratedProfileSummaryResponse implements CuratedProfileSummaryOutpu
 
   @ApiProperty({ nullable: true, type: String, example: '.NET' })
   techFocus!: string | null;
-
-  @ApiProperty({ example: '#5B2C87', deprecated: true, description: ACCENT_COLOR_DEPRECATED })
-  accentColor!: string;
 
   @ApiProperty({ example: 'classic' })
   layout!: string;

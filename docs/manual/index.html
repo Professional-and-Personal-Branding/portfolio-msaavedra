@@ -539,11 +539,13 @@ curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
 }' | jq '{id, slug, visibility}'</pre></div>
         <p><span class="lbl">Observado</span></p>
         <div class="codewrap"><pre>POST /api/admin/curated-profiles       -> 201  slug=suite-demo visibility=PRIVATE
-  defaults: accentColor=#1A365D layout=classic views=0 filterTags=[]
+  defaults: layout=classic views=0 filterTags=[]
 POST con el mismo slug                 -> 409
 POST con un campo fuera del DTO        -> 400
 POST omitiendo "title" (obligatorio)   -> 500  ❌ antes del arreglo de D-02
-POST omitiendo "title" (obligatorio)   -> 400  ✅ después: "title should not be null or undefined"</pre></div>
+POST omitiendo "title" (obligatorio)   -> 400  ✅ después: "title should not be null or undefined"
+POST con accentColor                   -> 400  campo retirado (retire-accent-color)</pre></div>
+        <div class="note"><b>Nota.</b> <code>accentColor</code> se retiró en el change <code>retire-accent-color</code>: un cuerpo que lo traiga responde 400. El acento de un perfil es <code>themeOverrides.colors.accent</code> (TC-15).</div>
         <div class="note"><b>Recomendado.</b> Crealo <code>PRIVATE</code> y pasalo a <code>PUBLIC</code> recién cuando esté listo. Un <code>PRIVATE</code> devuelve 404, así que nadie lo encuentra mientras lo armás.</div>
         <figure class="shot" id="img-tc12a-perfiles-lista"><img src="tc12a-perfiles-lista.jpg" width="800" height="455" alt="Lista de perfiles curados en el panel"><figcaption>Slug, visibilidad, taxonomía y visitas de cada perfil.</figcaption></figure>
         <figure class="shot" id="img-tc12b-identidad"><img src="tc12b-identidad.jpg" width="800" height="455" alt="Pestaña Identidad del constructor"><figcaption>Pestaña Identidad, con la vista previa en vivo: <code>12 experiencias · 10 categorías · 1 proyectos</code> ya filtradas.</figcaption></figure>
@@ -589,6 +591,7 @@ sectionsOrder=[hero,skills,experience,contact]
           <label class="run"><input type="checkbox" data-run="tc15"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · Pestaña <b>Diseño</b>, bloque <i>Tema</i>: tema base entre los cinco presets, ocho controles de color (Fondo, Fondo suave, Tarjeta, Borde, Texto, Texto tenue, Acento y Acento 2), densidad Compacta / Cómoda / Amplia, y <b>Restablecer</b>.</p>
         <p><span class="lbl">Esperado</span> · El preview cambia al instante, porque los tokens se aplican como variables CSS <code>--t-*</code> en el contenedor del preview y no en el documento. Y <b>solo se guardan las diferencias</b> contra el tema base, en <code>themeOverrides</code>: si mañana cambia el preset, el perfil hereda la mejora y conserva su ajuste.</p>
+        <div class="note"><b>Perfiles existentes.</b> Al retirarse <code>accentColor</code> (<code>retire-accent-color</code>), el color de cada perfil pasó a <code>themeOverrides.colors.accent</code>. El customizador muestra ese <b>Acento</b> como una diferencia respecto del preset, y <b>Restablecer</b> lo devuelve al del preset (<code>#38bdf8</code> en <code>modern-dark</code>). Varios de esos colores contrastan poco con el fondo oscuro: se corrigen desde este control, perfil por perfil.</div>
         <div class="codewrap"><pre>GET /api/admin/themes  -> 5 temas: corporate, elegant, minimal, modern-dark, modern-light
 PATCH themeOverrides   -> se guarda {"colors":{"accent":"#5B2C87"}}, solo la diferencia</pre></div>
         <figure class="shot" id="img-tc15-tema"><img src="tc15-tema.jpg" width="800" height="455" alt="Customizador de tema"><figcaption>Tema base, los ocho colores con su hexadecimal, y <b>Restablecer</b> para volver al preset.</figcaption></figure>

@@ -24,9 +24,8 @@ const ORIGINAL: CuratedProfileProps = {
   filterTags: ['dotnet', 'leadership'],
   includeIds: ['exp-a'],
   excludeIds: ['exp-b'],
-  accentColor: '#5B2C87',
   themeId: 't1',
-  themeOverrides: { colors: { accent: '#ffffff' } },
+  themeOverrides: { colors: { accent: '#5B2C87' } },
   layout: 'sidebar',
   sectionsOrder: ['hero', 'experience', 'skills'],
   sectionsHidden: ['stats'],
@@ -76,6 +75,13 @@ describe('DuplicateCuratedProfileUseCase', () => {
     expect(dup.themeId).toBe('t1');
     expect(dup.layout).toBe('sidebar');
     expect(dup.title).toEqual(ORIGINAL.title);
+  });
+
+  it('el duplicado hereda el acento migrado (themeOverrides.colors.accent) y no trae accentColor', async () => {
+    const { repo, created } = build();
+    await new DuplicateCuratedProfileUseCase(repo).execute({ id: 'cp1' });
+    expect(created[0].themeOverrides).toEqual({ colors: { accent: '#5B2C87' } });
+    expect(created[0]).not.toHaveProperty('accentColor');
   });
 
   it('el duplicado nace retirado: PRIVATE, no enumerado, sin token, sin visitas ni archivado', async () => {

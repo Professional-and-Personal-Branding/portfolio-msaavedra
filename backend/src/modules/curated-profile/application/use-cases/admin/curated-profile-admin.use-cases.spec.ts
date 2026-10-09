@@ -26,7 +26,6 @@ const NEW: NewCuratedProfileProps = {
   filterTags: ['testing'],
   includeIds: [],
   excludeIds: [],
-  accentColor: '#1A365D',
   themeId: null,
   themeOverrides: null,
   layout: 'classic',

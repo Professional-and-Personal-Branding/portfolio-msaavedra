@@ -101,7 +101,7 @@ Dos de los tres informes que alimentaron la votación contenían afirmaciones fa
 | **`referrer` y `userAgent` se persisten y nunca se leen** | Los graba `curated-profile.controller.ts:96-97`; `ProfileViewsResponse` solo expone `total`, `byProfile`, `byLocale`, `byDay`. No se puede saber de dónde llegó una visita |
 | **El menú público delata la curaduría** | `TopBar.tsx:30` monta `ProfileMenu` siempre, también en `/:slug`: quien abre un perfil ve los otros doce hechos para otras vacantes |
 | ✅ **El borrador del constructor se pierde sin aviso** *(resuelto en `polish-builder-and-edge`: aviso en el constructor, la Portada y los formularios en diálogo)* | Estado en `useState` sin `beforeunload` ni blocker de router |
-| **`accentColor` es un campo fantasma** *(primera etapa hecha, D9 de `polish-builder-and-edge`: el panel ya no lo envía y el contrato lo marca obsoleto; falta el change posterior de § 5)* | Viaja a la API desde `profile-draft.ts` pero ninguna pestaña lo edita: congelado en `#1A365D` |
+| ✅ **`accentColor` es un campo fantasma** *(resuelto: etapa 1 en `polish-builder-and-edge` (D9) y retiro completo en `retire-accent-color`; el owner eligió P1 = B y el color de cada perfil pasó a `themeOverrides.colors.accent`)* | Viaja a la API desde `profile-draft.ts` pero ninguna pestaña lo edita: congelado en `#1A365D` |
 
 ### 3.3 Las dos cosas que el set ganador no tocaba
 
@@ -158,7 +158,7 @@ Cinco changes, en este orden. La justificación de cada movimiento respecto del 
 | `cache-de-lectura-y-visitas` | **La mitad de las visitas está hecha** (`polish-builder-and-edge` sacó `recordView` del camino crítico). Falta el cache de lectura | Cuando haya tráfico que lo justifique: hoy son visitas de a decenas |
 | CI/CD | **Ningún candidato lo propuso**, y hay 254 unitarios y 109 e2e que nadie corre automáticamente. Lo marcaron los dos críticos | Es el ítem "CI/CD" del checklist 1.0.x. No necesita deliberación: necesita un workflow |
 | ✅ Content-Security-Policy del sitio público | **Resuelto en `polish-builder-and-edge`**: Caddy la sirve, con `CSP_HEADER` para pasar a `Report-Only` sin reconstruir | Hecho |
-| Retirar `accentColor` (segunda etapa de D9) | Primera etapa hecha: el panel no lo envía y el contrato lo marca obsoleto. Falta quitarlo de la salida y del DTO de entrada, una migración que borre la columna y el campo del seed | Change posterior, con los `MODIFIED` de `admin-curated-profile-crud` (*Campos opcionales de la creación y sus valores por defecto*, *Duplicar un perfil curado*), `admin-curated-profile-preview` (*Resolución de un borrador sin persistir*), `curated-profile-resolution` (*Resultado listo para presentación*), `public-curated-profile-api` (*Listado de perfiles curados públicos*) y `theme-resolution` (*Forma del tema resuelto*) |
+| ✅ Retirar `accentColor` (segunda etapa de D9) | **Resuelto en `retire-accent-color`** (P1 = B): sale de la entrada, la salida, el dominio y el seed; una migración copia el color de cada perfil a `themeOverrides.colors.accent` y borra la columna | Hecho |
 
 ---
 

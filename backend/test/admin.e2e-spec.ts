@@ -260,6 +260,45 @@ describe('Backoffice (e2e)', () => {
       await prisma.curatedProfile.deleteMany({ where: { slug: 'd02-e2e' } });
     });
 
+    it('accentColor está retirado: POST y PATCH responden 400 y no cambian nada (retire-accent-color, D2)', async () => {
+      const post = await adminPost('/api/admin/curated-profiles').send({
+        slug: 'accent-e2e',
+        title: { es: 'x' },
+        accentColor: '#5B2C87',
+      });
+      expect(post.status).toBe(400);
+      expect(JSON.stringify(post.body.message)).toContain('accentColor');
+      expect(await prisma.curatedProfile.count({ where: { slug: 'accent-e2e' } })).toBe(0);
+
+      const row = await prisma.curatedProfile.findUniqueOrThrow({ where: { slug: 'all' } });
+      const patch = await adminPatch(`/api/admin/curated-profiles/${row.id}`).send({
+        accentColor: '#5B2C87',
+      });
+      expect(patch.status).toBe(400);
+      expect(JSON.stringify(patch.body.message)).toContain('accentColor');
+      const after = await prisma.curatedProfile.findUniqueOrThrow({ where: { slug: 'all' } });
+      expect(after.themeOverrides).toEqual(row.themeOverrides);
+    });
+
+    it('un perfil creado con themeOverrides.colors.accent lo resuelve en el tema', async () => {
+      const theme = await prisma.theme.findFirstOrThrow({ where: { slug: 'modern-dark' } });
+      const created = await adminPost('/api/admin/curated-profiles').send({
+        slug: 'accent-tema-e2e',
+        title: { es: 'x' },
+        themeId: theme.id,
+        themeOverrides: { colors: { accent: '#5B2C87' } },
+      });
+      expect(created.status).toBe(201);
+      try {
+        const pub = await get('/api/curated-profiles/accent-tema-e2e');
+        expect(pub.status).toBe(200);
+        expect(pub.body.theme.tokens.colors.accent).toBe('#5B2C87');
+        expect(pub.body).not.toHaveProperty('accentColor');
+      } finally {
+        await adminDelete(`/api/admin/curated-profiles/${created.body.id as string}`);
+      }
+    });
+
     it('listado admin con campos internos', async () => {
       const res = await adminGet('/api/admin/curated-profiles');
       expect(res.status).toBe(200);

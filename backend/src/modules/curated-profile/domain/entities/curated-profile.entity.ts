@@ -20,7 +20,6 @@ export interface CuratedProfileProps {
   readonly filterTags: readonly string[];
   readonly includeIds: readonly string[];
   readonly excludeIds: readonly string[];
-  readonly accentColor: string;
   readonly themeId: string | null;
   /** Override parcial de tokens (JSON libre, validado al mergear). */
   readonly themeOverrides: unknown;
@@ -117,9 +116,6 @@ export class CuratedProfile {
   }
   get excludeIds(): readonly string[] {
     return this.props.excludeIds;
-  }
-  get accentColor(): string {
-    return this.props.accentColor;
   }
   get themeId(): string | null {
     return this.props.themeId;

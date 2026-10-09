@@ -1,0 +1,25 @@
+GET /api/curated-profiles/all -> 200 theme.tokens.colors.accent=#38bdf8 bg=#0a0e1a accentColor en el cuerpo: False
+GET /api/curated-profiles/fullstack-nest-react -> 200 theme.tokens.colors.accent=#065F46 bg=#0a0e1a accentColor en el cuerpo: False
+GET /api/curated-profiles/tech-lead-dotnet -> 200 theme.tokens.colors.accent=#5B2C87 bg=#0a0e1a accentColor en el cuerpo: False
+GET /api/curated-profiles (listado) -> 200 items=14 accentColor en el cuerpo: False
+POST /api/admin/curated-profiles con accentColor -> 400 
+{
+  "statusCode": 400,
+  "message": [
+    "property accentColor should not exist"
+  ],
+  "error": "Bad Request",
+  "requestId": "218a4a24-0318-4378-b0a5-81cbeba66fb3",
+  "timestamp": "2026-10-09T08:31:16.010Z"
+}
+POST /api/admin/curated-profiles/preview con accentColor -> 400 
+{
+  "statusCode": 400,
+  "message": [
+    "property accentColor should not exist"
+  ],
+  "error": "Bad Request",
+  "requestId": "f83dbc4e-0677-47a7-8ba5-305abcee75c0",
+  "timestamp": "2026-10-09T08:31:16.028Z"
+}
+GET /api/admin/curated-profiles accentColor en el cuerpo: False

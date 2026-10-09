@@ -28,7 +28,6 @@ export function makeCuratedProfile(overrides: Partial<CuratedProfile> = {}): Cur
     description: 'Vista completa de la trayectoria.',
     roleType: 'Generalista',
     techFocus: 'Polyglot',
-    accentColor: '#38bdf8',
     layout: 'classic',
     visibility: 'PUBLIC',
     // Lo que devuelve el backend para un perfil con datos en todo: el catálogo completo.
@@ -158,7 +157,6 @@ export function makeCuratedProfileList(): CuratedProfileSummary[] {
       description: `Descripción ${i}`,
       roleType,
       techFocus: i === 0 ? 'Polyglot' : `Tech ${i}`,
-      accentColor: '#38bdf8',
       layout: 'classic',
     };
   });

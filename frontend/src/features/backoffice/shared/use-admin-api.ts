@@ -7,13 +7,11 @@ import type {
   AdminSkillCategory,
   AdminTheme,
   CreateCuratedProfileBody,
-  CreateCuratedProfileWire,
   CreateExperienceBody,
   CreateSkillBody,
   CreateSkillCategoryBody,
   ProfileViews,
   UpdateCuratedProfileBody,
-  UpdateCuratedProfileWire,
   UpdateExperienceBody,
 } from './admin-types';
 
@@ -62,7 +60,7 @@ export function useSaveExperience() {
       id?: string;
       body: CreateExperienceBody | UpdateExperienceBody;
     }) =>
-      input.id
+      input.id !== undefined
         ? unwrap(
             await api.PATCH('/api/admin/experiences/{id}', {
               params: { path: { id: input.id } },
@@ -104,7 +102,7 @@ export function useSaveSkillCategory() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: async (input: { id?: string; body: CreateSkillCategoryBody }) =>
-      input.id
+      input.id !== undefined
         ? unwrap(
             await api.PATCH('/api/admin/skill-categories/{id}', {
               params: { path: { id: input.id } },
@@ -133,7 +131,7 @@ export function useSaveSkill() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: async (input: { id?: string; categoryId: string; body: CreateSkillBody }) =>
-      input.id
+      input.id !== undefined
         ? unwrap(
             await api.PATCH('/api/admin/skills/{id}', {
               params: { path: { id: input.id } },
@@ -173,22 +171,21 @@ export function useCuratedProfilesAdmin() {
 export function useSaveCuratedProfile() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: async (input: {
-      id?: string;
-      body: CreateCuratedProfileBody | UpdateCuratedProfileBody;
-    }) =>
-      input.id
+    mutationFn: async (
+      input:
+        | { id: string; body: UpdateCuratedProfileBody }
+        | { id?: undefined; body: CreateCuratedProfileBody },
+    ) =>
+      input.id !== undefined
         ? unwrap(
             await api.PATCH('/api/admin/curated-profiles/{id}', {
               params: { path: { id: input.id } },
-              // El contrato marca `accentColor` como requerido (por su default); el panel
-              // no lo envía y el PATCH es parcial.
-              body: input.body as UpdateCuratedProfileWire,
+              body: input.body,
             }),
           )
         : unwrap(
             await api.POST('/api/admin/curated-profiles', {
-              body: input.body as CreateCuratedProfileWire,
+              body: input.body,
             }),
           ),
     onSuccess: () => invalidate(client, adminKeys.curatedProfiles),

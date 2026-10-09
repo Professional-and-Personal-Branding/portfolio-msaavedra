@@ -1,0 +1,108 @@
+## pg_restore --clean --if-exists --no-owner sobre la copia
+
+## prisma:status tras el rollback (esperado: retire_accent_color pendiente)
+
+> portfolio-backend@0.1.0 prisma:status
+> prisma migrate status
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "portfolio_retire_accent", schema "public" at "localhost:5434"
+
+3 migrations found in prisma/migrations
+Following migration have not yet been applied:
+20261009120000_retire_accent_color
+
+To apply migrations in development run prisma migrate dev.
+To apply migrations in production run prisma migrate deploy.
+
+## diff SELECT de 1.2 (copia restaurada) vs verification/1.2-antes.txt
+
+InputObject SideIndicator
+----------- -------------
+            =>
+
+
+## prisma:deploy (reaplicar)
+
+> portfolio-backend@0.1.0 prisma:deploy
+> prisma migrate deploy
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "portfolio_retire_accent", schema "public" at "localhost:5434"
+
+3 migrations found in prisma/migrations
+
+Applying migration `20261009120000_retire_accent_color`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261009120000_retire_accent_color/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+
+## npm run seed (SOLO copia)
+
+> portfolio-backend@0.1.0 seed
+> tsx scripts/seed.ts
+
+🌱 Iniciando seed...
+🧹 Limpiando tablas...
+👤 Creando perfil base...
+💼 Creando 15 experiencias...
+🛠️  Creando 12 categorías de skills...
+🎓 Creando 6 registros de educación...
+📜 Creando 8 certificaciones...
+🚀 Creando 2 proyectos...
+🔗 Creando 3 enlaces sociales...
+📦 Creando 0 repositorios destacados...
+🎨 Creando 5 temas preset...
+⭐ Creando 13 perfiles curados...
+✅ Seed completado con éxito.
+
+## npm run seed:verify (SOLO copia)
+
+> portfolio-backend@0.1.0 seed:verify
+> tsx scripts/verify-seed.ts
+
+🔎 Verificación del seed (esperado ← cv-data.json / actual ← DB)
+  ✅ Profile              esperado=1  actual=1
+  ✅ Language             esperado=2  actual=2
+  ✅ Experience           esperado=15  actual=15
+  ✅ SkillCategory        esperado=12  actual=12
+  ✅ Skill                esperado=108  actual=108
+  ✅ Education            esperado=6  actual=6
+  ✅ Certification        esperado=8  actual=8
+  ✅ Project              esperado=2  actual=2
+  ✅ SocialLink           esperado=3  actual=3
+  ✅ FeaturedRepository   esperado=0  actual=0
+  ✅ Theme                esperado=5  actual=5
+  ✅ CuratedProfile       esperado=14  actual=14
+  ✅ ProfileView          esperado=0  actual=0
+  ✅ Experience.role bilingüe (es/en) en Novacomp
+  ✅ java-senior-backend    colors.accent=#1A365D (cv-data=#1A365D)
+  ✅ fullstack-nest-react   colors.accent=#065F46 (cv-data=#065F46)
+  ✅ devops-platform        colors.accent=#0F766E (cv-data=#0F766E)
+  ✅ dotnet-backend         colors.accent=#0078D4 (cv-data=#0078D4)
+  ✅ it-leadership          colors.accent=#1B3A6B (cv-data=#1B3A6B)
+  ✅ integration-architect  colors.accent=#0E5263 (cv-data=#0E5263)
+  ✅ ai-software-engineer   colors.accent=#6D28D9 (cv-data=#6D28D9)
+  ✅ fullstack-microsoft    colors.accent=#0078D4 (cv-data=#0078D4)
+  ✅ devops-azure           colors.accent=#0078D4 (cv-data=#0078D4)
+  ✅ software-architect     colors.accent=#1E293B (cv-data=#1E293B)
+  ✅ backend-payments-ror   colors.accent=#9B1C2E (cv-data=#9B1C2E)
+  ✅ tech-lead-dotnet       colors.accent=#5B2C87 (cv-data=#5B2C87)
+  ✅ generalist-polyglot    colors.accent=#0F766E (cv-data=#0F766E)
+✅ La base coincide con cv-data.json.
+
+
+## Comparacion normalizada (sin lineas vacias) 1.2-antes vs copia restaurada: lineas=17/17, diferencias=0. (El diff de arriba solo marca una linea en blanco final de la salida de psql.)

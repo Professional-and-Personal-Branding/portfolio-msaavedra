@@ -125,9 +125,10 @@ Cuando creamos un CV para una vacante nueva, el equivalente en el portafolio es 
      "description": "Perfil enfocado en seguridad aplicada y fintech.",
      "headline": "Security Software Engineer · OWASP · PCI-DSS · Fintech",
      "filterTags": ["security", "java", "fintech"],
-     "accentColor": "#B91C1C"
+     "themeOverrides": { "colors": { "accent": "#B91C1C" } }
    }
    ```
+   El acento de la plantilla vive en `themeOverrides.colors.accent` (el campo `accentColor` se retiró en `retire-accent-color`). Es el color del acento sobre el fondo del tema (`modern-dark` usa `#0a0e1a`): elegí uno con contraste suficiente, 4,5:1 como mínimo para texto y 3:1 para elementos grandes.
 4. **Re-ejecutar el seed.** El nuevo perfil queda disponible en `/p/security-engineer`.
 
 ### Vocabulario de tags actual

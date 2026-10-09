@@ -17,7 +17,6 @@ function output(overrides: Partial<CuratedProfileOutput> = {}): CuratedProfileOu
     description: 'Liderazgo técnico y arquitectura .NET.',
     roleType: 'Tech Lead',
     techFocus: '.NET',
-    accentColor: '#000000',
     layout: 'classic',
     visibility: 'PUBLIC',
     sections: [],
