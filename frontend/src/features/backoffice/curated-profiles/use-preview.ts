@@ -5,7 +5,7 @@ import { api, unwrap } from '@/shared/lib/api-client';
 import type { PreviewCuratedProfile } from '@/shared/types/portfolio';
 import type { components } from '@/shared/types/api';
 import { adminKeys } from '../shared/use-admin-api';
-import { previewKey, toProfileBody, type ProfileDraft } from './profile-draft';
+import { previewKey, toPreviewBody, type ProfileDraft } from './profile-draft';
 
 type PreviewCuratedProfileWire = components['schemas']['PreviewCuratedProfileDto'];
 
@@ -27,9 +27,7 @@ export async function fetchPreview(
   draft: ProfileDraft,
   locale: Locale,
 ): Promise<PreviewCuratedProfile> {
-  const body = toProfileBody(draft);
-  // El token de acceso no hace falta para previsualizar y no debe viajar de más.
-  body.accessToken = null;
+  const body = toPreviewBody(draft);
   return unwrap(
     await api.POST('/api/admin/curated-profiles/preview', {
       params: { query: { locale } },

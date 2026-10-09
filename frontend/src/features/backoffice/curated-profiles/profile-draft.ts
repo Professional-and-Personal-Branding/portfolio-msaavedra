@@ -104,14 +104,28 @@ export function toProfileBody(draft: ProfileDraft): CreateCuratedProfileBody {
   };
 }
 
+/** Cuerpo del preview: el slug no cambia lo que se ve, así que viaja solo si es válido. */
+export type PreviewBody = Omit<CreateCuratedProfileBody, 'slug'> & { slug?: string };
+
+/**
+ * Cuerpo para previsualizar. Un slug vacío o a medio escribir (`mi-`) daría
+ * 400 y dejaría el preview en error; se omite y el backend usa uno provisorio.
+ * El token de acceso no hace falta para previsualizar y no debe viajar de más.
+ */
+export function toPreviewBody(draft: ProfileDraft): PreviewBody {
+  const { slug, ...rest } = toProfileBody(draft);
+  const body: PreviewBody = { ...rest, accessToken: null };
+  if (SLUG_PATTERN.test(slug)) body.slug = slug;
+  return body;
+}
+
 /**
  * Clave del preview: todo lo que cambia la selección o el orden de secciones.
  * Los tokens del tema quedan fuera a propósito, porque el customizador los
- * aplica en el cliente (decisión D8).
+ * aplica en el cliente (decisión D8). El slug también: no altera la vista.
  */
 export function previewKey(draft: ProfileDraft): string {
   return JSON.stringify({
-    slug: draft.slug,
     title: draft.title,
     headline: draft.headline,
     description: draft.description,
