@@ -61,15 +61,6 @@ describe('toProfileBody', () => {
   });
 });
 
-describe('toProfileBody (D9)', () => {
-  it('no incluye accentColor (D9)', () => {
-    expect(toProfileBody(draft())).not.toHaveProperty('accentColor');
-    expect(
-      toProfileBody(toDraft(makeAdminCuratedProfile({ accentColor: '#5B2C87' }))),
-    ).not.toHaveProperty('accentColor');
-  });
-});
-
 describe('toPreviewBody', () => {
   it('omite el slug vacío o inválido, que el backend rechazaría', () => {
     expect(toPreviewBody(draft({ slug: '' }))).not.toHaveProperty('slug');
@@ -79,11 +70,15 @@ describe('toPreviewBody', () => {
   });
 
   it('manda el slug válido, recortado', () => {
-    expect(toPreviewBody(draft({ slug: ' acme-backend ' }))).toMatchObject({ slug: 'acme-backend' });
+    expect(toPreviewBody(draft({ slug: ' acme-backend ' }))).toMatchObject({
+      slug: 'acme-backend',
+    });
   });
 
   it('nunca manda el token de acceso', () => {
-    const body = toPreviewBody(draft({ visibility: 'PROTECTED', accessToken: 'secreto-largo-123' }));
+    const body = toPreviewBody(
+      draft({ visibility: 'PROTECTED', accessToken: 'secreto-largo-123' }),
+    );
     expect(body.accessToken).toBeNull();
   });
 });

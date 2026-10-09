@@ -3,11 +3,8 @@ import { useEffect, useState } from 'react';
 import type { Locale } from '@/shared/i18n/locale';
 import { api, unwrap } from '@/shared/lib/api-client';
 import type { PreviewCuratedProfile } from '@/shared/types/portfolio';
-import type { components } from '@/shared/types/api';
 import { adminKeys } from '../shared/use-admin-api';
 import { previewKey, toPreviewBody, type ProfileDraft } from './profile-draft';
-
-type PreviewCuratedProfileWire = components['schemas']['PreviewCuratedProfileDto'];
 
 export const PREVIEW_DEBOUNCE_MS = 400;
 
@@ -31,8 +28,7 @@ export async function fetchPreview(
   return unwrap(
     await api.POST('/api/admin/curated-profiles/preview', {
       params: { query: { locale } },
-      // El contrato aún marca `accentColor` como requerido (D9); no se envía.
-      body: body as PreviewCuratedProfileWire,
+      body,
     }),
   );
 }

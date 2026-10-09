@@ -214,7 +214,6 @@ function heroData(profile: ProfilePreview): CuratedProfile {
     description: '',
     roleType: '',
     techFocus: null,
-    accentColor: '',
     layout: 'classic',
     visibility: 'PUBLIC',
     sections: ['hero'],

@@ -93,7 +93,6 @@ export function makeAdminCuratedProfile(
     filterTags: ['nodejs'],
     includeIds: [],
     excludeIds: [],
-    accentColor: '#1A365D',
     themeId: 'theme-dark',
     themeOverrides: null,
     layout: 'classic',
