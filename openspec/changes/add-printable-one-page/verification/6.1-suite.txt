@@ -1,0 +1,53 @@
+## frontend: npm run lint
+
+> portfolio-frontend@0.1.0 lint
+> eslint .
+
+exit: 0
+## frontend: npm run typecheck
+
+> portfolio-frontend@0.1.0 typecheck
+> tsc -b
+
+exit: 0
+## frontend: npm test
+> portfolio-frontend@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.0 D:/projects/portfolio-msaavedra/wt-print/frontend
+
+
+ Test Files  38 passed (38)
+      Tests  290 passed (290)
+   Start at  21:46:42
+   Duration  32.96s (tests 46%, environment 23%, import 19%, transform 7%, setup 5%)
+
+exit: 0
+## frontend: npm run build
+transforming...
+✓ 2688 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                             2.95 kB │ gzip:  1.12 kB
+dist/assets/index-CgDfTQiL.css             68.02 kB │ gzip: 11.92 kB
+dist/assets/rolldown-runtime-CbXtAM7H.js    0.58 kB │ gzip:  0.36 kB
+dist/assets/query-Ucd8dAQ3.js              34.93 kB │ gzip: 10.22 kB
+dist/assets/motion-CBbAOeOq.js            128.51 kB │ gzip: 41.82 kB
+dist/assets/BackofficeApp-D4UWDe5H.js     188.00 kB │ gzip: 47.62 kB
+dist/assets/react-DQ5ol5MH.js             275.67 kB │ gzip: 87.51 kB
+dist/assets/index-B-BOaEnQ.js             283.60 kB │ gzip: 87.98 kB
+
+✓ built in 466ms
+exit: 0
+## backend: npm test (sin cambios en backend)
+[Nest] 86728  - 10/09/2026, 9:47:41 PM    WARN [PrismaJsonMapper] Campo "Project.summary" con forma inesperada; se devuelve vacío
+[Nest] 35804  - 10/09/2026, 9:47:41 PM    WARN [PrismaJsonMapper] Campo "Certification.name" con forma inesperada; se devuelve vacío
+[Nest] 107188  - 10/09/2026, 9:47:41 PM    WARN [SocialLinkPrismaMapper] SocialLink "github" con stats de forma inesperada; se usa null
+[Nest] 107188  - 10/09/2026, 9:47:41 PM    WARN [SocialLinkPrismaMapper] SocialLink "github" con stats de forma inesperada; se usa null
+
+Test Suites: 76 passed, 76 total
+Tests:       529 passed, 529 total
+Snapshots:   0 total
+Time:        18.112 s
+Ran all test suites.

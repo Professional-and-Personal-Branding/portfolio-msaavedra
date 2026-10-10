@@ -207,6 +207,31 @@ curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
 
 El token también viaja en la cabecera `X-Access-Token`. En los logs el `?token=` sale **censurado**, y `Referrer-Policy: no-referrer` evita que se filtre al navegar a un enlace externo.
 
+### TC-31 — Imprimir un perfil en una hoja 🔍
+
+**Precondición:** base seedeada, sitio levantado, Chrome (y Firefox para el paso 6).
+**Pasos:**
+1. Abrir `/tech-lead-dotnet` y, **sin hacer scroll**, apretar **Ctrl+P**.
+2. En el diálogo: papel **A4**, márgenes por defecto, **Encabezados y pies de página desactivados** y **Gráficos de fondo desactivados**.
+3. Cerrar el diálogo y repetir con el botón **Imprimir / Guardar PDF** de la barra superior.
+4. Repetir con `?lang=en`, con `?theme=modern-dark&layout=sidebar` y con papel **Letter**.
+5. Guardar como PDF y abrirlo: los enlaces (email, LinkedIn, la URL del pie) son clicables.
+6. Repetir el paso 2 en Firefox.
+
+**Resultado esperado:** una sola hoja, con texto oscuro sobre blanco aunque el tema sea oscuro (también con *Gráficos de fondo* activado: la página sigue blanca), el nombre visible y el orden de secciones del perfil. Sin barra superior, selectores ni pie del sitio. Lo que no entró dice *"y N experiencias más"* (*"and N more roles"* en inglés) y el pie trae **Versión completa** con la URL del perfil, que no lleva `token`, `theme` ni `layout`. En la pantalla del token de un perfil `PROTECTED` el botón no aparece. Imprimir no hace ninguna petición ni suma una visita al perfil.
+
+`print:check` automatiza esto en Chrome, sin el diálogo: genera el PDF de cada perfil público y de `all`, en `es` y `en`, en A4 y Letter, con el tema del perfil y con `?theme=modern-dark&layout=sidebar`, cuenta las páginas y mide el contraste. Sale con código 1 si algún caso pasa de una hoja o contrasta menos de 4,5:1.
+
+Requiere `PRINT_CHECK_DISPOSABLE_DB=1`, que confirma que la API apunta a una base descartable: cada caso registra una visita y, contra una base real, ensucia la analítica; sin la variable el script sale con código 2. La API tiene que apuntar a una base descartable (p. ej. `portfolio_print_check`, con migraciones y seed).
+
+```bash
+cd frontend
+npm run dev                       # y la API en el 3300
+PRINT_CHECK_DISPOSABLE_DB=1 PRINT_CHECK_TOKENS=slug=token npm run print:check   # el token es opcional (perfiles PROTECTED)
+```
+
+**Verificado:** 56 casos (14 perfiles × `es`/`en` × 2 temas) con una página en A4 y en Letter y un contraste mínimo de 9,7:1. El detalle y los PDF están en el archivo del change `add-printable-one-page`. Los pasos con el diálogo de impresión y Firefox son manuales.
+
 ---
 
 ## 3. Casos del backoffice
@@ -820,8 +845,9 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-28 | El constructor avisa antes de descartar | ✅ | captura · app real contra el contenedor · tests del guardián |
 | TC-29 | La Portada avisa; el idioma no | ✅ | captura · app real contra el contenedor · tests de `PortadaPage` |
 | TC-30 | Los formularios en diálogo avisan | ✅ | captura · app real contra el contenedor · tests por formulario |
+| TC-31 | Imprimir un perfil en una hoja | 🔍 | `print:check` (56 casos, 1 página en A4 y Letter) · PDF en el archivo del change · tests de la hoja y del botón |
 
-**Los 30 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 26 capturas en total.
+**Los 31 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 26 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 

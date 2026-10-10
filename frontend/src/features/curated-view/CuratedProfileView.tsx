@@ -14,6 +14,7 @@ import { resolveLayoutName } from '@/themes/layouts';
 import { ProfileLayout } from '@/themes/layouts/ProfileLayout';
 import { renderableSections } from '@/themes/layouts/sections';
 import { ThemeProvider } from '@/themes/theme-provider';
+import { PrintableSheet } from './print/PrintableSheet';
 import { AccessTokenForm } from './components/AccessTokenForm';
 import { ErrorState } from './components/ErrorState';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
@@ -80,7 +81,7 @@ export function CuratedProfileView({ slug }: CuratedProfileViewProps) {
 
   return (
     <ThemeProvider profileTokens={data?.theme?.tokens ?? null} presetSlug={url.theme}>
-      <div className="relative flex min-h-screen flex-col">
+      <div className="relative flex min-h-screen flex-col print:hidden">
         <div aria-hidden className="pointer-events-none fixed inset-0 bg-glow" />
         <div className="relative z-10 flex flex-1 flex-col">
           <TopBar
@@ -88,11 +89,14 @@ export function CuratedProfileView({ slug }: CuratedProfileViewProps) {
             brand={data?.profile?.fullName}
             layout={layoutName}
             showProfileMenu={slug === HOME_SLUG}
+            onPrint={data ? () => window.print() : undefined}
           />
           <main className="flex-1">{content}</main>
           <Footer name={data?.profile?.fullName} />
         </div>
       </div>
+      {/* Solo se ve al imprimir (spec `printable-curated-profile`, decisión D1). */}
+      {data && <PrintableSheet data={data} locale={locale} />}
     </ThemeProvider>
   );
 }

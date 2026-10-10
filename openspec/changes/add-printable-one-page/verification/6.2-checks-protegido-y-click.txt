@@ -1,0 +1,3 @@
+PROTECTED sin token: boton imprimir = false | hoja = false
+PROTECTED con token: boton = true | URL impresa = http://localhost:5173/backend-payments-ror?lang=en
+click: window.print llamado = 1 | peticiones nuevas = 0 | visitas antes/despues = 189 189 | errores de consola = ["Failed to load resource: the server responded with a status of 401 (Unauthorized)"]

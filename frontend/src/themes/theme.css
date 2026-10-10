@@ -147,3 +147,26 @@
 @utility chip {
   @apply inline-flex items-center rounded-theme-sm border border-border bg-bg-soft px-2.5 py-1 text-xs text-text-muted transition-colors;
 }
+
+/*
+ * Impresión (spec `printable-curated-profile`, decisiones D1, D5 y D7). Al imprimir solo se ve
+ * la hoja `[data-print-sheet]`; el layout de pantalla lleva `print:hidden`. Los colores de la
+ * hoja salen de `themes/presets/paper.ts`, no de acá.
+ */
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: transparent;
+    overflow-x: visible;
+  }
+
+  /* Imprimir no dispara el IntersectionObserver de `whileInView`: sin esto, lo que no se llegó a ver sale en blanco. */
+  [data-motion='on'] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

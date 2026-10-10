@@ -1,0 +1,56 @@
+== antes ==
+         slug          | bot_views | contador 
+-----------------------+-----------+----------
+ ai-software-engineer  |         4 |        5
+ all                   |         4 |      304
+ backend-payments-ror  |         4 |        5
+ devops-azure          |         4 |        5
+ devops-platform       |         4 |       42
+ dotnet-backend        |         4 |       43
+ fullstack-microsoft   |         4 |        5
+ fullstack-nest-react  |         4 |       10
+ generalist-polyglot   |         4 |       61
+ integration-architect |         4 |        5
+ it-leadership         |         4 |        5
+ java-senior-backend   |         4 |       96
+ software-architect    |         4 |        5
+ tech-lead-dotnet      |         4 |      239
+(14 rows)
+
+ total_profile_view 
+--------------------
+                762
+(1 row)
+
+BEGIN
+UPDATE 14
+COMMIT
+== despues ==
+ bot_views_restantes 
+---------------------
+                   0
+(1 row)
+
+ total_profile_view 
+--------------------
+                706
+(1 row)
+
+         slug          | views 
+-----------------------+-------
+ ai-software-engineer  |     1
+ all                   |   300
+ backend-payments-ror  |     1
+ devops-azure          |     1
+ devops-platform       |    38
+ dotnet-backend        |    39
+ fullstack-microsoft   |     1
+ fullstack-nest-react  |     6
+ generalist-polyglot   |    57
+ integration-architect |     1
+ it-leadership         |     1
+ java-senior-backend   |    92
+ software-architect    |     1
+ tech-lead-dotnet      |   235
+(14 rows)
+

@@ -1,0 +1,4 @@
+$ npm run print:check  (sin PRINT_CHECK_DISPOSABLE_DB)
+print:check se niega a correr: cada caso abre la vista pública y registra una visita en la base a la que apunta la API.
+Apuntá la API a una base descartable (por ejemplo portfolio_print_check, con migraciones y seed) y confirmalo con PRINT_CHECK_DISPOSABLE_DB=1.
+exit code: 2

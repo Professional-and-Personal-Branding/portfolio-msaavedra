@@ -1,0 +1,9 @@
+boton visible: true
+hoja en el DOM: true
+mensajes de consola: 0 []
+violaciones de CSP: 0
+--- print:check contra el contenedor web (http://localhost:8089)
+all               dark+sidebar  en      1   1       9.7:1      OK    
+
+8 casos (2 perfiles), 0 con problemas. Contraste mínimo: 9.74:1
+--- git diff main -- frontend/Caddyfile (vacio = sin cambios)
