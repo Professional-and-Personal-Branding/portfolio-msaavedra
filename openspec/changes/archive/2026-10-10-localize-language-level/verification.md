@@ -1,6 +1,6 @@
 # Verificación — localize-language-level
 
-Ejecutada el 10 de octubre de 2026 (grupos 1 a 6). El grupo 7 (base del owner) queda **pendiente de su OK explícito** (P2). Todo corrió contra `portfolio_levelfix`, copia descartable de `portfolio` en `portfolio-postgres` (`localhost:5434`); `portfolio` solo recibió lecturas (`pg_dump` y `SELECT`). Antes de cada comando de Prisma, del seed y de los e2e se confirmó el destino con `prisma:status` (*Datasource "db": PostgreSQL database "portfolio_levelfix"*).
+Ejecutada el 10 de octubre de 2026 (grupos 1 a 6). El grupo 7 (base del owner) se cerró ese mismo día, después del merge del PR #28 y con el OK del owner (P2). Todo corrió contra `portfolio_levelfix`, copia descartable de `portfolio` en `portfolio-postgres` (`localhost:5434`); `portfolio` solo recibió lecturas (`pg_dump` y `SELECT`). Antes de cada comando de Prisma, del seed y de los e2e se confirmó el destino con `prisma:status` (*Datasource "db": PostgreSQL database "portfolio_levelfix"*).
 
 ## Respaldo
 
@@ -64,9 +64,9 @@ Ejecutada el 10 de octubre de 2026 (grupos 1 a 6). El grupo 7 (base del owner) q
   - Al final el nivel de *Inglés* se restauró al valor del seed en la copia.
   - Se creó un administrador de prueba **solo en `portfolio_levelfix`** (`admin:bootstrap`, credenciales generadas, guardadas fuera del repo).
 - **6.4** `verification/6.4-validate.txt`: `validate localize-language-level --strict` válido, sin *Archive would refuse*; `validate --all --strict`: 34 pasan, 0 fallan.
-- **6.5** *Pendiente a propósito:* `portfolio_levelfix` **no se borró**, porque el grupo 7 sigue pendiente y puede querer repetir el ensayo. Se borra con `docker exec portfolio-postgres dropdb -U portfolio portfolio_levelfix` al cerrar el grupo 7. Los procesos de la prueba (backend en el 3300 y Vite en el 5173) se pararon.
+- **6.5** `portfolio_levelfix` se borró al cerrar el grupo 7 (`dropdb`), junto con su administrador de prueba. `pg_database` solo lista `portfolio`, `postgres`, `template0` y `template1`. Los procesos de la prueba (backend en el 3300 y Vite en el 5173) se pararon.
 
-## 7. Base del owner — respaldo hecho, migración pendiente
+## 7. Base del owner
 
 El owner dio el OK el 10 de octubre de 2026.
 
@@ -75,8 +75,15 @@ El owner dio el OK el 10 de octubre de 2026.
   - Tamaño: 61 544 bytes.
   - SHA-256: `D6654B6C2B1ED8DE63E36AA4205523E0E2EE0DF17B7AC100F106A3184B4CDD88`.
   - `pg_restore --list` lista `TABLE DATA public Language`.
-- **7.2 y 7.3** *Pendientes:* el clasificador de permisos de la sesión bloqueó `prisma:deploy` sobre `portfolio`. Los corre el owner, o la sesión cuando él lo habilite:
-  1. `prisma:status`, `prisma:deploy` y otra vez `prisma:status`, sin seed.
-  2. El `SELECT` de 1.2 y `prisma migrate diff … --exit-code`.
+- **7.2** El 10 de octubre de 2026, después del merge del PR #28 y con autorización del owner, se aplicó la migración sobre `portfolio`. Salida en `verification/7.2-7.3-owner.txt`:
+  - Antes: `prisma:status` mostraba `localize_language_level` pendiente.
+  - `prisma:deploy`, sin seed.
+  - Después: `prisma:status` da *Database schema is up to date!*.
+- **7.3** Evidencia posterior (mismo archivo): la columna `level` es `jsonb` no nula; `prisma migrate diff … --exit-code` da *No difference detected* con código 0.
 
-  Resultado esperado: `Nativo` pasa a `{es:"Nativo",en:"Native"}` y `B1-B2` a `{es:"B1-B2",en:"B1-B2"}`.
+  **Antes y después**
+
+  | Idioma | `level` antes | `level` después | Regla de D2 |
+  |---|---|---|---|
+  | Español | `Nativo` | `{"es":"Nativo","en":"Native"}` | conocido |
+  | Inglés | `B1-B2` | `{"es":"B1-B2","en":"B1-B2"}` | MCER |

@@ -1,0 +1,34 @@
+Base del owner: portfolio (portfolio-postgres, localhost:5434). 10/10/2026, OK explícito del owner.
+Respaldo previo: tarea 7.1 (portfolio-pre-migrate-20261010-161408.dump, SHA-256 D6654B6C…CDD88).
+Sin seed. Backend local parado (nadie escuchando en 3300).
+
+== 7.2 prisma:status (antes)
+Datasource "db": PostgreSQL database "portfolio", schema "public" at "localhost:5434"
+4 migrations found in prisma/migrations
+Following migration have not yet been applied:
+20261010120000_localize_language_level
+
+== 7.2 prisma:deploy
+Applying migration `20261010120000_localize_language_level`
+All migrations have been successfully applied.
+
+== 7.2 prisma:status (después)
+Datasource "db": PostgreSQL database "portfolio", schema "public" at "localhost:5434"
+4 migrations found in prisma/migrations
+Database schema is up to date!
+
+== 7.3 SELECT id, name, level, jsonb_typeof(level) FROM "Language" ORDER BY name;
+            id             |  name   |              level               | jsonb_typeof
+---------------------------+---------+----------------------------------+--------------
+ cmuw0fepv0001ucos9fhgzjca | Español | {"en": "Native", "es": "Nativo"} | object
+ cmuw0fepv0002ucoslokdowfp | Inglés  | {"en": "B1-B2", "es": "B1-B2"}   | object
+(2 rows)
+
+== 7.3 information_schema.columns (Language.level)
+ data_type | is_nullable
+-----------+-------------
+ jsonb     | NO
+
+== 7.3 prisma migrate diff --from-schema-datasource --to-schema-datamodel --exit-code
+No difference detected.
+exit=0
