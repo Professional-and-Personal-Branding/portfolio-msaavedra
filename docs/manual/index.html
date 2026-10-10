@@ -248,6 +248,7 @@
     <a href="#tc08"><span class="dot ok"></span><span class="id">TC-08</span> 404</a>
     <a href="#tc09"><span class="dot ok"></span><span class="id">TC-09</span> Móvil</a>
     <a href="#tc10"><span class="dot ok"></span><span class="id">TC-10</span> Visibilidad</a>
+    <a href="#tc31"><span class="dot ok"></span><span class="id">TC-31</span> Imprimir</a>
     <h3>Backoffice</h3>
     <a href="#tc11"><span class="dot ok"></span><span class="id">TC-11</span> Entrar</a>
     <a href="#tc12"><span class="dot ok"></span><span class="id">TC-12</span> Crear perfil</a>
@@ -382,7 +383,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
         <div class="stat"><b>26</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Los 30 casos pasan.</b> TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Los 31 casos pasan.</b> TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -507,6 +508,17 @@ curl -s -o /dev/null -w '%{http_code}\n' "$API/api/curated-profiles/demo-protegi
 curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
 # 404   ← inexistente, y lo mismo devuelve un PRIVATE</pre></div>
         <p>El token también viaja en la cabecera <code>X-Access-Token</code>. En los logs el <code>?token=</code> sale censurado, y <code>Referrer-Policy: no-referrer</code> evita que se filtre al navegar a un enlace externo.</p>
+      </article>
+
+      <article class="case" data-status="ok" id="tc31">
+        <div class="case-head"><span class="case-id">TC-31</span><h3>Imprimir un perfil en una hoja</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc31"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · Abrir <code>/tech-lead-dotnet</code> y, sin hacer scroll, apretar <b>Ctrl+P</b>: papel <b>A4</b>, márgenes por defecto, <i>Encabezados y pies de página</i> y <i>Gráficos de fondo</i> desactivados. Repetir con el botón <b>Imprimir / Guardar PDF</b>, con <code>?lang=en</code>, con <code>?theme=modern-dark&amp;layout=sidebar</code> y en <b>Letter</b>. Guardar como PDF y repetir el primer paso en Firefox.</p>
+        <p><span class="lbl">Esperado</span> · Una sola hoja, con texto oscuro sobre blanco aunque el tema sea oscuro (también con <i>Gráficos de fondo</i> activado), el nombre visible y el orden de secciones del perfil. Sin barra superior, selectores ni pie del sitio. Lo omitido dice <i>«y N experiencias más»</i> y el pie trae <b>Versión completa</b> con la URL del perfil, sin <code>token</code>, <code>theme</code> ni <code>layout</code>. En la pantalla del token de un perfil <code>PROTECTED</code> el botón no aparece. Imprimir no hace ninguna petición ni suma una visita.</p>
+        <p><span class="lbl">Observado</span> · <code>npm run print:check</code> automatiza el caso en Chrome, sin el diálogo: genera el PDF de cada perfil público y de <code>all</code>, en <code>es</code> y <code>en</code>, en A4 y Letter, con el tema del perfil y con <code>?theme=modern-dark&amp;layout=sidebar</code>, cuenta las páginas y mide el contraste.</p>
+        <div class="codewrap"><pre>56 casos (14 perfiles), 0 con problemas. Contraste mínimo: 9.74:1
+A4 = 1 página · Letter = 1 página en todos los casos</pre></div>
+        <div class="note">El diálogo de impresión y Firefox son pasos manuales: <code>print:check</code> usa el mismo motor de Chrome pero no abre el diálogo. Los PDF de ejemplo están en el archivo del change <code>add-printable-one-page</code>.</div>
       </article>
     </section>
 

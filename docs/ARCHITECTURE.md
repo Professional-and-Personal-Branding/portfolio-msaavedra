@@ -294,7 +294,7 @@ Esta fase prepara el proyecto para un despliegue serio. El detalle completo, pri
 Resumen de lo que cubre:
 - **🔴 Bloqueantes:** secretos fuertes, migraciones Prisma (`migrate deploy`), CORS estricto, validación de inputs (DTOs + ValidationPipe), manejo global de errores, healthcheck.
 - **🟡 Importantes:** rate limiting (throttler), security headers (Helmet) + HTTPS, logging estructurado, tests mínimos (curated-profile + i18n fallback), SEO + OpenGraph, backup de DB.
-- **🔵 Deseables (1.0.x):** export PDF de perfil, accesibilidad, caché/performance, dashboard de analítica (`ProfileView`), CI/CD, repos destacados reales.
+- **🔵 Deseables (1.0.x):** export PDF de perfil (resuelto por `add-printable-one-page`: hoja imprimible de una página y *Guardar como PDF* del navegador), accesibilidad, caché/performance, dashboard de analítica (`ProfileView`), CI/CD, repos destacados reales.
 
 **El deploy real es el ÚLTIMO paso** (backend en Railway/Render, frontend en Vercel, DB Postgres gestionada), una vez que los bloqueantes e importantes estén en verde.
 

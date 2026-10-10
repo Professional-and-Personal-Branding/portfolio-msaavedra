@@ -1,5 +1,17 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (ronda 1.1.x — `add-printable-one-page`)
+
+Un perfil curado se puede imprimir o guardar como PDF en **una hoja legible**, en A4 y en Letter. Sin backend, sin contrato HTTP, sin migración y sin tocar la CSP.
+
+- **Hoja dedicada en el mismo documento.** La vista pública monta `PrintableSheet` junto al layout de pantalla; solo se ve al imprimir (con Ctrl+P o con el botón). La barra, el pie y la decoración no se imprimen. No hay ruta nueva ni pedidos a la API.
+- **Qué entra.** `buildPrintSheet` (puro y probado) respeta el orden y el ocultado de `sections`, suma el contacto y los enlaces destacados al encabezado, deja afuera `stats` y aplica límites (`PRINT_LIMITS`): 3 experiencias en detalle con 2 logros, 3 en una línea, 3 categorías de skills, 2 proyectos, 3 formaciones y 4 certificaciones. Lo que no entra se cuenta (*"y 7 experiencias más"*) y el pie trae la URL de la versión completa, sin `token`, `theme` ni `layout`.
+- **Tinta sobre papel.** Paleta fija de papel (`themes/presets/paper.ts`, fuera de los presets conmutables) con cualquier tema; contraste mínimo medido de 9,7:1. Las animaciones no ocultan nada: la hoja no usa `motion` y una regla de `@media print` fuerza la opacidad de `[data-motion="on"]`.
+- **Botón *Imprimir / Guardar PDF*** en la barra superior, solo con el perfil resuelto. Imprimir no pide nada ni suma una visita.
+- **`npm run print:check`** (`puppeteer-core`, devDependency, con el Chrome del sistema) genera el PDF de cada perfil en `es`/`en` × A4/Letter × dos temas, cuenta las páginas y mide el contraste.
+- **Ajuste de límites.** Los valores iniciales de la spec (6 en una línea, 6 categorías, 3 logros) daban dos páginas en los 14 perfiles del seed: se bajaron con `print:check` y se actualizaron la spec y el diseño.
+- Cierra el ítem *Export PDF de perfil* del checklist 1.0.x: el PDF lo genera el navegador.
+
 ## Update — Octubre 2026 (ronda 1.1 — `retire-accent-color`)
 
 Segunda etapa de la decisión D9 de `polish-builder-and-edge`: `accentColor` deja de existir en todas las capas. El owner eligió **P1 = B**, así que los colores no se pierden: pasan al tema.

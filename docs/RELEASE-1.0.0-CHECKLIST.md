@@ -36,7 +36,7 @@
 
 ## 🔵 Deseables — 1.0.x o post-lanzamiento
 
-- [ ] **Export PDF de perfil.** Generar un PDF del perfil curado.
+- [x] ✅ **Export PDF de perfil.** Resuelto por `add-printable-one-page`: cada perfil curado tiene una hoja imprimible de una página (A4 y Letter) y el botón **Imprimir / Guardar PDF**. El PDF lo genera el navegador (*Guardar como PDF*), en el idioma de la vista y desde los mismos datos. Un PDF generado en el servidor queda fuera de alcance.
 - [ ] **Accesibilidad (a11y).** Auditar con axe o Lighthouse. La base está: roles, `aria-label` en los controles y navegación por teclado en el panel.
 - [ ] **Caché / performance.** Cache de los perfiles públicos, lazy-loading de imágenes, Lighthouse > 90.
 - [x] ✅ **Dashboard de analítica.** Entregado en la Fase 5: visitas por perfil, idioma y día, con rango de fechas.
