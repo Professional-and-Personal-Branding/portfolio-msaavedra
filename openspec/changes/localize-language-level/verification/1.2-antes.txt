@@ -1,0 +1,11 @@
+            id             |  name   | level  
+---------------------------+---------+--------
+ cmuw0fepv0001ucos9fhgzjca | Español | Nativo
+ cmuw0fepv0002ucoslokdowfp | Inglés  | B1-B2
+(2 rows)
+
+ datcollate |  datctype  
+------------+------------
+ en_US.utf8 | en_US.utf8
+(1 row)
+

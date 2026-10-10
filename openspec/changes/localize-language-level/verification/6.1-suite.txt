@@ -1,0 +1,58 @@
+Destino: portfolio_levelfix
+Datasource "db": PostgreSQL database "portfolio_levelfix", schema "public" at "localhost:5434"
+Database schema is up to date!
+== backend: npm run lint
+exit=0
+== backend: npm run test:all
+Test Suites: 76 passed, 76 total
+Tests:       535 passed, 535 total
+Test Suites: 10 passed, 10 total
+Tests:       174 passed, 174 total
+== backend: openapi:export sin deriva
+git diff --exit-code openapi.json -> exit=0
+== frontend: npm run lint
+exit=0
+== frontend: npm test
+ Test Files  38 passed (38)
+      Tests  297 passed (297)
+== frontend: npm run build
+exit=0
+== openspec validate
+Change 'localize-language-level' is valid
+- Validating...
+✓ change/add-printable-one-page
+✓ spec/admin-analytics-dashboard
+✓ spec/admin-authentication
+✓ spec/admin-backoffice-shell
+✓ spec/admin-content-management
+✓ spec/admin-curated-profile-crud
+✓ spec/admin-curated-profile-preview
+✓ spec/admin-experience-crud
+✓ spec/admin-skill-crud
+✓ spec/admin-theme-catalog
+✓ spec/api-contract-types
+✓ spec/api-health
+✓ spec/api-observability
+✓ spec/api-platform
+✓ spec/api-rate-limiting
+✓ spec/api-security-headers
+✓ spec/content-localization
+✓ spec/curated-profile-builder
+✓ spec/curated-profile-resolution
+✓ spec/data-persistence-seed
+✓ spec/frontend-localization
+✓ spec/layout-engine
+✓ change/localize-language-level
+✓ spec/profile-view-analytics
+✓ spec/public-curated-profile-api
+✓ spec/public-experience-api
+✓ spec/public-portfolio-frontend
+✓ spec/public-portfolio-sections-api
+✓ spec/public-profile-api
+✓ spec/public-seo
+✓ spec/runtime-theming
+✓ spec/site-security-policy
+✓ spec/theme-customizer
+✓ spec/theme-resolution
+Totals: 34 passed, 0 failed (34 items)
+exit(all)=0

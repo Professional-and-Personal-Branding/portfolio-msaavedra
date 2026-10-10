@@ -1,0 +1,20 @@
+Destino: portfolio_levelfix (prisma:status "Database schema is up to date!")
+== npm run lint
+> portfolio-backend@0.1.0 lint
+> eslint "{src,test,scripts}/**/*.ts"
+
+exit=0
+== npm run typecheck
+> tsc --noEmit -p tsconfig.json
+
+exit=0
+== npm run test
+Test Suites: 76 passed, 76 total
+Tests:       535 passed, 535 total
+== npm run test:e2e
+Test Suites: 10 passed, 10 total
+Tests:       174 passed, 174 total
+== npm run build
+> nest build
+
+exit=0

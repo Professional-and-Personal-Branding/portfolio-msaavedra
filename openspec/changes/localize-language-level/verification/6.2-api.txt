@@ -1,0 +1,20 @@
+Backend: node dist/main, PORT=3300, base portfolio_levelfix (copia sembrada)
+/curated-profiles/all?lang=en -> languages[0]: name=Spanish level=Native | languages[1].level=B1-B2
+/curated-profiles/all?lang=es -> languages[0]: name=Español level=Nativo | languages[1].level=B1-B2
+/curated-profiles/all?locale=en -> languages[0]: name=Spanish level=Native | languages[1].level=B1-B2
+/curated-profiles/tech-lead-dotnet?lang=en -> languages[0]: name=Spanish level=Native | languages[1].level=B1-B2
+/curated-profiles/tech-lead-dotnet?lang=es -> languages[0]: name=Español level=Nativo | languages[1].level=B1-B2
+/profile?lang=en -> Spanish · Native | English · B1-B2
+/profile?lang=es -> Español · Nativo | Inglés · B1-B2
+POST /admin/languages level:'B2' -> HTTP 400 
+{
+  "statusCode": 400,
+  "message": [
+    "level must be an object",
+    "nested property level must be either object or array"
+  ],
+  "error": "Bad Request",
+  "requestId": "f1e1c26e-62d8-491d-b543-aff3e2d3b319",
+  "timestamp": "2026-10-10T08:46:43.776Z"
+}
+GET /admin/languages (crudo) -> [{"id":"cmv250z6r0001uceolk8ago1g","name":"Español","nameI18n":{"en":"Spanish","es":"Español"},"level":{"en":"Native","es":"Nativo"},"detail":{"en":"Advanced speaking, writing and reading","es":"Oral, escrito y lectura avanzados"}},{"id":"cmv250z6r0002uceoalblxh5f","name":"Inglés","nameI18n":{"en":"English","es":"Inglés"},"level":{"en":"B1-B2","es":"B1-B2"},"detail":{"en":"Intermediate conversational and written; advanced technical reading","es":"Conversacional y escrito intermedio; avanzado en lectura técnica"}}]
