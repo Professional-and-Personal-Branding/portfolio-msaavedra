@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 8534453604706abaac6add3f33c3c80d7f36eb19e03db918bb8f852dcf02c4d3
+// openapi-sha256: 90dd0f1329f3742b05e963d70a92ffa82eebf2ecdab1bfc6966d0af178c0ab53
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -825,8 +825,7 @@ export interface components {
         AdminLanguageResponse: {
             detail: components["schemas"]["LocalizedTextDto"] | null;
             id: string;
-            /** @example B2 */
-            level: string;
+            level: components["schemas"]["LocalizedTextDto"];
             /** @example Inglés */
             name: string;
             nameI18n: components["schemas"]["LocalizedTextDto"] | null;
@@ -1068,8 +1067,8 @@ export interface components {
         };
         CreateLanguageDto: {
             detail?: components["schemas"]["LocalizedTextDto"] | null;
-            /** @example B2 */
-            level: string;
+            /** @description Nivel bilingüe; es obligatorio */
+            level: components["schemas"]["LocalizedTextDto"];
             /**
              * @description Nombre canónico; fallback de nameI18n
              * @example Inglés
@@ -1314,7 +1313,10 @@ export interface components {
         LanguageResponse: {
             /** @example Oral, escrito y lectura avanzados */
             detail: string;
-            /** @example Nativo */
+            /**
+             * @description Nivel resuelto al idioma pedido
+             * @example Nativo
+             */
             level: string;
             /** @example Español */
             name: string;
@@ -1365,7 +1367,7 @@ export interface components {
              * @example experience
              * @enum {string}
              */
-            entity: "curatedProfile" | "profile" | "experience" | "skillCategory" | "project" | "education" | "certification" | "socialLink";
+            entity: "curatedProfile" | "profile" | "experience" | "skillCategory" | "project" | "education" | "certification" | "socialLink" | "language";
             /**
              * @description Campo bilingüe; los anidados con punto.
              * @example highlights
@@ -1757,8 +1759,8 @@ export interface components {
         };
         UpdateLanguageDto: {
             detail?: components["schemas"]["LocalizedTextDto"] | null;
-            /** @example B2 */
-            level?: string;
+            /** @description Nivel bilingüe; es obligatorio */
+            level?: components["schemas"]["LocalizedTextDto"];
             /**
              * @description Nombre canónico; fallback de nameI18n
              * @example Inglés
