@@ -394,6 +394,29 @@ La tercera migración (`init`, `curated_profile_lifecycle`, `retire_accent_color
 - **Respaldo previo recomendado** si la base ya tiene datos: `pg_dump -Fc` como en el § 7, o un backup de Railway, antes del deploy que incluya esta migración.
 - **Rollback:** restaurar ese respaldo y volver a desplegar la imagen anterior. El código nuevo sin la migración no arranca, y el viejo no funciona con la columna borrada.
 
+#### Migración `localize_language_level` (de datos, no destructiva)
+
+La cuarta migración (`init`, `curated_profile_lifecycle`, `retire_accent_color`, `localize_language_level`) cambia el tipo de `Language.level` de `TEXT` a `JSONB` en la misma fila, con un único `ALTER COLUMN … TYPE JSONB USING …`. Cada valor pasa a texto bilingüe: un nivel conocido en español (`Nativo`, `Avanzado`, …) queda `{ es, en }`; un código MCER (`B1-B2`, `C1`), `{ es: x, en: x }`; cualquier otro texto, `{ es: x }`, sin inventar el inglés. No borra ni agrega filas; la tabla de traducciones está en `openspec/changes/localize-language-level/design.md` (D2).
+
+- Corre en el `preDeployCommand` con `prisma migrate deploy`, como las demás. Nunca con `migrate dev` ni `db push`.
+- Sobre una base vacía (el primer deploy) solo cambia el tipo de la columna. Después se corre el seed, que ya trae `level` como `{ es, en }`.
+- **Respaldo previo recomendado** si la base ya tiene datos: `pg_dump -Fc` como en el § 7, o un backup de Railway.
+- **Rollback preferido:** restaurar ese respaldo y volver a desplegar la imagen anterior. El código nuevo no funciona sobre la columna `TEXT` y el viejo no funciona sobre `JSONB`.
+- **Rollback por SQL** (sin respaldo; **pierde el inglés**, conserva el español):
+
+```sql
+ALTER TABLE "Language" ALTER COLUMN "level" TYPE TEXT USING (
+  CASE jsonb_typeof("level")
+    WHEN 'string' THEN "level" #>> '{}'
+    WHEN 'object' THEN COALESCE(NULLIF(btrim("level" ->> 'es'), ''), "level" ->> 'en', '')
+    ELSE "level"::text
+  END
+);
+DELETE FROM "_prisma_migrations" WHERE migration_name = '20261010120000_localize_language_level';
+```
+
+Después, desplegar el código anterior.
+
 #### Lo que cede Railway
 
 - **El rollback caduca**: 72 h en Hobby, 120 h en Pro (§ 6).

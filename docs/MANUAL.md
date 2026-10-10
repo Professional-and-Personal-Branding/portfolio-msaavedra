@@ -232,6 +232,38 @@ PRINT_CHECK_DISPOSABLE_DB=1 PRINT_CHECK_TOKENS=slug=token npm run print:check   
 
 **Verificado:** 56 casos (14 perfiles × `es`/`en` × 2 temas) con una página en A4 y en Letter y un contraste mínimo de 9,7:1. El detalle y los PDF están en el archivo del change `add-printable-one-page`. Los pasos con el diálogo de impresión y Firefox son manuales.
 
+### TC-32 — El nivel del idioma en los dos idiomas ✅
+
+**Precondición:** base seedeada, sitio y API levantados, sesión iniciada en `/admin`.
+**Pasos:**
+1. `/admin/portada` → **Idiomas** → editar *Inglés*. El **Nivel** tiene pestañas ES/EN, como el detalle: el español es obligatorio y el inglés opcional. Un nivel legado (texto plano, p. ej. `C1`) se abre en ES con EN vacío.
+2. En la pestaña EN escribir *B1-B2 (working proficiency)* y **Guardar**. Recargar y reabrir: ES y EN se conservan.
+3. Abrir `/?lang=en`: el contacto dice *English · B1-B2 (working proficiency)*; con `?lang=es` dice el español. La vista de impresión (Ctrl+P o **Imprimir / Guardar PDF**) muestra lo mismo, porque lee el texto ya resuelto.
+4. Vaciar el inglés del nivel y guardar. En el constructor (`/admin/perfiles/<id>` → **Publicación**), con la vista previa en EN, el aviso de faltantes dice *Idiomas — Inglés: Nivel*. Es solo un aviso: se puede guardar y publicar igual, y en inglés el nivel sale en español.
+
+**Resultado esperado:** con el seed, `/?lang=en` muestra *Spanish · Native* y *English · B1-B2*, y `/?lang=es` muestra *Español · Nativo*. Una base migrada desde la anterior queda igual (la migración `localize_language_level` convierte `Nativo` en `{ es: "Nativo", en: "Native" }`).
+
+```bash
+curl -s "$API/api/profile?lang=en" | jq '.languages[] | {name, level}'
+curl -s "$API/api/curated-profiles/all?lang=es" | jq '.profile.languages[0].level'
+curl -s $API/api/admin/languages -H "$AUTH" | jq '.[0].level'            # crudo: { es, en }
+curl -s -X POST $API/api/admin/languages -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"name":"X","level":"B2"}'                                            # 400: level debe ser { es, en? }
+```
+
+**Ejecutado** (10 de octubre de 2026, contra una copia de la base de desarrollo, `portfolio_levelfix`, con la API en el 3300 y el panel en el 5173; transcripción en `openspec/changes/localize-language-level/verification/6.2-api.txt` y `6.3-app-real.txt`):
+
+```
+GET /api/curated-profiles/all?lang=en            -> languages[0] = Spanish · Native
+GET /api/curated-profiles/all?lang=es            -> languages[0] = Español · Nativo
+GET /api/curated-profiles/tech-lead-dotnet?lang=en -> Spanish · Native
+POST /api/admin/languages  level: "B2"           -> 400 (level must be an object)
+Portada: EN del nivel -> guardar -> recargar     -> ES="B1-B2" EN="B1-B2 (working proficiency)"
+Constructor, vista previa en EN, nivel sin inglés -> "Falta 1 traducción en EN · Idiomas · Inglés: Nivel"
+```
+
+![Aviso de faltantes con un nivel de idioma sin inglés](manual/tc32-faltantes.png)
+
 ---
 
 ## 3. Casos del backoffice
@@ -666,7 +698,7 @@ Desde el change `add-profile-content-admin`, todo lo que el sitio muestra se edi
 1. Editar **Titular** o **Fecha de inicio** (pestañas ES/EN). La vista previa del hero, a la derecha, cambia sin guardar: la resuelve el backend con el mismo mapper que la ruta pública.
 2. **Guardar portada.** El cambio se ve en `/` y en cada perfil curado, sin correr el seed.
 3. Un obligatorio vacío (nombre, titular o resumen en español, email, ubicación) no se envía; si llega a la API, es 400 y el perfil queda como estaba.
-4. **Idiomas**, en la misma página: agregar, editar y borrar con confirmación.
+4. **Idiomas**, en la misma página: agregar, editar y borrar con confirmación. El nombre mostrado, el **nivel** y el detalle tienen pestañas ES/EN (el español del nivel es obligatorio); ver TC-32.
 
 > El titular base se ve en la home y en todo perfil curado **sin titular propio** (decisión D7). Las 13 plantillas del seed traen el suyo, pensado para su rol, y lo conservan; la home `all` no tiene ninguno. Para que un perfil curado vuelva a usar el titular base, vaciá su titular en la pestaña Identidad del constructor.
 
@@ -846,8 +878,9 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-29 | La Portada avisa; el idioma no | ✅ | captura · app real contra el contenedor · tests de `PortadaPage` |
 | TC-30 | Los formularios en diálogo avisan | ✅ | captura · app real contra el contenedor · tests por formulario |
 | TC-31 | Imprimir un perfil en una hoja | 🔍 | `print:check` (56 casos, 1 página en A4 y Letter) · PDF en el archivo del change · tests de la hoja y del botón |
+| TC-32 | El nivel del idioma en los dos idiomas | ✅ | captura · app real contra una copia de la base · e2e · tests del formulario y del aviso |
 
-**Los 31 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 26 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso.
+**Los 32 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 26 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 

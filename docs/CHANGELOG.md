@@ -1,5 +1,16 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (ronda 1.1.x — `localize-language-level`)
+
+En inglés, el nivel de cada idioma salía como lo guardaba la base (*"Spanish · Nativo"*, defecto registrado en `add-printable-one-page`). Ahora es un texto bilingüe como el resto del perfil base.
+
+- **Cambio visible:** con `?lang=en`, el contacto, la hoja imprimible y el perfil curado muestran *"Spanish · Native"*; con `?lang=es`, *"Español · Nativo"*.
+- **Migración de datos** (`localize_language_level`, escrita a mano, no destructiva): `Language.level` pasa de `TEXT` a `JSONB` en la misma fila. Un nivel conocido en español queda `{ es, en }`, un código MCER (`B1-B2`, `C1`) `{ es: x, en: x }` y cualquier otro texto `{ es: x }`, sin inventar el inglés. Se aplica con `prisma migrate deploy` (en Railway, desde el `preDeployCommand`); ensayada, junto con su rollback, en una copia descartable de la base de desarrollo.
+- **Contrato público sin cambio de forma:** `languages[].level` sigue siendo `string`, ahora en el idioma pedido.
+- **Contrato admin (BREAKING, sin clientes afectados):** `POST`/`PATCH /api/admin/languages` reciben `level` como `{ es, en? }`; un string responde 400. La salida cruda devuelve `{ es, en }` (o el string de un dato legado). Se regeneran `openapi.json` y `api.d.ts`.
+- **Panel:** el nivel se edita con pestañas ES/EN en la Portada (español obligatorio). El informe de faltantes del constructor suma los idiomas del perfil (entidad `language`: nombre mostrado, nivel y detalle) y el aviso los nombra.
+- **Seed:** `docs/cv-data.json` guarda el nivel como `{ es, en }` y `seed:verify` lo compara por idioma.
+
 ## Update — Octubre 2026 (ronda 1.1.x — `add-printable-one-page`)
 
 Un perfil curado se puede imprimir o guardar como PDF en **una hoja legible**, en A4 y en Letter. Sin backend, sin contrato HTTP, sin migración y sin tocar la CSP.
