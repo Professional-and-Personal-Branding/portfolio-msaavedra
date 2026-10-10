@@ -66,6 +66,17 @@ Ejecutada el 10 de octubre de 2026 (grupos 1 a 6). El grupo 7 (base del owner) q
 - **6.4** `verification/6.4-validate.txt`: `validate localize-language-level --strict` válido, sin *Archive would refuse*; `validate --all --strict`: 34 pasan, 0 fallan.
 - **6.5** *Pendiente a propósito:* `portfolio_levelfix` **no se borró**, porque el grupo 7 sigue pendiente y puede querer repetir el ensayo. Se borra con `docker exec portfolio-postgres dropdb -U portfolio portfolio_levelfix` al cerrar el grupo 7. Los procesos de la prueba (backend en el 3300 y Vite en el 5173) se pararon.
 
-## 7. Base del owner — PENDIENTE
+## 7. Base del owner — respaldo hecho, migración pendiente
 
-Sin ejecutar: falta el OK explícito del owner (P2). Al hacerlo, completar aquí § *Respaldo* (nuevo dump) y la tabla *Antes y después* (una fila por idioma: `level` previo y resultante, conforme a D2).
+El owner dio el OK el 10 de octubre de 2026.
+
+- **7.1** Respaldo nuevo de `portfolio`, tomado con el mismo procedimiento que § *Respaldo*:
+  - Ruta: `…\scratchpad\dumps\portfolio-pre-migrate-20261010-161408.dump` (también queda en `/tmp/` del contenedor).
+  - Tamaño: 61 544 bytes.
+  - SHA-256: `D6654B6C2B1ED8DE63E36AA4205523E0E2EE0DF17B7AC100F106A3184B4CDD88`.
+  - `pg_restore --list` lista `TABLE DATA public Language`.
+- **7.2 y 7.3** *Pendientes:* el clasificador de permisos de la sesión bloqueó `prisma:deploy` sobre `portfolio`. Los corre el owner, o la sesión cuando él lo habilite:
+  1. `prisma:status`, `prisma:deploy` y otra vez `prisma:status`, sin seed.
+  2. El `SELECT` de 1.2 y `prisma migrate diff … --exit-code`.
+
+  Resultado esperado: `Nativo` pasa a `{es:"Nativo",en:"Native"}` y `B1-B2` a `{es:"B1-B2",en:"B1-B2"}`.

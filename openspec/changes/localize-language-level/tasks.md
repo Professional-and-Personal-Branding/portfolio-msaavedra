@@ -99,6 +99,6 @@
 
 > No empezar sin el OK explícito del owner en el chat. Desde 7.2, el backend de `main` no puede leer `portfolio` hasta el merge (D8).
 
-- [ ] 7.1 Respaldo nuevo de `portfolio` (como 1.1, con fecha nueva). Verificar: ruta, tamaño y SHA-256 en `verification.md` § *Respaldo*.
+- [x] 7.1 Respaldo nuevo de `portfolio` (como 1.1, con fecha nueva). Verificar: ruta, tamaño y SHA-256 en `verification.md` § *Respaldo*.
 - [ ] 7.2 Con los backends locales parados y `DATABASE_URL` de `portfolio`: `npm run prisma:status` (destino `portfolio`, `localize_language_level` pendiente), `npm run prisma:deploy` y `prisma:status`. **Sin seed.** Verificar: salida en `verification/7.2-deploy-owner.txt`; sin pendientes.
 - [ ] 7.3 Evidencia posterior: el `SELECT` de 1.2 y el tipo de la columna; `prisma migrate diff … --exit-code`. Verificar: en `verification.md` § *Antes y después*, una tabla por idioma con el `level` previo y el resultante, conforme a D2; `migrate diff` con código 0. Salida en `verification/7.3-despues.txt`.
