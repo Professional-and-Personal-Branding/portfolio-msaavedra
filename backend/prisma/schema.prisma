@@ -44,7 +44,7 @@ model Language {
   id        String  @id @default(cuid())
   name      String  // nombre del idioma (no se traduce: "Español"/"Spanish" se maneja como LocalizedText si se desea)
   nameI18n  Json?   // opcional LocalizedText para el nombre mostrado
-  level     String
+  level     Json    // LocalizedText (o string legado)
   detail    Json?   // LocalizedText
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   profileId String

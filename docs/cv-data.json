@@ -104,7 +104,7 @@
           "es": "Español",
           "en": "Spanish"
         },
-        "level": "Nativo",
+        "level": { "es": "Nativo", "en": "Native" },
         "detail": {
           "es": "Oral, escrito y lectura avanzados",
           "en": "Advanced speaking, writing and reading"
@@ -116,7 +116,7 @@
           "es": "Inglés",
           "en": "English"
         },
-        "level": "B1-B2",
+        "level": { "es": "B1-B2", "en": "B1-B2" },
         "detail": {
           "es": "Conversacional y escrito intermedio; avanzado en lectura técnica",
           "en": "Intermediate conversational and written; advanced technical reading"

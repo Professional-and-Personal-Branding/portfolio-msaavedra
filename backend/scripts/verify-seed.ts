@@ -11,7 +11,7 @@ import * as path from 'path';
 
 interface CvDataCounts {
   profile: {
-    languages: unknown[];
+    languages: { name: string; level: unknown }[];
     socialLinks?: unknown[];
     featuredRepositories?: { visible: boolean }[];
   };
@@ -25,6 +25,14 @@ interface CvDataCounts {
 
 const THEME_PRESETS_COUNT = 5; // definidos en scripts/seed.ts
 const EXTRA_CURATED_PROFILES = 1; // perfil "all" creado por el seed
+
+/** Dos textos bilingües son iguales si coinciden `es` y `en` (o ambos son el mismo texto plano). */
+function sameLocalized(a: unknown, b: unknown): boolean {
+  if (typeof a === 'string' || typeof b === 'string') return a === b;
+  const pick = (v: unknown, key: 'es' | 'en'): unknown =>
+    v !== null && typeof v === 'object' ? (v as Record<string, unknown>)[key] : undefined;
+  return pick(a, 'es') === pick(b, 'es') && pick(a, 'en') === pick(b, 'en');
+}
 
 async function main(): Promise<void> {
   const dataPath = path.resolve(__dirname, '../../docs/cv-data.json');
@@ -80,6 +88,18 @@ async function main(): Promise<void> {
     const bilingual = !!role && typeof role['es'] === 'string' && typeof role['en'] === 'string';
     console.log(`  ${bilingual ? '✅' : '❌'} Experience.role bilingüe (es/en) en Novacomp`);
     if (!bilingual) failures++;
+
+    // El nivel de cada idioma es texto bilingüe y debe coincidir con la fuente (localize-language-level, D5).
+    const dbLanguages = await prisma.language.findMany();
+    for (const lang of data.profile.languages) {
+      const row = dbLanguages.find((l) => l.name === lang.name);
+      // jsonb no conserva el orden de las claves: se compara por idioma, no por texto serializado.
+      const okLevel = !!row && sameLocalized(row.level, lang.level);
+      if (!okLevel) failures++;
+      console.log(
+        `  ${okLevel ? '✅' : '❌'} Language.level de ${lang.name} (cv-data=${JSON.stringify(lang.level)}, db=${JSON.stringify(row?.level)})`,
+      );
+    }
 
     // El acento de cada plantilla vive en themeOverrides.colors.accent (retire-accent-color, D11).
     const accentOf = (value: unknown): unknown => {
