@@ -1,0 +1,10 @@
+print:check contra http://localhost:5173
+perfil            tema          idioma  A4  A5  contraste  estado               
+----------------  ------------  ------  --  --  ---------  ---------------------
+tech-lead-dotnet  perfil        es      1   2   9.7:1      FALLA (A5: 2 páginas)
+tech-lead-dotnet  perfil        en      1   2   9.7:1      FALLA (A5: 2 páginas)
+tech-lead-dotnet  dark+sidebar  es      1   2   9.7:1      FALLA (A5: 2 páginas)
+tech-lead-dotnet  dark+sidebar  en      1   2   9.7:1      FALLA (A5: 2 páginas)
+
+4 casos (1 perfiles), 4 con problemas. Contraste mínimo: 9.74:1
+exit code: 1
