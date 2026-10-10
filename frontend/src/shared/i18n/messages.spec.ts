@@ -26,6 +26,16 @@ describe('translate', () => {
   });
 });
 
+describe('claves print.*', () => {
+  it('cada clave print.* está en es y en en', () => {
+    const keys = Object.keys(messages.es).filter((k) => k.startsWith('print.'));
+    expect(keys.length).toBeGreaterThan(0);
+    for (const key of keys) {
+      expect(messages.en[key as MessageKey], key).toBeTruthy();
+    }
+  });
+});
+
 describe('detectLocale', () => {
   it('en-US → en; es-BO → es; vacío → es', () => {
     expect(detectLocale('en-US')).toBe('en');

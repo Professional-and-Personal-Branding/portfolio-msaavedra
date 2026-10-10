@@ -66,7 +66,7 @@ export function ThemeProvider({
         data-theme={preset?.slug ?? source}
         data-mode={tokens.mode}
         className={cn(
-          'min-h-screen bg-bg font-sans text-text',
+          'min-h-screen bg-bg font-sans text-text print:min-h-0 print:bg-transparent',
           tokens.mode === 'dark' && 'dark',
           className,
         )}

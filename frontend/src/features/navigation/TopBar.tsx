@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { PrintButton } from '@/features/curated-view/print/PrintButton';
 import { useLocale } from '@/shared/i18n/use-locale';
 import { useProfileLink } from '@/shared/lib/profile-link';
 import type { LayoutName } from '@/themes/layouts';
@@ -17,13 +18,21 @@ interface TopBarProps {
    * ofrece navegación a los demás (spec `public-portfolio-frontend`).
    */
   showProfileMenu?: boolean;
+  /** Acción de imprimir; solo con el perfil resuelto (decisión D9 de `add-printable-one-page`). */
+  onPrint?: () => void;
 }
 
-export function TopBar({ activeSlug, brand, layout, showProfileMenu = false }: TopBarProps) {
+export function TopBar({
+  activeSlug,
+  brand,
+  layout,
+  showProfileMenu = false,
+  onPrint,
+}: TopBarProps) {
   const { t } = useLocale();
   const home = useProfileLink('all');
   return (
-    <header className="sticky top-0 z-40 border-b border-border glass">
+    <header className="sticky top-0 z-40 border-b border-border glass print:hidden">
       <div className="mx-auto flex w-full max-w-(--t-max-width) items-center gap-2 px-4 py-3 md:px-6">
         <Link
           to={home}
@@ -36,6 +45,7 @@ export function TopBar({ activeSlug, brand, layout, showProfileMenu = false }: T
           <LayoutSwitcher current={layout} />
           <ThemeSwitcher />
           <LocaleSwitcher />
+          {onPrint && <PrintButton onPrint={onPrint} />}
         </div>
       </div>
     </header>
