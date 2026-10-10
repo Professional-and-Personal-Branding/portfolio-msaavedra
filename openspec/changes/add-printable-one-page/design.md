@@ -204,6 +204,8 @@ El owner respondió las cuatro preguntas con la opción recomendada. Ninguna cam
 
 1. **P1 — Quién ve el botón: (A).** Todos los perfiles resueltos, incluida la home (D9). Ctrl+P funciona igual en todos los casos, así que ocultar el botón no protege nada.
 2. **P2 — Qué es imprescindible: (A).** Los límites de D3: 3 experiencias en detalle y 6 en una línea, 6 categorías de skills, 2 proyectos, 3 formaciones y 4 certificaciones. Se ajustan después con `print:check`, siguiendo el orden de D3. Quedaron en 3 experiencias en detalle y 3 en una línea, 3 categorías de skills, 2 logros por experiencia, 2 proyectos, 3 formaciones y 4 certificaciones (ajuste de la tarea 4.3, ver D3).
+5. **Aceptación de los límites recortados (2026-10-09).** El owner aceptó los límites 3 / 3 / 2 y la hoja de una página: `tech-lead-dotnet` pasó de 1170 px a 943 px contra 965 px de alto útil de Letter. Queda resuelto, sin pregunta abierta.
+6. **Guarda de `print:check` (2026-10-09).** Cada caso registra una visita en la base a la que apunta la API, así que el script se niega a correr (código 2) salvo que `PRINT_CHECK_DISPOSABLE_DB=1` confirme que es una base descartable (D11).
 3. **P3 — URL impresa de un `PROTECTED`: (A).** Nunca lleva el token (D8): el lector del papel pide acceso. Un token impreso no se puede retirar sin rotarlo.
 4. **P4 — Cierre del ítem del checklist: (A).** Este change cierra *Export PDF de perfil* de `docs/RELEASE-1.0.0-CHECKLIST.md`, aclarando que el PDF lo genera el navegador (D12).
 

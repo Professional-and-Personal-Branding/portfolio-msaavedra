@@ -27,6 +27,8 @@ Ejecutada el 9 de octubre de 2026 en la rama `feat/printable-one-page` (sobre `m
 | 6.3 Firefox | **Pendiente**: no hay Firefox instalado en esta máquina | — |
 | 6.4 Contenedor `web` con CSP | Hecho | `verification/6.4-csp-contenedor-web.txt` |
 | 6.5 `openspec validate` | Hecho: el change valida y `--all --strict` da 33/33 | `verification/6.5-validate.txt` |
+| 6.7 Limpieza de visitas | Hecho por la sesión principal con consentimiento del owner | `verification/6.7-limpieza-visitas-bot.txt` |
+| Guarda de `print:check` | Hecho: sin `PRINT_CHECK_DISPOSABLE_DB=1` sale con código 2 | `verification/print-check-guarda.txt` |
 | 6.6 Cierre | `portfolio_print_check` eliminada (ver abajo) | — |
 
 ### Páginas por perfil (tareas 4.3 y 4.4)
@@ -64,7 +66,7 @@ No se hizo:
 
 ## Desvíos
 
-1. **Límites de D3 bajados (tarea 4.3).** Con los valores iniciales de la spec (6 experiencias en una línea, 6 categorías de skills, 3 logros por experiencia), los 14 perfiles daban **dos páginas** en A4 y en Letter. Se aplicó el procedimiento que ya fija D3 (bajar en orden: experiencias en una línea, categorías de skills, logros por experiencia, y actualizar spec y diseño a la vez). Quedaron en **3 / 3 / 2** y bastó con eso; no se tocaron las experiencias en detalle, las tecnologías ni los otros bloques. Se actualizaron `design.md` (tabla y párrafo de ajuste de D3, P2), la spec (requisito *Límites de contenido* y sus escenarios) y `PRINT_LIMITS`. Es un recorte de contenido fuerte (una hoja con 3 experiencias en detalle y 3 más en una línea, de 15 en total): **si el owner prefiere otro balance, es el momento de decidirlo** (por ejemplo, 2 experiencias en detalle y más en una línea, o 8,5 pt para el cuerpo), porque con el cuerpo en 9,5 pt y los datos reales no hay más aire.
+1. **Límites de D3 bajados (tarea 4.3).** Con los valores iniciales de la spec (6 experiencias en una línea, 6 categorías de skills, 3 logros por experiencia), los 14 perfiles daban **dos páginas** en A4 y en Letter. Se aplicó el procedimiento que ya fija D3 (bajar en orden: experiencias en una línea, categorías de skills, logros por experiencia, y actualizar spec y diseño a la vez). Quedaron en **3 / 3 / 2** y bastó con eso; no se tocaron las experiencias en detalle, las tecnologías ni los otros bloques. Se actualizaron `design.md` (tabla y párrafo de ajuste de D3, P2), la spec (requisito *Límites de contenido* y sus escenarios) y `PRINT_LIMITS`. Es un recorte de contenido fuerte (una hoja con 3 experiencias en detalle y 3 más en una línea, de 15 en total): **el owner aceptó estos límites el 2026-10-09** (hoja de una página; `tech-lead-dotnet` de 1170 px a 943 px). Registrado en `design.md`.
 2. **Dos ajustes de maquetación sin cambio de spec:** la lista de skills va a 8,5 pt (hasta 2 líneas por categoría, no una) y el relleno vertical de los bloques es menor. El cuerpo sigue en 9,5 pt.
 3. **La hoja lleva `aria-hidden="true"` además de `display: none`.** jsdom no aplica el CSS de Tailwind, así que sin él los 8 tests existentes que buscan `heading` `h1` por rol encontraban dos. En pantalla no cambia nada (`display: none` ya la saca del árbol de accesibilidad).
 4. **Recortes dentro de una entrada sin marca individual.** Las tecnologías (`+N`) y los skills (`+N`) dicen cuántos faltan; los logros recortados no (la hoja muestra 2 de N). Los cubre la línea *Versión completa* del pie. La spec pide una línea de omitidos por recorte de **cantidad de entradas**, y eso se cumple.
@@ -73,9 +75,11 @@ No se hizo:
 7. **Dato fuera de este change:** en inglés, el nivel de los idiomas sale como lo guarda la base (`Nativo`, `B1-B2`): `LanguageResponse.level` no está localizado en la API.
 8. **Orden de las tareas.** Los tests de `print-sheet.spec.ts` y `PrintableSheet.test.tsx` se escribieron antes de la implementación de cada pieza en la misma pasada, pero no se corrieron en rojo antes (la verificación "fallan antes de 1.2" no quedó registrada).
 
-## Efecto lateral en la base del owner
+## Efecto lateral en la base del owner: resuelto
 
-La corrida de la tarea 4.4 (`print:check` contra la API conectada a `portfolio`, sin seed y sin escrituras manuales) abrió 56 páginas con `HeadlessChrome`, así que **la tabla `ProfileView` de `portfolio` sumó 56 visitas** (entre 01:48 y 01:50 UTC del 10 de octubre). Se pueden reconocer por el `userAgent` y, si el owner quiere, borrarlas con `delete from "ProfileView" where "userAgent" ilike '%HeadlessChrome%' and "viewedAt" > '2026-10-10 01:40'`. No se borraron: son datos del owner. Conviene tenerlo en cuenta antes de volver a correr `print:check` contra una base real (o apuntar a la descartable).
+La corrida de la tarea 4.4 (`print:check` contra la API conectada a `portfolio`) abrió 56 páginas con `HeadlessChrome`, así que la tabla `ProfileView` de `portfolio` sumó 56 visitas (entre 01:48 y 01:50 UTC del 10 de octubre). La sesión principal las borró con el consentimiento del owner y descontó esas visitas de `CuratedProfile.views`; la evidencia está en `verification/6.7-limpieza-visitas-bot.txt`.
+
+Para que no se repita, `print:check` se niega a correr (código 2, con un mensaje en español) salvo que `PRINT_CHECK_DISPOSABLE_DB=1` confirme que la API apunta a una base descartable. La salida sin la variable está en `verification/print-check-guarda.txt`.
 
 ## Base descartable
 

@@ -222,10 +222,12 @@ El token también viaja en la cabecera `X-Access-Token`. En los logs el `?token=
 
 `print:check` automatiza esto en Chrome, sin el diálogo: genera el PDF de cada perfil público y de `all`, en `es` y `en`, en A4 y Letter, con el tema del perfil y con `?theme=modern-dark&layout=sidebar`, cuenta las páginas y mide el contraste. Sale con código 1 si algún caso pasa de una hoja o contrasta menos de 4,5:1.
 
+Requiere `PRINT_CHECK_DISPOSABLE_DB=1`, que confirma que la API apunta a una base descartable: cada caso registra una visita y, contra una base real, ensucia la analítica; sin la variable el script sale con código 2. La API tiene que apuntar a una base descartable (p. ej. `portfolio_print_check`, con migraciones y seed).
+
 ```bash
 cd frontend
 npm run dev                       # y la API en el 3300
-PRINT_CHECK_TOKENS=slug=token npm run print:check   # el token es opcional (perfiles PROTECTED)
+PRINT_CHECK_DISPOSABLE_DB=1 PRINT_CHECK_TOKENS=slug=token npm run print:check   # el token es opcional (perfiles PROTECTED)
 ```
 
 **Verificado:** 56 casos (14 perfiles × `es`/`en` × 2 temas) con una página en A4 y en Letter y un contraste mínimo de 9,7:1. El detalle y los PDF están en el archivo del change `add-printable-one-page`. Los pasos con el diálogo de impresión y Firefox son manuales.

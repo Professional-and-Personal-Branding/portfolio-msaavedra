@@ -13,6 +13,10 @@
  *   PRINT_CHECK_PAPERS    `A4,Letter` por defecto. Con un papel más chico (p. ej. `A5`) el
  *                         script tiene que fallar: sirve para comprobar que detecta desbordes.
  *   PRINT_CHECK_SLUGS     `slug,slug2`: solo esos perfiles (por defecto, el listado público + all).
+ *   PRINT_CHECK_DISPOSABLE_DB=1  OBLIGATORIA: confirma que la API apunta a una base descartable.
+ *                         Cada caso abre la vista pública y registra una visita (`ProfileView`), así que
+ *                         correrlo contra una base real ensucia su analítica. Sin esta variable el script
+ *                         se niega a correr y sale con código 2.
  *   PRINT_CHECK_OUT       carpeta donde guardar cada PDF generado (por defecto, no guarda nada).
  *
  * Por cada perfil recorre es/en × tema del perfil / `?theme=modern-dark&layout=sidebar` y, para
@@ -131,6 +135,13 @@ function inspectSheet() {
 }
 
 async function main() {
+  if (process.env.PRINT_CHECK_DISPOSABLE_DB !== '1') {
+    console.error(
+      'print:check se niega a correr: cada caso abre la vista pública y registra una visita en la base a la que apunta la API.\n' +
+        'Apuntá la API a una base descartable (por ejemplo portfolio_print_check, con migraciones y seed) y confirmalo con PRINT_CHECK_DISPOSABLE_DB=1.',
+    );
+    process.exit(2);
+  }
   const tokens = parseTokens(process.env.PRINT_CHECK_TOKENS);
   const slugs = await listSlugs(tokens);
   const browser = await puppeteer.launch({

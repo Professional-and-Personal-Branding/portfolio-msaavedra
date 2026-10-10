@@ -10,6 +10,8 @@
 > - `portfolio` (la del owner, `localhost:5434`) se usa para la app real. **Nunca se le corre el seed.**
 > - `portfolio_print_check` es una base descartable en el mismo servidor, creada con `prisma migrate deploy` y `npm run seed`, solo para la tarea 4.3. Para usarla: `DATABASE_URL="postgresql://portfolio:portfolio@localhost:5434/portfolio_print_check?schema=public"`.
 >
+> **`print:check` exige `PRINT_CHECK_DISPOSABLE_DB=1`** (confirma que la API apunta a una base descartable, porque cada caso registra una visita); sin ella sale con código 2. Nunca se corre contra `portfolio`.
+>
 > Antes de cada comando de Prisma o del seed, correr `npm run prisma:status` para confirmar el destino. El backend escucha en el puerto 3300.
 
 ## 1. Selección de contenido (D2, D3, D4, D8)
