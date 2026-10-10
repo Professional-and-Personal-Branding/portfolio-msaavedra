@@ -26,10 +26,17 @@ function buildProfile(): Profile {
         id: 'l1',
         name: 'Español',
         nameI18n: { es: 'Español', en: 'Spanish' },
-        level: 'Nativo',
+        level: { es: 'Nativo', en: 'Native' },
         detail: { es: 'Nativo', en: 'Native' },
       }),
-      Language.create({ id: 'l2', name: 'Inglés', nameI18n: null, level: 'B2', detail: null }),
+      Language.create({
+        id: 'l2',
+        name: 'Inglés',
+        nameI18n: null,
+        level: { es: 'Intermedio' }, // sin inglés → fallback al español
+        detail: null,
+      }),
+      Language.create({ id: 'l3', name: 'Italiano', nameI18n: null, level: 'C1', detail: null }), // legado
     ],
   });
 }
@@ -60,6 +67,21 @@ describe('GetProfileUseCase', () => {
     expect(result.value.availability.startDate).toBe('Immediate');
     expect(result.value.languages[0].name).toBe('Spanish');
     expect(result.value.languages[0].detail).toBe('Native');
+  });
+
+  it('resuelve el nivel de cada idioma al idioma pedido', async () => {
+    const useCase = new GetProfileUseCase(repoWith(buildProfile()));
+    const en = await useCase.execute({ locale: 'en' });
+    const es = await useCase.execute({ locale: 'es' });
+
+    expect(en.ok && es.ok).toBe(true);
+    if (!en.ok || !es.ok) return;
+    expect(en.value.languages[0].level).toBe('Native');
+    expect(es.value.languages[0].level).toBe('Nativo');
+    // sin inglés cae al español; un legado (string) sale igual en los dos idiomas
+    expect(en.value.languages[1].level).toBe('Intermedio');
+    expect(en.value.languages[2].level).toBe('C1');
+    expect(es.value.languages[2].level).toBe('C1');
   });
 
   it('aplica fallback por campo cuando falta la traducción', async () => {

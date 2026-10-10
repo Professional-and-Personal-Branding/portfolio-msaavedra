@@ -1,0 +1,54 @@
+== prisma:status antes
+20261010120000_localize_language_level
+
+To apply migrations in development run prisma migrate dev.
+To apply migrations in production run prisma migrate deploy.
+== filas antes
+ count 
+-------
+     2
+(1 row)
+
+== insert sinteticos
+INSERT 0 8
+== filas tras insert
+ count 
+-------
+    10
+(1 row)
+
+== prisma:deploy
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261010120000_localize_language_level/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+== prisma:status despues
+
+4 migrations found in prisma/migrations
+
+Database schema is up to date!
+== SELECT
+            id             |    name     |                         level                         | jsonb_typeof 
+---------------------------+-------------+-------------------------------------------------------+--------------
+ cmuw0fepv0001ucos9fhgzjca | Español     | {"en": "Native", "es": "Nativo"}                      | object
+ cmuw0fepv0002ucoslokdowfp | Inglés      | {"en": "B1-B2", "es": "B1-B2"}                        | object
+ syn-1                     | Sintetico 1 | {"en": "Advanced", "es": "avanzado"}                  | object
+ syn-2                     | Sintetico 2 | {"en": "Native", "es": "Nativa"}                      | object
+ syn-3                     | Sintetico 3 | {"en": "Bilingual", "es": "Bilingüe"}                 | object
+ syn-4                     | Sintetico 4 | {"en": "Upper intermediate", "es": "Intermedio alto"} | object
+ syn-5                     | Sintetico 5 | {"en": "C1", "es": "C1"}                              | object
+ syn-6                     | Sintetico 6 | {"en": "B2+", "es": "B2+"}                            | object
+ syn-7                     | Sintetico 7 | {"en": "B2/C1", "es": "B2/C1"}                        | object
+ syn-8                     | Sintetico 8 | {"es": "Nivel de supervivencia"}                      | object
+(10 rows)
+
+== columna
+ column_name | data_type | is_nullable 
+-------------+-----------+-------------
+ level       | jsonb     | NO
+(1 row)
+

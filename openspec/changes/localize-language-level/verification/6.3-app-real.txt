@@ -1,0 +1,10 @@
+Contacto /?lang=en -> ["Spanish · Native"]
+Hoja imprimible /?lang=en -> ["Spanish · Native"]
+Tras login: http://localhost:5173/admin
+Listado de idiomas: "Idiomas\nNuevo idioma\nEspañol · Nativo\nInglés · B1-B2"
+Nivel EN antes: B1-B2
+Tras guardar y recargar: ES="B1-B2" EN="B1-B2 (working proficiency)"
+/api/profile?lang=en tras editar: ["Spanish · Native","English · B1-B2 (working proficiency)"]
+Crudo tras vaciar el inglés: [{"name":"Español","level":{"en":"Native","es":"Nativo"}},{"name":"Inglés","level":{"es":"B1-B2"}}]
+Aviso del constructor (EN): "Falta 1 traducción en EN\n\nEs solo un aviso: podés guardar y publicar igual. Donde falta, el perfil se muestra en español.\n\nIdiomas\n\nInglés: Nivel"
+Restaurado el seed (PATCH): HTTP 200

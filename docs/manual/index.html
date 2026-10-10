@@ -249,6 +249,7 @@
     <a href="#tc09"><span class="dot ok"></span><span class="id">TC-09</span> Móvil</a>
     <a href="#tc10"><span class="dot ok"></span><span class="id">TC-10</span> Visibilidad</a>
     <a href="#tc31"><span class="dot ok"></span><span class="id">TC-31</span> Imprimir</a>
+    <a href="#tc32"><span class="dot ok"></span><span class="id">TC-32</span> Nivel de idioma</a>
     <h3>Backoffice</h3>
     <a href="#tc11"><span class="dot ok"></span><span class="id">TC-11</span> Entrar</a>
     <a href="#tc12"><span class="dot ok"></span><span class="id">TC-12</span> Crear perfil</a>
@@ -383,7 +384,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
         <div class="stat"><b>26</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Los 31 casos pasan.</b> TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Los 32 casos pasan.</b> TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -519,6 +520,20 @@ curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
         <div class="codewrap"><pre>56 casos (14 perfiles), 0 con problemas. Contraste mínimo: 9.74:1
 A4 = 1 página · Letter = 1 página en todos los casos</pre></div>
         <div class="note">El diálogo de impresión y Firefox son pasos manuales: <code>print:check</code> usa el mismo motor de Chrome pero no abre el diálogo. Los PDF de ejemplo están en el archivo del change <code>add-printable-one-page</code>.</div>
+      </article>
+
+      <article class="case" data-status="ok" id="tc32">
+        <div class="case-head"><span class="case-id">TC-32</span><h3>El nivel del idioma en los dos idiomas</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc32"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · <code>/admin/portada</code> → <b>Idiomas</b> → editar <i>Inglés</i>: el <b>Nivel</b> tiene pestañas ES/EN (español obligatorio, inglés opcional; un nivel legado se abre en ES con EN vacío). Escribir el inglés, guardar, recargar y reabrir. Abrir <code>/?lang=en</code> y la vista de impresión. Vaciar el inglés del nivel y mirar el aviso de faltantes del constructor (pestaña <b>Publicación</b>, vista previa en EN).</p>
+        <p><span class="lbl">Esperado</span> · Con el seed, <code>/?lang=en</code> muestra <i>Spanish · Native</i> y <i>English · B1-B2</i>; <code>/?lang=es</code>, <i>Español · Nativo</i>. El aviso dice <i>Idiomas — Inglés: Nivel</i>; es solo informativo y en inglés el nivel sale en español. Una base migrada desde la anterior queda igual.</p>
+        <p><span class="lbl">Observado</span> · 10 de octubre de 2026, copia de la base de desarrollo (<code>portfolio_levelfix</code>), API en el 3300 y panel en el 5173.</p>
+        <div class="codewrap"><pre>GET /api/curated-profiles/all?lang=en              -> Spanish · Native
+GET /api/curated-profiles/all?lang=es              -> Español · Nativo
+POST /api/admin/languages  level: "B2"             -> 400 (level must be an object)
+Portada: EN del nivel, guardar, recargar            -> ES="B1-B2" EN="B1-B2 (working proficiency)"
+Constructor, vista previa en EN, nivel sin inglés   -> Falta 1 traducción en EN · Idiomas · Inglés: Nivel</pre></div>
+        <figure class="shot" id="img-tc32-faltantes"><img src="tc32-faltantes.png" width="1280" height="900" style="max-width:640px" alt="Aviso de faltantes con un nivel de idioma sin inglés"><figcaption>El aviso nombra el idioma con la lista de <code>GET /api/admin/languages</code>.</figcaption></figure>
       </article>
     </section>
 

@@ -5,7 +5,7 @@ export interface LanguageProps {
   /** Nombre canónico (no traducible); se usa como fallback de `nameI18n`. */
   readonly name: string;
   readonly nameI18n: LocalizedText | string | null;
-  readonly level: string;
+  readonly level: LocalizedText | string;
   readonly detail: LocalizedText | string | null;
 }
 
@@ -38,7 +38,7 @@ export class Language {
   get nameI18n(): LocalizedText | string | null {
     return this.props.nameI18n;
   }
-  get level(): string {
+  get level(): LocalizedText | string {
     return this.props.level;
   }
   get detail(): LocalizedText | string | null {

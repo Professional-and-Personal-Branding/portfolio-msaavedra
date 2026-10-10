@@ -10,7 +10,7 @@ export class LanguageResponse implements LanguageOutput {
   @ApiProperty({ example: 'Español' })
   name!: string;
 
-  @ApiProperty({ example: 'Nativo' })
+  @ApiProperty({ example: 'Nativo', description: 'Nivel resuelto al idioma pedido' })
   level!: string;
 
   @ApiProperty({ example: 'Oral, escrito y lectura avanzados' })

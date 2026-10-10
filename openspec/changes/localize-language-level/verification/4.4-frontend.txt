@@ -1,0 +1,15 @@
+== frontend npm run lint
+
+> portfolio-frontend@0.1.0 lint
+> eslint .
+
+exit=0
+== frontend npm test
+ Test Files  38 passed (38)
+      Tests  297 passed (297)
+== frontend npm run build
+dist/assets/react-DQ5ol5MH.js             275.67 kB │ gzip: 87.51 kB
+dist/assets/index-D1YcX3hu.js             280.39 kB │ gzip: 86.54 kB
+
+✓ built in 4.03s
+exit=0

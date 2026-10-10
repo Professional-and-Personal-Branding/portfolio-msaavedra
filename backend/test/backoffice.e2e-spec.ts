@@ -185,6 +185,44 @@ describe('Backoffice: preview y catálogo de temas (e2e)', () => {
         expect(missing(es.body).filter((m) => m.id === expId)).toEqual([]);
       });
 
+      it('un idioma con el nivel sin inglés aparece como entidad language; la ruta pública no', async () => {
+        const lang = await prisma.language.create({
+          data: {
+            name: 'E2E Faltantes',
+            nameI18n: { es: 'E2E', en: 'E2E' },
+            level: { es: 'Intermedio' },
+            profile: { connect: { id: (await prisma.profile.findFirstOrThrow()).id } },
+          },
+        });
+        try {
+          const draft = { filterTags: ['e2e-faltantes'] };
+          const en = await preview().query({ locale: 'en' }).send(draft);
+          const es = await preview().query({ locale: 'es' }).send(draft);
+          expect(en.status).toBe(200);
+          expect(missing(en.body)).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({ entity: 'language', id: lang.id, field: 'level' }),
+            ]),
+          );
+          expect(missing(es.body).filter((m) => m.id === lang.id)).toEqual([]);
+          const pub = await get(`/api/curated-profiles/${SLUG}?locale=en`);
+          expect(pub.body).not.toHaveProperty('missingTranslations');
+        } finally {
+          await prisma.language.delete({ where: { id: lang.id } });
+        }
+      });
+
+      it('el seed no deja idiomas con faltantes en EN', async () => {
+        const en = await preview()
+          .query({ locale: 'en' })
+          .send({ filterTags: ['java'] });
+        expect(
+          (en.body.missingTranslations as { entity: string }[]).filter(
+            (m) => m.entity === 'language',
+          ),
+        ).toEqual([]);
+      });
+
       it('la ruta pública no trae el informe', async () => {
         const res = await get(`/api/curated-profiles/${SLUG}?locale=en`);
         expect(res.status).toBe(200);

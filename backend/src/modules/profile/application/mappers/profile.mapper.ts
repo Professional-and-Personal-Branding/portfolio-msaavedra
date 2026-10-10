@@ -7,7 +7,7 @@ function toLanguageOutput(language: Language, locale: Locale): LanguageOutput {
   const localizedName = resolveLocale(language.nameI18n, locale);
   return {
     name: localizedName || language.name,
-    level: language.level,
+    level: resolveLocale(language.level, locale),
     detail: resolveLocale(language.detail, locale),
   };
 }

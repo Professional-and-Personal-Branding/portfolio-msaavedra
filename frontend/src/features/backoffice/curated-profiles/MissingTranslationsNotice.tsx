@@ -1,6 +1,9 @@
 import { Info, Languages } from 'lucide-react';
 import type { Locale } from '@/shared/i18n/locale';
 import type { MissingTranslation, PreviewCuratedProfile } from '@/shared/types/portfolio';
+import { es } from '../shared/admin-types';
+import { editableText } from '../portada/language-form';
+import { useLanguages } from '../portada/use-portada-api';
 
 const ENTITY_LABELS: Record<MissingTranslation['entity'], string> = {
   curatedProfile: 'Perfil curado',
@@ -11,6 +14,7 @@ const ENTITY_LABELS: Record<MissingTranslation['entity'], string> = {
   education: 'Educación',
   certification: 'Certificaciones',
   socialLink: 'Enlaces',
+  language: 'Idiomas',
 };
 
 const ENTITY_ORDER = Object.keys(ENTITY_LABELS) as MissingTranslation['entity'][];
@@ -29,6 +33,9 @@ const FIELD_LABELS: Record<string, string> = {
   name: 'Nombre',
   degree: 'Título académico',
   label: 'Etiqueta',
+  nameI18n: 'Nombre mostrado',
+  level: 'Nivel',
+  detail: 'Detalle',
 };
 
 const fieldLabel = (field: string) => FIELD_LABELS[field] ?? field;
@@ -55,6 +62,16 @@ function entityName(data: PreviewCuratedProfile, item: MissingTranslation): stri
     default:
       return item.id;
   }
+}
+
+/**
+ * Nombre del idioma del perfil base: el preview no trae su id (no se agrega al
+ * contrato público), así que sale de la lista del panel; si no cargó, el id.
+ */
+function LanguageName({ id }: { id: string }) {
+  const languages = useLanguages();
+  const found = languages.data?.find((language) => language.id === id);
+  return <>{found ? es(editableText(found.nameI18n)) || found.name : id}</>;
 }
 
 interface MissingTranslationsNoticeProps {
@@ -130,7 +147,12 @@ export function MissingTranslationsNotice({
           <ul className="list-disc pl-5 text-text-dim">
             {group.items.map((item) => (
               <li key={`${item.entity}:${item.id}:${item.field}`}>
-                {entityName(data, item)}: {fieldLabel(item.field)}
+                {item.entity === 'language' ? (
+                  <LanguageName id={item.id} />
+                ) : (
+                  entityName(data, item)
+                )}
+                : {fieldLabel(item.field)}
               </li>
             ))}
           </ul>

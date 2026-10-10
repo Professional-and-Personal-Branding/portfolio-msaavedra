@@ -5,14 +5,14 @@ export interface LanguageDraft {
   id?: string;
   name: string;
   nameI18n: LocalizedText;
-  level: string;
+  level: LocalizedText;
   detail: LocalizedText;
 }
 
 export const EMPTY_LANGUAGE: LanguageDraft = {
   name: '',
   nameI18n: { es: '', en: '' },
-  level: '',
+  level: { es: '', en: '' },
   detail: { es: '', en: '' },
 };
 
@@ -34,7 +34,7 @@ export function toLanguageBody(draft: LanguageDraft) {
   return {
     name: draft.name.trim(),
     nameI18n: optionalPayload(draft.nameI18n),
-    level: draft.level.trim(),
+    level: toLocalizedPayload(draft.level),
     detail: optionalPayload(draft.detail),
   };
 }

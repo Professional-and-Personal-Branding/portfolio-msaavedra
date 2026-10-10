@@ -58,7 +58,12 @@ interface CvData {
       contractType: LocalizedText;
       startDate: LocalizedText;
     };
-    languages: { name: string; nameI18n: LocalizedText; level: string; detail: LocalizedText }[];
+    languages: {
+      name: string;
+      nameI18n: LocalizedText;
+      level: LocalizedText;
+      detail: LocalizedText;
+    }[];
   };
   experiences: {
     id: string;

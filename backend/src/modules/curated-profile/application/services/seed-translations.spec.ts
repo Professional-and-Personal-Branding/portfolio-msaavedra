@@ -31,6 +31,7 @@ interface CvData {
     summary: Bilingual;
     availability: { modality: Bilingual; contractType: Bilingual; startDate: Bilingual };
     socialLinks?: { label: Bilingual; description?: Bilingual }[];
+    languages: { name: string; nameI18n: Bilingual; level: Bilingual; detail: Bilingual }[];
   };
   experiences: {
     id: string;
@@ -89,6 +90,8 @@ function inputFor(template: CvTemplate, locale: Locale): MissingTranslationsInpu
       headline: profile.headline,
       summary: profile.summary,
       availability: profile.availability,
+      // los idiomas del perfil también entran en el informe (localize-language-level, D7)
+      languages: profile.languages.map((l) => stub({ id: l.name, ...l })),
     }),
     experiences: selectByTags(data.experiences, criteria).map((e) => stub(e)),
     skillCategories: data.skillCategories.map((c, i) => stub({ id: `cat-${i}`, name: c.name })),

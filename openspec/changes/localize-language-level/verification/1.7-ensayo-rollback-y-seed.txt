@@ -1,0 +1,134 @@
+== SQL de rollback (D9)
+ALTER TABLE "Language" ALTER COLUMN "level" TYPE TEXT USING (
+  CASE jsonb_typeof("level")
+    WHEN 'string' THEN "level" #>> '{}'
+    WHEN 'object' THEN COALESCE(NULLIF(btrim("level" ->> 'es'), ''), "level" ->> 'en', '')
+    ELSE "level"::text
+  END
+);
+DELETE FROM "_prisma_migrations" WHERE migration_name = '20261010120000_localize_language_level';
+
+== ejecucion
+ALTER TABLE
+DELETE 1
+== columna
+ column_name | data_type 
+-------------+-----------
+ level       | text
+(1 row)
+
+== niveles tras rollback
+    name     |         level          
+-------------+------------------------
+ Español     | Nativo
+ Inglés      | B1-B2
+ Sintetico 1 | avanzado
+ Sintetico 2 | Nativa
+ Sintetico 3 | Bilingüe
+ Sintetico 4 | Intermedio alto
+ Sintetico 5 | C1
+ Sintetico 6 | B2+
+ Sintetico 7 | B2/C1
+ Sintetico 8 | Nivel de supervivencia
+(10 rows)
+
+== prisma:status
+Datasource "db": PostgreSQL database "portfolio_levelfix", schema "public" at "localhost:5434"
+
+4 migrations found in prisma/migrations
+Following migration have not yet been applied:
+20261010120000_localize_language_level
+
+To apply migrations in development run prisma migrate dev.
+To apply migrations in production run prisma migrate deploy.
+== restore --clean
+== SELECT de 1.2 sobre la copia restaurada
+            id             |  name   | level  
+---------------------------+---------+--------
+ cmuw0fepv0001ucos9fhgzjca | Español | Nativo
+ cmuw0fepv0002ucoslokdowfp | Inglés  | B1-B2
+(2 rows)
+
+== prisma:status tras restore
+4 migrations found in prisma/migrations
+Following migration have not yet been applied:
+20261010120000_localize_language_level
+
+To apply migrations in development run prisma migrate dev.
+To apply migrations in production run prisma migrate deploy.
+== diff contra 1.2-antes.txt (solo la parte del SELECT): VACIO (iguales)
+== prisma:deploy
+
+migrations/
+  └─ 20261010120000_localize_language_level/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+== prisma:generate
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+== npm run seed (solo en la copia)
+🎓 Creando 6 registros de educación...
+📜 Creando 8 certificaciones...
+🚀 Creando 2 proyectos...
+🔗 Creando 3 enlaces sociales...
+📦 Creando 0 repositorios destacados...
+🎨 Creando 5 temas preset...
+⭐ Creando 13 perfiles curados...
+✅ Seed completado con éxito.
+== npm run seed:verify
+
+> portfolio-backend@0.1.0 seed:verify
+> tsx scripts/verify-seed.ts
+
+🔎 Verificación del seed (esperado ← cv-data.json / actual ← DB)
+  ✅ Profile              esperado=1  actual=1
+  ✅ Language             esperado=2  actual=2
+  ✅ Experience           esperado=15  actual=15
+  ✅ SkillCategory        esperado=12  actual=12
+  ✅ Skill                esperado=108  actual=108
+  ✅ Education            esperado=6  actual=6
+  ✅ Certification        esperado=8  actual=8
+  ✅ Project              esperado=2  actual=2
+  ✅ SocialLink           esperado=3  actual=3
+  ✅ FeaturedRepository   esperado=0  actual=0
+  ✅ Theme                esperado=5  actual=5
+  ✅ CuratedProfile       esperado=14  actual=14
+  ✅ ProfileView          esperado=0  actual=0
+  ✅ Experience.role bilingüe (es/en) en Novacomp
+  ✅ Language.level de Español (cv-data={"es":"Nativo","en":"Native"}, db={"en":"Native","es":"Nativo"})
+  ✅ Language.level de Inglés (cv-data={"es":"B1-B2","en":"B1-B2"}, db={"en":"B1-B2","es":"B1-B2"})
+  ✅ java-senior-backend    colors.accent=#1A365D (cv-data=#1A365D)
+  ✅ fullstack-nest-react   colors.accent=#065F46 (cv-data=#065F46)
+  ✅ devops-platform        colors.accent=#0F766E (cv-data=#0F766E)
+  ✅ dotnet-backend         colors.accent=#0078D4 (cv-data=#0078D4)
+  ✅ it-leadership          colors.accent=#1B3A6B (cv-data=#1B3A6B)
+  ✅ integration-architect  colors.accent=#0E5263 (cv-data=#0E5263)
+  ✅ ai-software-engineer   colors.accent=#6D28D9 (cv-data=#6D28D9)
+  ✅ fullstack-microsoft    colors.accent=#0078D4 (cv-data=#0078D4)
+  ✅ devops-azure           colors.accent=#0078D4 (cv-data=#0078D4)
+  ✅ software-architect     colors.accent=#1E293B (cv-data=#1E293B)
+  ✅ backend-payments-ror   colors.accent=#9B1C2E (cv-data=#9B1C2E)
+  ✅ tech-lead-dotnet       colors.accent=#5B2C87 (cv-data=#5B2C87)
+  ✅ generalist-polyglot    colors.accent=#0F766E (cv-data=#0F766E)
+✅ La base coincide con cv-data.json.
+exit=0
+== niveles tras seed
+  name   |              level               
+---------+----------------------------------
+ Español | {"en": "Native", "es": "Nativo"}
+ Inglés  | {"en": "B1-B2", "es": "B1-B2"}
+(2 rows)
+
+== seed:verify con level.en alterado en la copia
+  ❌ Language.level de Español (cv-data={"es":"Nativo","en":"Native"}, db={"en":"Wrong","es":"Nativo"})
+  ✅ Language.level de Inglés (cv-data={"es":"B1-B2","en":"B1-B2"}, db={"en":"B1-B2","es":"B1-B2"})
+❌ 1 verificación(es) fallida(s).
+exit=1
+== seed:verify restaurado
+  ✅ Language.level de Español (cv-data={"es":"Nativo","en":"Native"}, db={"en":"Native","es":"Nativo"})
+  ✅ Language.level de Inglés (cv-data={"es":"B1-B2","en":"B1-B2"}, db={"en":"B1-B2","es":"B1-B2"})
+✅ La base coincide con cv-data.json.
+
+== 1.8 prisma migrate diff --exit-code: No difference detected (exit 0)

@@ -5,6 +5,7 @@ import {
   IsEmail,
   IsInt,
   IsNotEmpty,
+  IsObject,
   IsOptional,
   IsString,
   Min,
@@ -133,10 +134,12 @@ export class CreateLanguageDto {
   @Type(() => LocalizedTextDto)
   nameI18n?: LocalizedTextDto | null;
 
-  @ApiProperty({ example: 'B2' })
-  @IsString()
-  @IsNotEmpty()
-  level!: string;
+  @ApiProperty({ type: LocalizedTextDto, description: 'Nivel bilingüe; es obligatorio' })
+  @IsDefined()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => LocalizedTextDto)
+  level!: LocalizedTextDto;
 
   @ApiPropertyOptional({ type: LocalizedTextDto, nullable: true })
   @IsOptional()
@@ -157,7 +160,7 @@ export function toNewLanguageProps(dto: CreateLanguageDto): NewLanguageProps {
   return {
     name: dto.name,
     nameI18n: optionalText(dto.nameI18n),
-    level: dto.level,
+    level: toLocalizedText(dto.level),
     detail: optionalText(dto.detail),
   };
 }
@@ -169,7 +172,7 @@ export function toLanguageChanges(dto: UpdateLanguageDto): Partial<NewLanguagePr
   const changes: MutableChanges = {};
   if (dto.name !== undefined) changes.name = dto.name;
   if (dto.nameI18n !== undefined) changes.nameI18n = optionalText(dto.nameI18n);
-  if (dto.level !== undefined) changes.level = dto.level;
+  if (dto.level !== undefined) changes.level = toLocalizedText(dto.level);
   if (dto.detail !== undefined) changes.detail = optionalText(dto.detail);
   return changes;
 }

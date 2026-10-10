@@ -26,7 +26,7 @@ const baseRecord: ProfileRecord = {
       id: 'l1',
       name: 'Español',
       nameI18n: { es: 'Español', en: 'Spanish' },
-      level: 'Nativo',
+      level: { es: 'Nativo', en: 'Native' },
       detail: null,
       profileId: 'p1',
     },
@@ -44,6 +44,7 @@ describe('toProfileEntity', () => {
     expect(profile.languages[0].detail).toBeNull();
     expect(profile.languages).toHaveLength(1);
     expect(profile.languages[0].nameI18n).toEqual({ es: 'Español', en: 'Spanish' });
+    expect(profile.languages[0].level).toEqual({ es: 'Nativo', en: 'Native' });
   });
 
   it('un JSON malformado no rompe: se mapea a vacío', () => {
@@ -69,12 +70,27 @@ describe('toProfileData / toLanguageData', () => {
   });
 
   it('idioma sin traducción ni detalle', () => {
-    const data = toLanguageData({ name: 'Inglés', nameI18n: null, level: 'B2', detail: null });
+    const data = toLanguageData({
+      name: 'Inglés',
+      nameI18n: null,
+      level: { es: 'Intermedio', en: 'Intermediate' },
+      detail: null,
+    });
     expect(data).toEqual({
       name: 'Inglés',
       nameI18n: Prisma.DbNull,
-      level: 'B2',
+      level: { es: 'Intermedio', en: 'Intermediate' },
       detail: Prisma.DbNull,
     });
+  });
+
+  it('el nivel legado (string) se lee y se escribe tal cual', () => {
+    const [legacy] = toProfileEntity({
+      ...baseRecord,
+      languages: [{ ...baseRecord.languages[0], level: 'C1' }],
+    }).languages;
+    expect(legacy.level).toBe('C1');
+    const data = toLanguageData({ name: 'Italiano', nameI18n: null, level: 'C1', detail: null });
+    expect(data.level).toBe('C1');
   });
 });

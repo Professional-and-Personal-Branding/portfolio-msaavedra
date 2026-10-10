@@ -3898,7 +3898,8 @@
           },
           "level": {
             "type": "string",
-            "example": "Nativo"
+            "example": "Nativo",
+            "description": "Nivel resuelto al idioma pedido"
           },
           "detail": {
             "type": "string",
@@ -4226,8 +4227,7 @@
             ]
           },
           "level": {
-            "type": "string",
-            "example": "B2"
+            "$ref": "#/components/schemas/LocalizedTextDto"
           },
           "detail": {
             "nullable": true,
@@ -4265,8 +4265,12 @@
             ]
           },
           "level": {
-            "type": "string",
-            "example": "B2"
+            "description": "Nivel bilingüe; es obligatorio",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
           },
           "detail": {
             "nullable": true,
@@ -4301,8 +4305,12 @@
             ]
           },
           "level": {
-            "type": "string",
-            "example": "B2"
+            "description": "Nivel bilingüe; es obligatorio",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
           },
           "detail": {
             "nullable": true,
@@ -5235,7 +5243,8 @@
               "project",
               "education",
               "certification",
-              "socialLink"
+              "socialLink",
+              "language"
             ],
             "example": "experience"
           },
