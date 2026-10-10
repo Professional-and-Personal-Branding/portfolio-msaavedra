@@ -149,7 +149,12 @@ function languageRepo(items: Language[] = [SPANISH]): LanguageRepository & { sto
 }
 
 describe('Idiomas (spec admin-content-management, D2)', () => {
-  const ENGLISH: NewLanguageProps = { name: 'Inglés', nameI18n: null, level: 'B2', detail: null };
+  const ENGLISH: NewLanguageProps = {
+    name: 'Inglés',
+    nameI18n: null,
+    level: { es: 'Intermedio alto', en: 'Upper intermediate' },
+    detail: null,
+  };
 
   it('lista y busca por id con datos crudos; 404 si no existe', async () => {
     const repo = languageRepo();
@@ -174,7 +179,7 @@ describe('Idiomas (spec admin-content-management, D2)', () => {
     if (!orphan.ok) expect(orphan.error).toBeInstanceOf(ProfileNotFoundError);
     const invalid = await new CreateLanguageUseCase(repo, profileRepo().repo).execute({
       ...ENGLISH,
-      level: '',
+      level: { es: ' ' },
     });
     expect(invalid.ok).toBe(false);
     expect(repo.store).toHaveLength(0);
@@ -184,10 +189,12 @@ describe('Idiomas (spec admin-content-management, D2)', () => {
     const repo = languageRepo();
     const updated = await new UpdateLanguageUseCase(repo).execute({
       id: 'l1',
-      changes: { level: 'C2' },
+      changes: { level: { es: 'Bilingüe' } },
     });
     if (!updated.ok) throw new Error('debía editar');
-    expect(updated.value).toMatchObject({ name: 'Español', level: 'C2' });
+    // el nivel nuevo reemplaza el objeto completo: no queda el `en` anterior
+    expect(updated.value).toMatchObject({ name: 'Español', level: { es: 'Bilingüe' } });
+    expect(updated.value.level).not.toHaveProperty('en');
     const invalid = await new UpdateLanguageUseCase(repo).execute({
       id: 'l1',
       changes: { name: ' ' },

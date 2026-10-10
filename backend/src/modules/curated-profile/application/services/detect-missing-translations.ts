@@ -21,7 +21,8 @@ export type MissingTranslationEntity =
   | 'project'
   | 'education'
   | 'certification'
-  | 'socialLink';
+  | 'socialLink'
+  | 'language';
 
 /** Un campo bilingüe que, en el idioma pedido, caería al fallback por estar vacío. */
 export interface MissingTranslation {
@@ -81,7 +82,8 @@ function isMissing(field: Localized, locale: Locale): boolean {
  * - education: degree
  * - certification: name
  * - socialLink: label, description
- * No cubre idiomas hablados del perfil ni las skills (nombres planos).
+ * - language (idiomas del perfil, localize-language-level D7): nameI18n, level, detail
+ * No cubre las skills (nombres planos).
  */
 export function detectMissingTranslations(input: MissingTranslationsInput): MissingTranslation[] {
   const { locale } = input;
@@ -111,6 +113,9 @@ export function detectMissingTranslations(input: MissingTranslationsInput): Miss
       'availability.contractType': profile.availability.contractType,
       'availability.startDate': profile.availability.startDate,
     });
+    for (const l of profile.languages) {
+      check('language', l.id, { nameI18n: l.nameI18n, level: l.level, detail: l.detail });
+    }
   }
   for (const e of input.experiences) {
     check('experience', e.id, { role: e.role, summary: e.summary, highlights: e.highlights });

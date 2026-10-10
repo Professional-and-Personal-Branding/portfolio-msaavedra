@@ -28,6 +28,6 @@ export interface AdminLanguageOutput {
   id: string;
   name: string;
   nameI18n: LocalizedText | string | null;
-  level: string;
+  level: LocalizedText | string;
   detail: LocalizedText | string | null;
 }

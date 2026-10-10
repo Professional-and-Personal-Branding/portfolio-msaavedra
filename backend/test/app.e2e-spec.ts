@@ -19,7 +19,7 @@ interface CvData {
     fullName: string;
     yearsOfExperience: number;
     availability: { startDate: Localized };
-    languages: { name: string; nameI18n: Localized }[];
+    languages: { name: string; nameI18n: Localized; level: Localized }[];
   };
   experiences: { company: string; role: Localized; highlights: { es: string[]; en: string[] } }[];
 }
@@ -186,6 +186,22 @@ describe('API pública (e2e)', () => {
       expect(res.body.languages[0].name).toBe(cv.profile.languages[0].nameI18n.es);
     });
 
+    it('el nivel de cada idioma sale en el idioma pedido (localize-language-level)', async () => {
+      const en = await request(app.getHttpServer()).get('/api/profile?lang=en');
+      const es = await request(app.getHttpServer()).get('/api/profile?lang=es');
+      const levels = cv.profile.languages.map((l) => l.level);
+      expect(en.body.languages.map((l: { level: string }) => l.level)).toEqual(
+        levels.map((l) => l.en),
+      );
+      expect(es.body.languages.map((l: { level: string }) => l.level)).toEqual(
+        levels.map((l) => l.es),
+      );
+      expect(en.body.languages[0].level).toBe('Native');
+      expect(es.body.languages[0].level).toBe('Nativo');
+      expect(en.body.languages[1].level).toBe('B1-B2');
+      expect(Object.keys(en.body.languages[0]).sort()).toEqual(['detail', 'level', 'name']);
+    });
+
     it('perfil en inglés', async () => {
       const res = await request(app.getHttpServer()).get('/api/profile?locale=en');
       expect(res.body.availability.startDate).toBe(cv.profile.availability.startDate.en);
@@ -224,6 +240,7 @@ describe('API pública (e2e)', () => {
               create: languages.map(({ profileId: _p, ...l }) => ({
                 ...l,
                 nameI18n: l.nameI18n ?? undefined,
+                level: l.level ?? {},
                 detail: l.detail ?? undefined,
               })),
             },

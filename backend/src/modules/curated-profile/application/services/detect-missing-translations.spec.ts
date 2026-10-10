@@ -31,6 +31,20 @@ function withExperience(
   };
 }
 
+// Perfil con los idiomas dados; el resto de sus campos están completos.
+function withLanguages(languages: Record<string, unknown>[]): MissingTranslationsInput {
+  return {
+    ...emptyInput,
+    profile: stub({
+      id: 'p1',
+      headline: { es: 'H', en: 'H' },
+      summary: { es: 'S', en: 'S' },
+      availability: { modality: null, contractType: null, startDate: null },
+      languages: languages.map((l) => stub(l)),
+    }),
+  };
+}
+
 describe('detectMissingTranslations', () => {
   const cases: [string, MissingTranslationsInput, unknown[]][] = [
     [
@@ -121,6 +135,7 @@ describe('detectMissingTranslations', () => {
             contractType: null,
             startDate: { es: '', en: '' },
           },
+          languages: [],
         }),
         skillCategories: [stub({ id: 'k1', name: { es: 'Lenguajes' } })],
         projects: [stub({ id: 'pr1', role: { es: 'Rol', en: 'Role' }, summary: { es: 'S' } })],
@@ -137,6 +152,47 @@ describe('detectMissingTranslations', () => {
         { entity: 'education', id: 'ed1', field: 'degree' },
         { entity: 'socialLink', id: 's1', field: 'label' },
       ],
+    ],
+    [
+      'idiomas del perfil: nombre, nivel y detalle sin inglés',
+      withLanguages([
+        {
+          id: 'l1',
+          nameI18n: { es: 'Inglés' },
+          level: { es: 'Intermedio' },
+          detail: { es: 'Oral y escrito' },
+        },
+      ]),
+      [
+        { entity: 'language', id: 'l1', field: 'nameI18n' },
+        { entity: 'language', id: 'l1', field: 'level' },
+        { entity: 'language', id: 'l1', field: 'detail' },
+      ],
+    ],
+    [
+      'idioma con el nivel sin inglés y lo demás completo: solo el nivel',
+      withLanguages([
+        {
+          id: 'l1',
+          nameI18n: { es: 'Inglés', en: 'English' },
+          level: { es: 'Intermedio', en: '' },
+          detail: null,
+        },
+      ]),
+      [{ entity: 'language', id: 'l1', field: 'level' }],
+    ],
+    [
+      'idioma con nivel legado (string) o completo: no se reporta',
+      withLanguages([
+        { id: 'l1', nameI18n: null, level: 'C1', detail: null },
+        {
+          id: 'l2',
+          nameI18n: { es: 'Español', en: 'Spanish' },
+          level: { es: 'Nativo', en: 'Native' },
+          detail: { es: 'Oral', en: 'Oral' },
+        },
+      ]),
+      [],
     ],
   ];
 

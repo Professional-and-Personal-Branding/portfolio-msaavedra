@@ -91,6 +91,18 @@ describe('Perfiles curados (e2e)', () => {
       }
     });
 
+    it('el perfil base del perfil curado trae el nivel de los idiomas en el idioma pedido', async () => {
+      for (const slug of ['all', 'tech-lead-dotnet']) {
+        const en = await get(`/api/curated-profiles/${slug}?lang=en`);
+        const es = await get(`/api/curated-profiles/${slug}?lang=es`);
+        const viaLocale = await get(`/api/curated-profiles/${slug}?locale=en`);
+        expect(en.body.profile.languages[0].name).toBe('Spanish');
+        expect(en.body.profile.languages[0].level).toBe('Native');
+        expect(es.body.profile.languages[0].level).toBe('Nativo');
+        expect(viaLocale.body.profile.languages[0].level).toBe('Native');
+      }
+    });
+
     it('en inglés resuelve title y roleType', async () => {
       const res = await get('/api/curated-profiles?locale=en');
       const item = (res.body as { slug: string; title: string; roleType: string }[]).find(

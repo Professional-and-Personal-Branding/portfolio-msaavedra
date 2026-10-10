@@ -44,9 +44,11 @@ export function validateProfileContent(content: ProfileContent): Result<void, Va
   return ok(undefined);
 }
 
-/** Reglas de un idioma: nombre y nivel no vacíos. */
+/** Reglas de un idioma: nombre y nivel (en español, o el texto plano legado) no vacíos. */
 export function validateLanguage(props: NewLanguageProps): Result<void, ValidationError> {
   if (isBlank(props.name)) return fail(new ValidationError('name es obligatorio', ['name']));
-  if (isBlank(props.level)) return fail(new ValidationError('level es obligatorio', ['level']));
+  if (isBlank(sourceText(props.level))) {
+    return fail(new ValidationError('level.es es obligatorio', ['level']));
+  }
   return ok(undefined);
 }

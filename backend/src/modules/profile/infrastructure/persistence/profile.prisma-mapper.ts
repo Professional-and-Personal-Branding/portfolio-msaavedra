@@ -22,7 +22,7 @@ export function toLanguageEntity(l: LanguageRecord): Language {
     id: l.id,
     name: l.name,
     nameI18n: optionalText(l.nameI18n, 'Language.nameI18n'),
-    level: l.level,
+    level: toLocalizedText(l.level, 'Language.level'),
     detail: optionalText(l.detail, 'Language.detail'),
   });
 }

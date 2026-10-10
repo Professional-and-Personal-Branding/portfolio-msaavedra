@@ -33,6 +33,6 @@ export class AdminLanguageResponse implements AdminLanguageOutput {
   @ApiProperty() id!: string;
   @ApiProperty({ example: 'Inglés' }) name!: string;
   @ApiProperty({ type: LocalizedTextDto, nullable: true }) nameI18n!: LocalizedText | string | null;
-  @ApiProperty({ example: 'B2' }) level!: string;
+  @ApiProperty({ type: LocalizedTextDto }) level!: LocalizedText | string;
   @ApiProperty({ type: LocalizedTextDto, nullable: true }) detail!: LocalizedText | string | null;
 }

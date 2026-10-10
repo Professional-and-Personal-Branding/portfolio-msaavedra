@@ -48,4 +48,12 @@ describe('validateLanguage', () => {
     expect(validateLanguage({ ...LANGUAGE, name: '' }).ok).toBe(false);
     expect(validateLanguage({ ...LANGUAGE, level: ' ' }).ok).toBe(false);
   });
+
+  it('el nivel bilingüe exige español; el inglés es opcional', () => {
+    expect(validateLanguage({ ...LANGUAGE, level: { es: ' ' } }).ok).toBe(false);
+    expect(validateLanguage({ ...LANGUAGE, level: { en: 'Native' } }).ok).toBe(false);
+    expect(validateLanguage({ ...LANGUAGE, level: { es: 'Nativo' } }).ok).toBe(true);
+    expect(validateLanguage({ ...LANGUAGE, level: { es: 'Nativo', en: 'Native' } }).ok).toBe(true);
+    expect(validateLanguage({ ...LANGUAGE, level: 'C1' }).ok).toBe(true);
+  });
 });

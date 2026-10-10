@@ -223,17 +223,74 @@ describe('Administración de contenido (e2e)', () => {
 
     it('idiomas: crear, editar y borrar en el perfil base', async () => {
       const created = await auth(http().post('/api/admin/languages'))
-        .send({ name: MARK, level: 'A1' })
+        .send({ name: MARK, level: { es: 'Avanzado', en: 'Advanced' } })
+        .expect(201);
+      const id = created.body.id as string;
+      expect(created.body.level).toEqual({ es: 'Avanzado', en: 'Advanced' });
+      const crudo = await auth(http().get('/api/admin/languages')).expect(200);
+      expect(crudo.body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id, level: { es: 'Avanzado', en: 'Advanced' } }),
+        ]),
+      );
+      const enInglés = await http().get('/api/profile?lang=en').expect(200);
+      expect(enInglés.body.languages).toEqual(
+        expect.arrayContaining([expect.objectContaining({ name: MARK, level: 'Advanced' })]),
+      );
+
+      // PATCH reemplaza el objeto completo: sin merge por idioma
+      await auth(http().patch(`/api/admin/languages/${id}`))
+        .send({ level: { es: 'Bilingüe' } })
+        .expect(200);
+      const enEspañol = await http().get('/api/profile?lang=es').expect(200);
+      expect(enEspañol.body.languages).toEqual(
+        expect.arrayContaining([expect.objectContaining({ name: MARK, level: 'Bilingüe' })]),
+      );
+      const row = await prisma.language.findUniqueOrThrow({ where: { id } });
+      expect(row.level).toEqual({ es: 'Bilingüe' });
+      await auth(http().delete(`/api/admin/languages/${id}`)).expect(204);
+    });
+
+    it('idiomas: level como string, sin es o en blanco → 400 y no escribe', async () => {
+      await auth(http().post('/api/admin/languages')).send({ name: MARK, level: 'B2' }).expect(400);
+      await auth(http().post('/api/admin/languages'))
+        .send({ name: MARK, level: { en: 'Native' } })
+        .expect(400);
+      expect(await prisma.language.count({ where: { name: MARK } })).toBe(0);
+
+      const created = await auth(http().post('/api/admin/languages'))
+        .send({ name: MARK, level: { es: 'Nativo', en: 'Native' } })
         .expect(201);
       const id = created.body.id as string;
       await auth(http().patch(`/api/admin/languages/${id}`))
-        .send({ level: 'B1' })
-        .expect(200);
-      const profile = await http().get('/api/profile').expect(200);
-      expect(profile.body.languages).toEqual(
-        expect.arrayContaining([expect.objectContaining({ name: MARK, level: 'B1' })]),
-      );
+        .send({ level: { es: ' ', en: 'Advanced' } })
+        .expect(400);
+      await auth(http().patch(`/api/admin/languages/${id}`))
+        .send({ level: null })
+        .expect(400);
+      const row = await prisma.language.findUniqueOrThrow({ where: { id } });
+      expect(row.level).toEqual({ es: 'Nativo', en: 'Native' });
       await auth(http().delete(`/api/admin/languages/${id}`)).expect(204);
+    });
+
+    it('idiomas: un nivel legado (string) se lista crudo y no se reporta como faltante', async () => {
+      const row = await prisma.language.create({
+        data: {
+          name: MARK,
+          level: 'C1',
+          profile: { connect: { id: original.id } },
+        },
+      });
+      try {
+        const crudo = await auth(http().get(`/api/admin/languages/${row.id}`)).expect(200);
+        expect(crudo.body.level).toBe('C1');
+        const pub = await http().get('/api/profile?lang=en').expect(200);
+        expect(pub.body.languages).toEqual(
+          expect.arrayContaining([expect.objectContaining({ name: MARK, level: 'C1' })]),
+        );
+      } finally {
+        await prisma.language.delete({ where: { id: row.id } });
+      }
     });
 
     it.each([
@@ -244,7 +301,7 @@ describe('Administración de contenido (e2e)', () => {
         '/api/admin/social-links',
         { platform: 'x', handle: 'x', url: 'https://x.dev', label: { es: 'x' } },
       ],
-      ['/api/admin/languages', { name: 'x', level: 'x' }],
+      ['/api/admin/languages', { name: 'x', level: { es: 'x' } }],
     ])('POST %s con un campo desconocido → 400', async (url, body) => {
       await auth(http().post(url))
         .send({ ...body, desconocido: true })

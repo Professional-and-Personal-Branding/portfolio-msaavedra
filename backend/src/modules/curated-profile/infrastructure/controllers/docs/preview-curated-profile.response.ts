@@ -15,6 +15,7 @@ const MISSING_TRANSLATION_ENTITIES: MissingTranslationEntity[] = [
   'education',
   'certification',
   'socialLink',
+  'language',
 ];
 
 export class MissingTranslationResponse implements MissingTranslation {
