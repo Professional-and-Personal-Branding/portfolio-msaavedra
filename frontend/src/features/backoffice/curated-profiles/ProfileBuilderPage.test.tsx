@@ -541,6 +541,56 @@ describe('ProfileBuilderPage — aviso de faltantes de traducción', () => {
     expect(screen.getByRole('button', { name: /Guardar/ })).toBeEnabled();
   });
 
+  // localize-language-level (D7): los idiomas del perfil entran en el informe y se nombran.
+  const languageMissing = http.post(`${API}/admin/curated-profiles/preview`, () =>
+    HttpResponse.json({
+      ...makeCuratedProfile(),
+      missingTranslations: [{ entity: 'language', id: 'l1', field: 'level' }],
+    }),
+  );
+
+  it('un idioma sin el nivel en inglés se muestra como Idiomas con su nombre', async () => {
+    server.use(
+      languageMissing,
+      http.get(`${API}/admin/languages`, () =>
+        HttpResponse.json([
+          {
+            id: 'l1',
+            name: 'Inglés',
+            nameI18n: { es: 'Inglés', en: 'English' },
+            level: { es: 'Intermedio' },
+            detail: null,
+          },
+        ]),
+      ),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+
+    await openPublication(user);
+    await toEnglish(user);
+
+    const notice = screen.getByTestId('missing-translations');
+    await waitFor(() => expect(notice).toHaveTextContent('Falta 1 traducción en EN'));
+    expect(notice).toHaveTextContent('Idiomas');
+    await waitFor(() => expect(notice).toHaveTextContent('Inglés: Nivel'));
+  });
+
+  it('si la lista de idiomas no carga, el aviso nombra el idioma por su id', async () => {
+    server.use(
+      languageMissing,
+      http.get(`${API}/admin/languages`, () => HttpResponse.json({}, { status: 500 })),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+
+    await openPublication(user);
+    await toEnglish(user);
+
+    const notice = screen.getByTestId('missing-translations');
+    await waitFor(() => expect(notice).toHaveTextContent('l1: Nivel'));
+  });
+
   it('perfil completo: lo dice explícitamente', async () => {
     server.use(previewWith({}), ...adminHandlers);
     const user = userEvent.setup();

@@ -357,14 +357,14 @@ function LanguagesSection() {
       id: language.id,
       name: language.name,
       nameI18n: editableText(language.nameI18n),
-      level: language.level,
+      level: editableText(language.level),
       detail: editableText(language.detail),
     });
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (!draft) return;
-    if (!draft.name.trim() || !draft.level.trim()) {
+    if (!draft.name.trim() || !draft.level.es.trim()) {
       setError('El nombre y el nivel son obligatorios');
       return;
     }
@@ -415,7 +415,8 @@ function LanguagesSection() {
             return (
               <li key={language.id} className="flex items-center gap-3">
                 <span className="flex-1 text-sm">
-                  {shown} <span className="text-text-dim">· {language.level}</span>
+                  {shown}{' '}
+                  <span className="text-text-dim">· {es(editableText(language.level))}</span>
                 </span>
                 <Button
                   variant="outline"
@@ -467,12 +468,12 @@ function LanguagesSection() {
                 value={draft.nameI18n}
                 onChange={(value) => setDraft({ ...draft, nameI18n: editableText(value) })}
               />
-              <TextField
-                id="language-level"
+              <LocalizedField
                 label="Nivel"
                 required
+                description="Por ejemplo Nativo / Native o B1-B2. El español es obligatorio."
                 value={draft.level}
-                onChange={(level) => setDraft({ ...draft, level })}
+                onChange={(value) => setDraft({ ...draft, level: editableText(value) })}
               />
               <LocalizedField
                 label="Detalle"

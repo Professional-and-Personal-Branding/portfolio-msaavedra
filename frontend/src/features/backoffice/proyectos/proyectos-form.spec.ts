@@ -20,10 +20,28 @@ describe('regla de "sucio" de los formularios en diálogo (D12)', () => {
     expect(
       dirty(
         toLanguageBody,
-        { ...EMPTY_LANGUAGE, level: ' B2 ' },
-        { ...EMPTY_LANGUAGE, level: 'B2' },
+        { ...EMPTY_LANGUAGE, level: { es: ' B2 ', en: ' B2' } },
+        { ...EMPTY_LANGUAGE, level: { es: 'B2', en: 'B2' } },
       ),
     ).toBe(false);
+  });
+
+  it('el nivel bilingüe: el inglés vacío se omite y cambiarlo ensucia', () => {
+    expect(
+      toLanguageBody({ ...EMPTY_LANGUAGE, name: 'Inglés', level: { es: ' B2 ', en: ' ' } }),
+    ).toEqual({
+      name: 'Inglés',
+      nameI18n: null,
+      level: { es: 'B2' },
+      detail: null,
+    });
+    expect(
+      dirty(
+        toLanguageBody,
+        { ...EMPTY_LANGUAGE, level: { es: 'Nativo', en: 'Native' } },
+        { ...EMPTY_LANGUAGE, level: { es: 'Nativo', en: '' } },
+      ),
+    ).toBe(true);
   });
 
   it('abrir un alta y no tocar nada no ensucia', () => {

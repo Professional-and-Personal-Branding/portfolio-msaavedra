@@ -25,7 +25,13 @@ const PROFILE: AdminProfile = {
 };
 
 const LANGUAGES: AdminLanguage[] = [
-  { id: 'l1', name: 'Español', nameI18n: null, level: 'Nativo', detail: null },
+  {
+    id: 'l1',
+    name: 'Español',
+    nameI18n: null,
+    level: { es: 'Nativo', en: 'Native' },
+    detail: null,
+  },
 ];
 
 type Body = Record<string, unknown> & {
@@ -76,6 +82,10 @@ const openPage = async () => {
   renderWithProviders(<AppRouter />, { route: '/admin/portada' });
   return screen.findByTestId('hero-preview');
 };
+
+// El diálogo de idiomas tiene tres campos bilingües (nombre mostrado, nivel y detalle): el
+// segundo juego de pestañas es el del nivel.
+const levelEnglishTab = () => screen.getAllByRole('tab', { name: 'en' })[1]!;
 
 describe('PortadaPage', () => {
   it('carga el perfil base y muestra su hero', async () => {
@@ -159,14 +169,132 @@ describe('PortadaPage', () => {
 
     await user.click(within(section).getByRole('button', { name: 'Nuevo idioma' }));
     await user.type(screen.getByLabelText('Nombre *'), 'Inglés');
-    await user.type(screen.getByLabelText('Nivel *'), 'B2');
+    await user.type(screen.getByLabelText('Nivel (es)'), 'Intermedio');
+    await user.click(levelEnglishTab());
+    await user.type(screen.getByLabelText('Nivel (en)'), 'Intermediate');
     await user.click(screen.getByRole('button', { name: 'Guardar' }));
     await waitFor(() => expect(created).toBeDefined());
-    expect(created).toEqual({ name: 'Inglés', nameI18n: null, level: 'B2', detail: null });
+    expect(created).toEqual({
+      name: 'Inglés',
+      nameI18n: null,
+      level: { es: 'Intermedio', en: 'Intermediate' },
+      detail: null,
+    });
 
     await user.click(within(section).getByRole('button', { name: 'Borrar Español' }));
     await user.click(await screen.findByRole('button', { name: 'Borrar' }));
     await waitFor(() => expect(deleted).toBe('l1'));
+  });
+});
+
+describe('PortadaPage — nivel del idioma en ES y EN (localize-language-level)', () => {
+  const NEEDS_LEVEL = 'El nombre y el nivel son obligatorios';
+
+  it('editar el inglés del nivel, guardar y reabrir conserva los dos idiomas', async () => {
+    let languages: AdminLanguage[] = [...LANGUAGES];
+    let patched: Record<string, unknown> | undefined;
+    server.use(
+      http.get(`${API}/admin/languages`, () => HttpResponse.json(languages)),
+      http.patch(`${API}/admin/languages/:id`, async ({ request }) => {
+        patched = (await request.json()) as Record<string, unknown>;
+        languages = [{ ...languages[0]!, ...patched } as AdminLanguage];
+        return HttpResponse.json(languages[0]);
+      }),
+      ...handlers({ previews: [], puts: [] }),
+    );
+    const user = userEvent.setup();
+    await openPage();
+    const section = screen.getByRole('region', { name: 'Idiomas' });
+    // El listado muestra el nivel en español.
+    expect(await within(section).findByText(/Nativo/)).toBeInTheDocument();
+    expect(within(section).queryByText(/Native$/)).not.toBeInTheDocument();
+
+    await user.click(within(section).getByRole('button', { name: 'Editar Español' }));
+    await user.click(levelEnglishTab());
+    const english = screen.getByLabelText('Nivel (en)');
+    expect(english).toHaveValue('Native');
+    await user.clear(english);
+    await user.type(english, 'Native speaker');
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+    await waitFor(() => expect(patched).toBeDefined());
+    expect(patched).toMatchObject({ level: { es: 'Nativo', en: 'Native speaker' } });
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    await user.click(within(section).getByRole('button', { name: 'Editar Español' }));
+    expect(screen.getByLabelText('Nivel (es)')).toHaveValue('Nativo');
+    await user.click(levelEnglishTab());
+    expect(screen.getByLabelText('Nivel (en)')).toHaveValue('Native speaker');
+  });
+
+  it('sin el español del nivel no llama a la API y avisa', async () => {
+    let calls = 0;
+    server.use(
+      http.post(`${API}/admin/languages`, () => {
+        calls += 1;
+        return HttpResponse.json({}, { status: 201 });
+      }),
+      ...handlers({ previews: [], puts: [] }),
+    );
+    const user = userEvent.setup();
+    await openPage();
+    const section = screen.getByRole('region', { name: 'Idiomas' });
+    await within(section).findByText(/Español/);
+
+    await user.click(within(section).getByRole('button', { name: 'Nuevo idioma' }));
+    await user.type(screen.getByLabelText('Nombre *'), 'Inglés');
+    await user.click(levelEnglishTab());
+    await user.type(screen.getByLabelText('Nivel (en)'), 'Advanced');
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    expect(await screen.findByText(NEEDS_LEVEL)).toBeInTheDocument();
+    expect(calls).toBe(0);
+  });
+
+  it('con el nivel solo en español, la petición no lleva la clave en', async () => {
+    let created: Record<string, unknown> | undefined;
+    server.use(
+      http.post(`${API}/admin/languages`, async ({ request }) => {
+        created = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ id: 'l2', ...created }, { status: 201 });
+      }),
+      ...handlers({ previews: [], puts: [] }),
+    );
+    const user = userEvent.setup();
+    await openPage();
+    const section = screen.getByRole('region', { name: 'Idiomas' });
+    await within(section).findByText(/Español/);
+
+    await user.click(within(section).getByRole('button', { name: 'Nuevo idioma' }));
+    await user.type(screen.getByLabelText('Nombre *'), 'Inglés');
+    await user.type(screen.getByLabelText('Nivel (es)'), 'Intermedio');
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    await waitFor(() => expect(created).toBeDefined());
+    expect(created?.level).toEqual({ es: 'Intermedio' });
+  });
+
+  it('un nivel legado ("C1") se carga en ES con EN vacío y cerrar sin tocar no avisa', async () => {
+    // El backend puede devolver el string de un dato legado (AdminLanguageResponse.level).
+    const legacy = [
+      { id: 'l9', name: 'Italiano', nameI18n: null, level: 'C1', detail: null },
+    ] as unknown as AdminLanguage[];
+    server.use(
+      http.get(`${API}/admin/languages`, () => HttpResponse.json(legacy)),
+      ...handlers({ previews: [], puts: [] }),
+    );
+    const user = userEvent.setup();
+    await openPage();
+    const section = screen.getByRole('region', { name: 'Idiomas' });
+    expect(await within(section).findByText(/C1/)).toBeInTheDocument();
+
+    await user.click(within(section).getByRole('button', { name: 'Editar Italiano' }));
+    expect(screen.getByLabelText('Nivel (es)')).toHaveValue('C1');
+    await user.click(levelEnglishTab());
+    expect(screen.getByLabelText('Nivel (en)')).toHaveValue('');
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.queryByText('Tenés cambios sin guardar')).not.toBeInTheDocument();
   });
 });
 
@@ -270,7 +398,7 @@ describe('PortadaPage — aviso al descartar un idioma', () => {
     expect(screen.queryByText(PROMPT)).not.toBeInTheDocument();
 
     await user.click(within(section).getByRole('button', { name: 'Editar Español' }));
-    await user.type(screen.getByLabelText('Nivel *'), 'x');
+    await user.type(screen.getByLabelText('Nivel (es)'), 'x');
     await user.click(screen.getByRole('button', { name: 'Cancelar' }));
     expect(await screen.findByText(PROMPT)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Descartar' }));
