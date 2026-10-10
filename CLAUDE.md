@@ -160,6 +160,7 @@ npm run api:types        # regenera src/shared/types/api.d.ts desde ../backend/o
   - [x] `add-bilingual-builder-parity` — conmutador de idioma en el preview, `highlights.en` editable y aviso de faltantes de traducción (archivado 2026-10-08)
 - [x] `polish-builder-and-edge` — aviso de cambios sin guardar, visita en segundo plano, CSP del sitio y `accentColor` obsoleto (etapa 1) (archivado 2026-10-09)
 - [x] `retire-accent-color` — `accentColor` retirado del contrato y la base; su color pasó a `themeOverrides.colors.accent` (archivado 2026-10-09)
+- [x] `add-printable-one-page` — hoja imprimible de una página (A4/Letter) con botón «Imprimir / Guardar PDF» y `npm run print:check` (archivado 2026-10-10)
 
 ---
 
