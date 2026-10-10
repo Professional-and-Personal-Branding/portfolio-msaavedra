@@ -2,6 +2,8 @@
 
 ## Update — Octubre 2026 (ronda 1.1.x — `localize-language-level`)
 
+Mergeado en PR #28 y archivado en `openspec/changes/archive/2026-10-10-localize-language-level/`, con sus specs sincronizadas. La migración ya se aplicó a la base de desarrollo del owner, con respaldo previo.
+
 En inglés, el nivel de cada idioma salía como lo guardaba la base (*"Spanish · Nativo"*, defecto registrado en `add-printable-one-page`). Ahora es un texto bilingüe como el resto del perfil base.
 
 - **Cambio visible:** con `?lang=en`, el contacto, la hoja imprimible y el perfil curado muestran *"Spanish · Native"*; con `?lang=es`, *"Español · Nativo"*.

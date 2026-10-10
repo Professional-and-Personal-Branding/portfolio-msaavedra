@@ -93,12 +93,12 @@
   Verificar: salidas de `curl` en `verification/6.2-api.txt`.
 - [x] 6.3 App real (`npm run dev`): en `/admin/portada`, editar el nivel de `Inglés` en EN, guardar, recargar y reabrir (ES y EN se conservan); `/?lang=en` muestra `Spanish · Native` en el contacto y en la vista de impresión; en el constructor, un nivel sin inglés aparece en el aviso de faltantes como *Idiomas — <nombre>: Nivel*. Verificar: capturas en `verification/`.
 - [x] 6.4 `npx -y @fission-ai/openspec@1.14.1 validate localize-language-level --strict` y `npx -y @fission-ai/openspec@1.14.1 validate --all --strict`. Verificar: el change valida, sin avisos *Archive would refuse* y sin fallas nuevas en `--all`; transcripción en `verification/6.4-validate.txt`.
-- [ ] 6.5 Cierre de la copia: `dropdb portfolio_levelfix`, salvo que el grupo 7 siga pendiente y se quiera repetir el ensayo. Verificar: `psql -l` no la lista o `verification.md` explica por qué sigue.
+- [x] 6.5 Cierre de la copia: `dropdb portfolio_levelfix`, salvo que el grupo 7 siga pendiente y se quiera repetir el ensayo. Verificar: `psql -l` no la lista o `verification.md` explica por qué sigue.
 
 ## 7. Base del owner — PENDIENTE DE APROBACIÓN (P2, D8)
 
 > No empezar sin el OK explícito del owner en el chat. Desde 7.2, el backend de `main` no puede leer `portfolio` hasta el merge (D8).
 
 - [x] 7.1 Respaldo nuevo de `portfolio` (como 1.1, con fecha nueva). Verificar: ruta, tamaño y SHA-256 en `verification.md` § *Respaldo*.
-- [ ] 7.2 Con los backends locales parados y `DATABASE_URL` de `portfolio`: `npm run prisma:status` (destino `portfolio`, `localize_language_level` pendiente), `npm run prisma:deploy` y `prisma:status`. **Sin seed.** Verificar: salida en `verification/7.2-deploy-owner.txt`; sin pendientes.
-- [ ] 7.3 Evidencia posterior: el `SELECT` de 1.2 y el tipo de la columna; `prisma migrate diff … --exit-code`. Verificar: en `verification.md` § *Antes y después*, una tabla por idioma con el `level` previo y el resultante, conforme a D2; `migrate diff` con código 0. Salida en `verification/7.3-despues.txt`.
+- [x] 7.2 Con los backends locales parados y `DATABASE_URL` de `portfolio`: `npm run prisma:status` (destino `portfolio`, `localize_language_level` pendiente), `npm run prisma:deploy` y `prisma:status`. **Sin seed.** Verificar: salida en `verification/7.2-7.3-owner.txt`; sin pendientes.
+- [x] 7.3 Evidencia posterior: el `SELECT` de 1.2 y el tipo de la columna; `prisma migrate diff … --exit-code`. Verificar: en `verification.md` § *Antes y después*, una tabla por idioma con el `level` previo y el resultante, conforme a D2; `migrate diff` con código 0. Salida en `verification/7.2-7.3-owner.txt`.
