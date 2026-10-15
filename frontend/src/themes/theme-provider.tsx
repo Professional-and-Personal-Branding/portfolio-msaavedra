@@ -1,10 +1,10 @@
 import { useEffect, useMemo, type CSSProperties, type ReactNode } from 'react';
-import { useReducedMotion } from 'motion/react';
 import { cn } from '@/shared/lib/utils';
 import { tokensToCssVars } from './css-vars';
 import { ensureFontLoaded } from './fonts';
 import { findPreset } from './presets';
 import { parseThemeTokens } from './tokens';
+import { usePrefersReducedMotion } from './use-prefers-reduced-motion';
 
 import { ThemeContext, type ThemeContextValue } from './theme-context';
 
@@ -28,7 +28,7 @@ export function ThemeProvider({
   className,
   children,
 }: ThemeProviderProps) {
-  const reducedMotion = useReducedMotion() ?? false;
+  const reducedMotion = usePrefersReducedMotion();
 
   const { tokens, preset, source } = useMemo(() => {
     const chosen = findPreset(presetSlug) ?? null;

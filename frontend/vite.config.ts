@@ -6,7 +6,6 @@ import { defineConfig } from 'vite';
 
 const CHUNKS: Record<string, RegExp> = {
   react: /[\\/]node_modules[\\/](react|react-dom|react-router|scheduler)[\\/]/,
-  motion: /[\\/]node_modules[\\/](motion|motion-dom|motion-utils|framer-motion)[\\/]/,
   query: /[\\/]node_modules[\\/]@tanstack[\\/]/,
 };
 

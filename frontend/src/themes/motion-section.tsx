@@ -1,5 +1,4 @@
-import { motion } from 'motion/react';
-import type { ComponentProps, ReactNode } from 'react';
+import { lazy, Suspense, type ComponentProps, type ReactNode } from 'react';
 import { useTheme } from './use-theme';
 
 interface MotionSectionProps extends Omit<ComponentProps<'section'>, 'children'> {
@@ -8,9 +7,17 @@ interface MotionSectionProps extends Omit<ComponentProps<'section'>, 'children'>
   delay?: number;
 }
 
+/** La librería de animación sale del arranque: se pide cuando hay una sección que animar. */
+const AnimatedSection = lazy(() => import('./animated-section'));
+
+/** Estado inicial de la animación (el mismo de `AnimatedSection`): la sección espera oculta. */
+const WAITING_STYLE = { opacity: 0, transform: 'translateY(20px)' } as const;
+
 /**
  * `<section>` con animación de entrada solo si el tema la habilita y el
  * visitante no pidió `prefers-reduced-motion` (spec `runtime-theming`).
+ * Mientras llega la librería de animación (`LazyMotion`, en diferido) la sección se muestra
+ * en su estado inicial, que es el mismo en el que espera antes de entrar en pantalla.
  */
 export function MotionSection({ children, delay = 0, ...props }: MotionSectionProps) {
   const { animationsEnabled } = useTheme();
@@ -22,15 +29,16 @@ export function MotionSection({ children, delay = 0, ...props }: MotionSectionPr
     );
   }
   return (
-    <motion.section
-      data-motion="on"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.55, ease: 'easeOut', delay }}
-      {...(props as ComponentProps<typeof motion.section>)}
+    <Suspense
+      fallback={
+        <section data-motion="on" {...props} style={{ ...WAITING_STYLE, ...props.style }}>
+          {children}
+        </section>
+      }
     >
-      {children}
-    </motion.section>
+      <AnimatedSection delay={delay} {...props}>
+        {children}
+      </AnimatedSection>
+    </Suspense>
   );
 }

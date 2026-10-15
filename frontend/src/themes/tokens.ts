@@ -1,10 +1,14 @@
-import { z } from 'zod';
+import * as z from 'zod/mini';
 
 /**
  * Contrato de design tokens compartido con `Theme.tokens` del backend
  * (spec `runtime-theming`). Todo campo es opcional en la entrada porque los
  * temas de perfil pueden ser parciales; `mergeTokens` los completa con el
  * preset `modern-dark`.
+ *
+ * Valida con `zod/mini`, la API funcional de Zod 4: el arranque público no carga la API
+ * clásica (≈ 80 KB min) y los formularios del panel siguen con `zod`, en su chunk diferido
+ * (spec `web-performance` § Presupuesto de JS del arranque público).
  */
 export const themeModeSchema = z.enum(['light', 'dark']);
 export const densitySchema = z.enum(['compact', 'comfortable', 'spacious']);
@@ -48,11 +52,11 @@ export const themeTokensSchema = z.object({
 
 /** Entrada parcial (tal como puede venir de la API o de un override). */
 export const partialThemeTokensSchema = z.object({
-  mode: themeModeSchema.optional(),
-  colors: colorsSchema.partial().optional(),
-  typography: typographySchema.partial().optional(),
-  layout: layoutSchema.partial().optional(),
-  effects: effectsSchema.partial().optional(),
+  mode: z.optional(themeModeSchema),
+  colors: z.optional(z.partial(colorsSchema)),
+  typography: z.optional(z.partial(typographySchema)),
+  layout: z.optional(z.partial(layoutSchema)),
+  effects: z.optional(z.partial(effectsSchema)),
 });
 
 export type ThemeTokens = z.infer<typeof themeTokensSchema>;
