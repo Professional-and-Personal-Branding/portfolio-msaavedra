@@ -1,5 +1,23 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (ronda 1.1.x — `improve-a11y-and-performance`)
+
+Accesibilidad WCAG AA y arranque público más liviano, medidos con comandos que ahora viven en el repositorio y corren en el CI. Sin backend, sin contrato HTTP, sin migración y sin tocar la CSP: los acentos y los temas guardados no cambian.
+
+- **Cambios visibles.**
+  - **El acento como texto se ajusta:** cuando un acento no llega a 4,5:1 contra el fondo (13 de los 14 perfiles sobre `modern-dark`, y `modern-light`), el titular del hero, el *eyebrow* de las secciones, el badge de disponibilidad y las etiquetas del menú usan un derivado del mismo tono, más claro en temas oscuros y más oscuro en claros (`--t-accent-ink`). Los rellenos, bordes e íconos siguen con el acento elegido. El segundo acento, cuando se usa como texto (títulos de las categorías de skills), recibe el mismo tratamiento (`--t-accent2-ink`).
+  - **El texto atenuado** (fechas, etiquetas, contadores) gana contraste: era 3,5–4,0:1 y ahora cumple 4,5:1 (`--t-text-dim`).
+  - **El botón primario de `modern-light`** pasa a texto oscuro (4,70:1 en vez de 4,10:1 con blanco): el texto sobre el acento se elige por contraste WCAG y no por brillo.
+  - **El foco se ve:** un contorno sólido de 2 px, separado del borde (`--t-ring`), en la vista pública y en el panel. Antes era el acento al 50 %, casi invisible con los acentos oscuros.
+  - **El hero ya no hace fundido de entrada:** se pinta de una vez. Las demás secciones siguen animando al aparecer en pantalla.
+- **Navegación.** Enlace *Saltar al contenido* (*Skip to content*) como primer foco del sitio y del panel; `/admin/login` pasa a tener un `<main>`; el scroll suave respeta `prefers-reduced-motion`. Al cerrar con Escape un diálogo del panel, el foco vuelve al botón que lo abrió (antes se perdía en `<body>`).
+- **Estructura.** El `dl` de contacto y las pestañas ES/EN del panel (campos bilingües y conmutador de idioma de las vistas previas) tienen estructura ARIA válida.
+- **Arranque.** El JS que baja una ruta pública pasó de 228 a 179 KB gzip: los tokens se validan con `zod/mini` y `motion` carga en diferido. La hoja de Inter se pide desde el HTML, una sola vez.
+- **Medición (mobile, mediana de 3, sitio de producción en local).** Lighthouse: Accessibility 88 → 100, Best Practices 96 → 100, SEO 100, Performance 89–94 → 94–95. axe: de 1376 nodos de `color-contrast`, 330 de `dl` y 22 críticos del panel a 0 violaciones.
+- **Nuevos comandos del frontend:** `npm run perf:budget` (tope de 180 KB gzip, sin navegador), `npm run a11y:check` (axe + recorrido de teclado) y `npm run perf:check` (Lighthouse con versión fija y mediana). Los dos últimos abren páginas reales y se niegan a correr sin `A11Y_CHECK_DISPOSABLE_DB=1`, porque cada carga registra una visita.
+- **CI.** `perf:budget` en el job `frontend` y un job nuevo, `web-quality` (*Frontend · accesibilidad y Lighthouse*, dos ejecuciones en paralelo), que levanta un Postgres descartable, la API en producción y la imagen de producción del frontend. Bloquea con los umbrales de `docs/MANUAL.md` § 5.1 (en CI, Performance ≥ 85 con mediana de 5). Suma unos 6–7 minutos de pared por PR.
+- Cierra los ítems *Accesibilidad* y *Caché / performance* del checklist 1.0.x. Sin cache de lectura en el backend (la API responde en ≈ 20 ms) y sin lazy-loading de imágenes (la vista pública no tiene `<img>`).
+
 ## Update — Octubre 2026 (ronda 1.1.x — `localize-language-level`)
 
 Mergeado en PR #28 y archivado en `openspec/changes/archive/2026-10-10-localize-language-level/`, con sus specs sincronizadas. La migración ya se aplicó a la base de desarrollo del owner, con respaldo previo.

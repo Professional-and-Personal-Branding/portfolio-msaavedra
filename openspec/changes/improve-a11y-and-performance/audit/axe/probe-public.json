@@ -1,0 +1,91 @@
+{
+  "consoleWithoutAxe": [],
+  "fonts": [
+    "Inter 400 loaded",
+    "Inter 500 loaded",
+    "Inter 600 loaded",
+    "Inter 700 loaded",
+    "Inter 800 loaded"
+  ],
+  "fontLinks": [
+    "http://localhost:8088/assets/index-CgDfTQiL.css",
+    "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+  ],
+  "focus": [
+    {
+      "el": "A Manuel Joaquín Saavedra Severi",
+      "focusVisible": true,
+      "outline": "auto 1px oklab(0.403738 0.0826595 -0.121159 / 0.5)",
+      "boxShadow": "none"
+    },
+    {
+      "el": "BUTTON Classic",
+      "focusVisible": true,
+      "outline": "none 1px oklab(0.403738 0.0826595 -0.121159 / 0.5)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.403738 0.0826595 -0.121159 / 0.442316) 0px 0px 0px 2.65389px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+    },
+    {
+      "el": "BUTTON Sidebar",
+      "focusVisible": true,
+      "outline": "none 1px oklab(0.403738 0.0826595 -0.121159 / 0.5)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.403738 0.0826595 -0.121159 / 0.430892) 0px 0px 0px 2.58535px, rgba(0, 0, 0, 0.05) 0px 1px 2px 0px"
+    },
+    {
+      "el": "BUTTON Theme",
+      "focusVisible": true,
+      "outline": "none 1px oklab(0.403738 0.0826595 -0.121159 / 0.5)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.403738 0.0826595 -0.121159 / 0.431176) 0px 0px 0px 2.58705px, rgba(0, 0, 0, 0.05) 0px 1px 2px 0px"
+    },
+    {
+      "el": "BUTTON es",
+      "focusVisible": true,
+      "outline": "auto 1px oklab(0.403738 0.0826595 -0.121159 / 0.5)",
+      "boxShadow": "none"
+    },
+    {
+      "el": "BUTTON en",
+      "focusVisible": true,
+      "outline": "auto 1px oklab(0.403738 0.0826595 -0.121159 / 0.5)",
+      "boxShadow": "none"
+    },
+    {
+      "el": "BUTTON Print / Save as PDF",
+      "focusVisible": true,
+      "outline": "auto 1px oklab(0.403738 0.0826595 -0.121159 / 0.5)",
+      "boxShadow": "none"
+    },
+    {
+      "el": "A saavedramanuel100@gmail.com",
+      "focusVisible": true,
+      "outline": "auto 1px oklab(0.403738 0.0826595 -0.121159 / 0.5)",
+      "boxShadow": "none"
+    },
+    {
+      "el": "A Contact",
+      "focusVisible": true,
+      "outline": "none 1px oklab(0.403738 0.0826595 -0.121159 / 0.5)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.403738 0.0826595 -0.121159 / 0.430892) 0px 0px 0px 2.58535px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+    }
+  ],
+  "reducedMotion": "hero:off stats:off experience:off skills:off projects:off education:off certifications:off presence:off contact:off",
+  "smoothScroll": "smooth",
+  "motionSections": "hero:on:op=1 stats:on:op=0 experience:on:op=0 skills:on:op=0 projects:on:op=0 education:on:op=0 certifications:on:op=0 presence:on:op=0 contact:on:op=0",
+  "lang": "en",
+  "title": "Tech Lead .NET · Manuel Joaquín Saavedra Severiche",
+  "headings": [
+    "H1:Manuel Joaquín Saavedra Severi",
+    "H2:Professional Experience",
+    "H3:Senior Fullstack Developer · F",
+    "H3:Senior Software Engineer",
+    "H3:Lead Software Developer / Tech",
+    "H3:Software Technical Lead · DevO",
+    "H3:Software Engineer (Backend)",
+    "H3:Software Technical Lead · DevO",
+    "H3:Fullstack Developer · Project ",
+    "H3:Senior Backend Developer",
+    "H3:Project Manager & Backend Lead",
+    "H3:Fullstack Developer"
+  ],
+  "imgs": [],
+  "langEn": "en"
+}

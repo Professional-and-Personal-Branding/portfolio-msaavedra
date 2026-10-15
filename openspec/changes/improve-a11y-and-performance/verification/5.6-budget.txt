@@ -1,0 +1,21 @@
+== Verde sobre el build nuevo
+# Presupuesto de JS del arranque público
+
+| Chunk | gzip (KB) |
+|---|---|
+| /assets/index-DqXnpomn.js | 79.4 |
+| /assets/rolldown-runtime-CbXtAM7H.js | 0.4 |
+| /assets/query-GujNoDMP.js | 12.8 |
+| /assets/react-BSJ38QPL.js | 86.4 |
+| **Total** | **178.9** |
+
+Presupuesto: 180 KB.
+
+== Rojo: tokens.ts vuelto a zod clasico (build local, descartado)
+- El arranque pesa 187.8 KB gzip y el presupuesto es 180 KB.
+- index-xmkvW04n.js contiene zod clasico (zod/v4/classic); tiene que cargarse en diferido. exit=1
+== Rojo: BUNDLE_BUDGET_KB=170
+
+- El arranque pesa 178.9 KB gzip y el presupuesto es 170 KB.
+
+exit=1

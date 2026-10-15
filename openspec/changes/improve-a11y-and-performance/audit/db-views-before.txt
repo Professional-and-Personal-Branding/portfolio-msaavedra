@@ -1,0 +1,24 @@
+-- Snapshot ANTES de medir, tomado 2026-10-15T07:06:12Z (UTC)
+         db_now_utc         |            db_now             | total_profile_views 
+----------------------------+-------------------------------+---------------------
+ 2026-10-15 07:06:13.085413 | 2026-10-15 07:06:13.085413+00 |                 706
+(1 row)
+
+         slug          | visibility | listed | views | rows 
+-----------------------+------------+--------+-------+------
+ ai-software-engineer  | PUBLIC     | t      |     1 |    1
+ all                   | PUBLIC     | t      |   300 |  232
+ backend-payments-ror  | PUBLIC     | t      |     1 |    1
+ devops-azure          | PUBLIC     | t      |     1 |    1
+ devops-platform       | PUBLIC     | t      |    38 |   38
+ dotnet-backend        | PUBLIC     | t      |    39 |   39
+ fullstack-microsoft   | PUBLIC     | t      |     1 |    1
+ fullstack-nest-react  | PUBLIC     | t      |     6 |    6
+ generalist-polyglot   | PUBLIC     | t      |    57 |   57
+ integration-architect | PUBLIC     | t      |     1 |    1
+ it-leadership         | PUBLIC     | t      |     1 |    1
+ java-senior-backend   | PUBLIC     | t      |    92 |   92
+ software-architect    | PUBLIC     | t      |     1 |    1
+ tech-lead-dotnet      | PUBLIC     | t      |   235 |  235
+(14 rows)
+

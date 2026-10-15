@@ -1,0 +1,14 @@
+Antes (main fdad7a1): entry 88.0 + react 87.5 + motion 41.8 + query 10.2 + runtime 0.4 = 227.9 KB gzip (cifras de Vite)
+Despues:
+# Presupuesto de JS del arranque público
+
+| Chunk | gzip (KB) |
+|---|---|
+| /assets/index-DqXnpomn.js | 79.4 |
+| /assets/rolldown-runtime-CbXtAM7H.js | 0.4 |
+| /assets/query-GujNoDMP.js | 12.8 |
+| /assets/react-BSJ38QPL.js | 86.4 |
+| **Total** | **178.9** |
+
+Presupuesto: 180 KB.
+

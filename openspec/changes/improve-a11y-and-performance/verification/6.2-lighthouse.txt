@@ -1,0 +1,20 @@
+== Sin A11Y_CHECK_DISPOSABLE_DB
+perf:check se niega a correr: cada página que abre registra una visita en la base.
+Definí A11Y_CHECK_DISPOSABLE_DB=1 solo si la API apunta a una base DESCARTABLE
+(local sembrada o el Postgres de servicio del CI), nunca a la base del owner.
+exit=2
+== PERF_CHECK_RUNS=5 PERF_CHECK_MIN_PERFORMANCE=85 (ensayo del job)
+# perf:check · lighthouse@13.5.0 · mobile
+
+Base: http://localhost:8088 · 2026-10-15T09:13:23.484Z · 5 corrida(s) por página pública · umbral Performance 85, resto 90
+
+| Página | Corridas | Perf | A11y | BP | SEO | LCP | TBT | CLS | JS (KB transf.) |
+|---|---|---|---|---|---|---|---|---|---|
+| / | 5 | 93 | 100 | 100 | 100 | 2.7 s | 74 ms | 0.008 | 213 |
+| /tech-lead-dotnet | 5 | 94 | 100 | 100 | 100 | 2.6 s | 65 ms | 0.002 | 213 |
+| /tech-lead-dotnet?lang=en&theme=modern-dark&layout=sidebar | 5 | 94 | 100 | 100 | 100 | 2.6 s | 53 ms | 0.005 | 213 |
+| /admin/login (SEO y Perf informativos) | 1 | 92 | 100 | 92 | 66 | 2.9 s | 0 ms | 0.000 | 247 |
+
+Performance por corrida: home [85, 93, 93, 94, 93] · profile [94, 94, 94, 94, 94] · profile-en-dark-sidebar [94, 93, 94, 94, 94] · admin-login [92]
+
+Todas las medianas cumplen el umbral.

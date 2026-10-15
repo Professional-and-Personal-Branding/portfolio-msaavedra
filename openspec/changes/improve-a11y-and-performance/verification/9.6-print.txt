@@ -1,0 +1,7 @@
+all                    perfil        es      1   1       9.7:1      OK    
+all                    perfil        en      1   1       9.7:1      OK    
+all                    dark+sidebar  es      1   1       9.7:1      OK    
+all                    dark+sidebar  en      1   1       9.7:1      OK    
+
+56 casos (14 perfiles), 0 con problemas. Contraste mínimo: 9.74:1
+exit=0
