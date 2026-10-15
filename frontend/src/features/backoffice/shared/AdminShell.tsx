@@ -21,7 +21,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/shared/components/ui/sheet';
+import { MAIN_CONTENT_ID, SkipLink } from '@/shared/components/skip-link';
 import { Toaster } from '@/shared/components/ui/sonner';
+import { translate } from '@/shared/i18n/messages';
 import { applyDocumentMeta, restoreDocumentMeta } from '@/shared/lib/document-meta';
 import { cn } from '@/shared/lib/utils';
 import { ThemeProvider } from '@/themes/theme-provider';
@@ -74,6 +76,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <>
+      <SkipLink label={translate('es', 'a11y.skipToContent')} />
       <header className="sticky top-0 z-40 border-b border-border glass">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3">
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
@@ -144,7 +147,12 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main key={location.pathname} className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+      <main
+        id={MAIN_CONTENT_ID}
+        tabIndex={-1}
+        key={location.pathname}
+        className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 outline-none"
+      >
         {children}
       </main>
     </>
@@ -164,7 +172,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             cn(
               'flex items-center gap-2 rounded-theme-sm px-3 py-2 text-sm font-medium transition-colors',
               isActive
-                ? 'bg-brand/15 text-brand'
+                ? 'bg-brand/15 text-brand-ink'
                 : 'text-text-muted hover:bg-bg-soft hover:text-text',
             )
           }

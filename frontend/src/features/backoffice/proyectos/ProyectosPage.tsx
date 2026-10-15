@@ -122,7 +122,7 @@ function ProjectsSection() {
                     href={project.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1 inline-flex max-w-full items-center gap-1 truncate text-xs text-brand hover:underline"
+                    className="mt-1 inline-flex max-w-full items-center gap-1 truncate text-xs text-brand-ink hover:underline"
                   >
                     <ExternalLink className="size-3 shrink-0" aria-hidden />
                     {project.url}
@@ -243,7 +243,7 @@ function SocialLinksSection() {
                   {link.label.es}
                   <span className="text-xs font-normal text-text-dim">{link.platform}</span>
                   {link.featured && (
-                    <Badge variant="outline" className="gap-1 text-brand">
+                    <Badge variant="outline" className="gap-1 text-brand-ink">
                       <Star className="size-3" aria-hidden />
                       Destacado
                     </Badge>

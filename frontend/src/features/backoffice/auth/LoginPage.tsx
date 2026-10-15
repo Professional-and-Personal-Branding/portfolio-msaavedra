@@ -44,7 +44,7 @@ export function LoginPage() {
     : null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-6 py-12">
+    <main className="flex min-h-screen items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <span className="mb-4 inline-grid size-12 place-items-center rounded-full bg-brand-gradient text-brand-foreground">
@@ -91,6 +91,6 @@ export function LoginPage() {
           </Button>
         </form>
       </div>
-    </div>
+    </main>
   );
 }

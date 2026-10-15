@@ -1,4 +1,7 @@
+import { accentInk, mix, parseHex, readableOn, textDim, toHex } from './contrast';
 import type { Density, ThemeTokens } from './tokens';
+
+export { readableOn };
 
 /** Factor de espaciado por densidad (spec `runtime-theming` § Densidad). */
 export const DENSITY_SCALE: Record<Density, number> = {
@@ -34,6 +37,14 @@ export interface ThemeCssVars {
   '--t-accent': string;
   '--t-accent2': string;
   '--t-accent-foreground': string;
+  /** Acento legible como texto (≥ 4,5:1): derivado, no se guarda (spec `web-accessibility`). */
+  '--t-accent-ink': string;
+  /** El segundo acento como texto (títulos de categoría de skills), con el mismo criterio. */
+  '--t-accent2-ink': string;
+  /** Texto atenuado con contraste AA garantizado. */
+  '--t-text-dim': string;
+  /** Color del indicador de foco. */
+  '--t-ring': string;
   '--t-radius': string;
   '--t-max-width': string;
   '--t-space': string;
@@ -49,6 +60,7 @@ export interface ThemeCssVars {
 export function tokensToCssVars(tokens: ThemeTokens): ThemeCssVars {
   const { colors, typography, layout, effects } = tokens;
   const density = DENSITY_SCALE[layout.density];
+  const ink = accentInk(colors.accent, inkSurfaces(tokens), tokens.mode);
   return {
     '--t-bg': colors.bg,
     '--t-bg-soft': colors.bgSoft,
@@ -59,6 +71,14 @@ export function tokensToCssVars(tokens: ThemeTokens): ThemeCssVars {
     '--t-accent': colors.accent,
     '--t-accent2': colors.accent2,
     '--t-accent-foreground': readableOn(colors.accent),
+    '--t-accent-ink': ink,
+    '--t-accent2-ink': accentInk(
+      colors.accent2,
+      [colors.bg, colors.bgSoft, colors.card],
+      tokens.mode,
+    ),
+    '--t-text-dim': textDim(colors.textMuted, colors.bg, [colors.bg, colors.bgSoft, colors.card]),
+    '--t-ring': ink,
     '--t-radius': layout.radius,
     '--t-max-width': layout.maxWidth,
     '--t-space': `${density}rem`,
@@ -71,30 +91,25 @@ export function tokensToCssVars(tokens: ThemeTokens): ThemeCssVars {
   };
 }
 
+/**
+ * Superficies sobre las que el acento tiene que leerse como texto: los tres fondos del tema y
+ * el tinte del badge (`bg-brand/10`) sobre el fondo y sobre la tarjeta.
+ */
+function inkSurfaces({ colors }: ThemeTokens): string[] {
+  const surfaces = [colors.bg, colors.bgSoft, colors.card];
+  const accent = parseHex(colors.accent);
+  if (!accent) return surfaces;
+  for (const base of [colors.bg, colors.card]) {
+    const rgb = parseHex(base);
+    if (rgb) surfaces.push(toHex(mix(rgb, accent, 0.1)));
+  }
+  return surfaces;
+}
+
 /** Familia elegida + fallback del sistema (Google Fonts puede no cargar). */
 export function fontStack(family: string): string {
   const trimmed = family.trim();
   const quoted = /\s/.test(trimmed) ? `"${trimmed}"` : trimmed;
   const fallback = SERIF_FAMILIES.has(trimmed.toLowerCase()) ? SYSTEM_SERIF : SYSTEM_SANS;
   return `${quoted}, ${fallback}`;
-}
-
-/** Texto negro o blanco según el brillo percibido (YIQ) del color, para botones sobre el acento. */
-export function readableOn(hexColor: string): string {
-  const rgb = parseHex(hexColor);
-  if (!rgb) return '#ffffff';
-  const [r, g, b] = rgb;
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness >= 128 ? '#0a0e1a' : '#ffffff';
-}
-
-function parseHex(value: string): [number, number, number] | null {
-  const match = /^#?([a-f\d]{3}|[a-f\d]{6})$/i.exec(value.trim());
-  if (!match?.[1]) return null;
-  const hex = match[1].length === 3 ? [...match[1]].map((c) => c + c).join('') : match[1];
-  return [
-    parseInt(hex.slice(0, 2), 16),
-    parseInt(hex.slice(2, 4), 16),
-    parseInt(hex.slice(4, 6), 16),
-  ];
 }

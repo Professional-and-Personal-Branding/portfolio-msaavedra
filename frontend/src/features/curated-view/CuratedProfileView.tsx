@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { TopBar } from '@/features/navigation/TopBar';
 import { Footer } from '@/shared/components/portfolio/Footer';
+import { MAIN_CONTENT_ID, SkipLink } from '@/shared/components/skip-link';
 import { useLocale } from '@/shared/i18n/use-locale';
 import {
   applyDocumentMeta,
@@ -81,6 +82,7 @@ export function CuratedProfileView({ slug }: CuratedProfileViewProps) {
 
   return (
     <ThemeProvider profileTokens={data?.theme?.tokens ?? null} presetSlug={url.theme}>
+      <SkipLink />
       <div className="relative flex min-h-screen flex-col print:hidden">
         <div aria-hidden className="pointer-events-none fixed inset-0 bg-glow" />
         <div className="relative z-10 flex flex-1 flex-col">
@@ -91,7 +93,9 @@ export function CuratedProfileView({ slug }: CuratedProfileViewProps) {
             showProfileMenu={slug === HOME_SLUG}
             onPrint={data ? () => window.print() : undefined}
           />
-          <main className="flex-1">{content}</main>
+          <main id={MAIN_CONTENT_ID} tabIndex={-1} className="flex-1 outline-none">
+            {content}
+          </main>
           <Footer name={data?.profile?.fullName} />
         </div>
       </div>

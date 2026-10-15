@@ -101,7 +101,7 @@ export function DashboardPage() {
                               {id ? (
                                 <Link
                                   to={`/admin/perfiles/${id}`}
-                                  className="hover:text-brand hover:underline"
+                                  className="hover:text-brand-ink hover:underline"
                                 >
                                   {row.slug}
                                 </Link>
@@ -119,7 +119,7 @@ export function DashboardPage() {
                                 to={profilePath(row.slug)}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="text-xs text-text-dim hover:text-brand"
+                                className="text-xs text-text-dim hover:text-brand-ink"
                               >
                                 ver
                               </Link>
@@ -189,7 +189,7 @@ function StatCard({
 }) {
   return (
     <div className="surface flex items-center gap-4 p-card">
-      <span className="grid size-10 shrink-0 place-items-center rounded-theme-sm bg-bg-soft text-brand">
+      <span className="grid size-10 shrink-0 place-items-center rounded-theme-sm bg-bg-soft text-brand-ink">
         <Icon className="size-5" aria-hidden />
       </span>
       <div>

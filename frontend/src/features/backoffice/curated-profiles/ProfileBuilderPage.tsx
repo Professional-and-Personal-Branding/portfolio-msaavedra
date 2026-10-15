@@ -238,7 +238,7 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
           <TabsContent value="identidad" className="surface flex flex-col gap-4 p-card">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="slug">
-                Slug<span className="text-brand"> *</span>
+                Slug<span className="text-brand-ink"> *</span>
               </Label>
               <Input
                 id="slug"
@@ -488,7 +488,7 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
             {draft.visibility === 'PROTECTED' && (
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="accessToken">
-                  Token de acceso<span className="text-brand"> *</span>
+                  Token de acceso<span className="text-brand-ink"> *</span>
                 </Label>
                 <Input
                   id="accessToken"

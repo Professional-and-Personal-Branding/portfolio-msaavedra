@@ -56,7 +56,7 @@ export function ProfileMenu({ activeSlug }: ProfileMenuProps) {
               groupProfilesByRoleType(profiles).map((group, index) => (
                 <DropdownMenuGroup key={group.roleType}>
                   {index > 0 && <DropdownMenuSeparator />}
-                  <DropdownMenuLabel className="text-[10px] font-bold tracking-[0.12em] text-brand uppercase">
+                  <DropdownMenuLabel className="text-[10px] font-bold tracking-[0.12em] text-brand-ink uppercase">
                     {group.roleType || t('nav.home')}
                   </DropdownMenuLabel>
                   {group.profiles.map((profile) => (
@@ -114,7 +114,7 @@ export function ProfileMenuList({ profiles, activeSlug, onNavigate }: ProfileMen
     <nav aria-label={t('nav.profiles')} className="flex flex-col gap-5">
       {groupProfilesByRoleType(profiles).map((group) => (
         <section key={group.roleType} aria-label={group.roleType || t('nav.home')}>
-          <h3 className="mb-2 pl-1 text-[10px] font-bold tracking-[0.12em] text-brand uppercase">
+          <h3 className="mb-2 pl-1 text-[10px] font-bold tracking-[0.12em] text-brand-ink uppercase">
             {group.roleType || t('nav.home')}
           </h3>
           <ul className="flex flex-col gap-1.5">

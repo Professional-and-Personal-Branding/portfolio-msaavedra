@@ -238,7 +238,7 @@ export function SkillsPage() {
             <form onSubmit={submitSkill} className="flex flex-col gap-4" noValidate>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="skill-name">
-                  Nombre<span className="text-brand"> *</span>
+                  Nombre<span className="text-brand-ink"> *</span>
                 </Label>
                 <Input
                   id="skill-name"
@@ -302,7 +302,7 @@ function CategoryCard({
   return (
     <section aria-label={category.name.es} className="surface p-card">
       <header className="mb-3 flex flex-wrap items-center gap-2">
-        <h2 className="flex-1 font-semibold text-brand-2">{category.name.es}</h2>
+        <h2 className="flex-1 font-semibold text-brand-2-ink">{category.name.es}</h2>
         <span className="text-xs text-text-dim">{category.skills.length} skills</span>
         <Button
           variant="outline"

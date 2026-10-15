@@ -66,20 +66,23 @@ export function Contact({ data, variant = 'default' }: SectionProps) {
         <SectionHeading eyebrow={t('section.contact.eyebrow')} title={t('section.contact.title')} />
       )}
       <div className={cn('surface p-card', !compact && 'grid gap-8 md:grid-cols-2')}>
-        <dl className={cn('flex flex-col gap-3', compact && 'mb-5')}>
+        <div className={cn(compact && 'mb-5')}>
+          {/* El título va fuera del `dl`: un `dl` solo admite grupos `div > dt + dd` (spec `web-accessibility`). */}
           {compact && (
-            <p className="text-xs font-bold tracking-[0.15em] text-brand uppercase">
+            <p className="mb-3 text-xs font-bold tracking-[0.15em] text-brand-ink uppercase">
               {t('section.contact.title')}
             </p>
           )}
-          {rows.map((row) => (
-            <div key={row.label} className="flex items-start gap-3">
-              <row.icon className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden />
-              <div className="min-w-0">
-                <dt className="text-[11px] tracking-wide text-text-dim uppercase">{row.label}</dt>
-                <dd className="text-sm break-words">
+          <dl className="flex flex-col gap-3">
+            {rows.map((row) => (
+              <div key={row.label}>
+                <dt className="flex items-center gap-3 text-[11px] tracking-wide text-text-dim uppercase">
+                  <row.icon className="size-4 shrink-0 text-brand" aria-hidden />
+                  {row.label}
+                </dt>
+                <dd className="pl-7 text-sm break-words">
                   {row.href ? (
-                    <a href={row.href} className="hover:text-brand">
+                    <a href={row.href} className="hover:text-brand-ink">
                       {row.value}
                     </a>
                   ) : (
@@ -87,9 +90,9 @@ export function Contact({ data, variant = 'default' }: SectionProps) {
                   )}
                 </dd>
               </div>
-            </div>
-          ))}
-        </dl>
+            ))}
+          </dl>
+        </div>
         <div className="flex flex-col gap-3">
           <dl className="grid gap-2 text-sm">
             {availability.map(([label, value]) => (

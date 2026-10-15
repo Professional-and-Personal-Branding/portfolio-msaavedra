@@ -15,7 +15,7 @@ export function SkillsGrid({ data }: SectionProps) {
             key={category.name}
             className="surface p-card transition-[transform,border-color] hover:-translate-y-0.5 hover:border-brand-2"
           >
-            <h3 className="mb-3 text-[15px] font-bold text-brand-2">{category.name}</h3>
+            <h3 className="mb-3 text-[15px] font-bold text-brand-2-ink">{category.name}</h3>
             <ul className="flex flex-wrap gap-1.5">
               {category.skills.map((skill) => (
                 <li key={skill} className="chip hover:border-brand hover:text-text">

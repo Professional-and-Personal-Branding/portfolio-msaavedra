@@ -235,7 +235,7 @@ function Section({
   return (
     <section aria-label={label} className="flex flex-col gap-3">
       <header className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-brand-2">{label}</h2>
+        <h2 className="text-lg font-semibold text-brand-2-ink">{label}</h2>
         {action}
       </header>
       {children}

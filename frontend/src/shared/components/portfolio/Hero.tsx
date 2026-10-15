@@ -2,11 +2,14 @@ import { Briefcase, Clock, Mail, MapPin } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { useLocale } from '@/shared/i18n/use-locale';
 import { cn } from '@/shared/lib/utils';
-import { MotionSection } from '@/themes/motion-section';
 import { BrandIcon } from './BrandIcon';
 import type { SectionProps } from './types';
 
-/** Hero: badge de disponibilidad, nombre, headline curado, resumen y metadatos (demo.html). */
+/**
+ * Hero: badge de disponibilidad, nombre, headline curado, resumen y metadatos (demo.html).
+ * Sin fundido de entrada: contiene el LCP y tiene que pintarse con opacidad completa desde el
+ * primer frame (spec web-performance § El contenido principal no espera animaciones).
+ */
 export function Hero({ data, variant = 'default' }: SectionProps) {
   const { t } = useLocale();
   const profile = data.profile;
@@ -17,12 +20,12 @@ export function Hero({ data, variant = 'default' }: SectionProps) {
   const headline = data.headline || profile.headline;
 
   return (
-    <MotionSection
+    <section
       id="hero"
       aria-labelledby="hero-title"
       className={cn(compact ? 'surface p-card' : 'pt-16 pb-10 md:pt-20')}
     >
-      <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-3.5 py-1.5 text-xs font-medium text-brand">
+      <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-3.5 py-1.5 text-xs font-medium text-brand-ink">
         <span
           aria-hidden
           className="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px] shadow-emerald-500"
@@ -43,7 +46,7 @@ export function Hero({ data, variant = 'default' }: SectionProps) {
       </h1>
       <p
         className={cn(
-          'mb-4 font-semibold text-brand',
+          'mb-4 font-semibold text-brand-ink',
           compact ? 'text-base' : 'text-xl md:text-2xl',
         )}
       >
@@ -98,6 +101,6 @@ export function Hero({ data, variant = 'default' }: SectionProps) {
           </Button>
         )}
       </div>
-    </MotionSection>
+    </section>
   );
 }
