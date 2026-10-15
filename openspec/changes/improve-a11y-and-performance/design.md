@@ -105,10 +105,11 @@ Alternativa descartada: **`@axe-core/puppeteer` y Lighthouse CI (`@lhci/cli`)**:
 | `perf:budget` | ≤ 180 KB gzip | ≤ 180 KB gzip | Sí |
 | axe | 0 `serious`, 0 `critical` | Igual | Sí |
 | Lighthouse A11y, BP, SEO (públicas, mobile) | Mediana de 3 ≥ 90 | Mediana de 5 ≥ 90 | Sí |
-| Lighthouse Performance (públicas, mobile) | Mediana de 3 ≥ 90 | Mediana de 5 ≥ **85** | Sí |
+| Lighthouse Performance (públicas, mobile) | Mediana de 3 ≥ 90 | Mediana de 5 ≥ **70** (D17) | Sí |
 | `/admin/login` | A11y y BP ≥ 90, 1 corrida; SEO exento; Performance informativa | Igual | Sí (A11y y BP) |
 
 - **Por qué 85 en CI:** en esta máquina, con la misma build, Performance mobile varió 8 puntos (87–95) entre corridas; los runners compartidos de GitHub suman ruido de CPU que el throttling simulado de Lighthouse no corrige del todo (el `benchmarkIndex` del runner varía entre corridas). Un umbral de 90 sobre una mediana que ronda 93–96 después de D7 y D8 daría fallas falsas; 85 con mediana de 5 sigue atrapando una regresión real (volver a precargar `motion` o `zod` baja 5–8 puntos) y el presupuesto de bytes, que no tiene ruido, es la red principal. El 90 local sigue siendo el criterio de aceptación de este change (tarea 8.4).
+- **D17 — Umbral de Performance en CI corregido a 70 (owner, 2026-10-15):** la primera corrida en GitHub dio medianas de 71 / 76 / 75, parejas en las 15 corridas (no es ruido). El runner tiene `benchmarkIndex` ≈ 1.800, justo el equipo de referencia para el que Lighthouse calibra su throttling ×4; la máquina local da ≈ 4.200, así que el 93–95 local estaba inflado. El ~75 del CI es la medida más fiel de un móvil de gama media (TBT 300–400 ms, LCP ≈ 3,8 s). Descartado recalibrar `cpuSlowdownMultiplier`: ocultaría el problema. El CI exige ≥ 70 como freno de regresiones, y llevar mobile a ≥ 85 de verdad queda para un change aparte (menos JS en el arranque y LCP). El 90 local sigue como referencia, aclarando que depende de la máquina.
 - **A11y, BP, SEO y axe son deterministas** (no dependen del tiempo): mismo umbral en los dos lados.
 - **Best Practices `inspector-issues` (CSP):** se acepta. Lo dispara axe, que Lighthouse corre adentro, al pedir por `fetch` la hoja de Google Fonts (`connect-src 'self'`). Sin axe la consola queda vacía (`audit/axe/probe-public.json`). Abrir `connect-src` para satisfacer a la herramienta debilitaría la política.
 - **axe `moderate` y `minor`:** se reportan; no bloquean.
@@ -165,7 +166,7 @@ Alternativa descartada: **moverlos al scratchpad**: el `.gitignore` deja el mism
 - **Acentos de luminosidad media** (p. ej. #0078D4: blanco 4,53:1, oscuro 4,25:1): con D2 queda el mejor de los dos, que puede quedar justo por encima o por debajo de 4,5:1. Hoy los 14 perfiles y los 5 presets cumplen con D2; un acento futuro podría no hacerlo. Mitigación: `a11y:check` lo detecta en CI y la salida nombra el perfil.
 - **`text-brand-ink` mal aplicado:** un uso de `text-brand` que quede como texto vuelve a fallar. Mitigación: test que busca `text-brand` (sin `-ink`, `/`, `-foreground` ni `-2`) fuera de íconos `aria-hidden`.
 - **`LazyMotion` cambia el primer frame de las secciones**: hasta que llegan las features, `m.section` aplica el estado `initial` (opacidad 0) a lo que está debajo del pliegue. Es lo mismo que hoy para esas secciones; el hero queda afuera por D7.
-- **Ruido de Lighthouse en runners compartidos:** fallas falsas de Performance. Mitigación: mediana de 5 y umbral de 85 en CI (D11); si aun así aparecen, se sube a 7 corridas antes de tocar el umbral, y el reporte HTML queda como artefacto para diagnosticar.
+- **Ruido de Lighthouse en runners compartidos:** fallas falsas de Performance. Mitigación: mediana de 5 y umbral de 70 en CI (D11, corregido por D17); si aun así aparecen, se sube a 7 corridas antes de tocar el umbral, y el reporte HTML queda como artefacto para diagnosticar.
 - **Deriva del runner o de Chrome:** cambia puntajes sin cambios en el código. Mitigación: runner `ubuntu-24.04` y Chrome fijados; actualizarlos es un PR propio.
 - **CI más lento:** ≈ 6–7 min más de pared por PR (D15). Mitigación: matriz en paralelo y caché de la imagen.
 - **Visitas registradas por los checks:** si alguien los corre contra la base del owner, ensucian la analítica. Mitigación: la variable obligatoria de D10, que solo setea el job del CI.

@@ -54,7 +54,7 @@ El hero de la vista pública SHALL pintarse con opacidad completa desde su prime
 - **THEN** el script hace cinco corridas por página pública y esa página no lo hace fallar
 
 ### Requirement: Los checks de calidad web bloquean en CI
-El workflow de CI SHALL correr, en cada push y PR a `main`, `perf:budget` sobre el build del frontend, y `a11y:check` y `perf:check` (5 corridas, Performance ≥ 85) contra la imagen de `frontend/Dockerfile` y la API sobre un Postgres de servicio migrado y sembrado. `A11Y_CHECK_DISPOSABLE_DB=1` SHALL definirse solo en ese job. Si un check falla, el workflow SHALL fallar y subir sus reportes como artefacto.
+El workflow de CI SHALL correr, en cada push y PR a `main`, `perf:budget` sobre el build del frontend, y `a11y:check` y `perf:check` (5 corridas, Performance ≥ 70) contra la imagen de `frontend/Dockerfile` y la API sobre un Postgres de servicio migrado y sembrado. `A11Y_CHECK_DISPOSABLE_DB=1` SHALL definirse solo en ese job. Si un check falla, el workflow SHALL fallar y subir sus reportes como artefacto.
 
 #### Scenario: Regresión de accesibilidad en un PR
 - **WHEN** un PR a `main` vuelve a usar `text-brand` como texto con un acento oscuro

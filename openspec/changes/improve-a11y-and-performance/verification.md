@@ -127,5 +127,10 @@ Chrome controlado por `puppeteer-core` (sin escribir en ningún campo de login) 
 ## Riesgos que quedan
 
 - Margen del presupuesto de bytes: 1,1 KB.
-- Performance de `/` en CI: la mediana ronda 93, pero en el ensayo hubo una corrida de 85 (el umbral de CI es 85 sobre la mediana de 5). Si falla en runners compartidos, el diseño prevé subir a 7 corridas antes de tocar el umbral.
+- ~~Performance de `/` en CI: la mediana ronda 93, pero en el ensayo hubo una corrida de 85.~~ Se confirmó al revés en GitHub, ver § *Primera corrida en GitHub (D17)*.
+- Performance mobile real ≈ 75 en el equipo de referencia de Lighthouse: queda para un change aparte (menos JS en el arranque y LCP).
+
+## Primera corrida en GitHub (D17)
+
+Corrida `38809668290` del PR #30, 2026-10-15: `web-quality (a11y)` en verde (10 min 2 s); `web-quality (lighthouse)` en rojo (6 min 50 s) con Performance por corrida `/` [71, 66, 73, 71, 76], `/tech-lead-dotnet` [75, 78, 72, 76, 77] y la variante en inglés con `modern-dark` y `sidebar` [70, 76, 75, 73, 78]; Accessibility, Best Practices y SEO en 100. LCP ≈ 3,8–3,9 s y TBT 297–392 ms. El `benchmarkIndex` del runner fue ≈ 1.781–1.875 (local ≈ 4.203) con `cpuSlowdownMultiplier` 4: el runner es el equipo de referencia de Lighthouse y el 93–95 local estaba inflado por la máquina. Con el OK del owner, el umbral de CI pasa a 70 (D17) y la mejora real se separa en otro change.
 - Acento de luminosidad media: ver Risks del diseño; hoy los 14 perfiles y los 5 presets cumplen.
