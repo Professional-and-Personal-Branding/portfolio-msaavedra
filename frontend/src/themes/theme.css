@@ -168,6 +168,18 @@
 }
 
 /*
+ * Entrada animada de las secciones (D7 de `improve-mobile-performance`). Con animaciones activas
+ * (`data-motion='on'`) la sección espera oculta hasta que `entrance-animation` la anima y la
+ * marca con `data-motion-entered`. El estado inicial vive en CSS y no en un `style`, así un
+ * re-render de React no vuelve a ocultar una sección ya vista. Apagar las animaciones (tema o
+ * `prefers-reduced-motion`) cambia el atributo a 'off' y la sección queda visible.
+ */
+[data-motion='on']:not([data-motion-entered]) {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/*
  * Impresión (spec `printable-curated-profile`, decisiones D1, D5 y D7). Al imprimir solo se ve
  * la hoja `[data-print-sheet]`; el layout de pantalla lleva `print:hidden`. Los colores de la
  * hoja salen de `themes/presets/paper.ts`, no de acá.

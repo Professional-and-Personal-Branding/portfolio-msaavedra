@@ -1,4 +1,6 @@
-import { lazy, Suspense, type ComponentProps, type ReactNode } from 'react';
+import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
+import { cn } from '@/shared/lib/utils';
+import { ENTERED_ATTRIBUTE } from './motion-attributes';
 import { useTheme } from './use-theme';
 
 interface MotionSectionProps extends Omit<ComponentProps<'section'>, 'children'> {
@@ -7,38 +9,52 @@ interface MotionSectionProps extends Omit<ComponentProps<'section'>, 'children'>
   delay?: number;
 }
 
-/** La librería de animación sale del arranque: se pide cuando hay una sección que animar. */
-const AnimatedSection = lazy(() => import('./animated-section'));
-
-/** Estado inicial de la animación (el mismo de `AnimatedSection`): la sección espera oculta. */
-const WAITING_STYLE = { opacity: 0, transform: 'translateY(20px)' } as const;
+/**
+ * `content-visibility: auto`: el navegador no hace *layout* ni *paint* de las secciones fuera de
+ * pantalla (el costo de crear y medir el DOM del perfil pasa a ser el del primer pliegue). El
+ * `auto` del tamaño intrínseco recuerda la altura real ya renderizada, así la barra de
+ * desplazamiento se estabiliza. El hero no usa `MotionSection`: es el LCP.
+ */
+const OFFSCREEN_SKIP = '[content-visibility:auto] [contain-intrinsic-size:auto_640px]';
 
 /**
  * `<section>` con animación de entrada solo si el tema la habilita y el
  * visitante no pidió `prefers-reduced-motion` (spec `runtime-theming`).
- * Mientras llega la librería de animación (`LazyMotion`, en diferido) la sección se muestra
- * en su estado inicial, que es el mismo en el que espera antes de entrar en pantalla.
+ *
+ * Es siempre la misma `<section>` (D7 de `improve-mobile-performance`): la librería de animación
+ * llega en diferido (`entrance-animation`) y anima el nodo existente, sin `Suspense` ni remontaje.
+ * Con animaciones activas la sección espera oculta (CSS) hasta entrar en pantalla; si el módulo
+ * no carga, queda visible.
  */
-export function MotionSection({ children, delay = 0, ...props }: MotionSectionProps) {
+export function MotionSection({ children, delay = 0, className, ...props }: MotionSectionProps) {
   const { animationsEnabled } = useTheme();
-  if (!animationsEnabled) {
-    return (
-      <section data-motion="off" {...props}>
-        {children}
-      </section>
-    );
-  }
+  const ref = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!animationsEnabled || !element || element.hasAttribute(ENTERED_ATTRIBUTE)) return;
+    let cancelled = false;
+    let stop: (() => void) | undefined;
+    import('./entrance-animation')
+      .then(({ animateOnEnter }) => {
+        if (!cancelled) stop = animateOnEnter(element, delay);
+      })
+      // Módulo inaccesible (o la animación no arranca): la sección no puede quedar oculta.
+      .catch(() => element.setAttribute(ENTERED_ATTRIBUTE, ''));
+    return () => {
+      cancelled = true;
+      stop?.();
+    };
+  }, [animationsEnabled, delay]);
+
   return (
-    <Suspense
-      fallback={
-        <section data-motion="on" {...props} style={{ ...WAITING_STYLE, ...props.style }}>
-          {children}
-        </section>
-      }
+    <section
+      ref={ref}
+      data-motion={animationsEnabled ? 'on' : 'off'}
+      className={cn(OFFSCREEN_SKIP, className)}
+      {...props}
     >
-      <AnimatedSection delay={delay} {...props}>
-        {children}
-      </AnimatedSection>
-    </Suspense>
+      {children}
+    </section>
   );
 }
