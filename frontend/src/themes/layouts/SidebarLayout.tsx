@@ -11,7 +11,7 @@ export function SidebarLayout({ data, sections }: LayoutProps) {
   return (
     <div
       data-layout="sidebar"
-      className="mx-auto grid w-full max-w-(--t-max-width) gap-8 px-6 pt-8 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-12"
+      className="mx-auto grid w-full max-w-(--t-max-width) grid-cols-1 gap-8 px-6 pt-8 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-12"
     >
       <aside className="flex flex-col gap-6 self-start lg:sticky lg:top-24">
         {aside.map((id) => {

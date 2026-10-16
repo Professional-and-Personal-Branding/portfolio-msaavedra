@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { AppRouter } from '@/app/router';
@@ -61,6 +61,8 @@ describe('CuratedProfileView — accesibilidad y arranque', () => {
     expect(hero).not.toHaveAttribute('data-motion', 'on');
     expect(hero).not.toHaveStyle({ opacity: '0' });
 
-    expect(container.querySelector('#experience')).toHaveAttribute('data-motion', 'on');
+    await waitFor(() =>
+      expect(container.querySelector('#experience')).toHaveAttribute('data-motion', 'on'),
+    );
   });
 });

@@ -62,6 +62,15 @@ describe('layouts', () => {
     expect(screen.getByRole('heading', { name: 'Experiencia Profesional' })).toBeInTheDocument();
   });
 
+  it('sidebar declara una sola columna en móvil y las dos de escritorio desde lg (D8)', () => {
+    const { container } = renderLayout('sidebar');
+    const grid = container.querySelector('[data-layout="sidebar"]');
+    // Sin columnas declaradas, la columna implícita mide lo que mide su contenido y se ensancha
+    // al revelarse el resto de las secciones (CLS 0,416).
+    expect(grid).toHaveClass('grid-cols-1');
+    expect(grid).toHaveClass('lg:grid-cols-[320px_minmax(0,1fr)]');
+  });
+
   it('un layout desconocido cae a classic', () => {
     const { container } = renderLayout('timeline-3d');
     expect(container.querySelector('[data-layout="classic"]')).not.toBeNull();
