@@ -14,7 +14,7 @@ La vista pública abre más rápido en un móvil de gama media: el objetivo es P
 - **Medición** (Linux, Chrome 155, Lighthouse 13.5.0, mobile, mediana de 5 contra una base descartable): proxy rápido 88 / 88 / 90 → 97 / 98 / 97 con TBT ≈ 0 y CLS 0,001; proxy lento (más pesimista que el runner) 54 / 55 / 59 → 74 / 75 / 81. Detalle en `openspec/changes/improve-mobile-performance/verification.md`.
 - **Presupuesto y CI.** `perf:budget` mide todos los scripts del arranque (módulo, `modulepreload` y clásicos): ≤ 155 KB gzip, un solo JS de módulo, sin `modulepreload`, sin `zod` clásico, Motion para React ni el *popper* de Radix. El umbral de Performance del CI sube de 70 a **85** (mediana de 5).
 - **Docs.** `docs/MANUAL.md` § 5.1 (umbrales) y el caso TC-35; `docs/DEPLOY.md` § 9.5 (`/fonts/*` inmutable, `profile-prefetch.js` con `no-cache` a propósito).
-- **Orden de archivado:** este change se archiva **después** de `improve-a11y-and-performance` (la capability `web-performance` la crea ese change). Falta la corrida verde del CI en el PR.
+- **CI y archivado:** la corrida del PR #31 dio medianas de Performance de 97 / 97 / 97 y el change se archivó el 16 de octubre de 2026, después de `improve-a11y-and-performance` (que crea la capability `web-performance`).
 
 ## Update — Octubre 2026 (ronda 1.1.x — `improve-a11y-and-performance`)
 

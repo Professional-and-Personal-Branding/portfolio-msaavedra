@@ -1,6 +1,6 @@
 # Verificación — improve-a11y-and-performance
 
-Ejecutada el 15 de octubre de 2026 en la rama `feat/a11y-performance` (sobre `main` en `fdad7a1`). Evidencia en `verification/`. **Pendientes tras el push:** tarea 7.6 (costo real del CI), 7.7 (la hace el owner, P6) y 9.8 (CI verde en el PR).
+Ejecutada el 15 de octubre de 2026 en la rama `feat/a11y-performance` (sobre `main` en `fdad7a1`). Evidencia en `verification/`. **Tras el merge (PR #30):** 7.6 y 9.8 cerradas con corridas reales (§ CI); 7.7 queda pendiente del owner (P6, configuración del repositorio).
 
 ## Entorno
 
@@ -30,7 +30,7 @@ Mismos scripts que `audit/scripts/` sobre `main`: axe da 1375 nodos de `color-co
 | 9.5 teclado | Menús y diálogos devuelven el foco; ver § Teclado. | `verification/9.5-keyboard.json`, capturas `foco-*.png` |
 | 9.6 `print:check` | 56 casos, 0 con problemas, contraste mínimo 9,74:1. | `verification/9.6-print.txt` |
 | 9.7 OpenSpec | `validate improve-a11y-and-performance --strict` válido; `validate --all --strict`: 34 de 34, sin «Archive would refuse». | `verification/9.7-validate.txt` |
-| 9.8 CI en el PR | **Pendiente** (sin push). | § CI |
+| 9.8 CI en el PR | Corrida 38821077943 en verde (PR #30). | § CI |
 
 ### Lighthouse mobile, antes y después (mediana de 3, sitio de producción en local)
 
@@ -106,9 +106,20 @@ Chrome controlado por `puppeteer-core` (sin escribir en ningún campo de login) 
 | `perf:check` (3 páginas × 5 + login) | 247 s, exit 0 |
 
   En GitHub los pasos de instalación son más lentos (`npm ci` de dos proyectos, Chrome, descarga de `caddy`); la estimación de D15 (≈ 5–6 min para `a11y`, ≈ 9–10 min para `lighthouse`) queda por confirmar con las corridas del PR (7.6).
-- **7.6 pendiente:** duración real de la matriz y del workflow completo, sin y con caché `gha`, con dos corridas en el PR.
-- **7.7 pendiente (P6, owner):** marcar `Frontend · accesibilidad y Lighthouse (a11y)` y `(lighthouse)` como *required checks* de `main` después de la primera corrida verde en `main`. No se tocó la configuración del repositorio.
-- **9.8 pendiente:** link a la corrida y medianas del CI cuando se abra el PR.
+- **7.6 (costo real, medido el 16/10/2026 con `gh run view <id> --json jobs`):** duración de cada job en GitHub, antes de `web-quality` (main, `fdad7a1`, corrida [38084002725](https://github.com/Professional-and-Personal-Branding/portfolio-msaavedra/actions/runs/38084002725)) y después, en dos corridas del PR #30: la primera sin caché de imagen y la segunda con caché `gha` (el log muestra `importing cache manifest` y los pasos `CACHED`).
+
+| Job | Antes (main, 38084002725) | PR #30 sin caché (38809668290) | PR #30 con caché (38821077943) |
+|---|---|---|---|
+| Backend · lint, tipos, unitarios y build | 92 s | 98 s | 93 s |
+| Backend · e2e contra Postgres | 72 s | 72 s | 57 s |
+| Frontend · lint, tipos, tests y build (con `perf:budget`) | 156 s | 159 s | 202 s |
+| `web-quality (a11y)` | no existía | 602 s (10 min 2 s) | 537 s (8 min 57 s) |
+| `web-quality (lighthouse)` | no existía | 410 s (6 min 50 s), rojo por umbral | 343 s (5 min 43 s) |
+| Workflow completo (reloj) | 160 s | 605 s (10 min 5 s) | 541 s (9 min 1 s) |
+
+  Paso a paso de la matriz: la construcción de la imagen pasa de 60-62 s sin caché a menos de 8 s con caché; `a11y:check` ocupa ≈ 435 s en ambas y `perf:check` 243 s sin caché y 228 s con caché. El job más lento (`a11y`, 10 min 2 s) queda por debajo del tope de 12 min de D15, así que no hace falta mitigación. El workflow total pasa de 2 min 40 s a ≈ 9-10 min, y los jobs corren en paralelo.
+- **7.7 pendiente del owner (P6), configuración del repositorio:** marcar `Frontend · accesibilidad y Lighthouse (a11y)` y `(lighthouse)` como *required checks* de `main`. La primera corrida verde ya existe (PR #30). No se tocó la configuración del repositorio; el change se archiva con la tarea abierta.
+- **9.8 CI verde en el PR:** PR #30 (fusionado el 16/10/2026), corrida [38821077943](https://github.com/Professional-and-Personal-Branding/portfolio-msaavedra/actions/runs/38821077943) sobre `d9e1469`: `Backend · lint…`, `Backend · e2e…`, `Frontend · lint, tipos, tests y build` (incluye `perf:budget`), `web-quality (a11y)` y `web-quality (lighthouse)` en verde, con `PERF_CHECK_MIN_PERFORMANCE=70` (D17). La corrida previa, [38809668290](https://github.com/Professional-and-Personal-Branding/portfolio-msaavedra/actions/runs/38809668290), falló en `lighthouse` con el umbral de 85 (ver § *Primera corrida en GitHub*). Medianas de la corrida verde: ver el log de `Lighthouse · mobile`; Accessibility, Best Practices y SEO en 100.
 
 ## Peso de lo versionado (8.4)
 

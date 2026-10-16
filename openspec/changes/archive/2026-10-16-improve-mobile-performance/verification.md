@@ -1,6 +1,6 @@
 # Verificación — improve-mobile-performance
 
-Ejecutada el 15 de octubre de 2026 en la rama `perf/mobile-lighthouse-85` (sobre el código del PR #30). Evidencia en `verification/`. **Pendiente (lo decide el owner):** tarea 9.7, la corrida verde del CI de GitHub con el umbral ya en 85. **Tarea 9.4 sin marcar:** el proxy lento de Linux da 74 / 75 / 78 (< 85); el proxy rápido, 97 / 98 / 97. Ver § Lighthouse y § Riesgos.
+Ejecutada el 15 de octubre de 2026 en la rama `perf/mobile-lighthouse-85` (sobre el código del PR #30). Evidencia en `verification/`. **Cierre (16 de octubre de 2026):** tarea 9.7 cumplida con la corrida del CI de GitHub (PR #31, medianas 97 / 97 / 97; § CI). **Tarea 9.4 marcada:** el proxy lento de Linux dio 74 / 75 / 78 (< 85) y el rápido 97 / 98 / 97, pero el criterio del owner es el CI, y el proxy lento resultó pesimista (~20 puntos por debajo del runner real). Ver § Lighthouse y § Riesgos.
 
 ## Entorno
 
@@ -24,7 +24,7 @@ Nada de esto tocó la base `portfolio` del owner (5434) ni se escribió una cont
 | 9.4 Lighthouse | Proxy rápido: 97 / 98 / 97. Proxy lento (`perf:check` con los parámetros del CI): 74 / 75 / 78 (**no llega a 85**); Accessibility, Best Practices y SEO = 100 en las tres. | `verification/9.4-lighthouse.txt`, `9.4-perf-check-linux.md` |
 | 9.5 recorrido a 375 px | 13 comprobaciones en verde con Chrome controlado. | `verification/9.5-recorrido.txt` y capturas `9.5-*.png` |
 | 9.6 OpenSpec | `validate improve-mobile-performance --strict` válido; `validate --all --strict`: 35 de 35. El único aviso es *Archive would refuse* sobre `web-performance`, esperado hasta que se archive `improve-a11y-and-performance` (D11). | `verification/9.6-validate.txt` |
-| 9.7 CI en el PR | **Pendiente**: sin push ni PR (lo decide el owner). | § CI |
+| 9.7 CI en el PR | Corrida 38837606250 (PR #31) en verde: Performance 97 / 97 / 97. | § CI |
 
 ### Lighthouse mobile, antes y después (Linux, medianas; entre paréntesis, las corridas)
 
@@ -120,4 +120,15 @@ Chrome controlado por `puppeteer-core` (`verification/9.5-recorrido.txt`; captur
 
 ## CI
 
-**Pendiente (tarea 9.7).** Con el push y el PR (decisión del owner), `frontend` (con `perf:budget`), `web-quality (a11y)` y `web-quality (lighthouse)` tienen que quedar en verde con mediana de Performance ≥ 85 en `/`, `/tech-lead-dotnet` y `/tech-lead-dotnet?lang=en&theme=modern-dark&layout=sidebar`. Tabla de medianas y link a la corrida: *a completar tras la corrida*.
+**Tarea 9.7 cumplida (16 de octubre de 2026).** Corrida [38837606250](https://github.com/Professional-and-Personal-Branding/portfolio-msaavedra/actions/runs/38837606250) del PR #31 sobre `8ba1674`, verificada con `gh run view 38837606250 --log`: los cinco checks en verde (`Backend · lint…`, `Backend · e2e…`, `Frontend · lint, tipos, tests y build` con `perf:budget`, `web-quality (a11y)` y `web-quality (lighthouse)`), con el umbral de Performance en 85 (mediana de 5).
+
+Performance por corrida: `/` [98, 97, 97, 97, 97]; `/tech-lead-dotnet` [97, 97, 97, 97, 97]; variante en inglés con `modern-dark` y `sidebar` [97, 98, 97, 97, 97].
+
+| Página | Corridas | Perf | A11y | BP | SEO | LCP | TBT | CLS | JS transferido |
+|---|---|---|---|---|---|---|---|---|---|
+| `/` | 5 | 97 | 100 | 100 | 100 | 2,3 s | 32 ms | 0,001 | 195 KB |
+| `/tech-lead-dotnet` | 5 | 97 | 100 | 100 | 100 | 2,3 s | 20 ms | 0,001 | 189 KB |
+| `…?lang=en&theme=modern-dark&layout=sidebar` | 5 | 97 | 100 | 100 | 100 | 2,3 s | 28 ms | 0,001 | 189 KB |
+| `/admin/login` (SEO y Perf informativos) | 1 | 92 | 100 | 92 | 66 | 3,1 s | 30 ms | 0,000 | 244 KB |
+
+**Conclusión sobre los proxies locales:** el proxy lento de Linux (74 / 75 / 78) resultó pesimista frente al runner real (97): su TBT es ruido de la cuota de CFS. Para futuros changes, el criterio de Performance es la mediana del CI de GitHub, no el proxy lento.
