@@ -67,3 +67,5 @@ En el proxy rápido: TBT ≈ 0, LCP 2,3–2,7 s, CLS 0,001. En el proxy lento, e
 
 - Bloquear el woff2 de Inter, o los chunks de los menús, durante la carga baja el LCP ≈ 0,16 s cada uno: compiten por ancho de banda antes del LCP observado. Con el arreglo de la grilla no hay CLS ni con `preload` ni sin él. Ver D6 y la pregunta P1 de `design.md`.
 - El prototipo tiene atajos que el diseño final no conserva: `public/profile-prefetch.js` sin chequeo de tipos ni test, `early-profile.ts` con funciones vacías sobrantes, `src/prefetch.ts` sin uso, un `useAfterLoad` improvisado en `TopBar` sin manejo de foco ni de activación temprana, y ningún test nuevo.
+
+- **Conclusión tras el CI (16 de octubre de 2026):** el proxy lento (74 / 75 / 78) resultó pesimista; el runner de GitHub dio medianas de 97 / 97 / 97 (corrida 38837606250). Para futuros changes, el criterio es el CI, no el proxy lento.
