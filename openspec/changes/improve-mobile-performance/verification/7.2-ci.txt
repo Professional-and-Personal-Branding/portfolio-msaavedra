@@ -1,0 +1,6 @@
+## PERF_CHECK_* en .github/workflows/ci.yml
+250: PERF_CHECK_RUNS: '5'
+251: PERF_CHECK_MIN_PERFORMANCE: '85'
+
+## npx -y @action-validator/cli .github/workflows/ci.yml
+exit=0

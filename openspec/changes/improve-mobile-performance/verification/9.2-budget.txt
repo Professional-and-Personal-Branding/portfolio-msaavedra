@@ -1,0 +1,23 @@
+## Antes (código del PR #30, perf:budget con tope de 180 KB; tres archivos de arranque)
+| Chunk | gzip (KB) |
+|---|---|
+| index (entry) | 79.4 |
+| react | 86.4 |
+| query | 12.8 |
+| rolldown-runtime | 0.4 |
+| **Total** | **178.9** (tres JS de modulo + modulepreload) |
+(cifras de improve-a11y-and-performance/verification.md; el script anterior no contaba el script clasico)
+
+## Despues (npm run build && npm run perf:budget, tope de 155 KB)
+
+# Presupuesto de JS del arranque público
+
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-CEyZHCCd.js | módulo | 147.8 |
+| /profile-prefetch.js | clásico | 1.1 |
+| **Total** | | **148.9** |
+
+Presupuesto: 155 KB.
+
+exit=0

@@ -1,0 +1,13 @@
+OK   el primer frame con datos tiene solo el hero y el relleno — {"t":559,"sections":["hero"],"filler":true,"footerTop":1984,"asideW":0,"h1":true}
+OK   al final están todas las secciones y no queda relleno — 9 secciones
+OK   CLS del perfil a 375 px, CPU 4× — CLS=0.0000
+OK   ?layout=sidebar: el aside mide lo mismo con solo el hero y con todas las secciones — anchos=327
+OK   ?layout=sidebar: CLS ≤ 0,01 — CLS=0.0000
+OK   cambiar de idioma no deja ningún frame con menos secciones — mínimo de secciones por frame=9
+OK   el disparador provisional del tema recibe el foco — {"trig":true,"label":"Tema"}
+OK   el menú aún no está abierto al activar antes de la carga
+OK   al cargar, el menú abre con el foco dentro
+OK   Escape cierra y devuelve el foco al disparador — {"label":"Tema","body":false,"menu":false}
+OK   Sheet móvil: Enter antes de la carga abre con el foco dentro
+OK   Sheet móvil: Escape devuelve el foco al botón — Abrir menú
+OK   consola sin violaciones de CSP ni errores de página

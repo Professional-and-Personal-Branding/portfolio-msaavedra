@@ -1,0 +1,41 @@
+## frontend: npm run lint
+> eslint .
+
+exit=0
+
+## frontend: npm run typecheck
+> tsc -b
+
+exit=0
+
+## frontend: npm test
+Test Files  56 passed (56)
+Tests  629 passed (629)
+Duration  36.15s (tests 40%, environment 37%, import 13%, setup 6%, transform 4%)
+exit=0
+
+## frontend: npm run build
+> tsc -b && vite build
+
+vite v8.2.2 building client environment for production...
+✓ 2594 modules transformed.
+dist/index.html                               3.30 kB │ gzip:   1.37 kB
+dist/assets/index-CeqVnTBS.css               67.77 kB │ gzip:  12.23 kB
+dist/assets/ThemeSwitcher-Ccqo7yop.js         0.92 kB │ gzip:   0.53 kB
+dist/assets/ProfileMenu--ZFlMLgS.js           3.89 kB │ gzip:   1.68 kB
+dist/assets/sheet-zgpPyHCK.js                 7.02 kB │ gzip:   2.48 kB
+dist/assets/entrance-animation-v5CS_4Fx.js    8.31 kB │ gzip:   3.29 kB
+dist/assets/dropdown-menu-c6uc31Bc.js        16.13 kB │ gzip:   5.22 kB
+dist/assets/dist-BSAI-fuv.js                 67.65 kB │ gzip:  23.77 kB
+dist/assets/BackofficeApp-C4zwuKJm.js       228.53 kB │ gzip:  61.25 kB
+dist/assets/index-CEyZHCCd.js               478.11 kB │ gzip: 149.51 kB
+
+✓ built in 403ms
+exit=0
+
+## backend (sin cambios): npm test
+Test Suites: 76 passed, 76 total
+Tests:       535 passed, 535 total
+Time:        35.727 s
+Ran all test suites.
+exit=0

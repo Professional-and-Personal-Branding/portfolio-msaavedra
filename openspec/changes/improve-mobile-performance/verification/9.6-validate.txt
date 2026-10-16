@@ -1,0 +1,45 @@
+## npx -y @fission-ai/openspec@1.14.1 validate improve-mobile-performance --strict
+Change 'improve-mobile-performance' is valid
+ℹ [INFO] web-performance/spec.md: Archive would refuse this delta: web-performance: target spec does not exist; only ADDED requirements are allowed for new specs. MODIFIED and RENAMED operations require an existing spec.
+exit=0
+
+## validate --all --strict
+- Validating...
+✓ spec/admin-analytics-dashboard
+✓ spec/admin-authentication
+✓ spec/admin-backoffice-shell
+✓ spec/admin-content-management
+✓ spec/admin-curated-profile-crud
+✓ spec/admin-curated-profile-preview
+✓ spec/admin-experience-crud
+✓ spec/admin-skill-crud
+✓ spec/admin-theme-catalog
+✓ spec/api-contract-types
+✓ spec/api-health
+✓ spec/api-observability
+✓ spec/api-platform
+✓ spec/api-rate-limiting
+✓ spec/api-security-headers
+✓ spec/content-localization
+✓ spec/curated-profile-builder
+✓ spec/curated-profile-resolution
+✓ spec/data-persistence-seed
+✓ spec/frontend-localization
+✓ change/improve-a11y-and-performance
+✓ change/improve-mobile-performance
+  ℹ [INFO] web-performance/spec.md: Archive would refuse this delta: web-performance: target spec does not exist; only ADDED requirements are allowed for new specs. MODIFIED and RENAMED operations require an existing spec.
+✓ spec/layout-engine
+✓ spec/printable-curated-profile
+✓ spec/profile-view-analytics
+✓ spec/public-curated-profile-api
+✓ spec/public-experience-api
+✓ spec/public-portfolio-frontend
+✓ spec/public-portfolio-sections-api
+✓ spec/public-profile-api
+✓ spec/public-seo
+✓ spec/runtime-theming
+✓ spec/site-security-policy
+✓ spec/theme-customizer
+✓ spec/theme-resolution
+Totals: 35 passed, 0 failed (35 items)
+exit=0
