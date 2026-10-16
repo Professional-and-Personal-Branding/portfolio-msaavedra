@@ -113,8 +113,9 @@ jobs:
       - run: npm test
       # `build` corre `tsc -b` antes de `vite build`.
       - run: npm run build
-      # Presupuesto de JS del arranque público (≤ 180 KB gzip, sin zod clásico ni motion):
-      # mide sobre el `dist/` recién armado, sin navegador ni base.
+      # Presupuesto de JS del arranque público (≤ 155 KB gzip en un solo JS de módulo, sin
+      # modulepreload ni zod clásico, motion ni popper de Radix): mide sobre el `dist/` recién
+      # armado, sin navegador ni base.
       - name: Presupuesto de JS del arranque público
         run: npm run perf:budget
 
@@ -237,15 +238,17 @@ jobs:
           A11Y_CHECK_ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
           A11Y_CHECK_ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
         run: npm run a11y:check -- http://localhost:8080 --out reports
-      # Mediana de 5 corridas y Performance ≥ 70 en CI (D17): el runner es el equipo de
-      # referencia de Lighthouse (benchmarkIndex ~1.800) y hoy mide 71–76; el umbral frena
-      # regresiones. El presupuesto de bytes de `frontend` sigue siendo la red principal.
+      # Mediana de 5 corridas y Performance ≥ 85 en CI (D10 de `improve-mobile-performance`;
+      # antes 70, D17 de `improve-a11y-and-performance`): el runner es el equipo de referencia de
+      # Lighthouse (benchmarkIndex ~1.800), un móvil de gama media. Si hay fallas falsas, primero
+      # se suben las corridas a 7; el umbral no se baja sin el owner. El presupuesto de bytes de
+      # `frontend` sigue siendo la red principal contra regresiones.
       - name: Lighthouse · mobile
         if: matrix.check == 'lighthouse'
         working-directory: frontend
         env:
           PERF_CHECK_RUNS: '5'
-          PERF_CHECK_MIN_PERFORMANCE: '70'
+          PERF_CHECK_MIN_PERFORMANCE: '85'
         run: npm run perf:check -- http://localhost:8080 --out reports
       - name: Registro de la API
         if: failure()
