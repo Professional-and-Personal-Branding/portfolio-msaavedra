@@ -1,5 +1,21 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (ronda 1.1.x — `improve-mobile-performance`)
+
+La vista pública abre más rápido en un móvil de gama media: el objetivo es Performance ≥ 85 en el runner de GitHub (antes 71–76, con TBT de 300–400 ms y LCP de ≈ 3,8 s). Sin backend, sin contrato HTTP, sin migración y sin tocar la CSP.
+
+- **Cambios visibles.**
+  - **El hero aparece primero.** Con el perfil recién llegado se pinta solo el hero y, en una transición interrumpible, el resto de las secciones; mientras tanto se reserva el alto de la pantalla para que el pie no se mueva. Cambiar de idioma, de tema o de perfil dentro de la misma ruta no vuelve a ese estado.
+  - **Inter sale del propio sitio** (`/fonts/inter-latin-v20.woff2`, licencia OFL junto al archivo), con `preload`: la cadena de la carga ya no pasa por `fonts.googleapis.com` ni `fonts.gstatic.com`. Las demás familias de los temas se siguen pidiendo a Google Fonts.
+  - **Los menús de la barra** (tema y perfiles) cargan en diferido: la barra muestra desde el primer render disparadores idénticos (mismo nombre accesible, `aria-haspopup`, aspecto) y el menú real llega en un momento ocioso tras `load`, o antes si el visitante apunta o enfoca el botón. Un `Enter` o un clic antes de que llegue abre el menú apenas carga, con el foco adentro.
+  - **La animación de entrada** de las secciones es imperativa (API *vanilla* de Motion) sobre la misma `<section>`: ya no se remonta el contenido al llegar la librería (25,9 → 3,3 KB gzip). Las secciones fuera de pantalla usan `content-visibility: auto`.
+  - **Arreglo:** el layout `sidebar` declara una sola columna en móvil (antes la columna implícita se ensanchaba al revelarse el resto; CLS 0,416 → 0,001).
+- **Arranque.** Un solo archivo JS (`codeSplitting.groups` de Rolldown en lugar de `manualChunks`): de 179 KB en tres archivos a 148 KB en uno. La petición del perfil sale desde `public/profile-prefetch.js` (script clásico, sin inline) mientras baja el bundle y la app la toma una sola vez: **una petición y una visita por carga**.
+- **Medición** (Linux, Chrome 155, Lighthouse 13.5.0, mobile, mediana de 5 contra una base descartable): proxy rápido 88 / 88 / 90 → 97 / 98 / 97 con TBT ≈ 0 y CLS 0,001; proxy lento (más pesimista que el runner) 54 / 55 / 59 → 74 / 75 / 81. Detalle en `openspec/changes/improve-mobile-performance/verification.md`.
+- **Presupuesto y CI.** `perf:budget` mide todos los scripts del arranque (módulo, `modulepreload` y clásicos): ≤ 155 KB gzip, un solo JS de módulo, sin `modulepreload`, sin `zod` clásico, Motion para React ni el *popper* de Radix. El umbral de Performance del CI sube de 70 a **85** (mediana de 5).
+- **Docs.** `docs/MANUAL.md` § 5.1 (umbrales) y el caso TC-35; `docs/DEPLOY.md` § 9.5 (`/fonts/*` inmutable, `profile-prefetch.js` con `no-cache` a propósito).
+- **Orden de archivado:** este change se archiva **después** de `improve-a11y-and-performance` (la capability `web-performance` la crea ese change). Falta la corrida verde del CI en el PR.
+
 ## Update — Octubre 2026 (ronda 1.1.x — `improve-a11y-and-performance`)
 
 Accesibilidad WCAG AA y arranque público más liviano, medidos con comandos que ahora viven en el repositorio y corren en el CI. Sin backend, sin contrato HTTP, sin migración y sin tocar la CSP: los acentos y los temas guardados no cambian.

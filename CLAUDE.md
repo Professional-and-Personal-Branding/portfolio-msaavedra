@@ -136,7 +136,7 @@ npm run dev              # vite (proxy /api → backend en 3300)
 npm run build            # tsc -b + vite build
 npm run test             # vitest
 npm run api:types        # regenera src/shared/types/api.d.ts desde ../backend/openapi.json
-npm run perf:budget      # tope de JS del arranque público (≤ 180 KB gzip) sobre dist/; sin navegador ni base
+npm run perf:budget      # tope de JS del arranque público (≤ 155 KB gzip, un solo JS de módulo) sobre dist/; sin navegador ni base
 # a11y:check y perf:check abren páginas reales (cada carga registra una visita): exigen A11Y_CHECK_DISPOSABLE_DB=1
 # y una base DESCARTABLE; contra la imagen de frontend/Dockerfile (ver docs/MANUAL.md § 5.1)
 npm run a11y:check -- <base>   # axe-core + recorrido de teclado (con A11Y_CHECK_ADMIN_EMAIL/_PASSWORD, también el panel)
@@ -168,6 +168,7 @@ npm run perf:check -- <base>   # Lighthouse mobile, mediana de PERF_CHECK_RUNS (
 - [x] `add-printable-one-page` — hoja imprimible de una página (A4/Letter) con botón «Imprimir / Guardar PDF» y `npm run print:check` (archivado 2026-10-10)
 - [x] `localize-language-level` — el nivel de los idiomas pasa a texto bilingüe `{es,en}` en la misma fila (migración de datos no destructiva) y se edita en ES/EN desde la Portada (archivado 2026-10-10)
 - [ ] `improve-a11y-and-performance` — accesibilidad AA (acento, atenuado y foco derivados del tema, salto al contenido, estructura ARIA), arranque público de 228 a 179 KB gzip y los checks `perf:budget`, `a11y:check` y `perf:check` bloqueantes en el CI (job `web-quality`). Implementado; falta el CI verde en el PR y archivarlo
+- [ ] `improve-mobile-performance` — Performance mobile ≥ 85 en el runner de GitHub: arranque en un solo chunk, perfil en dos tiempos (hero primero), menús de la barra en diferido, petición temprana del perfil (`public/profile-prefetch.js`), Inter del propio sitio y animación de entrada sin remontar; umbral de CI en 85 y tope de `perf:budget` en 155 KB. Implementado; falta la corrida verde del CI (tarea 9.7) y archivarlo **después** de `improve-a11y-and-performance` (la spec `web-performance` la crea ese change)
 
 ---
 

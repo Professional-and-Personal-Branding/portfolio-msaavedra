@@ -136,7 +136,14 @@ El frontend se despliega como un contenedor: Node compila y **Caddy** sirve `dis
 | `API_ORIGIN` | `http://<nombre-del-servicio-api>.railway.internal:8080` |
 | `VITE_API_URL` | **vacío** (el cliente usa rutas relativas y las resuelve el proxy) |
 
-El `try_files` es el que evita que `/tech-lead-dotnet` devuelva 404. Los assets de Vite salen con `Cache-Control: immutable` y el HTML con `no-cache`.
+El `try_files` es el que evita que `/tech-lead-dotnet` devuelva 404. Los assets de Vite (`/assets/*`, con hash en el nombre) y las fuentes propias (`/fonts/*`) salen con `Cache-Control: public, max-age=31536000, immutable`; el HTML y todo lo demás, con `no-cache`.
+
+Cuatro detalles del arranque público (change `improve-mobile-performance`):
+
+- **`/fonts/*` es inmutable, y por eso el nombre lleva la versión** (`inter-latin-v20.woff2`). Cambiar el archivo exige cambiar el nombre y los dos lugares que lo nombran (`@font-face` de `themes/theme.css` y el `preload` de `index.html`); un test lo verifica. Inter sale del propio sitio; Google Fonts queda solo para las demás familias de los temas.
+- **`/profile-prefetch.js` se sirve con `no-cache`, a propósito.** Es el script que pide el perfil mientras baja el bundle y no lleva hash en el nombre. Si un navegador conservara una copia vieja con otra lógica de clave que la app nueva, la app no tomaría su respuesta y pediría el perfil otra vez (una visita doble en `ProfileView`).
+- **La CSP no cambió:** `script-src 'self'` alcanza para el script (es del propio origen, sin inline) y `font-src 'self'` ya permitía la fuente.
+- **El arranque es un solo archivo JS.** Detrás del borde de Railway (HTTP/2) el efecto es menor que en el CI (HTTP/1.1); a cambio, un deploy invalida el archivo entero en vez de solo el de la app. Se acepta por el volumen de visitas repetidas del sitio.
 
 Para probarlo en local, sin Railway:
 
