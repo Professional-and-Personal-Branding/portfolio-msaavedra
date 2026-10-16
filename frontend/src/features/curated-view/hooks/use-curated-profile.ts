@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import type { Locale } from '@/shared/i18n/locale';
 import { api, HttpError, unwrap } from '@/shared/lib/api-client';
 import type { CuratedProfile, CuratedProfileSummary } from '@/shared/types/portfolio';
+import { takeEarlyProfile } from '../early-profile';
 
 export { HttpError } from '@/shared/lib/api-client';
 
@@ -23,6 +24,7 @@ export async function fetchCuratedProfile(
   locale: Locale,
   token: string | null,
 ): Promise<CuratedProfile> {
+  const early = takeEarlyProfile(slug, locale, token);
   return unwrap(
     await api.GET('/api/curated-profiles/{slug}', {
       params: {
@@ -30,6 +32,8 @@ export async function fetchCuratedProfile(
         query: { locale },
         ...(token ? { header: { 'X-Access-Token': token } } : {}),
       },
+      // La respuesta de la petición temprana reemplaza al `fetch`; el parseo y los errores son los de siempre.
+      ...(early ? { fetch: () => early } : {}),
     }),
   );
 }

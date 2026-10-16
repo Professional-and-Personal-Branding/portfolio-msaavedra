@@ -53,6 +53,11 @@
       as="style"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     />
+    <!--
+      Pide el perfil mientras se descarga el bundle (D5 de `improve-mobile-performance`): script
+      clásico del propio origen, sin módulos, sin inline. La app toma la respuesta una sola vez.
+    -->
+    <script src="/profile-prefetch.js" async></script>
   </head>
   <body>
     <div id="root"></div>

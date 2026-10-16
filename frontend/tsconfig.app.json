@@ -6,6 +6,9 @@
     "module": "esnext",
     "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom", "node"],
     "allowArbitraryExtensions": true,
+    /* Solo se chequea public/profile-prefetch.js (script clásico del <head>, D5 de improve-mobile-performance) */
+    "allowJs": true,
+    "checkJs": true,
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -30,5 +33,5 @@
     "noFallthroughCasesInSwitch": true,
     "useUnknownInCatchVariables": true
   },
-  "include": ["src"]
+  "include": ["src", "public/profile-prefetch.js"]
 }
