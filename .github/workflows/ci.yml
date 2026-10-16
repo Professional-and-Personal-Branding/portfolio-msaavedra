@@ -1,6 +1,8 @@
 # CI del portafolio: lint, tipos, tests y build de backend y frontend en cada
 # push y en cada PR a main. Los e2e corren contra un Postgres real, migrado con
-# `prisma migrate deploy` y cargado con el seed, igual que en producción.
+# `prisma migrate deploy` y cargado con el seed, igual que en producción. El job
+# `web-quality` suma accesibilidad (axe y teclado) y Lighthouse contra la imagen de
+# producción del frontend, y `frontend` el presupuesto de JS del arranque público.
 name: CI
 
 on:
@@ -111,3 +113,150 @@ jobs:
       - run: npm test
       # `build` corre `tsc -b` antes de `vite build`.
       - run: npm run build
+      # Presupuesto de JS del arranque público (≤ 155 KB gzip en un solo JS de módulo, sin
+      # modulepreload ni zod clásico, motion ni popper de Radix): mide sobre el `dist/` recién
+      # armado, sin navegador ni base.
+      - name: Presupuesto de JS del arranque público
+        run: npm run perf:budget
+
+  # Calidad web (change `improve-a11y-and-performance`, decisiones D10–D15): axe + teclado y
+  # Lighthouse contra lo que se sirve en producción (la imagen de `frontend/Dockerfile`, con la
+  # CSP y el head por perfil) y la API en `NODE_ENV=production`, sobre un Postgres de servicio
+  # que nace y muere con el job. Cada carga registra una visita (`ProfileView`), por eso la
+  # variable que habilita los checks vive SOLO acá, nunca en el workflow entero. Los dos checks
+  # corren en paralelo (matriz) con los mismos pasos de preparación y bloquean con los umbrales
+  # de D11. Si fallan, los reportes se suben como artefacto.
+  web-quality:
+    name: Frontend · accesibilidad y Lighthouse (${{ matrix.check }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [a11y, lighthouse]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: a11y
+          POSTGRES_PASSWORD: a11y
+          POSTGRES_DB: portfolio_a11y
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U a11y"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      A11Y_CHECK_DISPOSABLE_DB: '1'
+      DATABASE_URL: postgresql://a11y:a11y@localhost:5432/portfolio_a11y?schema=public
+      ADMIN_EMAIL: ci@a11y.test
+      ADMIN_NAME: CI a11y
+      # Chrome estable vigente al implementar; subirlo se hace a propósito, en un PR propio.
+      CHROME_VERSION: '155.0.8059.79'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      # Secretos de un solo uso: se generan en cada corrida y no se versionan.
+      - name: Secretos efímeros
+        run: |
+          ADMIN_PASSWORD="$(openssl rand -base64 24)"
+          echo "::add-mask::$ADMIN_PASSWORD"
+          echo "ADMIN_PASSWORD=$ADMIN_PASSWORD" >> "$GITHUB_ENV"
+          echo "JWT_SECRET=$(openssl rand -base64 48)" >> "$GITHUB_ENV"
+          echo "ANALYTICS_SALT=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+      - name: Base descartable · migraciones, seed y administrador de prueba
+        working-directory: backend
+        run: |
+          npm ci
+          npm run prisma:generate
+          npm run prisma:deploy
+          npm run seed
+          npm run seed:verify
+          npm run admin:bootstrap
+      # La API arranca como en Railway: `NODE_ENV=production` exige secretos fuertes y una
+      # `FRONTEND_URL` https (el valor no se usa: el sitio y la API comparten origen vía Caddy).
+      - name: API · build y arranque en producción
+        working-directory: backend
+        env:
+          NODE_ENV: production
+          PORT: '3300'
+          FRONTEND_URL: https://web-quality.example.test
+          SESSION_COOKIE_SAMESITE: strict
+        run: |
+          npm run build
+          nohup node dist/main > "$RUNNER_TEMP/api.log" 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:3300/health; then echo; exit 0; fi
+            sleep 2
+          done
+          echo "La API no respondió /health"; cat "$RUNNER_TEMP/api.log"; exit 1
+      # El sitio que se mide es la imagen de producción: Caddy con la CSP, el head por perfil
+      # (`templates`), la compresión y el `Cache-Control`.
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: frontend
+          load: true
+          tags: portfolio-web:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Frontend · Caddy con la imagen de producción
+        run: |
+          docker run -d --name web --network host -e PORT=8080 -e API_ORIGIN=http://localhost:3300 portfolio-web:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8080/health; then echo; break; fi
+            if [ "$i" = 30 ]; then docker logs web; exit 1; fi
+            sleep 1
+          done
+          echo "--- /tech-lead-dotnet"
+          curl -sSI http://localhost:8080/tech-lead-dotnet | grep -i 'content-security-policy'
+          curl -sS http://localhost:8080/tech-lead-dotnet | grep -o '<title>[^<]*</title>' | head -1
+      - uses: browser-actions/setup-chrome@v2
+        id: chrome
+        with:
+          chrome-version: ${{ env.CHROME_VERSION }}
+          install-dependencies: true
+      - name: Chrome fijado
+        run: |
+          echo "CHROME_PATH=${{ steps.chrome.outputs.chrome-path }}" >> "$GITHUB_ENV"
+          "${{ steps.chrome.outputs.chrome-path }}" --version
+      - name: Dependencias del frontend
+        working-directory: frontend
+        run: npm ci
+      - name: Accesibilidad · axe y teclado
+        if: matrix.check == 'a11y'
+        working-directory: frontend
+        env:
+          A11Y_CHECK_ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
+          A11Y_CHECK_ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
+        run: npm run a11y:check -- http://localhost:8080 --out reports
+      # Mediana de 5 corridas y Performance ≥ 85 en CI (D10 de `improve-mobile-performance`;
+      # antes 70, D17 de `improve-a11y-and-performance`): el runner es el equipo de referencia de
+      # Lighthouse (benchmarkIndex ~1.800), un móvil de gama media. Si hay fallas falsas, primero
+      # se suben las corridas a 7; el umbral no se baja sin el owner. El presupuesto de bytes de
+      # `frontend` sigue siendo la red principal contra regresiones.
+      - name: Lighthouse · mobile
+        if: matrix.check == 'lighthouse'
+        working-directory: frontend
+        env:
+          PERF_CHECK_RUNS: '5'
+          PERF_CHECK_MIN_PERFORMANCE: '85'
+        run: npm run perf:check -- http://localhost:8080 --out reports
+      - name: Registro de la API
+        if: failure()
+        run: tail -n 60 "$RUNNER_TEMP/api.log" || true
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: web-quality-${{ matrix.check }}
+          path: frontend/reports
+          retention-days: 14
+          if-no-files-found: ignore

@@ -41,13 +41,13 @@ export function ExperienceTimeline({ data }: SectionProps) {
                 )}
               </span>
             </div>
-            <p className="font-semibold text-brand">{experience.company}</p>
+            <p className="font-semibold text-brand-ink">{experience.company}</p>
             <p className="mb-3 text-xs text-text-dim">
               {[experience.location, ...experience.sector].filter(Boolean).join(' · ')}
             </p>
             <p className="mb-3 text-sm text-text-muted md:text-[15px]">{experience.summary}</p>
             {experience.highlights.length > 0 && (
-              <ul className="mb-4 flex list-disc flex-col gap-1 pl-5 text-sm text-text-muted marker:text-brand-2">
+              <ul className="mb-4 flex list-disc flex-col gap-1 pl-5 text-sm text-text-muted marker:text-brand-2-ink">
                 {experience.highlights.map((highlight) => (
                   <li key={highlight}>{highlight}</li>
                 ))}

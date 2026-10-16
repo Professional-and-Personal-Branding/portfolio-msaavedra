@@ -17,7 +17,7 @@ export function Projects({ data }: SectionProps) {
             className="surface flex flex-col p-card transition-[transform,border-color,box-shadow] hover:-translate-y-1 hover:border-brand hover:glow-brand"
           >
             <div className="mb-3 flex items-start gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-theme-sm border border-border bg-bg-soft text-brand">
+              <span className="grid size-10 shrink-0 place-items-center rounded-theme-sm border border-border bg-bg-soft text-brand-ink">
                 <FolderGit2 className="size-5" aria-hidden />
               </span>
               <div className="min-w-0">
@@ -40,7 +40,7 @@ export function Projects({ data }: SectionProps) {
                 href={project.url}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-brand hover:underline"
+                className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-brand-ink hover:underline"
               >
                 {t('project.visit')}
                 <ArrowUpRight className="size-4" aria-hidden />

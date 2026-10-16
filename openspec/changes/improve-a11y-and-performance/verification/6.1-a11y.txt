@@ -1,0 +1,5 @@
+== Sin A11Y_CHECK_DISPOSABLE_DB (no abre paginas)
+a11y:check se niega a correr: cada página que abre registra una visita en la base.
+Definí A11Y_CHECK_DISPOSABLE_DB=1 solo si la API apunta a una base DESCARTABLE
+(local sembrada o el Postgres de servicio del CI), nunca a la base del owner.
+exit=2

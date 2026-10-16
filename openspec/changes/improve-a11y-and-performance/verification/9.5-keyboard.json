@@ -1,0 +1,102 @@
+[
+  {
+    "label": "home · menú de perfiles (dropdown)",
+    "found": true,
+    "focusMovedInto": {
+      "role": "menu",
+      "focused": "Full profileFull ProfileBackendSenior Ja"
+    },
+    "escapeReturnsFocus": true
+  },
+  {
+    "label": "home · selector de tema",
+    "found": true,
+    "focusMovedInto": {
+      "role": "menu",
+      "focused": "Profile theme"
+    },
+    "escapeReturnsFocus": true
+  },
+  {
+    "label": "perfil · theme selector (en)",
+    "found": true,
+    "focusMovedInto": {
+      "role": "menu",
+      "focused": "Profile theme"
+    },
+    "escapeReturnsFocus": true
+  },
+  {
+    "shot": "foco-modern-dark-skip",
+    "tabs": 1,
+    "focused": "Skip to content"
+  },
+  {
+    "shot": "foco-modern-dark-brand",
+    "tabs": 2,
+    "focused": "Manuel Joaquín Saavedra Severi"
+  },
+  {
+    "shot": "foco-modern-dark-contact-btn",
+    "tabs": 12,
+    "focused": "Code and open projectsmanuXD27"
+  },
+  {
+    "shot": "foco-modern-light-skip",
+    "tabs": 1,
+    "focused": "Skip to content"
+  },
+  {
+    "shot": "foco-modern-light-brand",
+    "tabs": 2,
+    "focused": "Manuel Joaquín Saavedra Severi"
+  },
+  {
+    "shot": "foco-modern-light-contact-btn",
+    "tabs": 12,
+    "focused": "Code and open projectsmanuXD27"
+  },
+  {
+    "shot": "foco-tech-lead-dotnet-skip",
+    "tabs": 1,
+    "focused": "Skip to content"
+  },
+  {
+    "shot": "foco-tech-lead-dotnet-brand",
+    "tabs": 2,
+    "focused": "Manuel Joaquín Saavedra Severi"
+  },
+  {
+    "shot": "foco-tech-lead-dotnet-contact-btn",
+    "tabs": 12,
+    "focused": "Code and open projectsmanuXD27"
+  },
+  {
+    "label": "home mobile · menú de perfiles (Sheet)",
+    "found": true,
+    "focusMovedInto": {
+      "role": "dialog",
+      "focused": "Close"
+    },
+    "escapeReturnsFocus": true
+  },
+  {
+    "adminLogin": 200
+  },
+  {
+    "nuevoBtn": "Nueva experiencia"
+  },
+  {
+    "label": "panel · diálogo de nueva experiencia",
+    "found": true,
+    "focusMovedInto": {
+      "role": "dialog",
+      "focused": ""
+    },
+    "escapeReturnsFocus": true
+  },
+  {
+    "shot": "foco-panel-campo",
+    "focused": "INPUT"
+  }
+]

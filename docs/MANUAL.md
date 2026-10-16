@@ -264,6 +264,71 @@ Constructor, vista previa en EN, nivel sin inglés -> "Falta 1 traducción en EN
 
 ![Aviso de faltantes con un nivel de idioma sin inglés](manual/tc32-faltantes.png)
 
+### TC-33 — Navegación por teclado y foco visible ✅
+
+**Precondición:** base seedeada, sitio levantado, Chrome; para los pasos 4 y 5, sesión iniciada en `/admin`.
+**Pasos:**
+1. Abrir `/tech-lead-dotnet` y, sin tocar el mouse, apretar **Tab**: lo primero que aparece es **Saltar al contenido** (*Skip to content* con `?lang=en`). Con **Enter** el foco pasa al contenido; el siguiente Tab cae en el primer control del hero, no en la barra superior.
+2. Volver a empezar y recorrer con Tab la barra (marca, menú de perfiles, diseño, tema, idioma, imprimir) y el hero. Cada control muestra un contorno **sólido de 2 px**, separado del borde, del color de acento legible del tema. Repetir con `?theme=modern-light` y `?theme=modern-dark`.
+3. En la home, abrir con **Enter** el menú de perfiles y el selector de tema (en móvil, el menú lateral): el foco entra, **Escape** cierra y el foco vuelve al botón.
+4. En `/admin`: el primer Tab es **Saltar al contenido**; con Enter, el siguiente Tab entra al contenido de la pantalla y no al menú lateral.
+5. En `/admin/experiencias` abrir **Nueva experiencia** con Enter y cerrar con **Escape**: el foco vuelve al botón. En `/admin/portada` cambiar un campo de ES a EN con las pestañas: el campo y su etiqueta siguen al idioma.
+6. En Chrome → DevTools → *Rendering* → *Emulate CSS media feature prefers-reduced-motion: reduce*, activar el salto: el desplazamiento no es animado.
+
+**Resultado esperado:** el foco nunca queda invisible ni se pierde (tampoco al cerrar un diálogo), y el salto lleva siempre al `<main>`. Con `prefers-reduced-motion: reduce` el documento tiene `scroll-behavior: auto`.
+
+`a11y:check` automatiza los pasos 1 y 2 en la home y en dos perfiles (primer Tab en el salto, Enter enfoca `<main id="contenido">`, el contorno de cada control alcanzado con Tab mide ≥ 3:1 contra el fondo) y los pasos 4 y 5 en el panel; los menús y los diálogos se recorrieron con Chrome controlado por `puppeteer-core`.
+
+**Ejecutado** (15 de octubre de 2026, contra la imagen de producción de `frontend/Dockerfile` y una base descartable):
+
+```
+Tab 1 en /tech-lead-dotnet            -> "Skip to content" / "Saltar al contenido"
+Enter                                 -> document.activeElement = main#contenido
+Menú de perfiles, tema, Sheet móvil   -> foco adentro; Escape devuelve el foco al botón
+Nueva experiencia / categoría / proyecto + Escape -> el foco vuelve al botón (antes: <body>)
+prefers-reduced-motion: reduce        -> scroll-behavior: auto
+```
+
+### TC-34 — Contraste con un acento oscuro ✅
+
+**Precondición:** base seedeada, sitio levantado, sesión iniciada en `/admin` para el paso 4.
+**Pasos:**
+1. Abrir `/tech-lead-dotnet` (`themeOverrides.colors.accent = #5B2C87`, 1,72:1 contra la tarjeta de `modern-dark`). El titular del hero, el *eyebrow* de cada sección y las etiquetas del menú se leen: tienen el **tono** del acento, más claro.
+2. El botón *Contactar* conserva el relleno `#5B2C87` con texto blanco. Repetir con `/software-architect` (`#1E293B`, 1,15:1).
+3. Abrir `/tech-lead-dotnet?theme=modern-light`: el botón primario lleva texto oscuro (4,70:1) y no blanco (4,10:1).
+4. En `/admin/perfiles/<id>` → **Diseño**, elegir como acento `#1E293B`: en la vista previa se lee como texto. Guardar y reabrir: lo guardado es `#1E293B`, el color elegido, no el derivado.
+
+**Resultado esperado:** ningún texto del sitio baja de 4,5:1 contra su fondo, con ningún preset ni con los acentos de los 14 perfiles; el dato guardado no cambia. Medido sobre los tokens (`css-vars` y su spec) y sobre el sitio (axe, `a11y:check`):
+
+| Acento | Como texto antes | `--t-accent-ink` | Como texto después |
+|---|---|---|---|
+| `#5B2C87` (tech-lead-dotnet) | 1,72:1 | `#a575d2` | 4,86:1 |
+| `#1E293B` (software-architect) | 1,15:1 | `#6c87b4` | 4,61:1 |
+| `#0078D4` (devops-azure y dos más) | 3,71:1 | `#008ffd` | 5,08:1 |
+| `#38bdf8` (all, modern-dark) | 7,85:1 | `#38bdf8` | 7,85:1 (sin cambio) |
+| `#0284c7` (modern-light) | 3,74:1 | `#0270a9` | 4,92:1 |
+
+El texto atenuado (`text-dim`) pasó de 3,5–4,0:1 a ≥ 4,5:1 en los cinco presets.
+
+**Ejecutado** (15 de octubre de 2026): `a11y:check` sobre la home, cada preset × layout, `?lang=en`, los 13 perfiles con acento bajo y el panel: 0 violaciones en 72 cargas. Antes: 1376 nodos de `color-contrast` en las vistas de perfil y 420 en el panel.
+
+### TC-35 — El perfil abre rápido en un móvil ✅
+
+**Precondición:** base **descartable** seedeada (nunca la del owner: cada carga registra una visita), la API en `NODE_ENV=production` y el frontend como se sirve en producción (la imagen de `frontend/Dockerfile`, o `dist/` con el `Caddyfile` del repo en `caddy:2-alpine`); Chrome. Para el paso 6, un perfil `PROTECTED` con su token.
+**Pasos:**
+1. En Chrome → DevTools → *Device toolbar* a **375 px** y *Performance* con CPU **4× slowdown**; abrir `/tech-lead-dotnet`. El **hero** (nombre, titular, resumen) aparece primero; las demás secciones llegan enseguida, sin que el contenido de arriba se mueva ni el pie salte a la vista.
+2. En la pestaña *Network*, filtrar por `curated-profiles`: hay **una sola** petición de `GET /api/curated-profiles/tech-lead-dotnet?locale=es` (no dos), y sale del script `profile-prefetch.js` antes de que termine el bundle.
+3. En la base descartable, `SELECT count(*) FROM "ProfileView"` antes y después de la carga: **+1**.
+4. Cambiar de idioma con el selector `ES`/`EN`: las secciones no desaparecen ni parpadean; el texto se traduce en su lugar. Repetir con `?layout=sidebar`: no hay salto de diseño al aparecer las secciones.
+5. Antes de que cargue el selector de tema (en *Network* → *Throttling* → *Slow 3G*, o bloqueando `ThemeSwitcher-*.js`), enfocar el botón de tema con **Tab** y apretar **Enter**: el menú abre en cuanto llega el módulo, con el foco adentro; **Escape** lo cierra y el foco vuelve al botón. Repetir con el menú de perfiles de la home (en 375 px, el menú lateral).
+6. Abrir `/<perfil-protegido>?token=<token>&lang=en`: una sola petición del perfil, con la cabecera `X-Access-Token`, y +1 en `ProfileView`.
+
+**Resultado esperado:** el hero se ve antes que el resto, el pie no salta (CLS ≤ 0,01), una sola petición del perfil y una sola visita por carga, y los menús abren con teclado aunque se activen al instante. La consola no muestra violaciones de CSP.
+
+`perf:budget` fija lo ganado en el arranque (≤ 155 KB gzip en un solo JS de módulo) y `perf:check` mide el resultado en Lighthouse (Performance ≥ 85, mediana de 5, en el CI). Los pasos 1 a 3 y 6 los automatizan los scripts de la evidencia del change `improve-mobile-performance`, con Chrome controlado por `puppeteer-core`.
+
+**Ejecutado** (15 de octubre de 2026, contra el `dist/` y el `Caddyfile` del repo en `caddy:2-alpine` y una base descartable): ver `verification.md` del change `improve-mobile-performance` (§ Recorrido en 375 px y § Una visita por carga).
+
 ---
 
 ## 3. Casos del backoffice
@@ -833,6 +898,36 @@ curl -sD - $API/api/curated-profiles/no-existe -o /dev/null | grep -i x-request-
 | El sitio dejó de cargar algo (fuente, script) tras un deploy | La CSP del servicio `web` lo bloquea. Probá con `CSP_HEADER=Content-Security-Policy-Report-Only` en `web` (solo reporta, sin bloquear; no requiere reconstruir) y mirá la consola. Detalle en `DEPLOY.md` § 9.5 |
 | Una visita no suma justo después de un deploy | La visita se registra en segundo plano y el apagado espera hasta 5 s; confirmá que `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` del servicio `api` esté por encima (p. ej. 10) |
 
+### 5.1 Calidad web: accesibilidad, Lighthouse y presupuesto de JS
+
+Tres comandos del frontend (`frontend/scripts/`), los mismos que corre el CI:
+
+```bash
+cd frontend
+npm run build && npm run perf:budget                      # tope de JS del arranque público; sin navegador ni base
+
+# Los dos siguientes abren páginas reales: cada carga registra una visita (ProfileView).
+# Exigen A11Y_CHECK_DISPOSABLE_DB=1 y salen con 2 sin ella. Usalos SOLO contra una base descartable
+# (p. ej. `portfolio_a11y`, con migraciones, seed y un administrador de prueba), nunca contra la del owner.
+export A11Y_CHECK_DISPOSABLE_DB=1
+A11Y_CHECK_ADMIN_EMAIL=… A11Y_CHECK_ADMIN_PASSWORD=… npm run a11y:check -- http://localhost:8080 --out reports
+npm run perf:check -- http://localhost:8080 --out reports
+```
+
+Se miden contra el sitio como se sirve en producción (la imagen de `frontend/Dockerfile` con la API detrás), porque la CSP, el head por perfil y la compresión de Caddy cambian los puntajes; `vite dev` no sirve para esto. `CHROME_PATH` apunta al Chrome del sistema. Los reportes (axe en JSON, Lighthouse en HTML y JSON, resúmenes `.md`) solo se escriben con `--out`.
+
+| Medida | Local, antes de un release | CI | ¿Bloquea? |
+|---|---|---|---|
+| `perf:budget` | ≤ 155 KB gzip, en **un solo** JS de módulo y sin `modulepreload` | Igual | Sí |
+| axe (`a11y:check`) | 0 `serious` y 0 `critical`; el recorrido de teclado sin fallas | Igual | Sí |
+| Lighthouse Accessibility, Best Practices y SEO (páginas públicas, mobile) | mediana de 3 ≥ 90 | mediana de 5 ≥ 90 | Sí |
+| Lighthouse Performance (páginas públicas, mobile) | mediana de 3 ≥ 90 (`PERF_CHECK_RUNS`, `PERF_CHECK_MIN_PERFORMANCE`) | mediana de 5 ≥ **85** | Sí |
+| `/admin/login` | Accessibility y Best Practices ≥ 90 (SEO exento: lleva `noindex`; Performance, informativa) | Igual | Sí |
+
+El umbral de Performance es 85 en CI porque el runner de GitHub es el equipo de referencia de Lighthouse (`benchmarkIndex` ≈ 1.800: un móvil de gama media); una máquina local más rápida (≈ 4.200) infla el puntaje. Antes de `improve-mobile-performance` la vista pública medía ahí 71–76 y el umbral era 70; ahora, con el arranque en un solo archivo, el perfil en dos tiempos, los menús en diferido y Inter del propio sitio, el objetivo es ≥ 85 en las tres páginas que mide `perf:check`. Si aparecen fallas falsas se suben las corridas a 7 (`PERF_CHECK_RUNS`); el umbral no se baja sin el owner. **La medición local vale como diagnóstico solo en Linux** (por ejemplo, `ubuntu:24.04` con un Chrome fijado): con el Chrome de Windows el *Layout* cuesta unas 2,5 veces más y los números no se parecen a los del runner. La red principal contra una regresión sigue siendo el presupuesto de bytes, que no tiene ruido. `moderate` y `minor` de axe se informan sin bloquear. Una advertencia `inspector-issues` de Best Practices la dispara el propio axe al leer la hoja de Google Fonts y no se arregla abriendo la CSP.
+
+**En CI:** el job `web-quality` (*Frontend · accesibilidad y Lighthouse*, dos ejecuciones en paralelo: `a11y` y `lighthouse`) levanta un Postgres de servicio, la API en `NODE_ENV=production` y la imagen del frontend, y corre el check. Si falla, el workflow queda en rojo y los reportes se bajan desde la corrida en *Summary → Artifacts → `web-quality-a11y` o `web-quality-lighthouse`* (14 días). Que además impida fusionar depende de marcar esos dos checks como requeridos en la protección de `main` (configuración del repositorio).
+
 ---
 
 ## 6. Suite de regresión manual
@@ -879,8 +974,11 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-30 | Los formularios en diálogo avisan | ✅ | captura · app real contra el contenedor · tests por formulario |
 | TC-31 | Imprimir un perfil en una hoja | 🔍 | `print:check` (56 casos, 1 página en A4 y Letter) · PDF en el archivo del change · tests de la hoja y del botón |
 | TC-32 | El nivel del idioma en los dos idiomas | ✅ | captura · app real contra una copia de la base · e2e · tests del formulario y del aviso |
+| TC-33 | Navegación por teclado y foco visible | ✅ | `a11y:check` (recorrido de teclado) · menús y diálogos con Chrome controlado · capturas del foco en el archivo del change |
+| TC-34 | Contraste con un acento oscuro | ✅ | `a11y:check` (0 violaciones en 72 cargas) · tabla de contraste por acento · tests de `css-vars` |
+| TC-35 | El perfil abre rápido en un móvil | ✅ | recorrido en 375 px con Chrome controlado · una petición y una visita por carga · `perf:budget` y `perf:check` · tests de la vista, el script y los menús |
 
-**Los 32 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 26 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change.
+**Los 35 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 26 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 

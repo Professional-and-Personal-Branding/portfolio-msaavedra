@@ -1,5 +1,3 @@
-import { Palette } from 'lucide-react';
-import { Button } from '@/shared/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,22 +11,22 @@ import { useLocale } from '@/shared/i18n/use-locale';
 import { useUrlState } from '@/shared/lib/url-state';
 import { THEME_PRESETS } from '@/themes/presets';
 import { useTheme } from '@/themes/use-theme';
+import type { DeferredMenuInitProps } from './DeferredMenu';
+import { ThemeTrigger } from './menu-triggers';
 
 const PROFILE_THEME = '__profile__';
 
 /** Selector de presets; el elegido se refleja en `?theme=` (spec `runtime-theming`). */
-export function ThemeSwitcher() {
+export function ThemeSwitcher({ init }: DeferredMenuInitProps) {
   const { t } = useLocale();
   const [, setUrl] = useUrlState();
   const { preset } = useTheme();
   const value = preset?.slug ?? PROFILE_THEME;
 
   return (
-    <DropdownMenu>
+    <DropdownMenu defaultOpen={init?.open != null}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon-sm" aria-label={t('nav.theme')} title={t('nav.theme')}>
-          <Palette aria-hidden />
-        </Button>
+        <ThemeTrigger autoFocus={init?.focus && init.open === null} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuLabel>{t('nav.theme')}</DropdownMenuLabel>

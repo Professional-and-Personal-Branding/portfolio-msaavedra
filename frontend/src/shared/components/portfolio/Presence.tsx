@@ -64,7 +64,7 @@ function PresenceCard({ link, featured = false }: { link: SocialLink; featured?:
           <p className="truncate font-mono text-xs text-text-dim">{link.handle}</p>
         </div>
         <ArrowUpRight
-          className="size-5 shrink-0 text-text-dim transition-[color,transform] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-brand"
+          className="size-5 shrink-0 text-text-dim transition-[color,transform] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-brand-ink"
           aria-hidden
         />
       </div>

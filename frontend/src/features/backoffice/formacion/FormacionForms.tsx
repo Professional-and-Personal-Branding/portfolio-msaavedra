@@ -278,7 +278,7 @@ function TextField({
     <div className="flex flex-col gap-1.5">
       <Label htmlFor={id}>
         {label}
-        {required && <span className="text-brand"> *</span>}
+        {required && <span className="text-brand-ink"> *</span>}
       </Label>
       <Input
         id={id}

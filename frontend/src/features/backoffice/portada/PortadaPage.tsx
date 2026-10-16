@@ -1,5 +1,5 @@
 import { Pencil, Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
-import { useMemo, useState, type FormEvent } from 'react';
+import { useId, useMemo, useState, type FormEvent } from 'react';
 import { Hero } from '@/shared/components/portfolio/Hero';
 import { Button } from '@/shared/components/ui/button';
 import {
@@ -13,7 +13,6 @@ import {
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Skeleton } from '@/shared/components/ui/skeleton';
-import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import type { Locale } from '@/shared/i18n/locale';
 import { useLocale } from '@/shared/i18n/use-locale';
 import type { CuratedProfile } from '@/shared/types/portfolio';
@@ -22,6 +21,8 @@ import { es } from '../shared/admin-types';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { LocalizedField } from '../shared/fields/LocalizedField';
 import { PageHeader } from '../shared/PageHeader';
+import { PreviewLocaleTabs } from '../shared/PreviewLocaleTabs';
+import { previewTabId } from '../shared/preview-tab-id';
 import { UnsavedChangesDialog } from '../shared/UnsavedChangesDialog';
 import { UnsavedChangesPrompt } from '../shared/UnsavedChangesPrompt';
 import { useDialogDiscardGuard } from '../shared/use-dialog-discard-guard';
@@ -247,6 +248,7 @@ function HeroPreview({
   locale,
   onLocaleChange,
 }: HeroPreviewProps) {
+  const panelId = useId();
   return (
     <section aria-label="Vista previa del hero" className="flex flex-col gap-3 lg:sticky lg:top-20">
       <header className="flex items-center gap-2">
@@ -259,16 +261,7 @@ function HeroPreview({
         )}
         <span className="ml-auto text-xs text-text-dim">sin guardar</span>
         {/* El idioma de la vista previa: el mismo `?lang=` que usa el sitio. */}
-        <Tabs value={locale} onValueChange={(next) => onLocaleChange(next as Locale)}>
-          <TabsList className="h-7" aria-label="Idioma de la vista previa">
-            <TabsTrigger value="es" className="px-2 py-0.5 text-xs uppercase">
-              es
-            </TabsTrigger>
-            <TabsTrigger value="en" className="px-2 py-0.5 text-xs uppercase">
-              en
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <PreviewLocaleTabs locale={locale} onLocaleChange={onLocaleChange} panelId={panelId} />
       </header>
       {invalid && (
         <p className="surface px-4 py-3 text-sm text-text-muted">
@@ -281,6 +274,9 @@ function HeroPreview({
         </p>
       )}
       <div
+        id={panelId}
+        role="tabpanel"
+        aria-labelledby={previewTabId(panelId, locale)}
         className="overflow-hidden rounded-theme border border-border px-6"
         data-testid="hero-preview"
       >
@@ -312,7 +308,7 @@ function TextField({ id, label, value, onChange, type = 'text', required, error 
     <div className="flex flex-col gap-1.5">
       <Label htmlFor={id}>
         {label}
-        {required && <span className="text-brand"> *</span>}
+        {required && <span className="text-brand-ink"> *</span>}
       </Label>
       <Input
         id={id}

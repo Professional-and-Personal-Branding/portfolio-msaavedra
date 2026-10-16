@@ -84,7 +84,10 @@ describe('CuratedProfilePage', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Ada Ejemplo' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Experiencia Profesional' })).toBeInTheDocument();
+    // El hero llega primero; el resto de las secciones se revelan en una transición (D1).
+    expect(
+      await screen.findByRole('heading', { name: 'Experiencia Profesional' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Senior Backend Engineer')).toBeInTheDocument();
     expect(screen.getByText('Acme Corp')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Habilidades Técnicas' })).toBeInTheDocument();

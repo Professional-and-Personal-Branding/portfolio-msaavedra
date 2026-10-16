@@ -1,7 +1,7 @@
 import { useId, useState } from 'react';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
-import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { Textarea } from '@/shared/components/ui/textarea';
 import type { LocalizedText } from '../admin-types';
 
@@ -15,9 +15,17 @@ export interface LocalizedFieldProps {
   description?: string;
 }
 
+type FieldLocale = 'es' | 'en';
+const LOCALES: readonly FieldLocale[] = ['es', 'en'];
+
 /**
  * Campo traducible con pestañas ES/EN sobre el mismo valor: `es` es
  * obligatorio y `en` opcional (spec `admin-content-management`).
+ *
+ * Cada pestaña controla un panel que existe en el DOM (`forceMount`, oculto con `hidden`
+ * cuando no está activo), así `aria-controls` apunta a un id presente (spec
+ * `web-accessibility` § Estructura semántica válida). Los dos controles conservan su valor
+ * al cambiar de pestaña y la etiqueta sigue al que está activo.
  */
 export function LocalizedField({
   label,
@@ -28,45 +36,57 @@ export function LocalizedField({
   error,
   description,
 }: LocalizedFieldProps) {
-  const [locale, setLocale] = useState<'es' | 'en'>('es');
+  const [locale, setLocale] = useState<FieldLocale>('es');
   const id = useId();
-  const current = (locale === 'es' ? value?.es : value?.en) ?? '';
   const Control = multiline ? Textarea : Input;
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <Tabs
+      value={locale}
+      onValueChange={(next) => setLocale(next as FieldLocale)}
+      className="flex flex-col gap-1.5"
+    >
       <div className="flex items-center justify-between gap-2">
-        <Label htmlFor={id}>
+        <Label htmlFor={`${id}-${locale}`}>
           {label}
-          {required && <span className="text-brand"> *</span>}
+          {required && <span className="text-brand-ink"> *</span>}
         </Label>
-        <Tabs value={locale} onValueChange={(next) => setLocale(next as 'es' | 'en')}>
-          <TabsList className="h-7">
-            <TabsTrigger value="es" className="px-2 py-0.5 text-xs uppercase">
-              es
+        <TabsList className="h-7">
+          {LOCALES.map((code) => (
+            <TabsTrigger key={code} value={code} className="px-2 py-0.5 text-xs uppercase">
+              {code}
             </TabsTrigger>
-            <TabsTrigger value="en" className="px-2 py-0.5 text-xs uppercase">
-              en
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+          ))}
+        </TabsList>
       </div>
-      <Control
-        id={id}
-        aria-label={`${label} (${locale})`}
-        aria-invalid={error ? true : undefined}
-        value={current}
-        rows={multiline ? 4 : undefined}
-        onChange={(event: { target: { value: string } }) =>
-          onChange({ ...value, es: value?.es ?? '', [locale]: event.target.value })
-        }
-      />
+      {LOCALES.map((code) => (
+        // El panel no es un punto de tabulación propio: su único contenido es el control.
+        <TabsContent
+          key={code}
+          value={code}
+          forceMount
+          hidden={locale !== code}
+          tabIndex={-1}
+          className="flex flex-col"
+        >
+          <Control
+            id={`${id}-${code}`}
+            aria-label={`${label} (${code})`}
+            aria-invalid={error ? true : undefined}
+            value={(code === 'es' ? value?.es : value?.en) ?? ''}
+            rows={multiline ? 4 : undefined}
+            onChange={(event: { target: { value: string } }) =>
+              onChange({ ...value, es: value?.es ?? '', [code]: event.target.value })
+            }
+          />
+        </TabsContent>
+      ))}
       {description && !error && <p className="text-xs text-text-dim">{description}</p>}
       {error && (
         <p role="alert" className="text-xs text-destructive">
           {error}
         </p>
       )}
-    </div>
+    </Tabs>
   );
 }

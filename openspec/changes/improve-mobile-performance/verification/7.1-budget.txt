@@ -1,0 +1,77 @@
+## Verde sobre el build nuevo (npm run build && npm run perf:budget)
+
+# Presupuesto de JS del arranque público
+
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-CEyZHCCd.js | módulo | 147.8 |
+| /profile-prefetch.js | clásico | 1.1 |
+| **Total** | | **148.9** |
+
+Presupuesto: 155 KB.
+
+exit=0
+
+## Rojo: manualChunks restaurado en vite.config.ts
+
+# Presupuesto de JS del arranque público
+
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-PcG0qHJe.js | módulo | 33.0 |
+| /assets/rolldown-runtime-CbXtAM7H.js | modulepreload | 0.4 |
+| /assets/query-GujNoDMP.js | modulepreload | 12.8 |
+| /assets/react-BSJ38QPL.js | modulepreload | 86.4 |
+| /assets/button-9-jaErFA.js | modulepreload | 14.6 |
+| /assets/skeleton-CJ4rfzau.js | modulepreload | 3.0 |
+| /profile-prefetch.js | clásico | 1.1 |
+| **Total** | | **151.2** |
+
+Presupuesto: 155 KB.
+
+## Fallas
+
+- /assets/rolldown-runtime-CbXtAM7H.js es un modulepreload del arranque; el arranque no precarga chunks.
+- /assets/query-GujNoDMP.js es un modulepreload del arranque; el arranque no precarga chunks.
+- /assets/react-BSJ38QPL.js es un modulepreload del arranque; el arranque no precarga chunks.
+- /assets/button-9-jaErFA.js es un modulepreload del arranque; el arranque no precarga chunks.
+- /assets/skeleton-CJ4rfzau.js es un modulepreload del arranque; el arranque no precarga chunks.
+
+exit=1
+
+## Rojo: import estático de ThemeSwitcher en TopBar
+
+# Presupuesto de JS del arranque público
+
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-CZkFr4wb.js | módulo | 175.0 |
+| /profile-prefetch.js | clásico | 1.1 |
+| **Total** | | **176.0** |
+
+Presupuesto: 155 KB.
+
+## Fallas
+
+- El arranque pesa 176.0 KB gzip y el presupuesto es 155 KB.
+- /assets/index-CZkFr4wb.js contiene popper de Radix (data-radix-popper-content-wrapper); tiene que cargarse en diferido.
+
+exit=1
+
+## Rojo: BUNDLE_BUDGET_KB=100
+
+# Presupuesto de JS del arranque público
+
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-CEyZHCCd.js | módulo | 147.8 |
+| /profile-prefetch.js | clásico | 1.1 |
+| **Total** | | **148.9** |
+
+Presupuesto: 100 KB.
+
+## Fallas
+
+- El arranque pesa 148.9 KB gzip y el presupuesto es 100 KB.
+
+exit=1

@@ -250,6 +250,8 @@
     <a href="#tc10"><span class="dot ok"></span><span class="id">TC-10</span> Visibilidad</a>
     <a href="#tc31"><span class="dot ok"></span><span class="id">TC-31</span> Imprimir</a>
     <a href="#tc32"><span class="dot ok"></span><span class="id">TC-32</span> Nivel de idioma</a>
+    <a href="#tc33"><span class="dot ok"></span><span class="id">TC-33</span> Teclado y foco</a>
+    <a href="#tc34"><span class="dot ok"></span><span class="id">TC-34</span> Acento oscuro</a>
     <h3>Backoffice</h3>
     <a href="#tc11"><span class="dot ok"></span><span class="id">TC-11</span> Entrar</a>
     <a href="#tc12"><span class="dot ok"></span><span class="id">TC-12</span> Crear perfil</a>
@@ -384,7 +386,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
         <div class="stat"><b>26</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Los 32 casos pasan.</b> TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Los 34 casos pasan.</b> TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -534,6 +536,33 @@ POST /api/admin/languages  level: "B2"             -> 400 (level must be an obje
 Portada: EN del nivel, guardar, recargar            -> ES="B1-B2" EN="B1-B2 (working proficiency)"
 Constructor, vista previa en EN, nivel sin inglés   -> Falta 1 traducción en EN · Idiomas · Inglés: Nivel</pre></div>
         <figure class="shot" id="img-tc32-faltantes"><img src="tc32-faltantes.png" width="1280" height="900" style="max-width:640px" alt="Aviso de faltantes con un nivel de idioma sin inglés"><figcaption>El aviso nombra el idioma con la lista de <code>GET /api/admin/languages</code>.</figcaption></figure>
+      </article>
+
+      <article class="case" data-status="ok" id="tc33">
+        <div class="case-head"><span class="case-id">TC-33</span><h3>Navegación por teclado y foco visible</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc33"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · Abrir <code>/tech-lead-dotnet</code> y, sin tocar el mouse, apretar <b>Tab</b>: aparece <i>Saltar al contenido</i> (<i>Skip to content</i> con <code>?lang=en</code>); con <b>Enter</b> el foco pasa al contenido y el siguiente Tab cae en el primer control del hero. Recorrer la barra y el hero con Tab, también con <code>?theme=modern-light</code> y <code>?theme=modern-dark</code>. Abrir con Enter el menú de perfiles y el selector de tema (en móvil, el menú lateral): el foco entra y <b>Escape</b> lo devuelve al botón. En <code>/admin</code> repetir el salto; en <code>/admin/experiencias</code> abrir <b>Nueva experiencia</b> con Enter y cerrar con Escape. Con <code>prefers-reduced-motion: reduce</code> emulado, activar el salto.</p>
+        <p><span class="lbl">Esperado</span> · Cada control enfocado muestra un contorno sólido de 2 px, separado del borde, del color de acento legible del tema; el foco nunca queda invisible ni se pierde (tampoco al cerrar un diálogo); el salto lleva siempre al <code>&lt;main&gt;</code> y, con movimiento reducido, el desplazamiento no es animado.</p>
+        <p><span class="lbl">Observado</span> · 15 de octubre de 2026, contra la imagen de producción del frontend y una base descartable. <code>npm run a11y:check</code> automatiza el recorrido en la home, dos perfiles y el panel (el contorno de cada control alcanzado mide ≥ 3:1 contra el fondo).</p>
+        <div class="codewrap"><pre>Tab 1 en /tech-lead-dotnet            -> Skip to content / Saltar al contenido
+Enter                                 -> document.activeElement = main#contenido
+Menú de perfiles, tema, Sheet móvil   -> foco adentro; Escape devuelve el foco al botón
+Nueva experiencia / categoría / proyecto + Escape -> el foco vuelve al botón (antes: &lt;body&gt;)
+prefers-reduced-motion: reduce        -> scroll-behavior: auto</pre></div>
+      </article>
+
+      <article class="case" data-status="ok" id="tc34">
+        <div class="case-head"><span class="case-id">TC-34</span><h3>Contraste con un acento oscuro</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc34"> ejecutado</label></div>
+        <p><span class="lbl">Pasos</span> · Abrir <code>/tech-lead-dotnet</code> (acento <code>#5B2C87</code>, 1,72:1 contra la tarjeta de <code>modern-dark</code>): el titular del hero, el <i>eyebrow</i> de cada sección y las etiquetas del menú se leen, con el tono del acento más claro. El botón <i>Contactar</i> conserva el relleno <code>#5B2C87</code>. Repetir con <code>/software-architect</code> (<code>#1E293B</code>). Con <code>?theme=modern-light</code> el botón primario lleva texto oscuro (4,70:1). En <code>/admin/perfiles/&lt;id&gt;</code> → <b>Diseño</b> elegir el acento <code>#1E293B</code>: la vista previa se lee, y lo guardado es el color elegido, no el derivado.</p>
+        <p><span class="lbl">Esperado</span> · Ningún texto del sitio baja de 4,5:1 contra su fondo, con ningún preset ni con los acentos de los 14 perfiles; el dato guardado no cambia.</p>
+        <p><span class="lbl">Observado</span> · 15 de octubre de 2026: <code>a11y:check</code> sobre la home, cada preset × layout, <code>?lang=en</code>, los 13 perfiles con acento bajo y el panel: 0 violaciones en 72 cargas (antes, 1376 nodos de <code>color-contrast</code> en los perfiles y 420 en el panel). El texto atenuado pasó de 3,5–4,0:1 a ≥ 4,5:1 en los cinco presets.</p>
+        <div class="codewrap"><pre>acento    como texto antes  -> --t-accent-ink  después
+#5B2C87   1,72:1            -> #a575d2         4,86:1   (tech-lead-dotnet)
+#1E293B   1,15:1            -> #6c87b4         4,61:1   (software-architect)
+#0078D4   3,71:1            -> #008ffd         5,08:1   (devops-azure y dos más)
+#38bdf8   7,85:1            -> #38bdf8         7,85:1   (all: sin cambio)
+#0284c7   3,74:1            -> #0270a9         4,92:1   (modern-light)</pre></div>
       </article>
     </section>
 

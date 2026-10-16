@@ -74,7 +74,7 @@ export function ExperienceForm({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="company">
-                Empresa<span className="text-brand"> *</span>
+                Empresa<span className="text-brand-ink"> *</span>
               </Label>
               <Input
                 id="company"
@@ -90,7 +90,7 @@ export function ExperienceForm({
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="location">
-                Ubicación<span className="text-brand"> *</span>
+                Ubicación<span className="text-brand-ink"> *</span>
               </Label>
               <Input
                 id="location"
@@ -117,7 +117,7 @@ export function ExperienceForm({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="startDate">
-                Inicio<span className="text-brand"> *</span>
+                Inicio<span className="text-brand-ink"> *</span>
               </Label>
               <Input
                 id="startDate"

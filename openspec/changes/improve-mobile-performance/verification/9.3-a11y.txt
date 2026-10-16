@@ -1,0 +1,90 @@
+
+> portfolio-frontend@0.1.0 a11y:check
+> node scripts/check-a11y.mjs http://localhost:8088 --out C:\Users\MANUEL~1\AppData\Local\Temp\a11y-reports
+
+Perfiles con acento bajo 4,5:1: java-senior-backend #1A365D (1.38:1), fullstack-nest-react #065F46 (2.19:1), devops-platform #0F766E (3.07:1), dotnet-backend #0078D4 (3.71:1), it-leadership #1B3A6B (1.49:1), integration-architect #0E5263 (1.93:1), ai-software-engineer #6D28D9 (2.37:1), fullstack-microsoft #0078D4 (3.71:1), devops-azure #0078D4 (3.71:1), software-architect #1E293B (1.15:1), backend-payments-ror #9B1C2E (2.08:1), tech-lead-dotnet #5B2C87 (1.72:1), generalist-polyglot #0F766E (3.07:1)
+home.mobile: sin violaciones · teclado: ok (29 controles)
+profile.mobile: sin violaciones · teclado: ok (29 controles)
+profile-en-dark-sidebar.mobile: sin violaciones · teclado: ok (29 controles)
+not-found.mobile: sin violaciones
+admin-login.mobile: sin violaciones
+preset-modern-dark-classic.mobile: sin violaciones
+preset-modern-dark-sidebar.mobile: sin violaciones
+preset-modern-light-classic.mobile: sin violaciones
+preset-modern-light-sidebar.mobile: sin violaciones
+preset-minimal-classic.mobile: sin violaciones
+preset-minimal-sidebar.mobile: sin violaciones
+preset-elegant-classic.mobile: sin violaciones
+preset-elegant-sidebar.mobile: sin violaciones
+preset-corporate-classic.mobile: sin violaciones
+preset-corporate-sidebar.mobile: sin violaciones
+accent-java-senior-backend.mobile: sin violaciones
+accent-fullstack-nest-react.mobile: sin violaciones
+accent-devops-platform.mobile: sin violaciones
+accent-dotnet-backend.mobile: sin violaciones
+accent-it-leadership.mobile: sin violaciones
+accent-integration-architect.mobile: sin violaciones
+accent-ai-software-engineer.mobile: sin violaciones
+accent-fullstack-microsoft.mobile: sin violaciones
+accent-devops-azure.mobile: sin violaciones
+accent-software-architect.mobile: sin violaciones
+accent-backend-payments-ror.mobile: sin violaciones
+accent-tech-lead-dotnet.mobile: sin violaciones
+accent-generalist-polyglot.mobile: sin violaciones
+home.desktop: sin violaciones · teclado: ok (29 controles)
+profile.desktop: sin violaciones · teclado: ok (29 controles)
+profile-en-dark-sidebar.desktop: sin violaciones · teclado: ok (29 controles)
+not-found.desktop: sin violaciones
+admin-login.desktop: sin violaciones
+preset-modern-dark-classic.desktop: sin violaciones
+preset-modern-dark-sidebar.desktop: sin violaciones
+preset-modern-light-classic.desktop: sin violaciones
+preset-modern-light-sidebar.desktop: sin violaciones
+preset-minimal-classic.desktop: sin violaciones
+preset-minimal-sidebar.desktop: sin violaciones
+preset-elegant-classic.desktop: sin violaciones
+preset-elegant-sidebar.desktop: sin violaciones
+preset-corporate-classic.desktop: sin violaciones
+preset-corporate-sidebar.desktop: sin violaciones
+accent-java-senior-backend.desktop: sin violaciones
+accent-fullstack-nest-react.desktop: sin violaciones
+accent-devops-platform.desktop: sin violaciones
+accent-dotnet-backend.desktop: sin violaciones
+accent-it-leadership.desktop: sin violaciones
+accent-integration-architect.desktop: sin violaciones
+accent-ai-software-engineer.desktop: sin violaciones
+accent-fullstack-microsoft.desktop: sin violaciones
+accent-devops-azure.desktop: sin violaciones
+accent-software-architect.desktop: sin violaciones
+accent-backend-payments-ror.desktop: sin violaciones
+accent-tech-lead-dotnet.desktop: sin violaciones
+accent-generalist-polyglot.desktop: sin violaciones
+admin.mobile: sin violaciones · teclado: ok (30 controles)
+admin-portada.mobile: sin violaciones
+admin-experiencias.mobile: sin violaciones
+admin-skills.mobile: sin violaciones
+admin-formacion.mobile: sin violaciones
+admin-proyectos.mobile: sin violaciones
+admin-perfiles.mobile: sin violaciones
+admin-builder.mobile: sin violaciones · teclado: ok (29 controles)
+admin.desktop: sin violaciones · teclado: ok (30 controles)
+admin-portada.desktop: sin violaciones
+admin-experiencias.desktop: sin violaciones
+admin-skills.desktop: sin violaciones
+admin-formacion.desktop: sin violaciones
+admin-proyectos.desktop: sin violaciones
+admin-perfiles.desktop: sin violaciones
+admin-builder.desktop: sin violaciones · teclado: ok (30 controles)
+
+# a11y:check · axe-core 4.13.0
+
+Base: http://localhost:8088 · 2026-10-16T01:10:17.172Z · 72 cargas (con panel)
+
+| Regla | Impacto | Nodos | Páginas | Ejemplo |
+|---|---|---|---|---|
+| (ninguna) | | 0 | | |
+
+Violaciones serious/critical: 0 nodos en 0 regla(s).
+Recorrido de teclado: sin problemas.
+
+exit=0

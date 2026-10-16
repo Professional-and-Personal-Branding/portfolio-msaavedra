@@ -1,5 +1,39 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (ronda 1.1.x — `improve-mobile-performance`)
+
+La vista pública abre más rápido en un móvil de gama media: el objetivo es Performance ≥ 85 en el runner de GitHub (antes 71–76, con TBT de 300–400 ms y LCP de ≈ 3,8 s). Sin backend, sin contrato HTTP, sin migración y sin tocar la CSP.
+
+- **Cambios visibles.**
+  - **El hero aparece primero.** Con el perfil recién llegado se pinta solo el hero y, en una transición interrumpible, el resto de las secciones; mientras tanto se reserva el alto de la pantalla para que el pie no se mueva. Cambiar de idioma, de tema o de perfil dentro de la misma ruta no vuelve a ese estado.
+  - **Inter sale del propio sitio** (`/fonts/inter-latin-v20.woff2`, licencia OFL junto al archivo), con `preload`: la cadena de la carga ya no pasa por `fonts.googleapis.com` ni `fonts.gstatic.com`. Las demás familias de los temas se siguen pidiendo a Google Fonts.
+  - **Los menús de la barra** (tema y perfiles) cargan en diferido: la barra muestra desde el primer render disparadores idénticos (mismo nombre accesible, `aria-haspopup`, aspecto) y el menú real llega en un momento ocioso tras `load`, o antes si el visitante apunta o enfoca el botón. Un `Enter` o un clic antes de que llegue abre el menú apenas carga, con el foco adentro.
+  - **La animación de entrada** de las secciones es imperativa (API *vanilla* de Motion) sobre la misma `<section>`: ya no se remonta el contenido al llegar la librería (25,9 → 3,3 KB gzip). Las secciones fuera de pantalla usan `content-visibility: auto`.
+  - **Arreglo:** el layout `sidebar` declara una sola columna en móvil (antes la columna implícita se ensanchaba al revelarse el resto; CLS 0,416 → 0,001).
+- **Arranque.** Un solo archivo JS (`codeSplitting.groups` de Rolldown en lugar de `manualChunks`): de 179 KB en tres archivos a 148 KB en uno. La petición del perfil sale desde `public/profile-prefetch.js` (script clásico, sin inline) mientras baja el bundle y la app la toma una sola vez: **una petición y una visita por carga**.
+- **Medición** (Linux, Chrome 155, Lighthouse 13.5.0, mobile, mediana de 5 contra una base descartable): proxy rápido 88 / 88 / 90 → 97 / 98 / 97 con TBT ≈ 0 y CLS 0,001; proxy lento (más pesimista que el runner) 54 / 55 / 59 → 74 / 75 / 81. Detalle en `openspec/changes/improve-mobile-performance/verification.md`.
+- **Presupuesto y CI.** `perf:budget` mide todos los scripts del arranque (módulo, `modulepreload` y clásicos): ≤ 155 KB gzip, un solo JS de módulo, sin `modulepreload`, sin `zod` clásico, Motion para React ni el *popper* de Radix. El umbral de Performance del CI sube de 70 a **85** (mediana de 5).
+- **Docs.** `docs/MANUAL.md` § 5.1 (umbrales) y el caso TC-35; `docs/DEPLOY.md` § 9.5 (`/fonts/*` inmutable, `profile-prefetch.js` con `no-cache` a propósito).
+- **Orden de archivado:** este change se archiva **después** de `improve-a11y-and-performance` (la capability `web-performance` la crea ese change). Falta la corrida verde del CI en el PR.
+
+## Update — Octubre 2026 (ronda 1.1.x — `improve-a11y-and-performance`)
+
+Accesibilidad WCAG AA y arranque público más liviano, medidos con comandos que ahora viven en el repositorio y corren en el CI. Sin backend, sin contrato HTTP, sin migración y sin tocar la CSP: los acentos y los temas guardados no cambian.
+
+- **Cambios visibles.**
+  - **El acento como texto se ajusta:** cuando un acento no llega a 4,5:1 contra el fondo (13 de los 14 perfiles sobre `modern-dark`, y `modern-light`), el titular del hero, el *eyebrow* de las secciones, el badge de disponibilidad y las etiquetas del menú usan un derivado del mismo tono, más claro en temas oscuros y más oscuro en claros (`--t-accent-ink`). Los rellenos, bordes e íconos siguen con el acento elegido. El segundo acento, cuando se usa como texto (títulos de las categorías de skills), recibe el mismo tratamiento (`--t-accent2-ink`).
+  - **El texto atenuado** (fechas, etiquetas, contadores) gana contraste: era 3,5–4,0:1 y ahora cumple 4,5:1 (`--t-text-dim`).
+  - **El botón primario de `modern-light`** pasa a texto oscuro (4,70:1 en vez de 4,10:1 con blanco): el texto sobre el acento se elige por contraste WCAG y no por brillo.
+  - **El foco se ve:** un contorno sólido de 2 px, separado del borde (`--t-ring`), en la vista pública y en el panel. Antes era el acento al 50 %, casi invisible con los acentos oscuros.
+  - **El hero ya no hace fundido de entrada:** se pinta de una vez. Las demás secciones siguen animando al aparecer en pantalla.
+- **Navegación.** Enlace *Saltar al contenido* (*Skip to content*) como primer foco del sitio y del panel; `/admin/login` pasa a tener un `<main>`; el scroll suave respeta `prefers-reduced-motion`. Al cerrar con Escape un diálogo del panel, el foco vuelve al botón que lo abrió (antes se perdía en `<body>`).
+- **Estructura.** El `dl` de contacto y las pestañas ES/EN del panel (campos bilingües y conmutador de idioma de las vistas previas) tienen estructura ARIA válida.
+- **Arranque.** El JS que baja una ruta pública pasó de 228 a 179 KB gzip: los tokens se validan con `zod/mini` y `motion` carga en diferido. La hoja de Inter se pide desde el HTML, una sola vez.
+- **Medición (mobile, mediana de 3, sitio de producción en local).** Lighthouse: Accessibility 88 → 100, Best Practices 96 → 100, SEO 100, Performance 89–94 → 94–95. axe: de 1376 nodos de `color-contrast`, 330 de `dl` y 22 críticos del panel a 0 violaciones.
+- **Nuevos comandos del frontend:** `npm run perf:budget` (tope de 180 KB gzip, sin navegador), `npm run a11y:check` (axe + recorrido de teclado) y `npm run perf:check` (Lighthouse con versión fija y mediana). Los dos últimos abren páginas reales y se niegan a correr sin `A11Y_CHECK_DISPOSABLE_DB=1`, porque cada carga registra una visita.
+- **CI.** `perf:budget` en el job `frontend` y un job nuevo, `web-quality` (*Frontend · accesibilidad y Lighthouse*, dos ejecuciones en paralelo), que levanta un Postgres descartable, la API en producción y la imagen de producción del frontend. Bloquea con los umbrales de `docs/MANUAL.md` § 5.1 (en CI, Performance ≥ 70 con mediana de 5: es lo que mide hoy el equipo de referencia de Lighthouse; subirlo es un change aparte). Suma unos 6–7 minutos de pared por PR.
+- Cierra los ítems *Accesibilidad* y *Caché / performance* del checklist 1.0.x. Sin cache de lectura en el backend (la API responde en ≈ 20 ms) y sin lazy-loading de imágenes (la vista pública no tiene `<img>`).
+
 ## Update — Octubre 2026 (ronda 1.1.x — `localize-language-level`)
 
 Mergeado en PR #28 y archivado en `openspec/changes/archive/2026-10-10-localize-language-level/`, con sus specs sincronizadas. La migración ya se aplicó a la base de desarrollo del owner, con respaldo previo.

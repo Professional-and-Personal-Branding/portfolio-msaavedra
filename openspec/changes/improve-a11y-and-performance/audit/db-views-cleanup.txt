@@ -1,0 +1,19 @@
+-- Visitas de la auditoría por perfil (antes de borrar)
+        slug         | visitas_auditoria 
+---------------------+-------------------
+ all                 |                 7
+ java-senior-backend |                 2
+ software-architect  |                 2
+ tech-lead-dotnet    |                38
+(4 rows)
+
+-- Limpieza atómica: borra esas filas y descuenta CuratedProfile.views por perfil
+        slug         | descontadas | views_despues 
+---------------------+-------------+---------------
+ java-senior-backend |           2 |            92
+ all                 |           7 |           300
+ tech-lead-dotnet    |          38 |           235
+ software-architect  |           2 |             1
+(4 rows)
+
+UPDATE 4

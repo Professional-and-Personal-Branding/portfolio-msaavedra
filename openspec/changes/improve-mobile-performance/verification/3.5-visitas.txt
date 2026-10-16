@@ -1,0 +1,4 @@
+OK   perfil público con ?lang=es: ProfileView 255 -> 256 (+1); peticiones del perfil: ["/api/curated-profiles/tech-lead-dotnet?locale=es"]
+OK   perfil protegido con ?token=…&lang=en: ProfileView 256 -> 257 (+1); peticiones del perfil: ["/api/curated-profiles/dotnet-backend?locale=en [X-Access-Token]"]
+OK   home con navigator.language es-BO: ProfileView 257 -> 258 (+1); peticiones del perfil: ["/api/curated-profiles/all?locale=es"]
+OK   home con navigator.language en-US: ProfileView 258 -> 259 (+1); peticiones del perfil: ["/api/curated-profiles/all?locale=en"]

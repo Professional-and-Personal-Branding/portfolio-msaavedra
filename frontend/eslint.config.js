@@ -31,6 +31,12 @@ export default defineConfig([
     rules: { 'react-refresh/only-export-components': 'off' },
   },
   {
+    // Script clásico del <head> (`public/profile-prefetch.js`): JS de navegador, sin módulos.
+    files: ['public/**/*.js'],
+    extends: [js.configs.recommended],
+    languageOptions: { globals: globals.browser, sourceType: 'script' },
+  },
+  {
     files: ['scripts/**/*.mjs'],
     languageOptions: { globals: globals.node },
   },

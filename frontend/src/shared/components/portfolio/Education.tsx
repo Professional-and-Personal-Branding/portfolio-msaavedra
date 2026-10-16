@@ -17,14 +17,14 @@ export function Education({ data }: SectionProps) {
       <ul className="flex flex-col gap-3">
         {data.education.map((item) => (
           <li key={item.id} className="surface flex items-start gap-4 p-card">
-            <span className="grid size-10 shrink-0 place-items-center rounded-theme-sm border border-border bg-bg-soft text-brand">
+            <span className="grid size-10 shrink-0 place-items-center rounded-theme-sm border border-border bg-bg-soft text-brand-ink">
               <GraduationCap className="size-5" aria-hidden />
             </span>
             <div className="min-w-0 flex-1">
               <h3 className="font-bold">
                 {item.degree}
                 {item.inProgress && (
-                  <span className="ml-2 inline-block rounded-full border border-brand/30 bg-brand/10 px-2 py-0.5 align-middle text-[11px] font-medium text-brand">
+                  <span className="ml-2 inline-block rounded-full border border-brand/30 bg-brand/10 px-2 py-0.5 align-middle text-[11px] font-medium text-brand-ink">
                     {t('education.inProgress')}
                   </span>
                 )}

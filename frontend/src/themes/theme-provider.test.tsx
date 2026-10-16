@@ -36,6 +36,24 @@ describe('ThemeProvider', () => {
     expect(document.documentElement.style.getPropertyValue('--t-accent')).toBe('');
   });
 
+  it('deriva el acento legible sin tocar el acento guardado (también en el preview del panel)', () => {
+    const { container } = render(
+      <ThemeProvider profileTokens={{ colors: { accent: '#1E293B' } }}>
+        <Probe />
+      </ThemeProvider>,
+    );
+    const root = rootOf(container);
+
+    // El relleno conserva el acento elegido; solo el texto, el foco y el atenuado se derivan.
+    expect(root.style.getPropertyValue('--t-accent')).toBe('#1E293B');
+    expect(root.style.getPropertyValue('--t-accent-ink')).not.toBe('#1E293B');
+    expect(root.style.getPropertyValue('--t-accent-ink')).toMatch(/^#[0-9a-f]{6}$/);
+    expect(root.style.getPropertyValue('--t-ring')).toBe(
+      root.style.getPropertyValue('--t-accent-ink'),
+    );
+    expect(root.style.getPropertyValue('--t-text-dim')).toMatch(/^#[0-9a-f]{6}$/);
+  });
+
   it('cambia de tema sin remontar el árbol', () => {
     const { container, rerender } = render(
       <ThemeProvider presetSlug="modern-dark">

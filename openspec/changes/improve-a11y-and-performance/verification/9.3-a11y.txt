@@ -1,0 +1,12 @@
+# a11y:check · axe-core 4.13.0
+
+Base: http://localhost:8088 · 2026-10-15T09:03:34.988Z · 72 cargas (con panel)
+
+| Regla | Impacto | Nodos | Páginas | Ejemplo |
+|---|---|---|---|---|
+| (ninguna) | | 0 | | |
+
+Violaciones serious/critical: 0 nodos en 0 regla(s).
+Recorrido de teclado: sin problemas.
+
+Regresion sembrada (SectionHeading con text-brand): exit 1, 39 nodos color-contrast serious en 27 cargas, axe.json generado (ensayo local de 7.5).

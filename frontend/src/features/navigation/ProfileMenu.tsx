@@ -1,6 +1,5 @@
-import { ChevronDown, Menu } from 'lucide-react';
+import { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { Button } from '@/shared/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,28 +25,33 @@ import { useUiStore } from '@/shared/stores/ui.store';
 import type { CuratedProfileSummary } from '@/shared/types/portfolio';
 import { groupProfilesByRoleType } from './group-profiles';
 import { useCuratedProfiles } from '../curated-view/hooks/use-curated-profile';
+import type { DeferredMenuInitProps } from './DeferredMenu';
+import { MobileMenuTrigger, ProfilesTrigger } from './menu-triggers';
 
-interface ProfileMenuProps {
+interface ProfileMenuProps extends DeferredMenuInitProps {
   activeSlug: string;
 }
 
 /** Menú de perfiles curados: dropdown en escritorio, panel lateral en móvil. */
-export function ProfileMenu({ activeSlug }: ProfileMenuProps) {
+export function ProfileMenu({ activeSlug, init }: ProfileMenuProps) {
   const { locale, t } = useLocale();
   const { data, isPending } = useCuratedProfiles(locale);
   const menuOpen = useUiStore((s) => s.menuOpen);
   const setMenuOpen = useUiStore((s) => s.setMenuOpen);
   const profiles = data ?? [];
+  const focusTrigger = init?.focus === true && init.open === null;
+
+  // Activado en el disparador provisional de móvil antes de la carga: el panel abre al montarse.
+  useEffect(() => {
+    if (init?.open === 'mobile') setMenuOpen(true);
+  }, [init, setMenuOpen]);
 
   return (
     <>
       <div className="hidden md:block">
-        <DropdownMenu>
+        <DropdownMenu defaultOpen={init?.open === 'desktop'}>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              {t('nav.profiles')}
-              <ChevronDown aria-hidden />
-            </Button>
+            <ProfilesTrigger autoFocus={focusTrigger} />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="max-h-[70vh] w-72 overflow-y-auto">
             {isPending ? (
@@ -56,7 +60,7 @@ export function ProfileMenu({ activeSlug }: ProfileMenuProps) {
               groupProfilesByRoleType(profiles).map((group, index) => (
                 <DropdownMenuGroup key={group.roleType}>
                   {index > 0 && <DropdownMenuSeparator />}
-                  <DropdownMenuLabel className="text-[10px] font-bold tracking-[0.12em] text-brand uppercase">
+                  <DropdownMenuLabel className="text-[10px] font-bold tracking-[0.12em] text-brand-ink uppercase">
                     {group.roleType || t('nav.home')}
                   </DropdownMenuLabel>
                   {group.profiles.map((profile) => (
@@ -74,9 +78,7 @@ export function ProfileMenu({ activeSlug }: ProfileMenuProps) {
       <div className="md:hidden">
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon-sm" aria-label={t('nav.menu')}>
-              <Menu aria-hidden />
-            </Button>
+            <MobileMenuTrigger autoFocus={focusTrigger} />
           </SheetTrigger>
           <SheetContent side="left" className="w-[85vw] max-w-sm overflow-y-auto">
             <SheetHeader>
@@ -114,7 +116,7 @@ export function ProfileMenuList({ profiles, activeSlug, onNavigate }: ProfileMen
     <nav aria-label={t('nav.profiles')} className="flex flex-col gap-5">
       {groupProfilesByRoleType(profiles).map((group) => (
         <section key={group.roleType} aria-label={group.roleType || t('nav.home')}>
-          <h3 className="mb-2 pl-1 text-[10px] font-bold tracking-[0.12em] text-brand uppercase">
+          <h3 className="mb-2 pl-1 text-[10px] font-bold tracking-[0.12em] text-brand-ink uppercase">
             {group.roleType || t('nav.home')}
           </h3>
           <ul className="flex flex-col gap-1.5">

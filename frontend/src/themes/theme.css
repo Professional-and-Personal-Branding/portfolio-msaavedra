@@ -4,6 +4,23 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
+ * Inter, la tipografía del default y de cuatro de los cinco presets, servida desde el propio
+ * origen (D6 de `improve-mobile-performance`): sin los dos orígenes de Google en la cadena del
+ * LCP. Variable (400–800), subconjunto latin. `index.html` la precarga. El nombre lleva la
+ * versión porque `/fonts/*` se sirve como inmutable: cambiar el archivo exige cambiar el nombre.
+ */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/inter-latin-v20.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/*
  * Motor de theming (spec `runtime-theming`, decisión D4).
  * El ThemeProvider inyecta `--t-*` en el contenedor raíz (`[data-theme]`).
  * Aquí se derivan (1) las utilidades de Tailwind vía `@theme inline` y
@@ -17,9 +34,12 @@
   --color-border: var(--t-border);
   --color-text: var(--t-text);
   --color-text-muted: var(--t-text-muted);
-  --color-text-dim: color-mix(in srgb, var(--t-text-muted) 70%, var(--t-bg));
+  /* Derivados con contraste AA garantizado (`tokensToCssVars`, spec `web-accessibility`). */
+  --color-text-dim: var(--t-text-dim);
   --color-brand: var(--t-accent);
+  --color-brand-ink: var(--t-accent-ink);
   --color-brand-2: var(--t-accent2);
+  --color-brand-2-ink: var(--t-accent2-ink);
   --color-brand-foreground: var(--t-accent-foreground);
 
   /* shadcn/ui */
@@ -38,7 +58,7 @@
   --color-accent-foreground: var(--t-text);
   --color-destructive: #dc2626;
   --color-input: var(--t-border);
-  --color-ring: var(--t-accent);
+  --color-ring: var(--t-ring);
 
   --radius-theme: var(--t-radius);
   --radius-theme-sm: calc(var(--t-radius) * 0.6);
@@ -66,6 +86,10 @@
   --t-accent: #38bdf8;
   --t-accent2: #818cf8;
   --t-accent-foreground: #0a0e1a;
+  --t-accent-ink: #38bdf8;
+  --t-accent2-ink: #818cf8;
+  --t-text-dim: #7a879a;
+  --t-ring: #38bdf8;
   --t-radius: 16px;
   --t-max-width: 1080px;
   --t-space: 1rem;
@@ -82,10 +106,22 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
-  html {
-    scroll-behavior: smooth;
+  /*
+   * Un único indicador de foco (spec `web-accessibility`, D4): contorno sólido de 2 px, separado
+   * del borde y del color `--t-ring` (≥ 3:1 contra el fondo del tema). Los componentes de
+   * shadcn/ui no agregan un segundo anillo.
+   */
+  :focus-visible {
+    outline: 2px solid var(--t-ring);
+    outline-offset: 2px;
+  }
+  /* El desplazamiento animado a un ancla respeta `prefers-reduced-motion` (D7). */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
   body {
     @apply bg-bg font-sans text-text antialiased;
@@ -146,6 +182,18 @@
 
 @utility chip {
   @apply inline-flex items-center rounded-theme-sm border border-border bg-bg-soft px-2.5 py-1 text-xs text-text-muted transition-colors;
+}
+
+/*
+ * Entrada animada de las secciones (D7 de `improve-mobile-performance`). Con animaciones activas
+ * (`data-motion='on'`) la sección espera oculta hasta que `entrance-animation` la anima y la
+ * marca con `data-motion-entered`. El estado inicial vive en CSS y no en un `style`, así un
+ * re-render de React no vuelve a ocultar una sección ya vista. Apagar las animaciones (tema o
+ * `prefers-reduced-motion`) cambia el atributo a 'off' y la sección queda visible.
+ */
+[data-motion='on']:not([data-motion-entered]) {
+  opacity: 0;
+  transform: translateY(20px);
 }
 
 /*

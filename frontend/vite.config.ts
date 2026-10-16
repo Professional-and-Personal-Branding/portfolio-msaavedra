@@ -4,12 +4,6 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-const CHUNKS: Record<string, RegExp> = {
-  react: /[\\/]node_modules[\\/](react|react-dom|react-router|scheduler)[\\/]/,
-  motion: /[\\/]node_modules[\\/](motion|motion-dom|motion-utils|framer-motion)[\\/]/,
-  query: /[\\/]node_modules[\\/]@tanstack[\\/]/,
-};
-
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -31,12 +25,9 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          for (const [name, pattern] of Object.entries(CHUNKS)) {
-            if (pattern.test(id)) return name;
-          }
-          return undefined;
-        },
+        // Un solo chunk de arranque (D4 de `improve-mobile-performance`): todo lo que el entry importa de
+        // forma estática va en `app`; los `import()` (panel, menús, animación) siguen en sus chunks.
+        codeSplitting: { groups: [{ name: 'app', tags: ['$initial'] }] },
       },
     },
   },

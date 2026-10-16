@@ -39,8 +39,24 @@
     />
     <!--# end -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Inter es la tipografía del default y de cuatro de los cinco presets. Se sirve desde el propio
+      origen (`@font-face` en themes/theme.css, D6 de `improve-mobile-performance`); el preload
+      lleva `crossorigin` porque las fuentes se piden siempre en modo CORS. Las demás familias se
+      siguen pidiendo a Google Fonts desde themes/fonts.ts cuando un tema las usa.
+    -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/inter-latin-v20.woff2"
+      crossorigin
+    />
+    <!--
+      Pide el perfil mientras se descarga el bundle (D5 de `improve-mobile-performance`): script
+      clásico del propio origen, sin módulos, sin inline. La app toma la respuesta una sola vez.
+    -->
+    <script src="/profile-prefetch.js" async></script>
   </head>
   <body>
     <div id="root"></div>

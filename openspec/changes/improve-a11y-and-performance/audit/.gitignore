@@ -1,0 +1,7 @@
+# Evidencia de la auditoría base (D16 de `improve-a11y-and-performance`, decisión P3).
+# Se versionan los resúmenes (*.md, *.txt), los JSON de axe (axe/*.json) y los ocho
+# `lighthouse/*.report.html` de la corrida base: ≈ 9,3 MB. Lo demás queda solo en la copia
+# local del autor, porque pesa ≈ 22 MB y se regenera con los scripts de `frontend/scripts/`.
+lighthouse/*.report.json
+lighthouse/mobile-repeat/
+scripts/

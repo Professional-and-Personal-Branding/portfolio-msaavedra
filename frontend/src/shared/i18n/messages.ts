@@ -7,6 +7,7 @@ import { DEFAULT_LOCALE, type Locale } from './locale';
  */
 const es = {
   'app.title': 'Portafolio',
+  'a11y.skipToContent': 'Saltar al contenido',
   'nav.profiles': 'Perfiles',
   'nav.profilesHint': 'Vistas curadas por tipo de rol',
   'nav.home': 'Perfil completo',
@@ -95,6 +96,7 @@ export type MessageKey = keyof typeof es;
 
 const en: Partial<Record<MessageKey, string>> = {
   'app.title': 'Portfolio',
+  'a11y.skipToContent': 'Skip to content',
   'nav.profiles': 'Profiles',
   'nav.profilesHint': 'Curated views by role type',
   'nav.home': 'Full profile',

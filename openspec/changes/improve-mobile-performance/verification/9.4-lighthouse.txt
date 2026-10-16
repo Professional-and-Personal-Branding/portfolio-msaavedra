@@ -1,0 +1,51 @@
+# 9.4 - Lighthouse mobile (Linux: ubuntu:24.04, Chrome 155.0.8059.84, lighthouse@13.5.0; base descartable en 5499; sitio = dist y Caddyfile del worktree)
+
+## 1. npm run perf:check dentro de Linux, con los parametros del CI (PERF_CHECK_RUNS=5, PERF_CHECK_MIN_PERFORMANCE=85)
+Contenedor con cuota de CPU (--cpu-period=2200 --cpu-quota=1000, benchmarkIndex 1.220-1.290) y un reenviador a localhost para que Chrome vea un origen seguro. Es el proxy LENTO: pesimista (la cuota de CFS infla el TBT, ver audit/README.md); no es el runner de GitHub.
+
+# perf:check · lighthouse@13.5.0 · mobile
+
+Base: http://localhost:8088 · 2026-10-16T01:19:00.023Z · 5 corrida(s) por página pública · umbral Performance 85, resto 90
+
+| Página | Corridas | Perf | A11y | BP | SEO | LCP | TBT | CLS | JS (KB transf.) |
+|---|---|---|---|---|---|---|---|---|---|
+| / | 5 | 74 | 100 | 100 | 100 | 2.3 s | 1140 ms | 0.001 | 195 |
+| /tech-lead-dotnet | 5 | 75 | 100 | 100 | 100 | 2.3 s | 1034 ms | 0.001 | 189 |
+| /tech-lead-dotnet?lang=en&theme=modern-dark&layout=sidebar | 5 | 78 | 100 | 100 | 100 | 2.3 s | 793 ms | 0.000 | 189 |
+| /admin/login (SEO y Perf informativos) | 1 | 76 | 100 | 92 | 66 | 3.3 s | 556 ms | 0.000 | 244 |
+
+Performance por corrida: home [71, 71, 77, 77, 74] · profile [76, 86, 74, 74, 75] · profile-en-dark-sidebar [79, 80, 78, 75, 77] · admin-login [76]
+
+## Fallas
+
+- /: Performance mediana 74 < 85 (71, 71, 77, 77, 74)
+- /tech-lead-dotnet: Performance mediana 75 < 85 (76, 86, 74, 74, 75)
+- /tech-lead-dotnet?lang=en&theme=modern-dark&layout=sidebar: Performance mediana 78 < 85 (79, 80, 78, 75, 77)
+
+exit=1 (Performance 74 / 75 / 78 < 85 en este proxy; Accessibility, Best Practices y SEO >= 90 en las tres; login: A11y 100, BP 92)
+
+## 2. Antes / despues en los dos proxies (mediana de 3 antes y de 5 despues; bench.ps1 con lh-sum.mjs)
+
+### Proxy rápido (CPU libre, ×9,1)
+
+| Página | Perf | FCP | LCP | TBT | CLS | JS transferido |
+|---|---|---|---|---|---|---|
+| `/` | 88 → **97** (88/90/85 → 98/97/98/97/96) | 2.1 → 1.7 s | 2.8 → 2.4 s | 281 → 0 ms | 0.052 → 0.001 | 217 → 199 KB |
+| `/tech-lead-dotnet` | 88 → **98** (89/87/88 → 98/97/97/98/98) | 2.1 → 1.7 s | 2.8 → 2.3 s | 268 → 0 ms | 0.051 → 0.001 | 217 → 193 KB |
+| `…?lang=en&theme=modern-dark&layout=sidebar` | 90 → **97** (91/90/89 → 95/97/95/98/98) | 2.1 → 1.7 s | 2.7 → 2.4 s | 223 → 0 ms | 0.001 → 0.001 | 217 → 193 KB |
+
+### Proxy lento (cuota de CPU, ×4)
+
+| Página | Perf | FCP | LCP | TBT | CLS | JS transferido |
+|---|---|---|---|---|---|---|
+| `/` | 54 → **74** (68/54/54 → 82/74/77/73/74) | 2.4 → 1.8 s | 4.6 → 2.3 s | 1764 → 1140 ms | 0.028 → 0.001 | 217 → 199 KB |
+| `/tech-lead-dotnet` | 55 → **75** (55/57/55 → 74/83/76/75/75) | 2.4 → 1.9 s | 4.4 → 2.4 s | 1654 → 924 ms | 0.028 → 0.001 | 217 → 193 KB |
+| `…?lang=en&theme=modern-dark&layout=sidebar` | 59 → **81** (59/60/55 → 76/82/78/81/81) | 2.3 → 1.8 s | 4.1 → 2.3 s | 1387 → 672 ms | 0 → 0.001 | 217 → 193 KB |
+
+
+## 3. P1 (b): Inter sin preload (solo en dist, proxy lento, mediana de 5)
+
+home     perf 75 (corridas 75/71/73/77/77) FCP 2090 LCP 2390 TBT 994 CLS 0.001
+perfil   perf 73 (corridas 73/73/72/72/77) FCP 2002 LCP 2371 TBT 1185 CLS 0.001
+sidebar  perf 78 (corridas 73/78/74/80/78) FCP 2060 LCP 2265 TBT 752 CLS 0.001
+Con preload (D6, lo implementado): 74 / 75 / 81 con FCP 1,76-1,89 s. Sin preload: 75 / 73 / 78 con FCP 2,0-2,1 s. No mejora: se conserva el preload (P1 a).

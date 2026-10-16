@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { TopBar } from '@/features/navigation/TopBar';
 import { Footer } from '@/shared/components/portfolio/Footer';
+import { MAIN_CONTENT_ID, SkipLink } from '@/shared/components/skip-link';
 import { useLocale } from '@/shared/i18n/use-locale';
 import {
   applyDocumentMeta,
@@ -20,6 +21,7 @@ import { ErrorState } from './components/ErrorState';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { NotFound } from './components/NotFound';
 import { useCuratedProfile } from './hooks/use-curated-profile';
+import { useStagedSections } from './hooks/use-staged-sections';
 
 interface CuratedProfileViewProps {
   slug: string;
@@ -33,6 +35,15 @@ export function CuratedProfileView({ slug }: CuratedProfileViewProps) {
   const data = state.status === 'success' ? state.data : null;
 
   const layoutName = resolveLayoutName(url.layout ?? data?.layout);
+
+  // Hero primero, el resto en una transición (D1 de `improve-mobile-performance`).
+  const renderable = useMemo(() => (data ? renderableSections(data.sections) : null), [data]);
+  const staged = useStagedSections(renderable);
+  const menusReady =
+    staged.revealed ||
+    state.status === 'notFound' ||
+    state.status === 'needsToken' ||
+    state.status === 'error';
 
   // Resuelto por un slug anterior: la URL pasa al canónico sin sumar una entrada al
   // historial, para que se comparta y se marque el link vigente (decisión D5).
@@ -70,17 +81,18 @@ export function CuratedProfileView({ slug }: CuratedProfileViewProps) {
       break;
     case 'success':
       content = (
-        <ProfileLayout
-          name={layoutName}
-          data={state.data}
-          sections={renderableSections(state.data.sections)}
-        />
+        <>
+          <ProfileLayout name={layoutName} data={state.data} sections={staged.sections ?? []} />
+          {/* Reserva el alto de las secciones aún no reveladas para que el pie no se mueva. */}
+          {staged.pending && <div aria-hidden className="min-h-screen" />}
+        </>
       );
       break;
   }
 
   return (
     <ThemeProvider profileTokens={data?.theme?.tokens ?? null} presetSlug={url.theme}>
+      <SkipLink />
       <div className="relative flex min-h-screen flex-col print:hidden">
         <div aria-hidden className="pointer-events-none fixed inset-0 bg-glow" />
         <div className="relative z-10 flex flex-1 flex-col">
@@ -90,8 +102,11 @@ export function CuratedProfileView({ slug }: CuratedProfileViewProps) {
             layout={layoutName}
             showProfileMenu={slug === HOME_SLUG}
             onPrint={data ? () => window.print() : undefined}
+            menusReady={menusReady}
           />
-          <main className="flex-1">{content}</main>
+          <main id={MAIN_CONTENT_ID} tabIndex={-1} className="flex-1 outline-none">
+            {content}
+          </main>
           <Footer name={data?.profile?.fullName} />
         </div>
       </div>

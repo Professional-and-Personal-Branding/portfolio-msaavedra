@@ -1,12 +1,14 @@
 import { RefreshCw } from 'lucide-react';
+import { useId } from 'react';
 import { Skeleton } from '@/shared/components/ui/skeleton';
-import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import type { Locale } from '@/shared/i18n/locale';
 import type { CuratedProfile } from '@/shared/types/portfolio';
 import { ProfileLayout } from '@/themes/layouts/ProfileLayout';
 import { renderableSections } from '@/themes/layouts/sections';
 import { ThemeProvider } from '@/themes/theme-provider';
 import type { ThemeTokens } from '@/themes/tokens';
+import { PreviewLocaleTabs } from '../shared/PreviewLocaleTabs';
+import { previewTabId } from '../shared/preview-tab-id';
 
 interface PreviewPanelProps {
   data: CuratedProfile | undefined;
@@ -32,6 +34,7 @@ export function PreviewPanel({
   locale,
   onLocaleChange,
 }: PreviewPanelProps) {
+  const panelId = useId();
   return (
     <section aria-label="Vista previa" className="flex flex-col gap-3">
       <header className="flex items-center gap-2">
@@ -42,16 +45,7 @@ export function PreviewPanel({
             actualizando
           </span>
         )}
-        <Tabs value={locale} onValueChange={(next) => onLocaleChange(next as Locale)}>
-          <TabsList aria-label="Idioma de la vista previa" className="h-7">
-            <TabsTrigger value="es" className="px-2 py-0.5 text-xs uppercase">
-              es
-            </TabsTrigger>
-            <TabsTrigger value="en" className="px-2 py-0.5 text-xs uppercase">
-              en
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <PreviewLocaleTabs locale={locale} onLocaleChange={onLocaleChange} panelId={panelId} />
         {data && (
           <p className="ml-auto text-xs text-text-dim" data-testid="preview-counts">
             {data.experiences.length} experiencias · {data.skillCategories.length} categorías ·{' '}
@@ -66,7 +60,12 @@ export function PreviewPanel({
         </p>
       )}
 
-      <div className="overflow-hidden rounded-theme border border-border">
+      <div
+        id={panelId}
+        role="tabpanel"
+        aria-labelledby={previewTabId(panelId, locale)}
+        className="overflow-hidden rounded-theme border border-border"
+      >
         {data ? (
           <ThemeProvider profileTokens={tokens}>
             <div

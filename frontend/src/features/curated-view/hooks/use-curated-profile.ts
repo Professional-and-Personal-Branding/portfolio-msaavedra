@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useDeferredValue, useMemo } from 'react';
 import type { Locale } from '@/shared/i18n/locale';
 import { api, HttpError, unwrap } from '@/shared/lib/api-client';
 import type { CuratedProfile, CuratedProfileSummary } from '@/shared/types/portfolio';
+import { takeEarlyProfile } from '../early-profile';
 
 export { HttpError } from '@/shared/lib/api-client';
 
@@ -23,6 +24,7 @@ export async function fetchCuratedProfile(
   locale: Locale,
   token: string | null,
 ): Promise<CuratedProfile> {
+  const early = takeEarlyProfile(slug, locale, token);
   return unwrap(
     await api.GET('/api/curated-profiles/{slug}', {
       params: {
@@ -30,6 +32,8 @@ export async function fetchCuratedProfile(
         query: { locale },
         ...(token ? { header: { 'X-Access-Token': token } } : {}),
       },
+      // La respuesta de la petición temprana reemplaza al `fetch`; el parseo y los errores son los de siempre.
+      ...(early ? { fetch: () => early } : {}),
     }),
   );
 }
@@ -49,7 +53,21 @@ export function useCuratedProfile(slug: string, { locale, token }: Options): Cur
   });
   const retry = useCallback(() => void query.refetch(), [query]);
 
-  if (query.data) return { status: 'success', data: query.data };
+  // El render que depende del perfil pasa a prioridad de transición (D2 de
+  // `improve-mobile-performance`): la notificación de TanStack Query es síncrona y no se puede
+  // interrumpir. El valor diferido lleva su slug para no mostrar el perfil de otra ruta mientras
+  // se pone al día; un cambio de idioma o token del mismo slug sí conserva el anterior.
+  const current = useMemo(
+    () => (query.data ? { slug, data: query.data } : undefined),
+    [slug, query.data],
+  );
+  const deferred = useDeferredValue(current);
+
+  if (query.data) {
+    return deferred?.slug === slug
+      ? { status: 'success', data: deferred.data }
+      : { status: 'loading' };
+  }
   if (query.isPending) return { status: 'loading' };
   const error = query.error;
   if (error instanceof HttpError && error.status === 401) {

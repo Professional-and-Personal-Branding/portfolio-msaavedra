@@ -1,0 +1,33 @@
+9.4 - Lighthouse 13.5.0, mobile (defaults de Lighthouse), sitio de produccion en local
+(imagen de frontend/Dockerfile + API en NODE_ENV=production + base descartable). Chrome 155.0.8059.41.
+
+== ANTES (main fdad7a1, re-medicion de la tarea 1.3; 3 corridas de Performance por pagina)
+Pagina                               Perf corridas   mediana   A11y  BP   SEO  LCP(med)  TBT(med)  JS transf.
+/                                    80, 89, 90      89        88    96   100  3.4 s     50 ms     235 KB
+/tech-lead-dotnet                    93, 95, 94      94        88    96   100  2.6 s     40 ms     235 KB
+/tech-lead-dotnet?lang=en&theme=modern-dark&layout=sidebar
+                                     95, 94, 95      95        88    96   100  2.5 s     50 ms     235 KB
+(la corrida base de audit/README.md dio 94 / 90 / 93 con A11y 88, BP 96, SEO 100: dentro de +-5 en Performance)
+
+== DESPUES, defaults locales (PERF_CHECK_RUNS=3, umbral 90) - exit 0
+Pagina                               Perf corridas   mediana   A11y  BP   SEO  LCP    TBT    CLS    JS transf.
+/                                    94, 94, 94      94        100   100  100  2.7 s  41 ms  0.008  213 KB
+/tech-lead-dotnet                    95, 94, 95      95        100   100  100  2.5 s  34 ms  0.002  213 KB
+/tech-lead-dotnet?lang=en&theme=modern-dark&layout=sidebar
+                                     95, 95, 95      95        100   100  100  2.5 s  26 ms  0.005  213 KB
+/admin/login (1 corrida)             92              92        100   92   66   2.9 s  0 ms   0      247 KB
+  login: Accessibility 100 y Best Practices 92 (el 401 esperado de GET /api/auth/me) >= 90; SEO 66 exento (noindex, D11).
+
+== DESPUES, parametros de CI (N=5, Performance >= 85) - ensayo local del job, exit 0
+Ver 9.4-lighthouse-ci-n5.md: medianas 93 / 94 / 94, A11y 100, BP 100, SEO 100; la corrida mas baja fue 85 (home).
+
+== Desktop, 1 corrida (sin umbral; D11 solo lo informa)
+Pagina                               Perf  A11y  BP   SEO  LCP    TBT
+/                                    97 (re-medida x3: 100, 100, 100)  100  100  100  0.6 s  0 ms
+/tech-lead-dotnet                    100   100   100  100  0.6 s  0 ms
+/tech-lead-dotnet?lang=en&theme=modern-dark&layout=sidebar
+                                     100   100   100  100  0.6 s  0 ms
+/admin/login                         100   100   92   66   0.7 s  0 ms
+(antes: Perf 100, A11y 88, BP 96, SEO 100; login A11y 98, BP 92, SEO 66)
+
+Best Practices 96 -> 100 en las paginas publicas: desaparece el aviso inspector-issues de la corrida base.

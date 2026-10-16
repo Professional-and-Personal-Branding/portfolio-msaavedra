@@ -1,0 +1,32 @@
+== npm run lint
+
+> portfolio-frontend@0.1.0 lint
+> eslint .
+
+== npm test (vitest)
+ Test Files  44 passed (44)
+      Tests  342 passed (342)
+   Duration  42.19s (tests 42%, environment 36%, import 13%, setup 6%, transform 3%)
+== npm run build
+
+> portfolio-frontend@0.1.0 build
+> tsc -b && vite build
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 2708 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                             3.49 kB │ gzip:  1.41 kB
+dist/assets/index-_JHLk4GK.css             67.28 kB │ gzip: 11.99 kB
+dist/assets/rolldown-runtime-CbXtAM7H.js    0.58 kB │ gzip:  0.36 kB
+dist/assets/query-GujNoDMP.js              42.74 kB │ gzip: 12.90 kB
+dist/assets/animated-section-BzHBYIXT.js   74.22 kB │ gzip: 25.92 kB
+dist/assets/BackofficeApp-cnUnA7v7.js     224.39 kB │ gzip: 59.78 kB
+dist/assets/index-DqXnpomn.js             254.62 kB │ gzip: 80.13 kB
+dist/assets/react-BSJ38QPL.js             275.67 kB │ gzip: 87.51 kB
+
+✓ built in 397ms
+== backend npm test (sin cambios en backend)
+Test Suites: 76 passed, 76 total
+Tests:       535 passed, 535 total
