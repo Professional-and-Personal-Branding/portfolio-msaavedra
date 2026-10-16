@@ -1,6 +1,9 @@
-/** Familias disponibles en Google Fonts; el resto se resuelve con el stack del sistema. */
+/**
+ * Familias disponibles en Google Fonts; el resto se resuelve con el stack del sistema.
+ * `Inter` no está: se sirve desde el propio origen (`@font-face` de `theme.css`, D6 de
+ * `improve-mobile-performance`).
+ */
 const GOOGLE_FONTS = new Set([
-  'Inter',
   'Poppins',
   'Playfair Display',
   'JetBrains Mono',

@@ -97,7 +97,13 @@
 	# El HTML no, porque es el que apunta a la revisión nueva de esos assets.
 	header /assets/* Cache-Control "public, max-age=31536000, immutable"
 
-	@noCache not path /assets/*
+	# Las fuentes del propio sitio (change `improve-mobile-performance`, D6) llevan la versión
+	# en el nombre (`inter-latin-v20.woff2`): cambiar el archivo exige cambiar el nombre.
+	# `/profile-prefetch.js` queda fuera a propósito: sin hash en el nombre, un script viejo en
+	# caché con otra lógica de clave que la app nueva provocaría una visita doble (D5).
+	header /fonts/* Cache-Control "public, max-age=31536000, immutable"
+
+	@noCache not path /assets/* /fonts/*
 	header @noCache Cache-Control "no-cache"
 
 	header {

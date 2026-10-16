@@ -39,19 +39,18 @@
     />
     <!--# end -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!--
-      Inter es la tipografía del default y de cuatro de los cinco presets. La hoja se pide acá,
-      sin bloquear el render, con la URL exacta que arma `ensureFontLoaded` (themes/fonts.ts):
-      cuando el ThemeProvider inyecta el `<link rel="stylesheet">`, sale de la caché. Sin
-      `crossorigin`, a propósito: la hoja se pide en modo no-cors y un preload CORS no se
-      reutiliza (el navegador lo descarta y pide la hoja dos veces).
+      Inter es la tipografía del default y de cuatro de los cinco presets. Se sirve desde el propio
+      origen (`@font-face` en themes/theme.css, D6 de `improve-mobile-performance`); el preload
+      lleva `crossorigin` porque las fuentes se piden siempre en modo CORS. Las demás familias se
+      siguen pidiendo a Google Fonts desde themes/fonts.ts cuando un tema las usa.
     -->
     <link
       rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      as="font"
+      type="font/woff2"
+      href="/fonts/inter-latin-v20.woff2"
+      crossorigin
     />
     <!--
       Pide el perfil mientras se descarga el bundle (D5 de `improve-mobile-performance`): script
