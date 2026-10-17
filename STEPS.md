@@ -60,7 +60,7 @@ Prompt sugerido para Claude Code:
 
 > "Lee CLAUDE.md y docs/ARCHITECTURE.md. Inicializa el proyecto NestJS dentro de backend/ respetando Clean Architecture. Usa el schema.prisma que ya existe en backend/prisma/. Configura Prisma, levanta la base con `docker compose up -d`, corre la migración inicial y ejecuta el seed (backend/scripts/seed.ts que lee docs/cv-data.json). Luego implementa los módulos `profile` y `experience` completos (domain, application, infrastructure) como módulos de referencia, con endpoints públicos de lectura y documentación Swagger."
 
-**Resultado esperado:** backend corriendo en `localhost:3000`, Swagger en `/api`, base poblada con tu trayectoria.
+**Resultado esperado:** backend corriendo en `localhost:3300` (con `PORT=3300` en `backend/.env`; el 3000 suele estar ocupado), Swagger en `/api/docs`, base poblada con tu trayectoria.
 
 Verificá:
 ```bash
@@ -69,7 +69,7 @@ cd backend
 npm run prisma:migrate
 npm run seed
 npm run start:dev
-# abrir http://localhost:3000/api (Swagger)
+# abrir http://localhost:3300/api/docs (Swagger)
 # abrir http://localhost:8080 (Adminer, para ver la DB)
 ```
 

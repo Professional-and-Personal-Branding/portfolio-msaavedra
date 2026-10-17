@@ -1,6 +1,6 @@
 # DATA-POPULATION.md — Guía de Populación de Información
 
-> Cómo cargar, actualizar y mantener la información de los CVs en la base de datos del portafolio. Esta guía aplica a la **versión actual** de los datos (10 perfiles curados, 14 experiencias, 2 proyectos, **bilingüe ES/EN**). Mantener junto a `docs/cv-data.json`.
+> Cómo cargar, actualizar y mantener la información de los CVs en la base de datos del portafolio. Esta guía aplica a la **versión actual** de los datos (13 plantillas de perfil curado más `all`, o sea 14 perfiles, 15 experiencias, 2 proyectos, **bilingüe ES/EN**). Mantener junto a `docs/cv-data.json`.
 
 > 🌐 **Multi-idioma:** los datos son **bilingües** (español/inglés) en un solo registro. Ver `docs/I18N.md` para el diseño completo. Los campos traducibles son objetos `{ es, en }`; los no traducibles (empresa, tecnologías, tags, fechas) son planos.
 
@@ -53,7 +53,7 @@ npm run seed
 #    Sistema: PostgreSQL · Servidor: postgres · Usuario: portfolio · Clave: portfolio · Base: portfolio
 ```
 
-Al terminar, la base contiene: 1 perfil, 14 experiencias, las skills por categoría, educación, certificaciones, 2 proyectos, 5 temas preset y 11 perfiles curados (10 plantillas + "all").
+Al terminar, la base contiene: 1 perfil, 15 experiencias, las skills por categoría, educación, certificaciones, 2 proyectos, 5 temas preset y 14 perfiles curados (13 plantillas + "all").
 
 ---
 
@@ -82,12 +82,12 @@ El JSON tiene seis secciones:
 | `profile` | Datos base: nombre, headline, contacto, summary, disponibilidad, idiomas | Header del portafolio |
 | `profile.socialLinks` | Enlaces a presencia pública (GitHub, YouTube, etc.) con descripción bilingüe | Sección "Presencia Pública" |
 | `profile.featuredRepositories` | **Curaduría manual** de repos a destacar (NO un dump del API de GitHub) | Sección "Código Destacado" |
-| `experiences` | Las 14 experiencias laborales con `tags` | Filtrado por perfil |
+| `experiences` | Las 15 experiencias laborales con `tags` | Filtrado por perfil |
 | `skillCategories` | Skills agrupadas por categoría | Sección de competencias |
 | `education` | Formación académica | Sección educación |
 | `certifications` | Certificaciones y cursos | Sección certificaciones |
 | `projects` | Proyectos destacados (portafolio, ERP AWA) con `tags` | Filtrado por perfil |
-| `profileTemplates` | Las 10 plantillas de perfil curado con `filterTags` | Define cada vista curada |
+| `profileTemplates` | Las 13 plantillas de perfil curado con `filterTags` | Define cada vista curada |
 
 ### El campo clave: `tags`
 
@@ -129,7 +129,7 @@ Cuando creamos un CV para una vacante nueva, el equivalente en el portafolio es 
    }
    ```
    El acento de la plantilla vive en `themeOverrides.colors.accent` (el campo `accentColor` se retiró en `retire-accent-color`). Es el color del acento sobre el fondo del tema (`modern-dark` usa `#0a0e1a`): elegí uno con contraste suficiente, 4,5:1 como mínimo para texto y 3:1 para elementos grandes.
-4. **Re-ejecutar el seed.** El nuevo perfil queda disponible en `/p/security-engineer`.
+4. **Re-ejecutar el seed.** El nuevo perfil queda disponible en `/security-engineer`.
 
 ### Vocabulario de tags actual
 
@@ -146,7 +146,7 @@ retail, ruby, serverless, spring-boot, testing, vbnet
 
 ---
 
-## 6. Los 10 perfiles curados actuales
+## 6. Los 13 perfiles curados actuales
 
 | Slug | Título | filterTags principales |
 |---|---|---|
@@ -200,7 +200,7 @@ npx prisma studio                          # GUI oficial de Prisma para ver/edit
 
 ## 9. Solución de problemas
 
-- **"Can't reach database":** ¿está corriendo `docker compose up -d`? ¿coincide `DATABASE_URL` con el puerto 5432?
+- **"Can't reach database":** ¿está corriendo `docker compose up -d`? ¿coincide `DATABASE_URL` con el puerto 5434 que publica el `docker-compose.yml` (`POSTGRES_PORT`)?
 - **El seed no encuentra `cv-data.json`:** el script lo busca en `../../docs/cv-data.json` relativo a `backend/scripts/`. Verificar la estructura de carpetas.
 - **Un perfil curado aparece vacío:** revisar que sus `filterTags` coincidan con tags reales en experiencias/proyectos. Usar el vocabulario de la sección 5.
 - **Cambié el schema y el seed falla:** correr `npx prisma migrate dev` antes del seed para sincronizar las tablas.
