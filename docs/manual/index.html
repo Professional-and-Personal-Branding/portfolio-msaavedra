@@ -223,7 +223,7 @@
     <div class="filters" id="filters">
       <button class="chip" data-filter="all" aria-pressed="true">Todos</button>
       <button class="chip" data-filter="ok" aria-pressed="false">Pasan</button>
-      
+      <button class="chip" data-filter="part" aria-pressed="false">Parciales</button>
       <button class="chip" data-filter="fail" aria-pressed="false">Fallan</button>
     </div>
     <input class="search" id="q" type="search" placeholder="Buscar caso…" aria-label="Buscar caso">
@@ -247,11 +247,12 @@
     <a href="#tc07"><span class="dot ok"></span><span class="id">TC-07</span> Token válido</a>
     <a href="#tc08"><span class="dot ok"></span><span class="id">TC-08</span> 404</a>
     <a href="#tc09"><span class="dot ok"></span><span class="id">TC-09</span> Móvil</a>
-    <a href="#tc10"><span class="dot ok"></span><span class="id">TC-10</span> Visibilidad</a>
-    <a href="#tc31"><span class="dot ok"></span><span class="id">TC-31</span> Imprimir</a>
+    <a href="#tc10"><span class="dot part"></span><span class="id">TC-10</span> Visibilidad</a>
+    <a href="#tc31"><span class="dot part"></span><span class="id">TC-31</span> Imprimir</a>
     <a href="#tc32"><span class="dot ok"></span><span class="id">TC-32</span> Nivel de idioma</a>
     <a href="#tc33"><span class="dot ok"></span><span class="id">TC-33</span> Teclado y foco</a>
     <a href="#tc34"><span class="dot ok"></span><span class="id">TC-34</span> Acento oscuro</a>
+    <a href="#tc35"><span class="dot ok"></span><span class="id">TC-35</span> Abre rápido en móvil</a>
     <h3>Backoffice</h3>
     <a href="#tc11"><span class="dot ok"></span><span class="id">TC-11</span> Entrar</a>
     <a href="#tc12"><span class="dot ok"></span><span class="id">TC-12</span> Crear perfil</a>
@@ -259,14 +260,14 @@
     <a href="#tc14"><span class="dot ok"></span><span class="id">TC-14</span> Secciones</a>
     <a href="#tc15"><span class="dot ok"></span><span class="id">TC-15</span> Tema</a>
     <a href="#tc16"><span class="dot ok"></span><span class="id">TC-16</span> Publicar</a>
-    <a href="#tc17"><span class="dot ok"></span><span class="id">TC-17</span> Preview</a>
+    <a href="#tc17"><span class="dot part"></span><span class="id">TC-17</span> Preview</a>
     <a href="#tc18"><span class="dot ok"></span><span class="id">TC-18</span> Analítica</a>
     <a href="#tc19"><span class="dot ok"></span><span class="id">TC-19</span> Experiencias</a>
     <a href="#tc20"><span class="dot ok"></span><span class="id">TC-20</span> Skills</a>
-    <a href="#tc21"><span class="dot ok"></span><span class="id">TC-21</span> Duplicar</a>
-    <a href="#tc22"><span class="dot ok"></span><span class="id">TC-22</span> Archivar</a>
-    <a href="#tc23"><span class="dot ok"></span><span class="id">TC-23</span> Link dirigido</a>
-    <a href="#tc24"><span class="dot ok"></span><span class="id">TC-24</span> Renombrar</a>
+    <a href="#tc21"><span class="dot part"></span><span class="id">TC-21</span> Duplicar</a>
+    <a href="#tc22"><span class="dot part"></span><span class="id">TC-22</span> Archivar</a>
+    <a href="#tc23"><span class="dot part"></span><span class="id">TC-23</span> Link dirigido</a>
+    <a href="#tc24"><span class="dot part"></span><span class="id">TC-24</span> Renombrar</a>
     <a href="#tc25"><span class="dot ok"></span><span class="id">TC-25</span> Portada</a>
     <a href="#tc26"><span class="dot ok"></span><span class="id">TC-26</span> Formación</a>
     <a href="#tc27"><span class="dot ok"></span><span class="id">TC-27</span> Proyectos</a>
@@ -277,6 +278,7 @@
     <a href="#defectos"><span class="dot ok"></span><span class="id">§6</span> Defectos</a>
     <a href="#noadmin"><span class="id">§7</span> El seed</a>
     <a href="#operacion"><span class="id">§8</span> Operación</a>
+    <a href="#calidad"><span class="id">§8.1</span> Calidad web</a>
     <a href="#receta"><span class="id">§9</span> Receta completa</a>
     <a href="#fallas"><span class="id">§10</span> Qué falla y por qué</a>
   </nav>
@@ -377,23 +379,24 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
     <!-- ───────────── Resumen ───────────── -->
     <section id="resumen" class="block">
       <h2>Resumen de la última ejecución</h2>
-      <p class="lede">5 de octubre de 2026, contra la base del seed: 14 perfiles curados y 15 experiencias.</p>
+      <p class="lede">Último caso ejecutado el 15 de octubre de 2026 (TC-33 a TC-35). La suite completa se recorrió el 5 de octubre contra la base del seed: 14 perfiles curados y 15 experiencias.</p>
 
       <div class="stats">
-        <div class="stat"><b>30</b><span>casos</span></div>
-        <div class="stat ok"><b>30</b><span>pasan</span></div>
+        <div class="stat"><b>35</b><span>casos</span></div>
+        <div class="stat ok"><b>28</b><span>pasan</span></div>
+        <div class="stat part"><b>7</b><span>parciales</span></div>
         <div class="stat"><b>2</b><span>defectos corregidos</span></div>
-        <div class="stat"><b>26</b><span>capturas</span></div>
+        <div class="stat"><b>27</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Los 34 casos pasan.</b> TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Los 35 casos pasan</b> (28 con captura; 7 verificados contra la API o con e2e, sin captura de la pantalla). TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
         <table>
           <tbody>
             <tr><td><span class="pill ok">pasa</span></td><td>Ejecutado y verificado, con captura o transcripción.</td></tr>
-
+            <tr><td><span class="pill part">parcial</span></td><td>Ejecutado y verificado contra la API (con e2e o tests), con la salida transcrita; sin captura de la pantalla.</td></tr>
             <tr><td><span class="pill fail">falla</span></td><td>Ejecutado y el comportamiento real no es el esperado.</td></tr>
           </tbody>
         </table>
@@ -499,8 +502,8 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
         <figure class="shot" id="img-tc09-movil"><img src="tc09-movil.jpg" width="375" height="812" alt="Vista móvil del perfil" style="max-width:375px"><figcaption>375 × 812.</figcaption></figure>
       </article>
 
-      <article class="case" data-status="ok" id="tc10">
-        <div class="case-head"><span class="case-id">TC-10</span><h3>Los códigos de estado por visibilidad</h3><span class="pill ok">pasa</span>
+      <article class="case" data-status="part" id="tc10">
+        <div class="case-head"><span class="case-id">TC-10</span><h3>Los códigos de estado por visibilidad</h3><span class="pill part">parcial</span>
           <label class="run"><input type="checkbox" data-run="tc10"> ejecutado</label></div>
         <div class="codewrap"><pre>curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/demo-protegido
 # 401   ← PROTECTED sin token
@@ -513,8 +516,8 @@ curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
         <p>El token también viaja en la cabecera <code>X-Access-Token</code>. En los logs el <code>?token=</code> sale censurado, y <code>Referrer-Policy: no-referrer</code> evita que se filtre al navegar a un enlace externo.</p>
       </article>
 
-      <article class="case" data-status="ok" id="tc31">
-        <div class="case-head"><span class="case-id">TC-31</span><h3>Imprimir un perfil en una hoja</h3><span class="pill ok">pasa</span>
+      <article class="case" data-status="part" id="tc31">
+        <div class="case-head"><span class="case-id">TC-31</span><h3>Imprimir un perfil en una hoja</h3><span class="pill part">parcial</span>
           <label class="run"><input type="checkbox" data-run="tc31"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · Abrir <code>/tech-lead-dotnet</code> y, sin hacer scroll, apretar <b>Ctrl+P</b>: papel <b>A4</b>, márgenes por defecto, <i>Encabezados y pies de página</i> y <i>Gráficos de fondo</i> desactivados. Repetir con el botón <b>Imprimir / Guardar PDF</b>, con <code>?lang=en</code>, con <code>?theme=modern-dark&amp;layout=sidebar</code> y en <b>Letter</b>. Guardar como PDF y repetir el primer paso en Firefox.</p>
         <p><span class="lbl">Esperado</span> · Una sola hoja, con texto oscuro sobre blanco aunque el tema sea oscuro (también con <i>Gráficos de fondo</i> activado), el nombre visible y el orden de secciones del perfil. Sin barra superior, selectores ni pie del sitio. Lo omitido dice <i>«y N experiencias más»</i> y el pie trae <b>Versión completa</b> con la URL del perfil, sin <code>token</code>, <code>theme</code> ni <code>layout</code>. En la pantalla del token de un perfil <code>PROTECTED</code> el botón no aparece. Imprimir no hace ninguna petición ni suma una visita.</p>
@@ -563,6 +566,15 @@ prefers-reduced-motion: reduce        -> scroll-behavior: auto</pre></div>
 #0078D4   3,71:1            -> #008ffd         5,08:1   (devops-azure y dos más)
 #38bdf8   7,85:1            -> #38bdf8         7,85:1   (all: sin cambio)
 #0284c7   3,74:1            -> #0270a9         4,92:1   (modern-light)</pre></div>
+      </article>
+
+      <article class="case" data-status="ok" id="tc35">
+        <div class="case-head"><span class="case-id">TC-35</span><h3>El perfil abre rápido en un móvil</h3><span class="pill ok">pasa</span>
+          <label class="run"><input type="checkbox" data-run="tc35"> ejecutado</label></div>
+        <p><span class="lbl">Precondición</span> · Base <b>descartable</b> seedeada (nunca la del owner: cada carga registra una visita), la API en <code>NODE_ENV=production</code> y el frontend como se sirve en producción (la imagen de <code>frontend/Dockerfile</code>, o <code>dist/</code> con el <code>Caddyfile</code> del repo en <code>caddy:2-alpine</code>); Chrome. Para el último paso, un perfil <code>PROTECTED</code> con su token.</p>
+        <p><span class="lbl">Pasos</span> · En Chrome → DevTools con <i>Device toolbar</i> a <b>375 px</b> y CPU <b>4× slowdown</b>, abrir <code>/tech-lead-dotnet</code>: el hero (nombre, titular, resumen) aparece primero y las demás secciones llegan enseguida, sin que el contenido de arriba se mueva. En <i>Network</i>, filtrar por <code>curated-profiles</code>: hay <b>una sola</b> petición de <code>GET /api/curated-profiles/tech-lead-dotnet?locale=es</code>, que sale de <code>profile-prefetch.js</code>. En la base descartable, <code>SELECT count(*) FROM "ProfileView"</code> antes y después: <b>+1</b>. Cambiar de idioma con el selector <code>ES</code>/<code>EN</code> y repetir con <code>?layout=sidebar</code>: no hay parpadeo ni salto de diseño. Con <i>Slow 3G</i>, enfocar el botón de tema con Tab y apretar Enter antes de que cargue su módulo: el menú abre al llegar, con el foco adentro; Escape lo cierra. Repetir con el menú de perfiles. Abrir <code>/&lt;perfil-protegido&gt;?token=&lt;token&gt;&amp;lang=en</code>: una sola petición, con <code>X-Access-Token</code>, y +1 en <code>ProfileView</code>.</p>
+        <p><span class="lbl">Esperado</span> · El hero se ve antes que el resto, el pie no salta (CLS ≤ 0,01), una sola petición del perfil y una sola visita por carga, y los menús abren con teclado aunque se activen al instante. La consola no muestra violaciones de CSP.</p>
+        <p><span class="lbl">Observado</span> · 15 de octubre de 2026, contra el <code>dist/</code> y el <code>Caddyfile</code> del repo en <code>caddy:2-alpine</code> y una base descartable; el detalle está en el <code>verification.md</code> del change <code>improve-mobile-performance</code> (§ Recorrido en 375 px y § Una visita por carga). <code>perf:budget</code> fija el arranque (≤ 155 KB gzip en un solo JS de módulo) y <code>perf:check</code> mide Lighthouse (Performance ≥ 85, mediana de 5, en el CI); ver <a href="#calidad">§ 8.1</a>.</p>
       </article>
     </section>
 
@@ -685,8 +697,8 @@ el PRIVATE figura en el sitemap -> no</pre></div>
         <figure class="shot" id="img-tc16-publicacion"><img src="tc16-publicacion.jpg" width="800" height="455" alt="Pestaña Publicación"><figcaption>Visibilidad, el link público con copiar y abrir, y el contador de visitas.</figcaption></figure>
       </article>
 
-      <article class="case" data-status="ok" id="tc17">
-        <div class="case-head"><span class="case-id">TC-17</span><h3>Previsualizar sin guardar</h3><span class="pill ok">pasa</span>
+      <article class="case" data-status="part" id="tc17">
+        <div class="case-head"><span class="case-id">TC-17</span><h3>Previsualizar sin guardar</h3><span class="pill part">parcial</span>
           <label class="run"><input type="checkbox" data-run="tc17"> ejecutado</label></div>
         <p>El preview <b>no lo calcula el navegador</b>: lo resuelve el backend con el mismo servicio que la ruta pública (<code>CuratedProfileComposer</code>), para que no puedan divergir.</p>
         <div class="codewrap"><pre>curl -s -X POST $API/api/admin/curated-profiles/preview -H "$AUTH" \
@@ -757,8 +769,8 @@ DELETE de la categoría                        -> se lleva sus skills</pre></div
         <p>Una categoría entra en un perfil curado si <b>alguna de sus skills</b> comparte un tag con <code>filterTags</code>; dentro, se muestran solo las skills que pasan el filtro.</p>
       </article>
 
-      <article class="case" data-status="ok" id="tc21">
-        <div class="case-head"><span class="case-id">TC-21</span><h3>Duplicar un perfil para otra vacante</h3><span class="pill ok">pasa</span>
+      <article class="case" data-status="part" id="tc21">
+        <div class="case-head"><span class="case-id">TC-21</span><h3>Duplicar un perfil para otra vacante</h3><span class="pill part">parcial</span>
           <label class="run"><input type="checkbox" data-run="tc21"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · <code>/admin/perfiles</code> → botón <b>Duplicar</b> de un perfil → confirmar.</p>
         <p><span class="lbl">Esperado</span> · Una copia con toda la configuración (tags, inclusiones, exclusiones, secciones, tema y layout) y el constructor abierto sobre ella. La copia nace <b>privada y no enumerada</b>, sin token, sin visitas y sin archivar, con el slug del original más el primer sufijo libre (<code>-2</code>, <code>-3</code>, …). Para publicarla alcanza con cambiar slug, título, titular y visibilidad.</p>
@@ -767,8 +779,8 @@ DELETE de la categoría                        -> se lleva sus skills</pre></div
         <p><span class="lbl">Observado</span> · en la app real: duplicar <code>tech-lead-dotnet</code> dio <code>/tech-lead-dotnet-2</code>, privado; publicado como <code>acme-tech-lead</code> cambiando solo slug, título y titular, respondió 200 con sus 13 experiencias. El original quedó intacto.</p>
       </article>
 
-      <article class="case" data-status="ok" id="tc22">
-        <div class="case-head"><span class="case-id">TC-22</span><h3>Retirar un perfil sin perder sus visitas</h3><span class="pill ok">pasa</span>
+      <article class="case" data-status="part" id="tc22">
+        <div class="case-head"><span class="case-id">TC-22</span><h3>Retirar un perfil sin perder sus visitas</h3><span class="pill part">parcial</span>
           <label class="run"><input type="checkbox" data-run="tc22"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · Pestaña <b>Publicación</b> → <b>Archivar</b> → confirmar. Para volver atrás, <b>Desarchivar</b>.</p>
         <p><span class="lbl">Esperado</span> · El link responde <b>404</b>, igual que un slug que nunca existió, incluso con token si era <code>PROTECTED</code>. Sale del listado, del menú y del sitemap, pero <b>conserva sus visitas</b>, que siguen en el dashboard marcadas como <i>archivado</i>. Archivar dos veces conserva la primera fecha y no se registran visitas nuevas.</p>
@@ -779,8 +791,8 @@ curl -s -X POST $API/api/admin/curated-profiles/$ID/unarchive -H "$AUTH" | jq .a
         <p><span class="lbl">Observado</span> · en la app real: archivado <code>acme-tech-lead</code> con 3 visitas, el link dio 404, el panel pasó a <i>Desarchivar</i> sin recargar y el dashboard siguió mostrando sus 3 visitas.</p>
       </article>
 
-      <article class="case" data-status="ok" id="tc23">
-        <div class="case-head"><span class="case-id">TC-23</span><h3>Un link dirigido que no aparece en ningún listado</h3><span class="pill ok">pasa</span>
+      <article class="case" data-status="part" id="tc23">
+        <div class="case-head"><span class="case-id">TC-23</span><h3>Un link dirigido que no aparece en ningún listado</h3><span class="pill part">parcial</span>
           <label class="run"><input type="checkbox" data-run="tc23"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · Pestaña <b>Publicación</b> → apagar <b>Enumerar en la home y el sitemap</b> → Guardar.</p>
         <p><span class="lbl">Esperado</span> · El perfil sigue abriendo por su link (200 si es <code>PUBLIC</code>; 401 sin token y 200 con token si es <code>PROTECTED</code>), pero no figura en <code>GET /api/curated-profiles</code>, en el menú de la home ni en el <code>sitemap.xml</code>.</p>
@@ -789,8 +801,8 @@ curl -s -X POST $API/api/admin/curated-profiles/$ID/unarchive -H "$AUTH" | jq .a
         <div class="note">Los 13 perfiles del seed nacen enumerados, igual que antes: dejarlos de enumerar los retiraría de los buscadores. Es una decisión perfil por perfil.</div>
       </article>
 
-      <article class="case" data-status="ok" id="tc24">
-        <div class="case-head"><span class="case-id">TC-24</span><h3>Renombrar un slug sin romper los links ya enviados</h3><span class="pill ok">pasa</span>
+      <article class="case" data-status="part" id="tc24">
+        <div class="case-head"><span class="case-id">TC-24</span><h3>Renombrar un slug sin romper los links ya enviados</h3><span class="pill part">parcial</span>
           <label class="run"><input type="checkbox" data-run="tc24"> ejecutado</label></div>
         <p><span class="lbl">Pasos</span> · Pestaña <b>Identidad</b> → cambiar el <b>Slug</b> → Guardar.</p>
         <p><span class="lbl">Esperado</span> · El slug anterior <b>sigue funcionando</b>: responde el mismo perfil con su slug canónico en el cuerpo y en <code>Content-Location</code>, y el navegador corrige la URL solo. El sitemap y el <code>canonical</code> usan solo el slug nuevo. Tomar el slug anterior de otro perfil da 409; volver al propio borra el alias; el alias de un archivado también da 404.</p>
@@ -929,6 +941,34 @@ curl -sD - $API/api/curated-profiles/no-existe -o /dev/null | grep -i x-request-
           <tr><td>Una visita no suma justo después de un deploy</td><td>La visita se registra en segundo plano y el apagado espera hasta 5 s; confirmá que <code>RAILWAY_DEPLOYMENT_DRAINING_SECONDS</code> del servicio <code>api</code> esté por encima (p. ej. 10)</td></tr>
         </tbody>
       </table></div>
+    </section>
+
+    <!-- ───────────── Calidad web ───────────── -->
+    <section id="calidad" class="block">
+      <h2>8.1 Calidad web: accesibilidad, Lighthouse y presupuesto de JS</h2>
+      <p class="lede">Tres comandos del frontend (<code>frontend/scripts/</code>), los mismos que corre el CI.</p>
+      <div class="codewrap"><pre>cd frontend
+npm run build &amp;&amp; npm run perf:budget                      # tope de JS del arranque público; sin navegador ni base
+
+# Los dos siguientes abren páginas reales: cada carga registra una visita (ProfileView).
+# Exigen A11Y_CHECK_DISPOSABLE_DB=1 y salen con 2 sin ella. Usalos SOLO contra una base descartable
+# (p. ej. `portfolio_a11y`, con migraciones, seed y un administrador de prueba), nunca contra la del owner.
+export A11Y_CHECK_DISPOSABLE_DB=1
+A11Y_CHECK_ADMIN_EMAIL=… A11Y_CHECK_ADMIN_PASSWORD=… npm run a11y:check -- http://localhost:8080 --out reports
+npm run perf:check -- http://localhost:8080 --out reports</pre></div>
+      <p>Se miden contra el sitio como se sirve en producción (la imagen de <code>frontend/Dockerfile</code> con la API detrás), porque la CSP, el head por perfil y la compresión de Caddy cambian los puntajes; <code>vite dev</code> no sirve para esto. <code>CHROME_PATH</code> apunta al Chrome del sistema. Los reportes solo se escriben con <code>--out</code>.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Medida</th><th>Local, antes de un release</th><th>CI</th><th>¿Bloquea?</th></tr></thead>
+        <tbody>
+          <tr><td><code>perf:budget</code></td><td>≤ 155 KB gzip, en <b>un solo</b> JS de módulo y sin <code>modulepreload</code></td><td>Igual</td><td>Sí</td></tr>
+          <tr><td>axe (<code>a11y:check</code>)</td><td>0 <code>serious</code> y 0 <code>critical</code>; el recorrido de teclado sin fallas</td><td>Igual</td><td>Sí</td></tr>
+          <tr><td>Lighthouse Accessibility, Best Practices y SEO (páginas públicas, mobile)</td><td>mediana de 3 ≥ 90</td><td>mediana de 5 ≥ 90</td><td>Sí</td></tr>
+          <tr><td>Lighthouse Performance (páginas públicas, mobile)</td><td>mediana de 3 ≥ 90 (<code>PERF_CHECK_RUNS</code>, <code>PERF_CHECK_MIN_PERFORMANCE</code>)</td><td>mediana de 5 ≥ <b>85</b></td><td>Sí</td></tr>
+          <tr><td><code>/admin/login</code></td><td>Accessibility y Best Practices ≥ 90 (SEO exento: lleva <code>noindex</code>; Performance, informativa)</td><td>Igual</td><td>Sí</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note">El umbral de Performance es 85 en CI porque el runner de GitHub es el equipo de referencia de Lighthouse (<code>benchmarkIndex</code> ≈ 1.800: un móvil de gama media); una máquina local más rápida infla el puntaje. Si aparecen fallas falsas se suben las corridas a 7 (<code>PERF_CHECK_RUNS</code>); el umbral no se baja sin el owner. <b>La medición local vale como diagnóstico solo en Linux</b>: con el Chrome de Windows el <i>Layout</i> cuesta unas 2,5 veces más. La red principal contra una regresión sigue siendo el presupuesto de bytes, que no tiene ruido. <code>moderate</code> y <code>minor</code> de axe se informan sin bloquear.</div>
+      <p><b>En CI:</b> el job <code>web-quality</code> (<i>Frontend · accesibilidad y Lighthouse</i>, dos ejecuciones en paralelo: <code>a11y</code> y <code>lighthouse</code>) levanta un Postgres de servicio, la API en <code>NODE_ENV=production</code> y la imagen del frontend, y corre el check. Si falla, el workflow queda en rojo y los reportes se bajan desde la corrida en <i>Summary → Artifacts → <code>web-quality-a11y</code> o <code>web-quality-lighthouse</code></i> (14 días). Que además impida fusionar requeriría marcar esos checks como requeridos en la protección de <code>main</code>, y el plan gratuito de GitHub con un repositorio privado no lo permite (ver <code>CLAUDE.md</code>).</p>
     </section>
 
     <!-- ───────────── Receta ───────────── -->
