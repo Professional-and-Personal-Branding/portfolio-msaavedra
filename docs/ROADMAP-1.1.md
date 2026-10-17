@@ -2,7 +2,7 @@
 
 > Registro de la deliberación multiagente del 4 de octubre de 2026 y el set de changes que propone para después del 1.0.0.
 >
-> **Estado: completada.** Los cinco changes del § 4 se implementaron y archivaron entre el 5 y el 8 de octubre de 2026 (`openspec/changes/archive/`). Lo que sigue se conserva como registro de cómo se decidió; lo diferido del § 5 sigue pendiente.
+> **Estado: completada.** Los cinco changes del § 4 se implementaron y archivaron entre el 5 y el 8 de octubre de 2026 (`openspec/changes/archive/`), y hubo changes posteriores (§ 6). Lo que sigue se conserva como registro de cómo se decidió; del § 5 quedan diferidos `evidencia-verificable-repos`, `encabezado-de-ajuste`, `cobertura-de-vacante`, `skills-con-respaldo-temporal` y `cache-de-lectura-y-visitas`.
 >
 > Estado original: propuesta. Nada de esto se implementa sin el Human Gate. El orden de lectura es: § 1 cómo se decidió, § 2 qué salió, § 3 **la corrección**, § 4 el set final, § 5 lo diferido.
 
@@ -154,9 +154,9 @@ Cinco changes, en este orden. La justificación de cada movimiento respecto del 
 | ✅ `imprimible-una-hoja` | **Resuelto en `add-printable-one-page`** (1.1.x), junto al ítem *Export PDF de perfil* del checklist: hoja de una página en A4 y Letter, botón *Imprimir / Guardar PDF* y `npm run print:check`. El PDF lo genera el navegador. La descripción del candidato, citada arriba como § 7.3, no está en el repositorio: el alcance salió de lo que sí quedó escrito (*útil y barato*, una hoja) | Hecho |
 | `cobertura-de-vacante` | Depende de que los tags estén bien poblados; hoy el cruce lo haría contra datos sin auditar | Después del change 4, que es cuando el contenido se mantiene de verdad |
 | `skills-con-respaldo-temporal` | Interesante y sin migración, pero cualquier badge que contradiga las fechas destruye la credibilidad que busca construir | Cuando haya un test de propiedad que lo garantice |
-| `analitica-visitas-honestas` / por `referrer` | Barato: los datos **ya se persisten** y nadie los lee. Debería entrar pronto para que la próxima priorización tenga medición y no intuición | Podría colarse en el change 4 como extensión del agregado |
+| ✅ `analitica-visitas-honestas` / por `referrer` | **Resuelto en `add-profile-content-admin`** (change 4): el agregado de analítica suma `byReferrer` (origen normalizado a su dominio, lo vacío como "directo") y el dashboard lo muestra en la tabla **Por origen**. Lee lo que ya se persistía, sin capturar nada nuevo | Hecho |
 | `cache-de-lectura-y-visitas` | **La mitad de las visitas está hecha** (`polish-builder-and-edge` sacó `recordView` del camino crítico). Falta el cache de lectura | Cuando haya tráfico que lo justifique: hoy son visitas de a decenas |
-| CI/CD | **Ningún candidato lo propuso**, y hay 254 unitarios y 109 e2e que nadie corre automáticamente. Lo marcaron los dos críticos | Es el ítem "CI/CD" del checklist 1.0.x. No necesita deliberación: necesita un workflow |
+| ✅ CI/CD | **Resuelto**: el CI existe desde el PR #2 (`.github/workflows/ci.yml`: lint, typecheck, unitarios, e2e contra Postgres, build y control del OpenAPI) y desde `improve-a11y-and-performance` suma el job `web-quality` (axe, teclado y Lighthouse). El CD queda del lado de Railway. Lo habían marcado los dos críticos: había 254 unitarios y 109 e2e que nadie corría automáticamente | Hecho (los *required checks* de `main` no se pueden activar: plan gratuito con repo privado) |
 | ✅ Content-Security-Policy del sitio público | **Resuelto en `polish-builder-and-edge`**: Caddy la sirve, con `CSP_HEADER` para pasar a `Report-Only` sin reconstruir | Hecho |
 | ✅ Retirar `accentColor` (segunda etapa de D9) | **Resuelto en `retire-accent-color`** (P1 = B): sale de la entrada, la salida, el dominio y el seed; una migración copia el color de cada perfil a `themeOverrides.colors.accent` y borra la columna | Hecho |
 
@@ -164,8 +164,27 @@ Cinco changes, en este orden. La justificación de cada movimiento respecto del 
 
 ## 6. Cómo seguir
 
-1. Leer el § 4 y decidir qué entra.
-2. Los changes 1, 2 y 3 tienen su carpeta completa en `openspec/changes/` (proposal, design, specs delta y tasks). Los changes 4 y 5 están solo como propuesta en este documento; sus artefactos se generan al aprobarlos.
-3. **Human Gate**: nada se implementa sin el OK. Si algo se desvía durante la implementación, se corrige la spec, no el código.
+La ronda está cerrada. Los cinco changes del § 4 están implementados y archivados en `openspec/changes/archive/` (proposal, design, specs delta, tasks y verificación):
+
+| # | Change | Archivado |
+|---|---|---|
+| 1 | `unify-section-catalog` | 2026-10-05 |
+| 2 | `add-server-rendered-head` | 2026-10-08 |
+| 3 | `add-curated-profile-lifecycle` | 2026-10-08 |
+| 4 | `add-profile-content-admin` | 2026-10-08 |
+| 5 | `add-bilingual-builder-parity` | 2026-10-08 |
+
+Después hubo changes posteriores, que salieron de los defectos del § 3.2 y de lo diferido del § 5 (`docs/CHANGELOG.md`):
+
+| Change | Archivado | Qué resolvió |
+|---|---|---|
+| `polish-builder-and-edge` | 2026-10-09 | aviso de cambios sin guardar, visita fuera del camino crítico, CSP del sitio y `accentColor` obsoleto (etapa 1) |
+| `retire-accent-color` | 2026-10-09 | retiro de `accentColor` (etapa 2) |
+| `add-printable-one-page` | 2026-10-10 | hoja imprimible de una página |
+| `localize-language-level` | 2026-10-10 | nivel de los idiomas bilingüe |
+| `improve-a11y-and-performance` | 2026-10-16 | accesibilidad AA, arranque más liviano y `web-quality` en el CI |
+| `improve-mobile-performance` | 2026-10-16 | Performance mobile ≥ 85 (medianas de 97 en el CI) |
+
+Lo que sigue diferido está en el § 5. Todo change nuevo sigue pasando por el **Human Gate**: nada se implementa sin el OK, y si algo se desvía durante la implementación, se corrige la spec, no el código.
 
 > El catálogo completo de los 29 candidatos con sus puntajes por juez, sus objeciones y las dos críticas íntegras quedó en el resultado del workflow `portafolio-feature-deliberation` (run `wf_841c542b-f34`).

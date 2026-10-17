@@ -11,7 +11,7 @@ La vista pública abre más rápido en un móvil de gama media: el objetivo es P
   - **La animación de entrada** de las secciones es imperativa (API *vanilla* de Motion) sobre la misma `<section>`: ya no se remonta el contenido al llegar la librería (25,9 → 3,3 KB gzip). Las secciones fuera de pantalla usan `content-visibility: auto`.
   - **Arreglo:** el layout `sidebar` declara una sola columna en móvil (antes la columna implícita se ensanchaba al revelarse el resto; CLS 0,416 → 0,001).
 - **Arranque.** Un solo archivo JS (`codeSplitting.groups` de Rolldown en lugar de `manualChunks`): de 179 KB en tres archivos a 148 KB en uno. La petición del perfil sale desde `public/profile-prefetch.js` (script clásico, sin inline) mientras baja el bundle y la app la toma una sola vez: **una petición y una visita por carga**.
-- **Medición** (Linux, Chrome 155, Lighthouse 13.5.0, mobile, mediana de 5 contra una base descartable): proxy rápido 88 / 88 / 90 → 97 / 98 / 97 con TBT ≈ 0 y CLS 0,001; proxy lento (más pesimista que el runner) 54 / 55 / 59 → 74 / 75 / 81. Detalle en `openspec/changes/improve-mobile-performance/verification.md`.
+- **Medición** (Linux, Chrome 155, Lighthouse 13.5.0, mobile, mediana de 5 contra una base descartable): proxy rápido 88 / 88 / 90 → 97 / 98 / 97 con TBT ≈ 0 y CLS 0,001; proxy lento (más pesimista que el runner) 54 / 55 / 59 → 74 / 75 / 81. Detalle en `openspec/changes/archive/2026-10-16-improve-mobile-performance/verification.md`.
 - **Presupuesto y CI.** `perf:budget` mide todos los scripts del arranque (módulo, `modulepreload` y clásicos): ≤ 155 KB gzip, un solo JS de módulo, sin `modulepreload`, sin `zod` clásico, Motion para React ni el *popper* de Radix. El umbral de Performance del CI sube de 70 a **85** (mediana de 5).
 - **Docs.** `docs/MANUAL.md` § 5.1 (umbrales) y el caso TC-35; `docs/DEPLOY.md` § 9.5 (`/fonts/*` inmutable, `profile-prefetch.js` con `no-cache` a propósito).
 - **CI y archivado:** la corrida del PR #31 dio medianas de Performance de 97 / 97 / 97 y el change se archivó el 16 de octubre de 2026, después de `improve-a11y-and-performance` (que crea la capability `web-performance`).
@@ -30,8 +30,8 @@ Accesibilidad WCAG AA y arranque público más liviano, medidos con comandos que
 - **Estructura.** El `dl` de contacto y las pestañas ES/EN del panel (campos bilingües y conmutador de idioma de las vistas previas) tienen estructura ARIA válida.
 - **Arranque.** El JS que baja una ruta pública pasó de 228 a 179 KB gzip: los tokens se validan con `zod/mini` y `motion` carga en diferido. La hoja de Inter se pide desde el HTML, una sola vez.
 - **Medición (mobile, mediana de 3, sitio de producción en local).** Lighthouse: Accessibility 88 → 100, Best Practices 96 → 100, SEO 100, Performance 89–94 → 94–95. axe: de 1376 nodos de `color-contrast`, 330 de `dl` y 22 críticos del panel a 0 violaciones.
-- **Nuevos comandos del frontend:** `npm run perf:budget` (tope de 180 KB gzip, sin navegador), `npm run a11y:check` (axe + recorrido de teclado) y `npm run perf:check` (Lighthouse con versión fija y mediana). Los dos últimos abren páginas reales y se niegan a correr sin `A11Y_CHECK_DISPOSABLE_DB=1`, porque cada carga registra una visita.
-- **CI.** `perf:budget` en el job `frontend` y un job nuevo, `web-quality` (*Frontend · accesibilidad y Lighthouse*, dos ejecuciones en paralelo), que levanta un Postgres descartable, la API en producción y la imagen de producción del frontend. Bloquea con los umbrales de `docs/MANUAL.md` § 5.1 (en CI, Performance ≥ 70 con mediana de 5: es lo que mide hoy el equipo de referencia de Lighthouse; subirlo es un change aparte). Suma unos 6–7 minutos de pared por PR.
+- **Nuevos comandos del frontend:** `npm run perf:budget` (tope de 180 KB gzip, sin navegador; luego 155 KB, ver arriba), `npm run a11y:check` (axe + recorrido de teclado) y `npm run perf:check` (Lighthouse con versión fija y mediana). Los dos últimos abren páginas reales y se niegan a correr sin `A11Y_CHECK_DISPOSABLE_DB=1`, porque cada carga registra una visita.
+- **CI.** `perf:budget` en el job `frontend` y un job nuevo, `web-quality` (*Frontend · accesibilidad y Lighthouse*, dos ejecuciones en paralelo), que levanta un Postgres descartable, la API en producción y la imagen de producción del frontend. Bloquea con los umbrales de `docs/MANUAL.md` § 5.1 (en CI, Performance ≥ 70 con mediana de 5: es lo que mide hoy el equipo de referencia de Lighthouse; subirlo es un change aparte; luego 85, ver arriba). Suma unos 6–7 minutos de pared por PR.
 - Cierra los ítems *Accesibilidad* y *Caché / performance* del checklist 1.0.x. Sin cache de lectura en el backend (la API responde en ≈ 20 ms) y sin lazy-loading de imágenes (la vista pública no tiene `<img>`).
 
 ## Update — Octubre 2026 (ronda 1.1.x — `localize-language-level`)
@@ -59,16 +59,43 @@ Un perfil curado se puede imprimir o guardar como PDF en **una hoja legible**, e
 - **Ajuste de límites.** Los valores iniciales de la spec (6 en una línea, 6 categorías, 3 logros) daban dos páginas en los 14 perfiles del seed: se bajaron con `print:check` y se actualizaron la spec y el diseño.
 - Cierra el ítem *Export PDF de perfil* del checklist 1.0.x: el PDF lo genera el navegador.
 
-## Update — Octubre 2026 (ronda 1.1 — `retire-accent-color`)
+## Update — Octubre 2026 (ronda 1.1.x — `retire-accent-color`)
 
 Segunda etapa de la decisión D9 de `polish-builder-and-edge`: `accentColor` deja de existir en todas las capas. El owner eligió **P1 = B**, así que los colores no se pierden: pasan al tema.
 
-- **Primera migración destructiva del proyecto** (`retire_accent_color`, escrita a mano): copia el `accentColor` de cada perfil a `themeOverrides.colors.accent` (un `colors.accent` que ya existía no se pisa) y después borra la columna. Es idempotente y se aplica con `prisma migrate deploy` (en Railway, desde el `preDeployCommand`); sobre una base vacía no toca filas. La base de desarrollo del owner se migró primero, con respaldo previo, ensayo y rollback probado en una copia (evidencia en `openspec/changes/retire-accent-color/verification.md`).
+- **Primera migración destructiva del proyecto** (`retire_accent_color`, escrita a mano): copia el `accentColor` de cada perfil a `themeOverrides.colors.accent` (un `colors.accent` que ya existía no se pisa) y después borra la columna. Es idempotente y se aplica con `prisma migrate deploy` (en Railway, desde el `preDeployCommand`); sobre una base vacía no toca filas. La base de desarrollo del owner se migró primero, con respaldo previo, ensayo y rollback probado en una copia (evidencia en `openspec/changes/archive/2026-10-09-retire-accent-color/verification.md`).
 - **Cambio visible:** los 13 perfiles de las plantillas dejan de verse con el `#38bdf8` del preset y pasan a su acento propio. Varios contrastan poco con el fondo `#0a0e1a` de `modern-dark` (8 de 13 quedan por debajo de 3:1): riesgo aceptado por el owner, se corrige desde el customizador.
 - **Contrato (BREAKING, sin clientes afectados):** `accentColor` sale de los DTO de entrada y de las cuatro respuestas del perfil curado; un cuerpo que lo traiga responde 400. Se regeneran `openapi.json` y `api.d.ts`.
 - **Dominio y frontend:** sale la regla hex y `HEX_COLOR_REGEX`; desaparecen los tipos `*Wire` y sus casts.
 - **Seed:** `docs/cv-data.json` guarda el color de cada plantilla como `themeOverrides.colors.accent`, y `seed:verify` lo comprueba.
 - Verificado: 529 unitarios, 168 e2e y 243 del frontend.
+
+## Update — Octubre 2026 (ronda 1.1.x — fix del preview con slug vacío)
+
+Mergeado en PR #22 (`fix/preview-empty-slug`), sobre `polish-builder-and-edge`. Al armar un perfil nuevo en el constructor, el preview fallaba mientras el slug estaba vacío o todavía no era kebab-case válido.
+
+- **Frontend:** el borrador omite el `slug` del cuerpo del preview cuando no es válido (el backend usa uno provisorio) y la clave de caché del preview deja de depender del slug. Con dos tests de regresión (`profile-draft.spec.ts` y `ProfileBuilderPage.test.tsx`).
+- Sin backend, sin contrato HTTP ni migración.
+
+## Update — Octubre 2026 (ronda 1.1, pulido — `polish-builder-and-edge`)
+
+Mergeado en PR #21 (`feat/polish-1-1`) y archivado en `openspec/changes/archive/2026-10-09-polish-builder-and-edge/` (PR #23), con sus specs sincronizadas. Cuatro defectos menores del constructor, del panel y del borde, más el aviso en los formularios en diálogo que sumó el owner.
+
+- **Aviso de cambios sin guardar.** El constructor y la Portada avisan antes de perder un borrador: `beforeunload` al cerrar o recargar, y un diálogo del panel (*Seguir editando* / *Descartar*) al navegar dentro de la SPA. Cambiar solo el `?lang=` de la Portada no cuenta como salir. El router pasa a ser un *data router* (`createBrowserRouter`) para poder usar `useBlocker`. Los formularios en diálogo (experiencia, categoría, skill, formación, certificación, proyecto, enlace social e idioma) piden confirmar si se cierran con cambios. Casos TC-28 a TC-30 del manual.
+- **La visita sale del camino crítico.** `ResolveCuratedProfileUseCase` entrega el registro a un puerto `BackgroundTasks` y responde sin esperarlo; la transacción atómica no cambia y los fallos van al log. `PrismaService.onModuleDestroy` drena las tareas en vuelo (con tope de 5 s) antes de desconectar la base; en Railway, `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` debe quedar por encima.
+- **CSP del sitio.** Caddy aplica una Content-Security-Policy en modo *enforce* a las respuestas de la SPA; el nombre de la cabecera se cambia con `CSP_HEADER` (por ejemplo a `Content-Security-Policy-Report-Only`) sin reconstruir la imagen. Capability nueva `site-security-policy`.
+- **`accentColor`, primera etapa de su retiro.** El constructor deja de enviarlo y el OpenAPI lo marca `deprecated`; la etapa 2 es `retire-accent-color`.
+- **Defecto previo corregido:** el perfil público devolvía los idiomas en el orden físico de Postgres; ahora van ordenados por `id`, como el listado del panel.
+- Sin migración. Verificado: 532 unitarios, 164 e2e y 241 del frontend; los pasos con la app real, contra el contenedor `web` con la CSP en bloqueo.
+
+## Update — Octubre 2026 (ronda 1.1, change 5 — `add-bilingual-builder-parity`)
+
+Mergeado en PR #18 (`feat/bilingual-builder-parity`) y archivado en `openspec/changes/archive/2026-10-08-add-bilingual-builder-parity/` (PR #19), con sus specs sincronizadas. Cierra la ronda 1.1. Ahora el perfil se puede revisar y completar en inglés antes de mandarlo.
+
+- **Preview en ES/EN.** El panel de vista previa del constructor tiene un conmutador de idioma que pide el preview con `?locale=en`. Es estado de vista (no se guarda) y la caché de TanStack Query se indexa por perfil **e** idioma, así que volver al idioma anterior no repite la petición.
+- **Logros en inglés editables.** `highlights.en` se edita en el formulario de experiencias junto al español, con los mismos chips. Editar solo el español conserva el inglés (test de regresión).
+- **Aviso de faltantes de traducción.** Un servicio puro del backend recorre las entidades bilingües del perfil resuelto y el preview devuelve `missingTranslations`: los campos que caerían al español. La pestaña Publicación lo muestra con el conteo y la lista agrupada por entidad. Es informativo: no impide guardar ni publicar. La ruta pública no trae el informe.
+- Sin migración. Verificado: 517 unitarios, 160 e2e y 187 del frontend.
 
 ## Update — Octubre 2026 (ronda 1.1, change 4 — `add-profile-content-admin`)
 
