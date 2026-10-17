@@ -36,7 +36,7 @@ Portafolio web profesional **administrable desde un backoffice** que permite a M
 - **Formularios:** React Hook Form + Zod (validación type-safe)
 - **UI / Estética (motor de plantillas / design system):**
   - **shadcn/ui** + **Tailwind CSS** como base del design system
-  - **Framer Motion** para animaciones profesionales
+  - **Motion** (paquete `motion`, antes Framer Motion) para animaciones profesionales
   - **Lucide React** para iconografía
   - Plantillas de portafolio premium con temas conmutables
 
@@ -144,6 +144,8 @@ El constructor de perfiles curados previsualiza el borrador con `POST /api/admin
 ---
 
 ## 5. Modelo de Datos (Prisma Schema — borrador)
+
+> **Borrador original de la Fase 0.** El schema real evolucionó (ver "Después de la Fase 6" en el § 7); la fuente de verdad es [`backend/prisma/schema.prisma`](../backend/prisma/schema.prisma).
 
 ```prisma
 model Profile {
@@ -297,6 +299,24 @@ Resumen de lo que cubre:
 - **🔵 Deseables (1.0.x):** export PDF de perfil (resuelto por `add-printable-one-page`: hoja imprimible de una página y *Guardar como PDF* del navegador), accesibilidad, caché/performance, dashboard de analítica (`ProfileView`), CI/CD, repos destacados reales.
 
 **El deploy real es el ÚLTIMO paso** (backend en Railway/Render, frontend en Vercel, DB Postgres gestionada), una vez que los bloqueantes e importantes estén en verde.
+
+### Después de la Fase 6 (ronda 1.1 y siguientes)
+
+Lo que cambió en la arquitectura desde el hardening, en orden. Cada change tiene su proposal, diseño y verificación en [`openspec/changes/archive/`](../openspec/changes/archive/); la historia por change está en [`CHANGELOG.md`](CHANGELOG.md).
+
+- **Un solo catálogo de secciones** ([`2026-10-05-unify-section-catalog`](../openspec/changes/archive/2026-10-05-unify-section-catalog/)). Los 9 ids viven solo en el dominio del backend (`SECTION_IDS`) y viajan como enum `SectionId`; el backend aplica orden, ocultado y relleno y el cliente renderiza `sections` tal cual.
+- **Head por perfil servido desde el servidor** ([`2026-10-08-add-server-rendered-head`](../openspec/changes/archive/2026-10-08-add-server-rendered-head/)). `GET /api/public/profile-head` arma el fragmento de `<head>` con el mismo composer de la ruta pública y **Caddy** lo inserta en `index.html` (`templates` + `httpInclude`, con degradación al head genérico si la API falla o tarda más de 500 ms). Los scrapers sin JavaScript ven la tarjeta de cada perfil.
+- **Ciclo de vida del perfil curado** ([`2026-10-08-add-curated-profile-lifecycle`](../openspec/changes/archive/2026-10-08-add-curated-profile-lifecycle/)). Tres ejes disjuntos: `visibility` (quién puede abrirlo), `archivedAt` (si sigue vivo; archivado es 404 y gana siempre) y `listed` (si se enumera en el menú, el listado y el sitemap), más alias de slug (`CuratedProfileSlugAlias`) para no romper links ya enviados. La decisión de acceso está en una sola función, `resolvability`. Es la primera migración incremental (`curated_profile_lifecycle`).
+- **Contenido administrable** ([`2026-10-08-add-profile-content-admin`](../openspec/changes/archive/2026-10-08-add-profile-content-admin/)). El perfil base, los idiomas, la formación, las certificaciones, los proyectos y los enlaces sociales se editan desde el panel con CRUD propio; el agregado de analítica suma `byReferrer`. El seed queda solo para poblar una base vacía.
+- **Paridad bilingüe en el constructor** ([`2026-10-08-add-bilingual-builder-parity`](../openspec/changes/archive/2026-10-08-add-bilingual-builder-parity/)). El preview se pide en ES o EN y devuelve `missingTranslations`, calculado por un servicio puro del backend.
+- **Pulido del borde y del panel** ([`2026-10-09-polish-builder-and-edge`](../openspec/changes/archive/2026-10-09-polish-builder-and-edge/)). La visita se registra en segundo plano a través del puerto `BackgroundTasks` (el apagado drena las tareas en vuelo), el router pasa a *data router* para bloquear la navegación con cambios sin guardar y Caddy aplica una CSP configurable con `CSP_HEADER`.
+- **`accentColor` retirado** ([`2026-10-09-retire-accent-color`](../openspec/changes/archive/2026-10-09-retire-accent-color/)): el acento de un perfil es `themeOverrides.colors.accent`.
+- **Hoja imprimible** ([`2026-10-10-add-printable-one-page`](../openspec/changes/archive/2026-10-10-add-printable-one-page/)). `PrintableSheet` vive junto al layout de pantalla, con su propia paleta de papel y límites de contenido; el PDF lo genera el navegador.
+- **Nivel de idioma bilingüe** ([`2026-10-10-localize-language-level`](../openspec/changes/archive/2026-10-10-localize-language-level/)): `Language.level` pasa a `Json` `{ es, en }` en la misma fila.
+- **Contraste derivado del tema** ([`2026-10-16-improve-a11y-and-performance`](../openspec/changes/archive/2026-10-16-improve-a11y-and-performance/)). El acento como texto, el texto atenuado y el texto del botón se derivan de los tokens con contraste AA (`--t-accent-ink`, `--t-text-dim`); lo guardado no cambia. Los checks `perf:budget`, `a11y:check` y `perf:check` corren en el CI (job `web-quality`).
+- **Arranque público en un solo chunk** ([`2026-10-16-improve-mobile-performance`](../openspec/changes/archive/2026-10-16-improve-mobile-performance/)). Un solo JS de módulo (≤ 155 KB gzip), perfil en dos tiempos, menús de la barra en diferido y petición temprana del perfil desde `public/profile-prefetch.js`.
+
+> **El schema del § 5 es el borrador original.** Hoy tiene más modelos y campos (`archivedAt`, `listed`, alias de slug, `Language.level` bilingüe, sin `accentColor`, …). **La fuente de verdad es [`backend/prisma/schema.prisma`](../backend/prisma/schema.prisma)** y sus migraciones.
 
 ---
 
