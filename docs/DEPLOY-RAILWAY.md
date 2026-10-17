@@ -64,6 +64,7 @@ FRONTEND_URL=https://PENDIENTE
 - [ ] Deploy. El `preDeployCommand` corre `prisma migrate deploy`; el healthcheck `/health` decide si la versión entra. Si la migración falla, el despliegue se detiene y la versión vieja sigue sirviendo.
 - [ ] La migración `retire_accent_color` es **destructiva**: copia el acento de cada perfil a `themeOverrides.colors.accent` y borra la columna `accentColor`. Sobre una base vacía no toca filas. Si la base ya tiene datos, hacé un **respaldo antes** del deploy (`pg_dump -Fc` o un backup de Railway); el rollback es restaurarlo y volver a desplegar la imagen anterior. (§ 9.5)
 - [ ] La migración `localize_language_level` cambia `Language.level` de texto a JSONB (`{ es, en }`) sin perder filas. Sobre una base vacía solo cambia el tipo. Si la base ya tiene datos, hacé un **respaldo antes** del deploy. Rollback preferido: restaurar el respaldo y volver a desplegar la imagen anterior; sin respaldo, el SQL de `docs/DEPLOY.md` § 9.5 vuelve la columna a texto y **pierde el inglés**. (§ 9.5)
+- [ ] **Si la base ya tiene datos** (no es el primer deploy), antes de migrar: restaurar el último backup en una base descartable y probar `prisma migrate deploy` contra esa copia (`DATABASE_URL` apuntando a ella), y recién después desplegar. Las migraciones `curated_profile_lifecycle`, `retire_accent_color` y `localize_language_level` se ensayaron sobre una copia de la base de desarrollo, no sobre una restauración del backup de producción. (§ 7, § 9.5)
 - [ ] Settings → Networking → **Generate Domain** (opcional pero útil: sirve para verificar la API cruda en el paso 6).
 
 ---
@@ -140,6 +141,7 @@ curl -sI -H "Origin: https://otro-sitio.com" $API/api/profile | grep -i access-c
 
 - [ ] En los logs del panel: **JSON con `reqId`**, sin contraseñas ni tokens.
 - [ ] Abrir el sitio y `/admin`.
+- [ ] **Vista previa de los links**: pegar dos perfiles públicos distintos en el [Post Inspector de LinkedIn](https://www.linkedin.com/post-inspector/) y en un canal de Slack. Las tarjetas tienen que mostrar títulos distintos y la imagen (tarea 5.4 de `add-server-rendered-head`). Si salen genéricas, ver la fila correspondiente de *Si algo falla*.
 
 ---
 
