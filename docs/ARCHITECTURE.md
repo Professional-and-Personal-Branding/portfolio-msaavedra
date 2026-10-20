@@ -298,7 +298,7 @@ Resumen de lo que cubre:
 - **🟡 Importantes:** rate limiting (throttler), security headers (Helmet) + HTTPS, logging estructurado, tests mínimos (curated-profile + i18n fallback), SEO + OpenGraph, backup de DB.
 - **🔵 Deseables (1.0.x):** export PDF de perfil (resuelto por `add-printable-one-page`: hoja imprimible de una página y *Guardar como PDF* del navegador), accesibilidad, caché/performance, dashboard de analítica (`ProfileView`), CI/CD, repos destacados reales.
 
-**El deploy real es el ÚLTIMO paso** (backend en Railway/Render, frontend en Vercel, DB Postgres gestionada), una vez que los bloqueantes e importantes estén en verde.
+**El deploy real es el ÚLTIMO paso** (Railway: servicios `api`, `Postgres` y `web` con Caddy en un mismo proyecto; ver `docs/DEPLOY-RAILWAY.md`), una vez que los bloqueantes e importantes estén en verde.
 
 ### Después de la Fase 6 (ronda 1.1 y siguientes)
 
