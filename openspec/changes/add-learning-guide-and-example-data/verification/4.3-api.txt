@@ -1,0 +1,36 @@
+# Evidencia 4.3 — 2026-10-27 — API de ejemplo en :3310 contra portfolio_example
+
+GET /api/profile -> fullName: Alex Rivera Duarte
+
+## Home (all): secciones
+hero, stats, experience, skills, projects, education, certifications, presence, contact
+
+## Visibilidades y ciclo de vida (código HTTP)
+ejemplo-protegido sin token:            401
+ejemplo-protegido con token documentado: 200
+ejemplo-protegido con token incorrecto:  401
+ejemplo-borrador (PRIVATE):              404
+ejemplo-archivado:                       404
+ejemplo-nombre-anterior (alias):         200
+  -> resuelve a slug: ejemplo-renombrado
+ejemplo-dirigido (listed:false):         200
+
+## Listado público: ¿aparecen los no enumerados / archivado / privado / protegido?
+ejemplo-backend, ejemplo-overrides, ejemplo-secciones, ejemplo-renombrado, all
+sitemap contiene ejemplo-dirigido: 0  | ejemplo-backend: 1
+
+## Experiencia oculta: solo en el panel
+login admin de prueba: 200
+GET /api/experiences (público): 5 filas
+GET /api/admin/experiences (panel): 6 filas
+
+## Override sobre la oculta (ejemplo-overrides)
+experiencias: Cobalto Ejemplo, Brújula Demo   (Atlas Demo excluida aunque comparte tags; Brújula Demo forzada sin tags comunes; Terracota Demo, oculta, ignorada)
+
+skillCategories: Lenguajes [Java 21, TypeScript, Python, SQL] (Kotlin excluida) · Backend [Spring Boot, Apache Kafka, PostgreSQL] · Cloud & DevOps [Docker, Kubernetes, Terraform, GitHub Actions]
+
+## ejemplo-secciones: orden y ocultas
+sections: hero, skills, experience, projects, education, certifications, contact
+hidden: stats, presence
+layout: sidebar  tema: elegant
+proyectos (API): Plataforma de Reservas, Herramienta Interna de Métricas
