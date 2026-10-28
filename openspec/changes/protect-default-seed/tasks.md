@@ -88,21 +88,21 @@
 
 ## 5. Documentación (sin tocar código)
 
-- [ ] 5.1 `docs/DEPLOY.md`:
+- [x] 5.1 `docs/DEPLOY.md`:
   - § 3 *Primer arranque*: el seed carga porque la base está vacía. Si ya tiene datos, se niega con código 2.
   - § 6, punto 3: la protección es real, y forzar en producción exige `--overwrite` y `SEED_ALLOW_PRODUCTION=1` solo para el comando, nunca en el servicio.
   - § 7: el `pg_dump` como paso previo a cualquier `--overwrite`, con el nombre `<base>-AAAA-MM-DD.dump` que sugiere la negativa.
   - Explicitar que el `preDeployCommand` solo migra y nunca siembra.
 
   Verificar: revisión del diff.
-- [ ] 5.2 `docs/DEPLOY-RAILWAY.md`:
+- [x] 5.2 `docs/DEPLOY-RAILWAY.md`:
   - § 3: «una sola vez»; el seed se niega si ya hay datos.
   - Comando de recarga en producción, según la resolución de P1.
   - § 7: `pg_dump "$DATABASE_PUBLIC_URL"` antes de cualquier recarga.
   - *Nunca*: `SEED_ALLOW_PRODUCTION` como variable del servicio.
 
   Verificar: revisión del diff.
-- [ ] 5.3 `docs/DATA-POPULATION.md`:
+- [x] 5.3 `docs/DATA-POPULATION.md`:
   - § 1 y § 3: el flujo «editás el JSON → corrés el seed» pasa a «base vacía o `--overwrite`».
   - § 8: comandos con `--overwrite`.
   - § 9: solución de problemas para el código 2 y para la falla al contar.
@@ -110,15 +110,15 @@
   - § 11.2: quitar la nota de que la protección «queda para un change aparte».
 
   Verificar: revisión del diff.
-- [ ] 5.4 `backend/README.md`: la línea de `npm run seed` en *Puesta en marcha*, la fila de *Scripts* y la nota *Seed destructivo*. Verificar: revisión del diff.
-- [ ] 5.5 `docs/MANUAL.md`:
+- [x] 5.4 `backend/README.md`: la línea de `npm run seed` en *Puesta en marcha*, la fila de *Scripts* y la nota *Seed destructivo*. Verificar: revisión del diff.
+- [x] 5.5 `docs/MANUAL.md`:
   - § 0 y § 4 (*El seed ya no es la forma de editar*): la negativa y `--overwrite`.
   - Nuevo caso **TC-38 — El seed por defecto se niega sobre una base con contenido**, en el área de datos: precondición de base descartable, pasos en PowerShell y bash, resultado esperado y la salida de 4.2 transcrita.
   - Si `docs/manual/index.html` ya tiene el formato de `add-learning-guide-and-example-data` (D10, D13), sumar TC-38 también ahí, en el índice y en la tabla de la suite, para que `manual:check` siga en verde.
 
   Verificar: revisión del diff y, si existe, `npm run manual:check` en `frontend/`.
-- [ ] 5.6 `CLAUDE.md`, *Comandos esperados*: la línea `npm run seed` pasa a decir que carga `docs/cv-data.json` solo sobre una base vacía, que con contenido se niega (código 2) salvo `--overwrite`, y que en producción además exige `SEED_ALLOW_PRODUCTION=1`. Al archivar, sumar el change al roadmap. Verificar: revisión del diff.
-- [ ] 5.7 `docs/CHANGELOG.md`: entrada `protect-default-seed` con el comportamiento nuevo, los códigos de salida, `--overwrite`, `SEED_ALLOW_PRODUCTION` y la nota de operación (un `npm run seed` de rutina sobre una base con datos ahora sale con 2). Verificar: revisión del diff.
+- [x] 5.6 `CLAUDE.md`, *Comandos esperados*: la línea `npm run seed` pasa a decir que carga `docs/cv-data.json` solo sobre una base vacía, que con contenido se niega (código 2) salvo `--overwrite`, y que en producción además exige `SEED_ALLOW_PRODUCTION=1`. Al archivar, sumar el change al roadmap. Verificar: revisión del diff.
+- [x] 5.7 `docs/CHANGELOG.md`: entrada `protect-default-seed` con el comportamiento nuevo, los códigos de salida, `--overwrite`, `SEED_ALLOW_PRODUCTION` y la nota de operación (un `npm run seed` de rutina sobre una base con datos ahora sale con 2). Verificar: revisión del diff.
 
 ## 6. CI y cierre
 
@@ -127,7 +127,7 @@
   - Paso *Seed por defecto · recarga con --overwrite*: `npm run seed -- --overwrite` y `npm run seed:verify`.
 
   El job `web-quality` no cambia: siembra una base recién migrada. Verificar: el job queda verde en el PR y su log muestra la negativa con los conteos y la recarga.
-- [ ] 6.2 Validar:
+- [x] 6.2 Validar:
   - `npx -y @fission-ai/openspec@1.14.1 validate protect-default-seed --strict` sin errores.
   - `validate --all --strict` sin fallas nuevas respecto de `main`. Las fallas previas por requisitos de más de 500 caracteres se reportan aparte.
   - Ningún aviso *Archive would refuse* para este change.
