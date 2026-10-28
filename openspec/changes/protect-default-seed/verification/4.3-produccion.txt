@@ -1,0 +1,114 @@
+# 4.3 produccion sobre portfolio_seed_guard (NODE_ENV solo en esta sesion)
+destino: portfolio_seed_guard en localhost:5434
+
+=== 1. --overwrite sin la variable
+NODE_ENV=production SEED_ALLOW_PRODUCTION=
+antes: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+> portfolio-backend@0.1.0 seed
+> tsx scripts/seed.ts --overwrite
+
+❌ Negativa: no se recarga docs/cv-data.json en localhost:5434/portfolio_seed_guard: la base ya tiene contenido (NODE_ENV=production).
+  - CuratedProfile: 14
+  - Theme: 5
+  - Skill: 108
+  - SkillCategory: 12
+  - Experience: 15
+  - Language: 2
+  - Profile: 1
+  - Education: 6
+  - Certification: 8
+  - Project: 2
+  - SocialLink: 3
+Si querés conservarlo, respaldalo antes (pg_dump pide la contraseña):
+  pg_dump "postgresql://portfolio@localhost:5434/portfolio_seed_guard" -Fc -f portfolio_seed_guard-2026-10-27.dump
+--overwrite no alcanza con NODE_ENV=production: falta SEED_ALLOW_PRODUCTION=1, definida solo para este comando (nunca como variable del servicio).
+No se escribió nada.
+exit: 2
+despues: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+=== 2. variable sin --overwrite
+NODE_ENV=production SEED_ALLOW_PRODUCTION=1
+antes: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+> portfolio-backend@0.1.0 seed
+> tsx scripts/seed.ts
+
+❌ Negativa: no se recarga docs/cv-data.json en localhost:5434/portfolio_seed_guard: la base ya tiene contenido (NODE_ENV=production).
+  - CuratedProfile: 14
+  - Theme: 5
+  - Skill: 108
+  - SkillCategory: 12
+  - Experience: 15
+  - Language: 2
+  - Profile: 1
+  - Education: 6
+  - Certification: 8
+  - Project: 2
+  - SocialLink: 3
+Si querés conservarlo, respaldalo antes (pg_dump pide la contraseña):
+  pg_dump "postgresql://portfolio@localhost:5434/portfolio_seed_guard" -Fc -f portfolio_seed_guard-2026-10-27.dump
+Para borrarlo y recargar en producción hacen falta las dos llaves: SEED_ALLOW_PRODUCTION=1, definida solo para este comando, y npm run seed -- --overwrite
+No se escribió nada.
+exit: 2
+despues: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+=== 3a. --overwrite con las dos llaves
+NODE_ENV=production SEED_ALLOW_PRODUCTION=1
+antes: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+> portfolio-backend@0.1.0 seed
+> tsx scripts/seed.ts --overwrite
+
+⚠️  --overwrite en producción (SEED_ALLOW_PRODUCTION=1): se borra el contenido de localhost:5434/portfolio_seed_guard (CuratedProfile: 14, Theme: 5, Skill: 108, SkillCategory: 12, Experience: 15, Language: 2, Profile: 1, Education: 6, Certification: 8, Project: 2, SocialLink: 3).
+🌱 Iniciando seed...
+🧹 Limpiando tablas...
+👤 Creando perfil base...
+💼 Creando 15 experiencias...
+🛠️  Creando 12 categorías de skills...
+🎓 Creando 6 registros de educación...
+📜 Creando 8 certificaciones...
+🚀 Creando 2 proyectos...
+🔗 Creando 3 enlaces sociales...
+📦 Creando 0 repositorios destacados...
+🎨 Creando 5 temas preset...
+⭐ Creando 13 perfiles curados...
+✅ Seed completado con éxito.
+exit: 0
+despues: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+=== 3b. seed:verify (ultimas lineas)
+NODE_ENV=production SEED_ALLOW_PRODUCTION=1
+antes: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+  ✅ tech-lead-dotnet         PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#5B2C87
+  ✅ generalist-polyglot      PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#0F766E
+✅ La base coincide con cv-data.json.
+exit: 0
+despues: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+(base recreada vacia: dropdb + createdb + prisma:deploy)
+
+=== 4. produccion con la base vacia, sin flags ni variable
+NODE_ENV=production SEED_ALLOW_PRODUCTION=
+antes: 0 Profile, 0 Experience, 0 CuratedProfile, 0 ProfileView
+
+> portfolio-backend@0.1.0 seed
+> tsx scripts/seed.ts
+
+🌱 Iniciando seed...
+🧹 Limpiando tablas...
+👤 Creando perfil base...
+💼 Creando 15 experiencias...
+🛠️  Creando 12 categorías de skills...
+🎓 Creando 6 registros de educación...
+📜 Creando 8 certificaciones...
+🚀 Creando 2 proyectos...
+🔗 Creando 3 enlaces sociales...
+📦 Creando 0 repositorios destacados...
+🎨 Creando 5 temas preset...
+⭐ Creando 13 perfiles curados...
+✅ Seed completado con éxito.
+exit: 0
+despues: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+# P1 (railway run y variables locales): no hay un proyecto Railway de prueba, queda abierta. DEPLOY-RAILWAY documenta una forma que funciona en cualquier caso.

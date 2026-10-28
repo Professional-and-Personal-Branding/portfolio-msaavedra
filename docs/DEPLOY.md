@@ -106,7 +106,8 @@ Desde tu máquina, con la `DATABASE_URL` del servicio ya enlazada (`railway link
 ```bash
 cd backend
 
-# 1. Cargar los datos del portafolio (una sola vez: después se edita desde /admin)
+# 1. Cargar los datos del portafolio (una sola vez: después se edita desde /admin).
+#    Carga porque la base está vacía. Si ya tiene datos, el seed se niega con código 2.
 railway run npm run seed && railway run npm run seed:verify
 
 # 2. Crear el administrador
@@ -114,6 +115,8 @@ railway run npm run admin:bootstrap
 
 # 3. Entrar al backoffice y cambiar la contraseña del paso 1
 ```
+
+El `preDeployCommand` solo migra (`npm run prisma:deploy`): **nunca siembra**. Un deploy no dispara una carga; sembrar en producción es siempre un comando manual.
 
 ### Healthcheck
 
@@ -211,7 +214,7 @@ Revisá además, en el panel del proveedor, que los logs salgan en **JSON con `r
 
 1. **Código**: en el servicio, pestaña Deployments → *Rollback* en el despliegue que funcionaba. **Solo alcanza los que estén dentro de la retención: 72 h en el plan Hobby, 120 h en Pro.** Más viejo que eso, hay que volver a desplegar desde el commit.
 2. **Migraciones**: `prisma migrate deploy` solo agrega; si una migración rompió algo, restaurá desde el backup (§ 7) y desplegá la versión anterior.
-3. **Datos**: nunca corras `seed` sobre una base con datos reales; sobrescribe el contenido del portafolio. Desde `add-profile-content-admin` todo el contenido se edita en el panel, así que un `seed` en producción **pisa lo editado** ahí (portada, formación, proyectos, enlaces, experiencias y skills).
+3. **Datos**: el seed sobrescribe el contenido del portafolio, y desde `add-profile-content-admin` todo se edita en el panel (portada, formación, proyectos, enlaces, experiencias y skills). La protección es real (change `protect-default-seed`): `npm run seed` cuenta las filas de las 13 tablas que limpia y, si hay alguna, sale con código 2 sin escribir. Forzar la recarga en producción exige dos llaves: `--overwrite` y `SEED_ALLOW_PRODUCTION=1`, esta última definida **solo para ese comando** y **nunca** como variable del servicio `api` (si quedara en el servicio, la doble llave se reduciría a `--overwrite`). Hacé el `pg_dump` del § 7 antes.
 
 ---
 
@@ -222,6 +225,8 @@ Activalos en el proveedor del Postgres (todos los mencionados los ofrecen). Un b
 ```bash
 # Copia manual, además de la automática del proveedor
 pg_dump "$DATABASE_URL" -Fc -f portafolio-$(date +%F).dump
+# Antes de cualquier `npm run seed -- --overwrite` (la negativa del seed sugiere este mismo
+# comando, con el archivo <base>-AAAA-MM-DD.dump y sin contraseña: libpq la pide).
 
 # Prueba de restauración contra una base descartable
 createdb portafolio_restore_test

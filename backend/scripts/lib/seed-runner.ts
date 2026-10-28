@@ -3,8 +3,9 @@
  * escritura. `scripts/seed.ts` es solo la entrada de línea de comandos; todo lo demás vive acá
  * para poder probarlo con un cliente de Prisma simulado.
  *
- * Códigos de salida: 0 ok · 1 fuente ausente o inválida · 2 negativa a cargar sobre una base
- * que no es descartable.
+ * Códigos de salida: 0 ok · 1 fuente ausente o inválida, error de uso o falla al contar ·
+ * 2 negativa (`--file` sobre una base no descartable, o el seed por defecto sobre una base con
+ * contenido sin `--overwrite`).
  */
 import { Prisma, PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
@@ -26,8 +27,13 @@ import {
 import {
   describeDatabaseTarget,
   evaluateContentLayer,
+  evaluateDefaultSeed,
   evaluateEnvLayers,
+  formatCountFailure,
+  formatDefaultSeedRefusal,
   formatGuardFailure,
+  formatOverwriteWarning,
+  loadContentCounts,
   loadExistingProfileNames,
   SEED_GUARD_EXIT_CODE,
   SeedGuardFailure,
@@ -40,11 +46,14 @@ export const DEFAULT_SEED_FILE = path.resolve(__dirname, '../../../docs/cv-data.
 export interface SeedArgs {
   /** Ruta absoluta del archivo alternativo; `undefined` = `docs/cv-data.json`. */
   file?: string;
+  /** `--overwrite`: recarga aunque la base tenga contenido (solo sin `--file`). */
+  overwrite: boolean;
 }
 
-/** `--file <ruta>` o `--file=<ruta>`, resuelta contra el directorio actual. */
+/** `--file <ruta>` o `--file=<ruta>` (resuelta contra el directorio actual) y `--overwrite`. */
 export function parseSeedArgs(argv: readonly string[], cwd: string): Result<SeedArgs, string> {
   let file: string | undefined;
+  let overwrite = false;
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--file') {
@@ -55,11 +64,18 @@ export function parseSeedArgs(argv: readonly string[], cwd: string): Result<Seed
     } else if (arg.startsWith('--file=')) {
       file = arg.slice('--file='.length);
       if (file === '') return fail('--file necesita una ruta');
+    } else if (arg === '--overwrite') {
+      overwrite = true;
     } else {
       return fail(`argumento desconocido: ${arg}`);
     }
   }
-  return ok(file === undefined ? {} : { file: path.resolve(cwd, file) });
+  if (overwrite && file !== undefined) {
+    return fail(
+      '--overwrite no se combina con --file: un archivo alternativo tiene su propia negativa (ver docs/DATA-POPULATION.md § 11).',
+    );
+  }
+  return ok(file === undefined ? { overwrite } : { overwrite, file: path.resolve(cwd, file) });
 }
 
 /** Lee el archivo y lo parsea como JSON; no valida el formato. */
@@ -76,6 +92,8 @@ export function readSeedFile(filePath: string): Result<unknown, string> {
 export interface RunSeedOptions {
   /** Hay `--file`: se aplica la negativa de tres capas. */
   guarded: boolean;
+  /** `--overwrite` sin `--file`. */
+  overwrite?: boolean;
   env: Readonly<Record<string, string | undefined>>;
   now?: Date;
   log?: (message: string) => void;
@@ -83,7 +101,8 @@ export interface RunSeedOptions {
 }
 
 /**
- * Valida la fuente, aplica la negativa si corresponde y recién entonces escribe.
+ * Valida la fuente, cuenta (sin `--file`) o aplica la negativa de tres capas (con `--file`) y
+ * recién entonces escribe.
  * Devuelve el código de salida; no toca `process`.
  */
 export async function executeSeed(
@@ -117,6 +136,39 @@ export async function executeSeed(
       return SEED_GUARD_EXIT_CODE;
     }
     log(`🛡️  Base descartable confirmada: ${target}`);
+  }
+
+  // 3. Seed por defecto: contar, decidir (protect-default-seed, D1–D6). No se escribe antes.
+  if (!options.guarded) {
+    const target = describeDatabaseTarget(options.env['DATABASE_URL']);
+    const now = options.now ?? new Date();
+    let counts: Awaited<ReturnType<typeof loadContentCounts>>;
+    try {
+      counts = await loadContentCounts(prisma);
+    } catch (e) {
+      error(formatCountFailure(target, e, options.env['DATABASE_URL']));
+      return 1;
+    }
+    const decision = evaluateDefaultSeed({
+      counts,
+      overwrite: options.overwrite ?? false,
+      env: options.env,
+    });
+    if (decision.action === 'refuse') {
+      error(
+        `❌ ${formatDefaultSeedRefusal({
+          reason: decision.reason,
+          target,
+          counts,
+          databaseUrl: options.env['DATABASE_URL'],
+          now,
+        })}`,
+      );
+      return SEED_GUARD_EXIT_CODE;
+    }
+    if (decision.action === 'load-overwrite') {
+      log(formatOverwriteWarning(target, counts, decision.production));
+    }
   }
 
   await writeSeed(prisma, source, options.now ?? new Date(), log);

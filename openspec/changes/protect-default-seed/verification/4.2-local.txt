@@ -1,0 +1,137 @@
+# 4.2 escenarios locales sobre portfolio_seed_guard
+Datasource "db": PostgreSQL database "portfolio_seed_guard", schema "public" at "localhost:5434"
+
+=== 1. npm run seed con la base vacia
+destino: postgresql://<credenciales>@localhost:5434/portfolio_seed_guard?schema=public
+antes: 0 Profile, 0 Experience, 0 CuratedProfile, 0 ProfileView
+
+> portfolio-backend@0.1.0 seed
+> tsx scripts/seed.ts
+
+🌱 Iniciando seed...
+🧹 Limpiando tablas...
+👤 Creando perfil base...
+💼 Creando 15 experiencias...
+🛠️  Creando 12 categorías de skills...
+🎓 Creando 6 registros de educación...
+📜 Creando 8 certificaciones...
+🚀 Creando 2 proyectos...
+🔗 Creando 3 enlaces sociales...
+📦 Creando 0 repositorios destacados...
+🎨 Creando 5 temas preset...
+⭐ Creando 13 perfiles curados...
+✅ Seed completado con éxito.
+exit: 0
+despues: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+=== 2. npm run seed otra vez (negativa)
+destino: postgresql://<credenciales>@localhost:5434/portfolio_seed_guard?schema=public
+antes: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+> portfolio-backend@0.1.0 seed
+> tsx scripts/seed.ts
+
+❌ Negativa: no se recarga docs/cv-data.json en localhost:5434/portfolio_seed_guard: la base ya tiene contenido.
+  - CuratedProfile: 14
+  - Theme: 5
+  - Skill: 108
+  - SkillCategory: 12
+  - Experience: 15
+  - Language: 2
+  - Profile: 1
+  - Education: 6
+  - Certification: 8
+  - Project: 2
+  - SocialLink: 3
+Si querés conservarlo, respaldalo antes (pg_dump pide la contraseña):
+  pg_dump "postgresql://portfolio@localhost:5434/portfolio_seed_guard" -Fc -f portfolio_seed_guard-2026-10-27.dump
+Para borrarlo y recargar desde docs/cv-data.json: npm run seed -- --overwrite
+No se escribió nada.
+exit: 2
+despues: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+=== 3a. npm run seed -- --overwrite
+destino: postgresql://<credenciales>@localhost:5434/portfolio_seed_guard?schema=public
+antes: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+> portfolio-backend@0.1.0 seed
+> tsx scripts/seed.ts --overwrite
+
+⚠️  --overwrite: se borra el contenido de localhost:5434/portfolio_seed_guard (CuratedProfile: 14, Theme: 5, Skill: 108, SkillCategory: 12, Experience: 15, Language: 2, Profile: 1, Education: 6, Certification: 8, Project: 2, SocialLink: 3).
+🌱 Iniciando seed...
+🧹 Limpiando tablas...
+👤 Creando perfil base...
+💼 Creando 15 experiencias...
+🛠️  Creando 12 categorías de skills...
+🎓 Creando 6 registros de educación...
+📜 Creando 8 certificaciones...
+🚀 Creando 2 proyectos...
+🔗 Creando 3 enlaces sociales...
+📦 Creando 0 repositorios destacados...
+🎨 Creando 5 temas preset...
+⭐ Creando 13 perfiles curados...
+✅ Seed completado con éxito.
+exit: 0
+despues: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+=== 3b. npm run seed:verify
+destino: postgresql://<credenciales>@localhost:5434/portfolio_seed_guard?schema=public
+antes: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+> portfolio-backend@0.1.0 seed:verify
+> tsx scripts/verify-seed.ts
+
+🔎 Verificación del seed (esperado ← cv-data.json / actual ← DB)
+  ✅ Profile                  esperado=1  actual=1
+  ✅ Language                 esperado=2  actual=2
+  ✅ Experience               esperado=15  actual=15
+  ✅ SkillCategory            esperado=12  actual=12
+  ✅ Skill                    esperado=108  actual=108
+  ✅ Education                esperado=6  actual=6
+  ✅ Certification            esperado=8  actual=8
+  ✅ Project                  esperado=2  actual=2
+  ✅ SocialLink               esperado=3  actual=3
+  ✅ FeaturedRepository       esperado=0  actual=0
+  ✅ Theme                    esperado=5  actual=5
+  ✅ CuratedProfile           esperado=14  actual=14
+  ✅ CuratedProfileSlugAlias  esperado=0  actual=0
+  ✅ ProfileView              esperado=0  actual=0
+  ✅ Experience.role bilingüe (es/en) en Novacomp
+  ✅ Language.level de Español (fuente={"es":"Nativo","en":"Native"}, db={"en":"Native","es":"Nativo"})
+  ✅ Language.level de Inglés (fuente={"es":"B1-B2","en":"B1-B2"}, db={"en":"B1-B2","es":"B1-B2"})
+  ✅ java-senior-backend      PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#1A365D
+  ✅ fullstack-nest-react     PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#065F46
+  ✅ devops-platform          PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#0F766E
+  ✅ dotnet-backend           PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#0078D4
+  ✅ it-leadership            PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#1B3A6B
+  ✅ integration-architect    PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#0E5263
+  ✅ ai-software-engineer     PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#6D28D9
+  ✅ fullstack-microsoft      PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#0078D4
+  ✅ devops-azure             PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#0078D4
+  ✅ software-architect       PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#1E293B
+  ✅ backend-payments-ror     PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#9B1C2E
+  ✅ tech-lead-dotnet         PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#5B2C87
+  ✅ generalist-polyglot      PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#0F766E
+✅ La base coincide con cv-data.json.
+exit: 0
+despues: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+=== 4. --overwrite con --file
+destino: postgresql://<credenciales>@localhost:5434/portfolio_seed_guard?schema=public
+antes: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+> portfolio-backend@0.1.0 seed
+> tsx scripts/seed.ts --overwrite --file ../docs/examples/cv-data.example.json
+
+❌ --overwrite no se combina con --file: un archivo alternativo tiene su propia negativa (ver docs/DATA-POPULATION.md § 11).
+exit: 1
+despues: 1 Profile, 15 Experience, 14 CuratedProfile, 0 ProfileView
+
+=== 5. pg_dump con la URI sugerida (en el contenedor: host localhost, puerto 5432, salida a /dev/null para no dejar archivo; pg_dump en la maquina: False)
+pg_dump exit: 1 pg_dump: error: could not fsync file "/dev/null": Invalid argument
+
+
+=== 5 (repetido). pg_dump con la URI sugerida, formato SQL solo esquema a stdout (primeras lineas)
+--
+-- PostgreSQL database dump
+--

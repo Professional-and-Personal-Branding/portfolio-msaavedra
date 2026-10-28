@@ -16,10 +16,10 @@ docs/cv-data.json   →   schema.prisma   →   migración   →   seed.ts   →
 - **`docs/cv-data.json`** es la **única fuente de verdad** de tu información. Todo sale de ahí.
 - **`schema.prisma`** define la forma de las tablas.
 - La **migración** crea esas tablas vacías en PostgreSQL.
-- **`seed.ts`** lee el JSON y lo inserta en las tablas (es idempotente: limpia y recarga).
+- **`seed.ts`** lee el JSON y lo inserta en las tablas (limpia y recarga, pero solo sobre una base vacía o con `--overwrite`: § 3).
 - La **API** lee de la base y resuelve cada perfil curado filtrando por tags.
 
-Regla práctica: **editás el JSON → corrés el seed → la base queda actualizada.**
+Regla práctica: **editás el JSON → corrés el seed sobre una base vacía (o con `--overwrite`) → la base queda actualizada.** Sobre una base con contenido, `npm run seed` se niega (código 2) y no escribe nada.
 
 ---
 
@@ -45,7 +45,7 @@ npm install
 npx prisma generate
 npx prisma migrate dev --name init
 
-# 5. Poblar la base con los datos del JSON
+# 5. Poblar la base con los datos del JSON (la base recién migrada está vacía)
 npm run seed
 
 # 6. (Opcional) Inspeccionar visualmente
@@ -62,14 +62,14 @@ Al terminar, la base contiene: 1 perfil, 15 experiencias, las skills por categor
 Cada vez que generemos un CV nuevo, cambies un dato o agregues una experiencia:
 
 1. **Editar `docs/cv-data.json`** — agregar/modificar la experiencia, skill, proyecto o perfil curado.
-2. **Re-ejecutar el seed:**
+2. **Re-ejecutar el seed** (la base ya tiene contenido, así que hace falta `--overwrite`):
    ```bash
    cd backend
-   npm run seed
+   npm run seed -- --overwrite
    ```
-   El seed limpia las tablas y recarga todo desde el JSON. Tus datos quedan sincronizados.
+   El seed limpia las tablas y recarga todo desde el JSON. Tus datos quedan sincronizados. Sin `--overwrite`, sobre una base con contenido, se niega (§ 9).
 
-> ⚠️ El seed **borra y recarga** los datos del portafolio (no toca `AdminUser`), **también lo que editaste desde el panel**: no lo corras sobre una base con contenido administrado. Para aprender o probar usá los datos de ejemplo en una base aparte (§ 11). Desde la Fase 3 también podés editar experiencias, skills y perfiles curados por la API de backoffice (`/api/admin/*`, ver `backend/README.md`); esas ediciones **se pierden** si volvés a correr el seed, así que el JSON sigue siendo la fuente de verdad hasta que el backoffice visual (Fase 5) invierta el flujo. El administrador se crea con `npm run admin:bootstrap`.
+> ⚠️ El seed **borra y recarga** los datos del portafolio (no toca `AdminUser`), **también lo que editaste desde el panel**. Desde `protect-default-seed` se niega a hacerlo sobre una base con contenido salvo `--overwrite` (en producción, además `SEED_ALLOW_PRODUCTION=1`): respaldá antes con el `pg_dump` que sugiere la negativa. Para aprender o probar usá los datos de ejemplo en una base aparte (§ 11). Desde la Fase 3 también podés editar experiencias, skills y perfiles curados por la API de backoffice (`/api/admin/*`, ver `backend/README.md`); esas ediciones **se pierden** si volvés a correr el seed, así que el JSON sigue siendo la fuente de verdad hasta que el backoffice visual (Fase 5) invierta el flujo. El administrador se crea con `npm run admin:bootstrap`.
 
 ---
 
@@ -129,7 +129,7 @@ Cuando creamos un CV para una vacante nueva, el equivalente en el portafolio es 
    }
    ```
    El acento de la plantilla vive en `themeOverrides.colors.accent` (el campo `accentColor` se retiró en `retire-accent-color`). Es el color del acento sobre el fondo del tema (`modern-dark` usa `#0a0e1a`): elegí uno con contraste suficiente, 4,5:1 como mínimo para texto y 3:1 para elementos grandes.
-4. **Re-ejecutar el seed.** El nuevo perfil queda disponible en `/security-engineer`.
+4. **Re-ejecutar el seed** (`npm run seed -- --overwrite` si la base ya tiene contenido). El nuevo perfil queda disponible en `/security-engineer`.
 
 ### Vocabulario de tags actual
 
@@ -192,7 +192,8 @@ docker compose down -v                     # detener y BORRAR datos (reset total
 cd backend
 npx prisma migrate dev --name <nombre>     # nueva migración tras cambiar el schema
 npx prisma generate                        # regenerar cliente Prisma
-npm run seed                               # recargar datos desde el JSON
+npm run seed                               # cargar docs/cv-data.json (solo base vacía; con contenido, código 2)
+npm run seed -- --overwrite                # borrar y recargar aunque haya contenido (respaldá antes)
 npm run seed -- --file <ruta>              # cargar otro archivo (solo en una base descartable: § 11)
 npm run seed:example                      # cargar los datos de ejemplo (SEED_DISPOSABLE_DB=1)
 npm run seed:example:verify               # comparar la base con el ejemplo
@@ -206,6 +207,8 @@ npx prisma studio                          # GUI oficial de Prisma para ver/edit
 - **"Can't reach database":** ¿está corriendo `docker compose up -d`? ¿coincide `DATABASE_URL` con el puerto 5434 que publica el `docker-compose.yml` (`POSTGRES_PORT`)?
 - **El seed no encuentra `cv-data.json`:** el script lo busca en `../../docs/cv-data.json` relativo a `backend/scripts/`. Verificar la estructura de carpetas.
 - **Un perfil curado aparece vacío:** revisar que sus `filterTags` coincidan con tags reales en experiencias/proyectos. Usar el vocabulario de la sección 5.
+- **`npm run seed` sale con código 2 («Negativa: … la base ya tiene contenido»):** la base tiene filas en alguna de las tablas que el seed limpia; el mensaje lista los conteos, sugiere el `pg_dump` (sin contraseña) y no escribió nada. Si querés borrar y recargar, respaldá y corré `npm run seed -- --overwrite`; en producción además `SEED_ALLOW_PRODUCTION=1` solo para ese comando.
+- **`npm run seed` sale con código 1 («No se pudo comprobar si … tiene contenido»):** no se pudo contar (base sin migrar, sin conexión o `DATABASE_URL` mal). No se borró nada. Aplicá las migraciones (`npm run prisma:deploy`) o corregí la conexión.
 - **Cambié el schema y el seed falla:** correr `npx prisma migrate dev` antes del seed para sincronizar las tablas.
 
 ---
@@ -281,7 +284,7 @@ El seed **borra y recarga** el contenido. Por eso, con `--file` (y con `npm run 
 2. `NODE_ENV` distinto de `production`.
 3. Que la base no tenga filas de `Profile`, o que su único `Profile` tenga el mismo `fullName` que el archivo (así el ejemplo se puede recargar sobre sí mismo, pero nunca sobre otro perfil).
 
-Si falla alguna, sale con código **2**, dice cuál, muestra el destino como `host:puerto/base` (sin contraseña) y no escribe nada. La capa 3 cubre el olvido más probable: `backend/.env` apunta a tu base real y, si no redefinís `DATABASE_URL`, el seed se conectaría ahí; esa base tiene tu `Profile`, así que se niega aunque hayas puesto la variable. Un archivo inexistente, un JSON roto o un archivo que no cumple el formato salen con código **1** y tampoco borran nada. `npm run seed` a secas sigue cargando `docs/cv-data.json` sin esas exigencias.
+Si falla alguna, sale con código **2**, dice cuál, muestra el destino como `host:puerto/base` (sin contraseña) y no escribe nada. La capa 3 cubre el olvido más probable: `backend/.env` apunta a tu base real y, si no redefinís `DATABASE_URL`, el seed se conectaría ahí; esa base tiene tu `Profile`, así que se niega aunque hayas puesto la variable. Un archivo inexistente, un JSON roto o un archivo que no cumple el formato salen con código **1** y tampoco borran nada. `npm run seed` a secas no usa estas tres capas: tiene su propia negativa por contenido (§ 3 y § 9). **`--overwrite` no se combina con `--file`**: sale con código 1 antes de leer el archivo o conectarse, porque las tres capas ya cubren el caso completo, incluida la recarga del mismo archivo.
 
 **PowerShell**
 
@@ -339,7 +342,7 @@ cd frontend; $env:VITE_PROXY_TARGET = "http://localhost:3310"; npm run dev
 | Fuente de verdad | El JSON | La base |
 | Ediciones del panel | Se pierden | Se conservan |
 
-Si ya editaste contenido desde el panel, **no corras `npm run seed`** sobre esa base. (Proteger también el seed por defecto contra ese caso queda para un change aparte: decisión del 2026-10-27.)
+Si ya editaste contenido desde el panel, `npm run seed` se niega (código 2) y no escribe nada; solo `npm run seed -- --overwrite` borra y recarga, y debería ser un acto deliberado con respaldo previo. Para probar, usá una base aparte (§ 11.1).
 
 ---
 
