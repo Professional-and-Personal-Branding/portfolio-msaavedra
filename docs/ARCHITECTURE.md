@@ -252,6 +252,7 @@ model ProfileView { /* analítica: slug, timestamp, referrer */ }
 1. Inicializar NestJS + Prisma + PostgreSQL (Docker Compose).
 2. Definir schema Prisma y migración inicial.
 3. Seed con los datos de `cv-data.json`.
+   El seed acepta también `--file <ruta>` con un formato extendido (`docs/examples/cv-data.example.json`, datos ficticios para aprender y para el manual): valida la fuente antes de borrar y, con `--file`, se niega a escribir salvo base descartable (`SEED_DISPOSABLE_DB=1`). Ver `docs/DATA-POPULATION.md` § 11.
 4. Módulo `profile` y `experience` con Clean Architecture completa (un módulo de referencia bien hecho).
 5. Endpoints públicos de lectura + Swagger.
 

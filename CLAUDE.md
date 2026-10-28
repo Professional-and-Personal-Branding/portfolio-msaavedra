@@ -126,6 +126,9 @@ npm run prisma:generate  # prisma generate
 npm run prisma:status    # prisma migrate status
 npm run seed             # carga docs/cv-data.json
 npm run seed:verify      # compara conteos DB vs cv-data.json
+npm run seed -- --file <ruta>   # carga otro archivo (solo en una base DESCARTABLE: exige SEED_DISPOSABLE_DB=1, NODE_ENV != production y base vacía o con el mismo perfil; si no, sale con 2)
+npm run seed:example     # carga docs/examples/cv-data.example.json (datos FICTICIOS) en una base aparte, p. ej. portfolio_example; nunca en la del owner
+npm run seed:example:verify   # compara la base con el ejemplo (conteos, mecanismos de cada perfil, alias y visitas)
 npm run admin:bootstrap  # crea/actualiza el administrador (ADMIN_EMAIL/ADMIN_PASSWORD/ADMIN_NAME, argon2id)
 npm run openapi:export   # escribe backend/openapi.json (fuente de los tipos del frontend; sin servidor ni DB)
 npm run prisma:deploy    # aplica migraciones en producción (NUNCA prisma db push)
@@ -145,6 +148,8 @@ npm run typecheck        # tsc -b
 npm run print:check      # PDF de cada perfil en A4 y Letter: una hoja y contraste ≥ 4,5:1 (exige PRINT_CHECK_DISPOSABLE_DB=1 y una base DESCARTABLE)
 npm run perf:budget      # tope de JS del arranque público (≤ 155 KB gzip, un solo JS de módulo) sobre dist/; sin navegador ni base
 # a11y:check y perf:check abren páginas reales (cada carga registra una visita): exigen A11Y_CHECK_DISPOSABLE_DB=1
+npm run manual:capture -- <base>   # regenera las capturas de docs/manual desde la API de EJEMPLO (exige MANUAL_CAPTURE_DISPOSABLE_DB=1 y que GET /api/profile devuelva el perfil ficticio; sale con 2 si no)
+npm run manual:check             # sin navegador ni base: MANUAL.md e index.html alineados (casos, imágenes, mensajes literales, topes de tamaño); corre en el CI
 # y una base DESCARTABLE; contra la imagen de frontend/Dockerfile (ver docs/MANUAL.md § 5.1)
 npm run a11y:check -- <base>   # axe-core + recorrido de teclado (con A11Y_CHECK_ADMIN_EMAIL/_PASSWORD, también el panel)
 npm run perf:check -- <base>   # Lighthouse mobile, mediana de PERF_CHECK_RUNS (3) y umbral PERF_CHECK_MIN_PERFORMANCE (90)

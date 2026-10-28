@@ -1,0 +1,17 @@
+# Evidencia 8.2 — 2026-10-27 — guardas de manual:capture contra una API sembrada con cv-data.json (copia descartable portfolio_seedguard, API :3311)
+ProfileView antes: 47
+
+$ npm run manual:capture (sin MANUAL_CAPTURE_DISPOSABLE_DB)
+manual:capture se niega a correr: cada página pública que abre registra una visita en la base.
+Definí MANUAL_CAPTURE_DISPOSABLE_DB=1 solo si la API apunta a la BASE DE EJEMPLO descartable
+(npm run seed:example sobre portfolio_example), nunca a la base del owner.
+exit=2
+
+$ MANUAL_CAPTURE_DISPOSABLE_DB=1 npm run manual:capture -- http://localhost:3311  (la API sirve el CV real)
+La API de http://localhost:3311 sirve el perfil "Manuel Joaquín Saavedra Severiche", no el del archivo de ejemplo ("Alex Rivera Duarte").
+No se abrió ninguna página ni se registró ninguna visita.
+exit=2
+
+ProfileView después: 47  (sin cambios: no se abrió ninguna página)
+
+Archivos .jpg modificados por el script: 0

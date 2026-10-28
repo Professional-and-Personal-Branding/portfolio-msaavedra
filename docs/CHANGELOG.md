@@ -1,5 +1,17 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (`add-learning-guide-and-example-data`)
+
+Una guía para aprender a poblar y usar la plataforma, sobre una base de datos de ejemplo. Sin cambios de esquema ni de contrato HTTP.
+
+- **Datos de ejemplo ficticios** (`docs/examples/cv-data.example.json`): una persona inventada con las 9 secciones, todas las entidades y todos los mecanismos del perfil curado (filtro por tags, incluir y excluir, secciones reordenadas y ocultas, tema y layout propios, las tres visibilidades, no enumerado, archivado, alias de slug) y 105 visitas sintéticas. Es la base de referencia del manual.
+- **Seed con formato extendido** (`backend/scripts/lib/`): `npm run seed -- --file <ruta>`, `seed:example` y `seed:example:verify`. Campos opcionales por plantilla (`theme`, `layout`, `visibility`, `accessToken`, `sectionsOrder`, `sectionsHidden`, `includeRefs`/`excludeRefs`, `archived`, `slugAliases`) y `exampleViews`; sin ellos el seed hace exactamente lo de siempre (instantánea de 79 llamadas). La fuente se valida completa **antes** de borrar (código 1).
+- **Negativa en tres capas** con `--file`: `SEED_DISPOSABLE_DB=1`, `NODE_ENV` distinto de `production` y base vacía o con el mismo perfil. Si falla alguna, código 2 sin escribir y con el destino sin contraseña. Proteger también el `npm run seed` por defecto queda para un change aparte.
+- **Guía** (`docs/DATA-POPULATION.md` § 11 y 12): cómo crear, sembrar y borrar la base de ejemplo y una referencia campo por campo.
+- **Manual** (`docs/MANUAL.md`, `docs/manual/index.html`): ruta de aprendizaje de ocho conceptos, nueve recorridos por objetivo, manual del backoffice por pantalla con los mensajes literales del código, TC-36 y TC-37, glosario, filtros por área y por change y registro de una corrida con *Copiar resultado*. 44 capturas regeneradas con `npm run manual:capture`.
+- **`npm run manual:check`** (corre en el CI): casos, conceptos, recorridos y pantallas alineados entre los dos formatos, imágenes sin huérfanas, mensajes literales en `frontend/src` y topes de tamaño (150 KB por imagen, 4 MB en total, 300 KB el HTML).
+- **CI:** el job de e2e carga el ejemplo dos veces en una segunda base y comprueba la negativa contra la base con el CV.
+
 ## Update — Octubre 2026 (ronda 1.1.x — `improve-mobile-performance`)
 
 La vista pública abre más rápido en un móvil de gama media: el objetivo es Performance ≥ 85 en el runner de GitHub (antes 71–76, con TBT de 300–400 ms y LCP de ≈ 3,8 s). Sin backend, sin contrato HTTP, sin migración y sin tocar la CSP.

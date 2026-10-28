@@ -1,0 +1,28 @@
+{
+  "fecha": "2026-10-28",
+  "pagina": "docs/manual/index.html servido en local",
+  "axeCore": "4.13.0",
+  "escritorio_1280x900": {
+    "dark": [
+      {
+        "id": "heading-order",
+        "impact": "moderate",
+        "nodos": 1,
+        "ejemplos": [
+          "nav > h3:nth-child(1)"
+        ]
+      }
+    ],
+    "light": [
+      {
+        "id": "heading-order",
+        "impact": "moderate",
+        "nodos": 1,
+        "ejemplos": [
+          "nav > h3:nth-child(1)"
+        ]
+      }
+    ]
+  },
+  "serious_o_critical": 0
+}

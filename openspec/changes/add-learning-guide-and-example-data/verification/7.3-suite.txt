@@ -1,0 +1,67 @@
+# Evidencia 7.3 - 2026-10-27 - suite-backoffice.ps1 contra la API de ejemplo (:3310, base portfolio_example)
+
+## Guarda: contra una API que sirve cv-data.json (:3311)
+--- guarda contra la API que sirve cv-data.json (:3311)
+La API de http://localhost:3311 sirve el perfil 'Manuel Joaquín Saavedra Severiche', no el del archivo de ejemplo ('Alex Rivera Duarte'). No se ejecuto nada.
+exit=2
+
+## Corrida contra la API de ejemplo (:3310)
+## TC-12 - Crear un perfil curado
+  POST /api/admin/curated-profiles            -> 201  id=cmvrcgnlt001vuczczwpfll5m slug=suite-demo visibility=PRIVATE
+  valores por defecto: layout=classic views=0 filterTags=[]
+  POST con el mismo slug                      -> 409  (esperado 409)
+  POST con un campo fuera del DTO             -> 400  (esperado 400)
+  POST con accentColor (retirado)             -> 400  (esperado 400)
+  POST omitiendo 'title' (obligatorio)        -> 400  (esperado 400)
+  POST experiencia omitiendo 'summary'        -> 400  (esperado 400)
+
+## TC-19 - Mantener experiencias
+  POST experiencia visible   -> id=cmvrcgnnp001wuczc51sqpz9c tags=[suite-tag] visible=True
+  POST experiencia oculta    -> id=cmvrcgno0001xuczci3mgc3jq visible=False
+  GET /api/experiences (publico) incluye la oculta? False  (esperado False)
+  GET /api/admin/experiences incluye la oculta? True  (esperado True)
+
+## TC-13 - Tags y overrides
+  filterTags vacio                       -> 6 experiencias (entra todo lo visible)
+  filterTags=[suite-tag]                 -> 1 experiencias; la visible entro=1, la oculta entro=0 (esperado 1 y 0)
+  includeIds sobre una experiencia oculta -> entro=0 (esperado 0: includeIds no fuerza invisibles)
+  mismo id en includeIds y excludeIds     -> entro=0 (esperado 0: excludeIds siempre gana)
+
+## TC-14 - Ordenar y ocultar secciones
+  sectionsOrder=[hero,experience]        -> sections=[hero,experience,stats,skills,projects,education,certifications,presence,contact]
+     (las secciones con datos omitidas del orden se agregan al final)
+  con sectionsHidden=[skills]            -> sections=[hero,experience,contact,stats,projects,education,certifications,presence] hiddenSections=[skills]
+
+## TC-20 - Skills y categorias
+  POST categoria -> id=cmvrcgnrw001yuczc1mj8uigr nombre=Suite Cat
+  POST skill     -> id=cmvrcgns90020uczc3ugbr74z nombre=SuiteSkill tags=[suite-tag]
+  la categoria entra al perfil por el tag de su skill -> 1 (esperado 1)
+
+## TC-15 - Tema
+  GET /api/admin/themes -> 5 temas: corporate, elegant, minimal, modern-dark, modern-light
+  PATCH themeOverrides  -> accent guardado=#5B2C87 (solo la diferencia, no el tema completo)
+
+## TC-17 - El preview no persiste
+  layout antes=classic despues de previsualizar con sidebar=classic (esperado: igual)
+  filterTags antes=[] despues=[] (esperado: igual)
+
+## TC-16 - Visibilidad
+  PUBLIC    sin token -> 200  (esperado 200)
+  PROTECTED sin token -> 401  (esperado 401)
+  PROTECTED con token -> 200  (esperado 200)
+  PRIVATE   sin token -> 404  (esperado 404)
+  PRIVATE   con token -> 404  (esperado 404: no revela que existe)
+  inexistente         -> 404  (esperado 404: indistinguible del PRIVATE)
+  el PRIVATE figura en el sitemap? False  (esperado False)
+
+## TC-18 - Analitica
+  views antes=2, tras 2 visitas publicas=4  (esperado +2)
+  tras un preview del panel=4  (esperado: igual que 4, el preview no cuenta visitas)
+  GET analytics/views del dia -> total=37; suite-demo=4; idiomas=es:32 en:5
+
+## Limpieza
+  perfil cmvrcgnlt001vuczczwpfll5m borrado
+  experiencia cmvrcgnnp001wuczc51sqpz9c borrada
+  experiencia cmvrcgno0001xuczci3mgc3jq borrada
+  categoria cmvrcgnrw001yuczc1mj8uigr borrada (y sus skills)
+  estado final: 9 perfiles, 6 experiencias
