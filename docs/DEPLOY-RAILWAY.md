@@ -4,7 +4,7 @@
 >
 > La configuración de build ya está versionada (`backend/railway.json`, `frontend/railway.json`, `frontend/Dockerfile`, `frontend/Caddyfile`). **En el panel se cargan variables, la ruta del archivo de configuración y el dominio.**
 >
-> Decisiones tomadas: plan **Hobby**; dominio propio **`mjsaavedra.link`**, sin `www` (el apex), registrado en **Porkbun** (USD 7,72 por año, renovación al mismo precio; su DNS admite registros `ALIAS` para el apex y redirección de `www` gratis). `FRONTEND_URL` se completa en el paso 6. El dominio no está escrito en ningún archivo del código: si después se cambia por otro, alcanza con el procedimiento de [«Cambiar de dominio»](#cambiar-de-dominio). Comandos para **PowerShell**; los `curl` se escriben `curl.exe` para no chocar con el alias de PowerShell.
+> Decisiones tomadas: plan **Hobby**; dominio **gratuito `mjsaavedra.is-a.dev`** para la 1.0.0 (subdominio de [is-a.dev](https://docs.is-a.dev), que se pide con un PR a su repositorio en GitHub); la compra de un dominio propio queda para después (ver [«Dominios candidatos»](#dominios-candidatos)). `FRONTEND_URL` se completa en el paso 6. El dominio no está escrito en ningún archivo del código: si después se cambia por otro, alcanza con el procedimiento de [«Cambiar de dominio»](#cambiar-de-dominio). Comandos para **PowerShell**; los `curl` se escriben `curl.exe` para no chocar con el alias de PowerShell.
 
 **Arquitectura:** tres servicios en un proyecto. `web` (Caddy) sirve la SPA y hace de **proxy** de `/api/*`, `/health*`, `/robots.txt` y `/sitemap.xml` hacia `api` por la red privada. Un solo origen → cookie `SameSite=strict`, sin CORS, `VITE_API_URL` vacío. (§ 0, § 9.5)
 
@@ -21,7 +21,7 @@ navegador → [web: Caddy] ──/api/*──▶ [api: NestJS] ──privada─�
 - [ ] El repositorio conectado a Railway (GitHub) y `main` al día con este cambio.
 - [ ] En tu máquina: Node 22, `git`, **Docker** (para la prueba de restauración del paso 9) y el `.env` de `backend/` apuntando a **tu base local**, nunca a producción.
 - [ ] Un gestor de contraseñas abierto: ahí van los secretos del paso 1.
-- [ ] `mjsaavedra.link` comprado en Porkbun (confirmá la disponibilidad al pagar; activá la renovación automática y el bloqueo de transferencia). Hasta tenerlo, los pasos 1 a 5 y 7 se pueden hacer con el dominio `*.up.railway.app` del servicio `web`; el paso 6 y el `FRONTEND_URL` definitivo quedan para cuando exista.
+- [ ] Cuenta de GitHub para pedir `mjsaavedra.is-a.dev` (paso 6). Mientras el PR de is-a.dev no esté aprobado, los pasos 1 a 5 y 7 se pueden hacer con el dominio `*.up.railway.app` del servicio `web`; el paso 6 y el `FRONTEND_URL` definitivo quedan para cuando exista.
 
 ---
 
@@ -76,7 +76,7 @@ LOG_LEVEL=info
 THROTTLE_TTL=60
 THROTTLE_LIMIT=120
 THROTTLE_LOGIN_LIMIT=5
-FRONTEND_URL=https://mjsaavedra.link
+FRONTEND_URL=https://mjsaavedra.is-a.dev
 ```
 
 - **`FRONTEND_URL`** lleva el dominio real, que se completa en el paso 6. La API en producción exige un valor https; si querés probar antes de tener dominio, poné provisoriamente `https://<dominio-up.railway.app-de-web>` y reemplazalo en el paso 6.
@@ -167,28 +167,32 @@ VITE_API_URL=
 
 ---
 
-## 6. Dominio propio, sin `www` (§ 0)
+## 6. Dominio gratuito `mjsaavedra.is-a.dev` (§ 0)
 
-- [ ] En `web` → **Settings → Networking → Custom Domain** → agregar `mjsaavedra.link` (el apex). El panel muestra los registros **exactos** (un destino tipo `xxxx.up.railway.app` y, si lo pide, un TXT de verificación).
-- [ ] En **Porkbun → Domain Management → DNS** de `mjsaavedra.link`: borrar los registros por defecto del apex (el `ALIAS`/`A` de *parking* y el `CNAME` de `*`), crear un **`ALIAS`** con host vacío (el apex) apuntando al destino que mostró Railway, y el `TXT` de verificación si lo pidió. Para el apex se usa `ALIAS` porque un `CNAME` no se permite en la raíz.
-- [ ] No poner ningún proxy o CDN delante (Porkbun no lo hace por defecto): la API toma la IP real del cliente de `X-Real-IP`, que entrega el borde de Railway (§ 9.5 «IP real del cliente»).
-- [ ] Esperar a que el certificado quede emitido (el panel lo marca; puede tardar minutos).
-- [ ] Redirección de `www.mjsaavedra.link` a `mjsaavedra.link` (301): en Porkbun → **URL Forwarding**, host `www`, destino `https://mjsaavedra.link`, tipo *Permanent (301)*, con la opción de incluir la ruta. Comprobar que `https://www.mjsaavedra.link` también redirige sin aviso de certificado; si Porkbun no ofrece HTTPS en esa redirección, agregar `www.mjsaavedra.link` como segundo Custom Domain de `web` y redirigir desde Caddy en un change aparte. No se agrega `www` como dominio principal.
-- [ ] En `api`: **`FRONTEND_URL=https://mjsaavedra.link`** (origen exacto, sin barra final; de él dependen CORS, el `canonical`, la `og:image` y las URLs del sitemap).
+Es un subdominio, así que no hace falta `ALIAS` ni redirección de `www`. El trámite es un PR al repositorio [`is-a-dev/register`](https://github.com/is-a-dev/register) y **lo hacés vos desde tu cuenta de GitHub** (su README pide que la solicitud no la genere una IA y la revisan a mano; el tiempo de aprobación no está publicado). Seguí su [guía para Railway](https://docs.is-a.dev/guides/railway/) y la [estructura de archivos](https://docs.is-a.dev/domain-structure/).
+
+- [ ] En `web` → **Settings → Networking → Custom Domain** → agregar `mjsaavedra.is-a.dev`. Railway muestra dos valores: el destino del **`CNAME`** (`@`, tipo `xxxx.up.railway.app`) y el **`TXT`** de `_railway-verify`.
+- [ ] Hacer fork de `is-a-dev/register` y crear en la carpeta `domains/` dos archivos, con tu usuario de GitHub en `owner.username`:
+  - `domains/mjsaavedra.json` → `{ "owner": { "username": "<tu-usuario>" }, "records": { "CNAME": "<destino que dio Railway>" } }`
+  - `domains/_railway-verify.mjsaavedra.json` → `{ "owner": { "username": "<tu-usuario>" }, "records": { "TXT": "<valor de _railway-verify>" } }`
+- [ ] **Sin `"proxied": true`**. Ese campo pone el proxy de Cloudflare delante, y entonces Railway vería la IP de Cloudflare en `X-Real-IP`: se romperían la IP real del cliente y el límite de peticiones y de login por visitante (§ 9.5 «IP real del cliente»).
+- [ ] Abrir el PR con la vista previa del sitio que exige is-a.dev: el link `*.up.railway.app` del servicio `web` y una captura de la home. Si piden cambios, aplicarlos; si no, rechazan la solicitud.
+- [ ] Cuando lo fusionen, el DNS se publica en minutos (si a las 48 h no resuelve, abrir un issue o preguntar en su Discord). Esperar a que Railway marque el dominio verificado y el certificado emitido.
+- [ ] En `api`: **`FRONTEND_URL=https://mjsaavedra.is-a.dev`** (origen exacto, sin barra final; de él dependen CORS, el `canonical`, la `og:image` y las URLs del sitemap).
 - [ ] **Redeploy de `api`.**
-- [ ] Verificar: `curl.exe -s https://mjsaavedra.link/tech-lead-dotnet | Select-String 'og:title|canonical'` muestra el título del perfil y `https://mjsaavedra.link/tech-lead-dotnet` (no `localhost`).
+- [ ] Verificar: `curl.exe -s https://mjsaavedra.is-a.dev/tech-lead-dotnet | Select-String 'og:title|canonical'` muestra el título del perfil y `https://mjsaavedra.is-a.dev/tech-lead-dotnet` (no `localhost`).
 
 ---
 
 ## 7. Verificación completa (§ 5)
 
 ```powershell
-$SITIO = 'https://mjsaavedra.link'
+$SITIO = 'https://mjsaavedra.is-a.dev'
 
 curl.exe -s $SITIO/health                                              # 1. JSON, status ok, base arriba
 curl.exe -s -o NUL -w "%{http_code}`n" $SITIO/tech-lead-dotnet         # 2. 200: fallback de la SPA con el head del perfil
-curl.exe -s $SITIO/robots.txt                                          # 3. con el dominio (Sitemap: https://mjsaavedra.link/sitemap.xml)
-curl.exe -s $SITIO/sitemap.xml | Select-Object -First 5                #    URLs con https://mjsaavedra.link
+curl.exe -s $SITIO/robots.txt                                          # 3. con el dominio (Sitemap: https://mjsaavedra.is-a.dev/sitemap.xml)
+curl.exe -s $SITIO/sitemap.xml | Select-Object -First 5                #    URLs con https://mjsaavedra.is-a.dev
 curl.exe -s $SITIO/api/curated-profiles/no-existe                      # 4. error sin stack ni detalles
 curl.exe -s -o NUL -w "%{http_code}`n" $SITIO/api/docs-json            # 5. 404: Swagger cerrado
 curl.exe -sI $SITIO/ | Select-String -Pattern 'content-security-policy|x-content-type|referrer-policy'   # 6. CSP presente
@@ -263,7 +267,7 @@ Remove-Item Env:PGURL
 
 ## 10. Cierre
 
-- [ ] Search Console: dar de alta `mjsaavedra.link` y enviar `https://mjsaavedra.link/sitemap.xml`. (§ 8)
+- [ ] Search Console: dar de alta `https://mjsaavedra.is-a.dev` como propiedad de **prefijo de URL** (no de dominio: el DNS de `is-a.dev` no es tuyo; verificá con el **archivo HTML** que ofrece Search Console: va en `frontend/public/` con un PR chico, y Caddy lo sirve tal cual) y enviar `https://mjsaavedra.is-a.dev/sitemap.xml`. (§ 8)
 - [ ] **Alerta de uso** del plan Hobby: configurar el aviso de gasto en Railway y mirar el panel de uso la primera semana (tres servicios encendidos superan los USD 5 incluidos).
 - [ ] Verificar que el redeploy es selectivo: un cambio trivial en `backend/` (p. ej. un comentario) y push a `main` tiene que redesplegar **solo `api`**, no `web` (por los `watchPatterns` `/backend/**` y `/frontend/**`).
 - [ ] `git tag v1.0.0 && git push --tags`.
@@ -288,7 +292,7 @@ Evaluados el 2026-10-28 (disponibilidad consultada por RDAP ese día: confirmar 
 
 | Dominio | Registrador | Registro | Renovación | Notas |
 |---|---|---|---|---|
-| **`mjsaavedra.link`** | Porkbun | 7,72 | 7,72 | **Elegido para la 1.0.0.** Neutro, sin restricciones; DNS con `ALIAS` y redirección de `www` |
+| `mjsaavedra.link` | Porkbun | 7,72 | 7,72 | Neutro, sin restricciones; DNS con `ALIAS` en el apex y *URL Forwarding* para `www` (sin proxy delante) |
 | `mjsaavedra.uk` | Cloudflare | 5,30 | 5,30 | El más barato serio; el requisito de dirección en el Reino Unido se habría eliminado en 2018 (confirmar). Cloudflare exige sus nameservers: registro en solo DNS (nube gris) |
 | `mjsaavedra.com` | Cloudflare | 10,46 | ~11,17 desde 2026-11-01 | El más reconocible; mismo cuidado con el proxy de Cloudflare |
 | `manueljsaavedra.com` | Cloudflare | 10,46 | ~11,17 | Nombre completo |
@@ -296,7 +300,7 @@ Evaluados el 2026-10-28 (disponibilidad consultada por RDAP ese día: confirmar 
 | `manuelsaavedra.dev` | Porkbun | 8,75 | 12,87 | Nombre exacto |
 | `mjsaavedra.page` | Cloudflare | 10,20 | 10,20 | Registro de Google; exige HTTPS |
 | `mjsaavedra.fyi` | Cloudflare | 5,20 | 5,20 | Muy barato, pero informal |
-| `mjsaavedra.is-a.dev` | is-a.dev (gratis) | 0 | 0 | Por PR al repositorio de is-a.dev; depende de su aprobación |
+| **`mjsaavedra.is-a.dev`** | is-a.dev (gratis) | 0 | 0 | **Elegido para la 1.0.0.** Por PR al repositorio de is-a.dev; depende de su aprobación; sin `"proxied": true` (paso 6) |
 
 Descartados: `manuelsaavedra.com` y `msaavedra.com` (registrados); `.top`, `.xyz`, `.click`, `.site`, `.online` (reputación de spam o renovaciones caras); `.de` y `.us` (exigen contacto en Alemania o vínculo con EE. UU.); `.tech`, `.io`, `.me`, `.pro` (renovaciones de USD 17 a 50); `.cv` (elegibilidad para extranjeros sin confirmar).
 
@@ -316,7 +320,7 @@ Descartados: `manuelsaavedra.com` y `msaavedra.com` (registrados); `.top`, `.xyz
 | El login del panel no persiste la sesión | la cookie viaja a otro origen: revisar `SESSION_COOKIE_SAMESITE` y que el navegador use el dominio de `web` | § 0 |
 | El proxy no encuentra la API | `API_ORIGIN` con otro nombre de servicio o otro puerto que el `PORT` de `api` | § 9.5 |
 | **429 en el login para todos** (o para vos desde cualquier red) | la API ve una sola IP: falta o se rompió el `header_up X-Forwarded-For` del `Caddyfile`. Esperá 60 s a que expire la ventana | § 9.5, *IP real del cliente* |
-| Todos los perfiles se previsualizan iguales (**cards genéricas**) | el head del servidor no llega: `api` caída o lenta (el sitio degrada al genérico a propósito) o `index.html` sin pasar por `templates`. LinkedIn y Slack guardan en caché la tarjeta anterior: reintentá en Post Inspector | `curl.exe -s https://mjsaavedra.link/<slug> \| Select-String og:title` · § 9.5 |
+| Todos los perfiles se previsualizan iguales (**cards genéricas**) | el head del servidor no llega: `api` caída o lenta (el sitio degrada al genérico a propósito) o `index.html` sin pasar por `templates`. LinkedIn y Slack guardan en caché la tarjeta anterior: reintentá en Post Inspector | `curl.exe -s https://mjsaavedra.is-a.dev/<slug> \| Select-String og:title` · § 9.5 |
 | `canonical` u `og:image` apuntan a `localhost` o a otro dominio | `FRONTEND_URL` de `api` sin el dominio público | § 9.5 |
 | El HTML responde 500 | un error dentro del template de `index.html`: se tocó una acción `<!--# … -->` o se quitó el `handle_errors` del `Caddyfile` | `frontend/Caddyfile` |
 
