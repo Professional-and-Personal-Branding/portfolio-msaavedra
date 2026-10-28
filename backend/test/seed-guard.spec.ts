@@ -283,5 +283,24 @@ describe('seed-guard · seed por defecto', () => {
       ].join('\n');
       expect(all).not.toContain('s3cr3t-pass');
     });
+
+    it('falla al contar: quita la contraseña codificada y la decodificada', () => {
+      const encodedUrl = 'postgresql://portfolio:p%40ss%2Fw0rd%25@localhost:5434/portfolio';
+      const message = formatCountFailure(
+        target,
+        new Error('auth failed for p@ss/w0rd% (url: p%40ss%2Fw0rd%25)'),
+        encodedUrl,
+      );
+      expect(message).toContain('auth failed for *** (url: ***)');
+      expect(message).not.toContain('p@ss/w0rd%');
+      expect(message).not.toContain('p%40ss%2Fw0rd%25');
+    });
+
+    it('falla al contar: una codificación inválida no rompe el mensaje', () => {
+      const badUrl = 'postgresql://portfolio:bad%zz@localhost:5434/portfolio';
+      expect(formatCountFailure(target, new Error('fallo con bad%zz'), badUrl)).toContain(
+        'fallo con ***',
+      );
+    });
   });
 });

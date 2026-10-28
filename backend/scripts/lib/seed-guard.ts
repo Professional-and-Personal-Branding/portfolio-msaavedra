@@ -252,19 +252,37 @@ export function formatOverwriteWarning(
   return `⚠️  ${prefix}: se borra el contenido de ${target} (${detail}).`;
 }
 
-/** Falla al contar (D6). Quita la contraseña de la URL si el error la arrastrara. */
+/**
+ * Formas en que la contraseña de la URL puede aparecer en un mensaje: tal como está en la URL
+ * (codificada, que es lo que devuelve `URL.password`) y decodificada.
+ */
+function passwordForms(databaseUrl: string | undefined): string[] {
+  if (!databaseUrl) return [];
+  let encoded: string;
+  try {
+    encoded = new URL(databaseUrl).password;
+  } catch {
+    return []; // URL ilegible: no hay contraseña que quitar.
+  }
+  if (encoded === '') return [];
+  let decoded = encoded;
+  try {
+    decoded = decodeURIComponent(encoded);
+  } catch {
+    // Codificación inválida: queda solo la forma literal.
+  }
+  // La más larga primero, para no dejar restos si una contiene a la otra.
+  return [...new Set([encoded, decoded])].sort((a, b) => b.length - a.length);
+}
+
+/** Falla al contar (D6). Quita la contraseña de la URL, codificada o no, si el error la arrastrara. */
 export function formatCountFailure(
   target: string,
   cause: unknown,
   databaseUrl: string | undefined,
 ): string {
   let message = cause instanceof Error ? cause.message : String(cause);
-  try {
-    const password = databaseUrl ? new URL(databaseUrl).password : '';
-    if (password !== '') message = message.split(password).join('***');
-  } catch {
-    // URL ilegible: no hay contraseña que quitar.
-  }
+  for (const form of passwordForms(databaseUrl)) message = message.split(form).join('***');
   return [
     `❌ No se pudo comprobar si ${target} tiene contenido: ${message}`,
     '¿Aplicaste las migraciones? (npm run prisma:deploy)',
