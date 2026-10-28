@@ -1,5 +1,6 @@
 <meta charset="utf-8">
 <title>Manual del Portafolio Administrable</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -89,14 +90,16 @@
   }
   .chip:hover { color: var(--fg); }
   .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #04101F; font-weight: 600; }
-  :root[data-theme="light"] .chip[aria-pressed="true"],
-  :root:not([data-theme="dark"]) .chip[aria-pressed="true"] { color: #fff; }
+  :root[data-theme="light"] .chip[aria-pressed="true"] { color: #fff; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .chip[aria-pressed="true"] { color: #fff; } }
+  :root[data-theme="light"] .pill.ok { color: #065f46; } :root[data-theme="light"] .pill.part { color: #8a3b06; } :root[data-theme="light"] .pill.fail { color: #991b1b; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .pill.ok { color: #065f46; } :root:not([data-theme="dark"]) .pill.part { color: #8a3b06; } :root:not([data-theme="dark"]) .pill.fail { color: #991b1b; } }
 
   /* ── Estructura ── */
   .shell { max-width: 1280px; margin: 0 auto; padding: 0 16px; display: grid; gap: 28px; grid-template-columns: 232px minmax(0, 1fr); padding-block: 24px 64px; }
   @media (max-width: 900px) { .shell { grid-template-columns: minmax(0, 1fr); } .side { position: static; max-height: none; } }
 
-  .side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 68px); align-self: start; max-height: calc(100vh - 100px); overflow-y: auto; }
+  .side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 112px); align-self: start; max-height: calc(100vh - 130px); overflow-y: auto; }
   .side h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--fg-muted); margin: 18px 0 7px; }
   .side h3:first-child { margin-top: 0; }
   .side a {
@@ -113,7 +116,7 @@
   .dot.fail { background: var(--fail); }
 
   /* ── Tarjetas ── */
-  section, .case, .shot { scroll-margin-top: 80px; }
+  section, .case, .shot, .concept, .tour, .screen { scroll-margin-top: 120px; }
   .block { margin-bottom: 36px; }
   .block > h2 {
     font-size: 20px; letter-spacing: -.015em; margin-bottom: 4px;
@@ -212,21 +215,69 @@
   .lb img { max-width: 100%; max-height: 88vh; width: auto; border-radius: 8px; border: 1px solid var(--border); }
   .lb .close { position: absolute; top: 14px; right: 16px; }
 
+
+  /* ── Aprender, recorridos, backoffice y glosario ── */
+  .concept, .tour, .screen {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow);
+  }
+  .concept h3, .tour h3, .screen h3 { font-size: 16px; letter-spacing: -.01em; margin-bottom: 6px; }
+  .concept p, .tour p, .screen p { margin: 8px 0; }
+  .tour ol { margin: 8px 0; padding-left: 22px; }
+  .tour li { margin: 5px 0; }
+  .gloss { margin: 0; }
+  .gloss .g { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .gloss dt { font-weight: 600; }
+  .gloss dd { margin: 2px 0 0; color: var(--fg-muted); }
+  .gloss .refs { font-size: 12.5px; white-space: nowrap; }
+  td.msg { font-family: var(--mono); font-size: 12.5px; }
+
+  /* ── Filtros por área y change; registro de la corrida ── */
+  .sel { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg-muted); }
+  .sel select {
+    font: inherit; font-size: 12px; color: var(--fg); background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 7px; padding: 5px 8px; max-width: 190px;
+  }
+  .count { font-size: 12px; color: var(--fg-muted); white-space: nowrap; }
+  fieldset.run {
+    border: 0; border-top: 1px dashed var(--border); margin: 14px 0 0; padding: 8px 0 0;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px;
+  }
+  fieldset.run legend { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--fg-muted); padding: 0 6px 0 0; }
+  fieldset.run label { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--fg-muted); cursor: pointer; }
+  fieldset.run input[type="radio"] { accent-color: var(--accent); width: 14px; height: 14px; }
+  .note-in, .runbase {
+    font: inherit; font-size: 12.5px; color: var(--fg); background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; min-width: 0;
+  }
+  fieldset.run .note-in { flex: 1 1 200px; }
+  .runtools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+  .runtools label { font-size: 12px; color: var(--fg-muted); display: flex; align-items: center; gap: 6px; }
+  .reportout { width: 100%; min-height: 160px; margin-top: 10px; font-family: var(--mono); font-size: 12px; color: var(--fg); background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
-<div class="topbar">
+<div class="topbar" role="banner">
   <div class="topbar-in">
-    <div class="brand">Manual del Portafolio <span>· suite funcional</span></div>
+    <h1 class="brand">Manual del Portafolio <span>· suite funcional</span></h1>
     <div class="spacer"></div>
-    <div class="filters" id="filters">
+    <div class="filters" id="filters" role="group" aria-label="Estado">
       <button class="chip" data-filter="all" aria-pressed="true">Todos</button>
       <button class="chip" data-filter="ok" aria-pressed="false">Pasan</button>
       <button class="chip" data-filter="part" aria-pressed="false">Parciales</button>
       <button class="chip" data-filter="fail" aria-pressed="false">Fallan</button>
     </div>
+    <div class="filters" id="areafilters" role="group" aria-label="Área">
+      <button class="chip" data-area="all" aria-pressed="true">Todas las áreas</button>
+      <button class="chip" data-area="publica" aria-pressed="false">Pública</button>
+      <button class="chip" data-area="backoffice" aria-pressed="false">Backoffice</button>
+      <button class="chip" data-area="datos" aria-pressed="false">Datos</button>
+    </div>
+    <label class="sel" for="changesel">Change <select id="changesel"><option value="all">Todos</option><option value="add-public-frontend-theming">add-public-frontend-theming</option><option value="add-auth-and-crud">add-auth-and-crud</option><option value="add-admin-backoffice">add-admin-backoffice</option><option value="add-curated-profile-lifecycle">add-curated-profile-lifecycle</option><option value="add-profile-content-admin">add-profile-content-admin</option><option value="polish-builder-and-edge">polish-builder-and-edge</option><option value="add-printable-one-page">add-printable-one-page</option><option value="localize-language-level">localize-language-level</option><option value="improve-a11y-and-performance">improve-a11y-and-performance</option><option value="improve-mobile-performance">improve-mobile-performance</option><option value="add-learning-guide-and-example-data">add-learning-guide-and-example-data</option></select></label>
     <input class="search" id="q" type="search" placeholder="Buscar caso…" aria-label="Buscar caso">
+    <span class="count" id="count" role="status" aria-live="polite"></span>
     <button class="iconbtn" id="theme" title="Cambiar tema">Tema</button>
   </div>
 </div>
@@ -235,8 +286,13 @@
   <nav class="side" aria-label="Índice">
     <h3>Empezar</h3>
     <a href="#entorno"><span class="id">§0</span> Entorno y puertos</a>
+    <a href="#base-ejemplo"><span class="id">§0b</span> Base de ejemplo</a>
     <a href="#mapa"><span class="id">§1</span> Mapa de la plataforma</a>
     <a href="#resumen"><span class="id">§2</span> Resumen</a>
+    <h3>Aprender</h3>
+    <a href="#aprender"><span class="id">A</span> Ruta de aprendizaje</a>
+    <a href="#recorridos"><span class="id">B</span> Recorridos por objetivo</a>
+    <a href="#manual-backoffice"><span class="id">C</span> Manual del backoffice</a>
     <h3>Vista pública</h3>
     <a href="#tc01"><span class="dot ok"></span><span class="id">TC-01</span> Home</a>
     <a href="#tc02"><span class="dot ok"></span><span class="id">TC-02</span> Idioma</a>
@@ -274,6 +330,9 @@
     <a href="#tc28"><span class="dot ok"></span><span class="id">TC-28</span> Aviso en el constructor</a>
     <a href="#tc29"><span class="dot ok"></span><span class="id">TC-29</span> Aviso en la Portada</a>
     <a href="#tc30"><span class="dot ok"></span><span class="id">TC-30</span> Aviso en diálogos</a>
+    <h3>Datos de ejemplo</h3>
+    <a href="#tc36"><span class="dot ok"></span><span class="id">TC-36</span> Cargar el ejemplo</a>
+    <a href="#tc37"><span class="dot ok"></span><span class="id">TC-37</span> La negativa del seed</a>
     <h3>Cierre</h3>
     <a href="#defectos"><span class="dot ok"></span><span class="id">§6</span> Defectos</a>
     <a href="#noadmin"><span class="id">§7</span> El seed</a>
@@ -281,6 +340,7 @@
     <a href="#calidad"><span class="id">§8.1</span> Calidad web</a>
     <a href="#receta"><span class="id">§9</span> Receta completa</a>
     <a href="#fallas"><span class="id">§10</span> Qué falla y por qué</a>
+    <a href="#glosario"><span class="id">§11</span> Glosario</a>
   </nav>
 
   <main>
@@ -296,6 +356,7 @@
             <tr><td>Postgres</td><td class="num">5434</td><td><code>POSTGRES_PORT=5555 docker compose up -d</code></td></tr>
             <tr><td>Adminer</td><td class="num">8080</td><td><code>ADMINER_PORT=8081 docker compose up -d</code></td></tr>
             <tr><td>API (NestJS)</td><td class="num">3300</td><td><code>PORT</code> en <code>backend/.env</code></td></tr>
+            <tr><td>API de ejemplo</td><td class="num">3310</td><td><code>PORT=3310</code> en la terminal, con la <code>DATABASE_URL</code> de <code>portfolio_example</code></td></tr>
             <tr><td>Sitio (Vite)</td><td class="num">5173</td><td><code>npm run dev -- --port 5174</code></td></tr>
           </tbody>
         </table>
@@ -333,6 +394,19 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
     </section>
 
     <!-- ───────────── Mapa ───────────── -->
+    <section id="base-ejemplo" class="block">
+      <h2>Base de ejemplo</h2>
+      <p class="lede">Los casos, los recorridos y las capturas corren sobre una base <b>aparte</b> (<code>portfolio_example</code>), sembrada con una persona ficticia. <b>Nunca contra la base <code>portfolio</code></b>: crean y borran datos y cada carga pública suma una visita. El seed se niega a cargar el ejemplo sobre otra base (TC-37).</p>
+      <div class="codewrap"><pre>docker exec portfolio-postgres createdb -U portfolio portfolio_example
+cd backend
+$env:DATABASE_URL = "postgresql://portfolio:portfolio@localhost:5434/portfolio_example?schema=public"
+npm run prisma:status; npm run prisma:deploy          # tiene que decir: database "portfolio_example"
+$env:SEED_DISPOSABLE_DB = "1"; npm run seed:example; npm run seed:example:verify
+$env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del owner sigue en el 3300
+# otra terminal:  cd frontend; $env:VITE_PROXY_TARGET = "http://localhost:3310"; npm run dev</pre></div>
+      <p>En los <code>curl</code> del manual, <code>API=http://localhost:3310</code>. Para el panel hace falta un administrador de prueba <b>de esa base</b> (<code>npm run admin:bootstrap</code> con <code>ADMIN_EMAIL=capture@example.com</code> y una contraseña aleatoria de la sesión, que no se guarda en ningún archivo). Guía completa: <code>docs/DATA-POPULATION.md</code> § 11.</p>
+    </section>
+
     <section id="mapa" class="block">
       <h2>Mapa de la plataforma</h2>
       <p class="lede">Dónde está cada cosa: lo público, lo que viaja en la URL y el panel.</p>
@@ -342,7 +416,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
         <thead><tr><th>Ruta</th><th>Qué es</th></tr></thead>
         <tbody>
           <tr><td><code>/</code></td><td>La home. Es el perfil curado con slug <code>all</code></td></tr>
-          <tr><td><code>/:slug</code></td><td>Un perfil curado. Ej. <code>/tech-lead-dotnet</code></td></tr>
+          <tr><td><code>/:slug</code></td><td>Un perfil curado. Ej. <code>/ejemplo-backend</code></td></tr>
           <tr><td>cualquier otra</td><td>404 propio</td></tr>
           <tr><td><code>/robots.txt</code>, <code>/sitemap.xml</code></td><td>Los genera el backend con los perfiles <code>PUBLIC</code></td></tr>
         </tbody>
@@ -379,17 +453,17 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
     <!-- ───────────── Resumen ───────────── -->
     <section id="resumen" class="block">
       <h2>Resumen de la última ejecución</h2>
-      <p class="lede">Último caso ejecutado el 15 de octubre de 2026 (TC-33 a TC-35). La suite completa se recorrió el 5 de octubre contra la base del seed: 14 perfiles curados y 15 experiencias.</p>
+      <p class="lede">Último caso ejecutado el 27 de octubre de 2026 (TC-36 y TC-37). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias): suite <code>suite-backoffice.ps1</code>, recorridos y casos de lectura por API, <code>print:check</code> y las 44 capturas con <code>manual:capture</code>. TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real.</p>
 
       <div class="stats">
-        <div class="stat"><b>35</b><span>casos</span></div>
-        <div class="stat ok"><b>28</b><span>pasan</span></div>
+        <div class="stat"><b>37</b><span>casos</span></div>
+        <div class="stat ok"><b>30</b><span>pasan</span></div>
         <div class="stat part"><b>7</b><span>parciales</span></div>
         <div class="stat"><b>2</b><span>defectos corregidos</span></div>
-        <div class="stat"><b>27</b><span>capturas</span></div>
+        <div class="stat"><b>44</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Los 35 casos pasan</b> (28 con captura; 7 verificados contra la API o con e2e, sin captura de la pantalla). TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Los 37 casos pasan</b> (28 con captura; 7 verificados contra la API o con e2e, sin captura de la pantalla). TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -405,51 +479,614 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
       <div class="progwrap">
         <div class="progbar"><i id="progfill"></i></div>
         <div class="proglabel">
-          <span id="progtext">0 de 24 marcados en esta corrida</span>
+          <span id="progtext">Cargando…</span>
           <button class="iconbtn" id="reset">Reiniciar corrida</button>
         </div>
+        <div class="runtools">
+          <label>Base de esta corrida <input class="runbase" id="runbase" type="text" value="base de ejemplo" maxlength="80"></label>
+          <button class="iconbtn" id="copyrun" type="button">Copiar resultado</button>
+        </div>
+        <textarea class="reportout" id="reportout" readonly hidden aria-label="Resultado de la corrida (copiá este texto)"></textarea>
       </div>
-      <p style="font-size:12.5px;color:var(--fg-muted);margin-top:10px">Marcá cada caso a medida que lo recorrés. Las marcas quedan en este navegador y no se comparten.</p>
+      <p style="font-size:12.5px;color:var(--fg-muted);margin-top:10px">Marcá <b>pasa</b>, <b>falla</b> u <b>omitido</b> en cada caso, con una nota si querés. Las marcas quedan en este navegador y no se comparten; <b>Copiar resultado</b> arma un Markdown (fecha, base, totales y una fila por caso) para pegarlo donde quieras, por ejemplo en el <code>verification.md</code> de un change.</p>
 
       <div class="note"><b>Los casos del backoffice están automatizados.</b> <code>docs/manual/suite-backoffice.ps1</code> ejecuta TC-12 a TC-20 contra la API, imprime el resultado real junto al esperado y borra todos los datos de prueba que crea, pase o falle.
-      <div class="codewrap" style="margin-bottom:0"><pre>cd docs/manual &amp;&amp; pwsh ./suite-backoffice.ps1</pre></div></div>
+      <div class="codewrap" style="margin-bottom:0"><pre>cd docs/manual
+$env:SUITE_ADMIN_EMAIL = 'capture@example.com'; $env:SUITE_ADMIN_PASSWORD = '&lt;contraseña de prueba&gt;'
+pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se niega si no sirve el perfil ficticio</pre></div></div>
     </section>
 
+    <!-- ───────────── Aprender ───────────── -->
+    <section class="block" id="aprender">
+      <h2>Ruta de aprendizaje</h2>
+      <p class="lede">Ocho conceptos, en este orden: cada uno se apoya en el anterior. Todos los ejemplos salen de la <b>base de ejemplo</b> (<code>docs/examples/cv-data.example.json</code>): una persona ficticia, sin datos reales.</p>
+
+      <article class="concept" id="c1">
+        <h3>Perfil base</h3>
+        <p>Es tu información profesional <b>una sola vez</b>: nombre, titular, resumen, contacto, disponibilidad e idiomas (el perfil base), más las listas de experiencias, skills, formación, certificaciones, proyectos y enlaces. Todo lo que se publica sale de acá: un perfil curado nunca guarda copias, solo decide qué mostrar.</p>
+        <p><span class="lbl">En el ejemplo</span> · Alex Rivera Duarte y su contenido: 6 experiencias (una oculta), 4 categorías con 16 skills, 3 formaciones, 3 certificaciones, 3 proyectos y 4 enlaces.</p>
+        <p><span class="lbl">Dónde se edita</span> · <a href="#b3">B3 · Portada (con Idiomas)</a>, <a href="#b4">B4 · Experiencias</a>, <a href="#b5">B5 · Skills</a>, <a href="#b6">B6 · Formación</a>, <a href="#b7">B7 · Proyectos y enlaces</a></p>
+        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc01">TC-01</a>, <a href="#tc25">TC-25</a>, <a href="#tc26">TC-26</a>, <a href="#tc27">TC-27</a></p>
+      </article>
+
+      <article class="concept" id="c2">
+        <h3>Perfil curado</h3>
+        <p>Una <b>vista filtrada y personalizada</b> del perfil base, accesible por un <code>slug</code> único (<code>/ejemplo-backend</code>). Tiene su propio titular, descripción, tema, orden de secciones y reglas de selección. La home es el perfil curado <code>all</code>, que no filtra nada.</p>
+        <p><span class="lbl">En el ejemplo</span> · <code>ejemplo-backend</code> (Java y microservicios, acento <code>#1A365D</code>) y <code>all</code> (la home con las 9 secciones).</p>
+        <p><span class="lbl">Dónde se edita</span> · <a href="#b8">B8 · Perfiles</a>, <a href="#b9">B9 · Constructor · Identidad</a></p>
+        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc03">TC-03</a>, <a href="#tc12">TC-12</a>, <a href="#tc21">TC-21</a></p>
+      </article>
+
+      <article class="concept" id="c3">
+        <h3>Tags y overrides</h3>
+        <p>Cada experiencia, skill y proyecto lleva <b>tags</b>. Un perfil incluye lo que comparte al menos un tag de su <code>filterTags</code> (vacío = todo). Encima, <code>includeIds</code> fuerza la inclusión (solo de ítems visibles) y <code>excludeIds</code> fuerza la exclusión y <b>siempre gana</b>. El orden de salida es cronológico, igual para todos los perfiles.</p>
+        <p><span class="lbl">En el ejemplo</span> · <code>ejemplo-overrides</code> fuerza una experiencia sin tags comunes (Brújula Demo), intenta forzar una oculta (se ignora), suma un proyecto y quita una experiencia y una skill que sí coincidían.</p>
+        <p><span class="lbl">Dónde se edita</span> · <a href="#b10">B10 · Constructor · Selección</a></p>
+        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc03">TC-03</a>, <a href="#tc13">TC-13</a>, <a href="#tc20">TC-20</a></p>
+      </article>
+
+      <article class="concept" id="c4">
+        <h3>Secciones</h3>
+        <p>La página se arma con nueve secciones: <code>hero</code>, <code>stats</code>, <code>experience</code>, <code>skills</code>, <code>projects</code>, <code>education</code>, <code>certifications</code>, <code>presence</code> y <code>contact</code>. Cada perfil puede <b>reordenarlas</b> y <b>ocultarlas</b>. Una sección con datos que no figura en el orden se agrega al final; una sin datos no se muestra.</p>
+        <p><span class="lbl">En el ejemplo</span> · <code>ejemplo-secciones</code> reordena las nueve y oculta Estadísticas y Presencia. La home (<code>all</code>) muestra las nueve.</p>
+        <p><span class="lbl">Dónde se edita</span> · <a href="#b11">B11 · Constructor · Diseño</a></p>
+        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc14">TC-14</a>, <a href="#tc36">TC-36</a></p>
+      </article>
+
+      <article class="concept" id="c5">
+        <h3>Tema</h3>
+        <p>Los colores, la tipografía y el espaciado son <b>tokens de diseño</b> guardados en la base y aplicados como variables CSS en el navegador, sin reconstruir nada. Un perfil elige un <b>preset</b> (cinco disponibles) y guarda solo sus diferencias en <code>themeOverrides</code>. El acento se deriva solo para que el texto siga siendo legible.</p>
+        <p><span class="lbl">En el ejemplo</span> · <code>ejemplo-backend</code> usa <code>modern-dark</code> con acento <code>#1A365D</code>; <code>ejemplo-secciones</code> usa <code>elegant</code>, layout <code>sidebar</code> y overrides de tipografía y radio.</p>
+        <p><span class="lbl">Dónde se edita</span> · <a href="#b11">B11 · Constructor · Diseño</a></p>
+        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc04">TC-04</a>, <a href="#tc15">TC-15</a>, <a href="#tc34">TC-34</a></p>
+      </article>
+
+      <article class="concept" id="c6">
+        <h3>Visibilidad, enumeración y archivo</h3>
+        <p>Tres ejes independientes. La <b>visibilidad</b> decide quién abre el link (<code>PUBLIC</code>, <code>PROTECTED</code> con token, <code>PRIVATE</code> da 404). La <b>enumeración</b> (<code>listed</code>) decide si figura en el menú, el listado y el sitemap. El <b>archivo</b> retira el perfil (404) conservando sus visitas. Renombrar un slug deja un <b>alias</b> que sigue funcionando.</p>
+        <p><span class="lbl">En el ejemplo</span> · <code>ejemplo-protegido</code> (token <code>ejemplo-token-2026</code>), <code>ejemplo-borrador</code> (privado), <code>ejemplo-dirigido</code> (no enumerado), <code>ejemplo-archivado</code> y <code>ejemplo-renombrado</code> (alias <code>ejemplo-nombre-anterior</code>).</p>
+        <p><span class="lbl">Dónde se edita</span> · <a href="#b12">B12 · Constructor · Publicación</a></p>
+        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc06">TC-06</a>, <a href="#tc07">TC-07</a>, <a href="#tc08">TC-08</a>, <a href="#tc10">TC-10</a>, <a href="#tc16">TC-16</a>, <a href="#tc22">TC-22</a>, <a href="#tc23">TC-23</a>, <a href="#tc24">TC-24</a></p>
+      </article>
+
+      <article class="concept" id="c7">
+        <h3>Idiomas</h3>
+        <p>Los datos son <b>bilingües ES/EN en un solo registro</b>: cada texto traducible es <code>{ "es": "…", "en": "…" }</code>. El sitio lo resuelve con <code>?lang=</code>; si falta el inglés, muestra el español y el constructor lo <b>avisa</b> como faltante de traducción, sin bloquear nada.</p>
+        <p><span class="lbl">En el ejemplo</span> · Todo el ejemplo está en los dos idiomas salvo <code>description.en</code> de <code>ejemplo-borrador</code>, que falta a propósito.</p>
+        <p><span class="lbl">Dónde se edita</span> · <a href="#b3">B3 · Portada (con Idiomas)</a>, <a href="#b13">B13 · Vista previa</a></p>
+        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc02">TC-02</a>, <a href="#tc17">TC-17</a>, <a href="#tc32">TC-32</a></p>
+      </article>
+
+      <article class="concept" id="c8">
+        <h3>Analítica</h3>
+        <p>Cada carga de una ruta pública registra una <b>visita</b> (<code>ProfileView</code>): perfil, idioma, origen y fecha; la IP solo como HMAC. Las vistas previas del panel no cuentan. El dashboard resume por día, perfil, idioma y origen, y los perfiles archivados conservan su historial.</p>
+        <p><span class="lbl">En el ejemplo</span> · 105 visitas sintéticas en 5 perfiles (<code>all</code>, <code>ejemplo-backend</code>, <code>ejemplo-secciones</code>, <code>ejemplo-archivado</code>, <code>ejemplo-protegido</code>), con orígenes directo, LinkedIn, buscador y un dominio de <code>example.com</code>.</p>
+        <p><span class="lbl">Dónde se edita</span> · <a href="#b2">B2 · Dashboard</a></p>
+        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc18">TC-18</a></p>
+      </article>
+
+    </section>
+    <!-- ───────────── Recorridos ───────────── -->
+    <section class="block" id="recorridos">
+      <h2>Recorridos por objetivo</h2>
+      <p class="lede">Nueve tareas reales, con los pasos por pantalla, lo que tiene que pasar, los errores típicos y los casos que las verifican. Se ejecutaron sobre la base de ejemplo.</p>
+
+      <article class="tour" id="r1">
+        <h3>Preparar un perfil para una vacante</h3>
+        <ol>
+          <li><b>Perfiles</b> → botón <b>Duplicar</b> en <code>ejemplo-backend</code> → confirmar (también se puede crear con <b>Nuevo perfil</b>). La copia nace privada y sin enumerar, y se abre en el constructor.</li>
+          <li><b>Identidad</b>: cambiá el <b>Slug</b> (kebab-case, es la URL), el <b>Título</b> y el <b>Titular</b> en ES y EN, y el <b>Tipo de rol</b>.</li>
+          <li><b>Selección</b>: activá los <b>Tags de filtrado</b> de la vacante y mirá la vista previa. Con *Incluir* o *Excluir* ajustás experiencias puntuales.</li>
+          <li><b>Diseño</b>: elegí el <b>Tema</b> y el <b>Acento</b>, y ordená u ocultá las <b>Secciones</b>.</li>
+          <li><b>Guardar</b>. Después, en <b>Publicación</b>, cambiá la <b>Visibilidad</b> a <code>Público</code> (o <code>Protegido</code> con token) y copiá el <b>Link público</b>.</li>
+        </ol>
+        <p><span class="lbl">Resultado esperado</span> · El link responde 200 y muestra solo lo que pasa el filtro, con el titular y el tema del perfil nuevo. Mientras fue privado, nadie lo veía (404).</p>
+        <p><span class="lbl">Errores típicos</span> · <code>Ya existe un perfil con ese slug</code> (409) al elegir un slug tomado, o que es el alias de otro perfil. Si la vista previa queda vacía, los tags no coinciden con ninguna experiencia: mirá los tags disponibles en <b>Selección</b>.</p>
+        <p><span class="lbl">Casos</span> · <a href="#tc12">TC-12</a>, <a href="#tc13">TC-13</a>, <a href="#tc15">TC-15</a>, <a href="#tc16">TC-16</a>, <a href="#tc21">TC-21</a></p>
+      </article>
+
+      <article class="tour" id="r2">
+        <h3>Mandarlo a una sola empresa</h3>
+        <ol>
+          <li>En <b>Perfiles</b> abrí el perfil (por ejemplo <code>ejemplo-dirigido</code>) → pestaña <b>Publicación</b>.</li>
+          <li>Apagá <b>Enumerar en la home y el sitemap</b> y <b>Guardar</b>. El perfil sigue abriendo por su link pero sale del menú, del listado y del sitemap.</li>
+          <li>Si además querés que lo abra solo quien tiene una clave: <b>Visibilidad</b> → <code>Protegido</code> y completá el <b>Token de acceso</b> (obligatorio). Compartí el link con <code>?token=</code>.</li>
+          <li>Copiá el <b>Link público</b> y comprobalo en una ventana privada.</li>
+        </ol>
+        <p><span class="lbl">Resultado esperado</span> · <code>ejemplo-dirigido</code> responde 200 por su link y no figura en <code>/sitemap.xml</code>, en <code>GET /api/curated-profiles</code> ni en el menú de la home. <code>ejemplo-protegido</code> responde 401 sin token y 200 con <code>?token=ejemplo-token-2026</code>.</p>
+        <p><span class="lbl">Errores típicos</span> · Un protegido sin token guardado: <code>Un perfil protegido necesita un token de acceso</code>. Un perfil <b>privado</b> no sirve para esto: da 404 incluso con el link (úsalo para borradores).</p>
+        <p><span class="lbl">Casos</span> · <a href="#tc16">TC-16</a>, <a href="#tc23">TC-23</a>, <a href="#tc06">TC-06</a>, <a href="#tc07">TC-07</a></p>
+      </article>
+
+      <article class="tour" id="r3">
+        <h3>Retirar un perfil sin perder sus visitas</h3>
+        <ol>
+          <li><b>Perfiles</b> → abrí el perfil → pestaña <b>Publicación</b>.</li>
+          <li>Bloque <b>Archivado</b> → <b>Archivar</b> → confirmar. El perfil sale del listado, del menú y del sitemap.</li>
+          <li>Para volver atrás, el mismo bloque ofrece <b>Desarchivar</b>.</li>
+          <li>Verificá en el <b>Dashboard</b>: el perfil sigue en *Por perfil*, marcado como <code>archivado</code>, con sus visitas.</li>
+        </ol>
+        <p><span class="lbl">Resultado esperado</span> · <code>ejemplo-archivado</code> responde 404 por su link, incluso con token, pero conserva sus 14 visitas en el dashboard.</p>
+        <p><span class="lbl">Errores típicos</span> · Borrar en lugar de archivar elimina las visitas con el perfil (el diálogo lo advierte). Un <code>PATCH</code> con <code>archivedAt</code> da 400: usá los botones.</p>
+        <p><span class="lbl">Casos</span> · <a href="#tc22">TC-22</a>, <a href="#tc18">TC-18</a></p>
+      </article>
+
+      <article class="tour" id="r4">
+        <h3>Renombrar el slug sin romper los links</h3>
+        <ol>
+          <li>Abrí el perfil en el constructor → pestaña <b>Identidad</b>.</li>
+          <li>Cambiá el <b>Slug</b> por el nuevo y <b>Guardar</b>.</li>
+          <li>Abrí el slug anterior en el navegador: el sitio resuelve el mismo perfil y corrige la URL solo.</li>
+        </ol>
+        <p><span class="lbl">Resultado esperado</span> · <code>/ejemplo-nombre-anterior</code> responde 200 con el perfil <code>ejemplo-renombrado</code>; el sitemap y el <code>canonical</code> usan solo el slug nuevo.</p>
+        <p><span class="lbl">Errores típicos</span> · <code>Ya existe un perfil con ese slug</code> (409) si el nuevo es el de otro perfil o el alias de otro. Volver a un slug anterior propio libera el alias.</p>
+        <p><span class="lbl">Casos</span> · <a href="#tc24">TC-24</a></p>
+      </article>
+
+      <article class="tour" id="r5">
+        <h3>Ajustar el tema y el acento</h3>
+        <ol>
+          <li>Constructor → pestaña <b>Diseño</b> → <b>Tema base</b>: elegí un preset. Si ya hiciste ajustes, el panel pregunta antes de perderlos (<b>Cambiar el tema base</b>).</li>
+          <li>Ajustá los <b>Colores</b> (ocho controles, con su valor hexadecimal), las <b>Fuentes</b>, la <b>Densidad</b> y los efectos. La vista previa cambia al instante.</li>
+          <li>Para un acento oscuro (por ejemplo <code>#1A365D</code>) escribilo en <b>Acento</b>: el sitio deriva solo un tono legible para el texto, sin cambiar lo que guardás.</li>
+          <li><b>Restablecer</b> vuelve al preset. <b>Guardar</b>.</li>
+        </ol>
+        <p><span class="lbl">Resultado esperado</span> · Se guarda solo la diferencia contra el preset en <code>themeOverrides</code>. En <code>ejemplo-backend</code> el texto en acento se lee con contraste de 4,5:1 o más aunque el color de relleno sea oscuro.</p>
+        <p><span class="lbl">Errores típicos</span> · Un hexadecimal inválido se marca en el campo y no rompe la vista previa. Cambiar el preset descarta los ajustes: el aviso lo dice.</p>
+        <p><span class="lbl">Casos</span> · <a href="#tc04">TC-04</a>, <a href="#tc15">TC-15</a>, <a href="#tc34">TC-34</a></p>
+      </article>
+
+      <article class="tour" id="r6">
+        <h3>Editar el contenido base</h3>
+        <ol>
+          <li><b>Portada</b>: editá el titular, el resumen, el contacto y la disponibilidad (pestañas ES/EN) y <b>Guardar portada</b>.</li>
+          <li><b>Experiencias</b>: <b>Nueva experiencia</b> o el lápiz de una existente. Los <b>Tags</b> deciden en qué perfiles entra; apagá <b>Visible en el portafolio</b> para ocultarla sin borrarla.</li>
+          <li><b>Skills</b>: categorías y skills, con sus <b>Tags</b>.</li>
+          <li><b>Formación</b> (educación y certificaciones) y <b>Proyectos y enlaces</b>: lo mismo, con <b>Visible</b> para ocultar.</li>
+          <li>Recargá <code>/</code>: los cambios se ven al instante, sin correr el seed.</li>
+        </ol>
+        <p><span class="lbl">Resultado esperado</span> · El cambio aparece en la home y en cada perfil curado que lo incluya. Lo oculto sigue en el panel con la marca *Oculto*.</p>
+        <p><span class="lbl">Errores típicos</span> · Mensajes en línea como <code>La empresa es obligatoria</code> o <code>Usá el formato AAAA-MM o AAAA</code>; ver cada pantalla. <b>No corras <code>npm run seed</code></b> sobre una base con contenido editado: lo pisa.</p>
+        <p><span class="lbl">Casos</span> · <a href="#tc19">TC-19</a>, <a href="#tc20">TC-20</a>, <a href="#tc25">TC-25</a>, <a href="#tc26">TC-26</a>, <a href="#tc27">TC-27</a></p>
+      </article>
+
+      <article class="tour" id="r7">
+        <h3>Traducir y revisar faltantes</h3>
+        <ol>
+          <li>Abrí el constructor del perfil (por ejemplo <code>ejemplo-borrador</code>) y elegí <b>EN</b> en el conmutador de la <b>Vista previa</b>.</li>
+          <li>Pestaña <b>Publicación</b>: el aviso lista cada campo sin traducir (<code>Falta 1 traducción en EN</code>).</li>
+          <li>Completá el inglés donde corresponda (Identidad: pestañas ES/EN de cada campo; contenido base: sus pantallas) y volvé a mirar el aviso.</li>
+          <li>Es solo un aviso: podés guardar y publicar igual; donde falta, el sitio muestra el español.</li>
+        </ol>
+        <p><span class="lbl">Resultado esperado</span> · En <code>ejemplo-borrador</code> el único faltante es <code>Descripción</code> del perfil curado. Al completarlo, el aviso pasa a <code>Sin faltantes de traducción en EN</code>.</p>
+        <p><span class="lbl">Errores típicos</span> · Si el aviso muestra <code>Comprobando traducciones en EN…</code> mucho rato, la vista previa no cargó: revisá que el borrador tenga los obligatorios.</p>
+        <p><span class="lbl">Casos</span> · <a href="#tc17">TC-17</a>, <a href="#tc32">TC-32</a>, <a href="#tc02">TC-02</a></p>
+      </article>
+
+      <article class="tour" id="r8">
+        <h3>Imprimir o guardar en PDF</h3>
+        <ol>
+          <li>Abrí el perfil público (por ejemplo <code>/ejemplo-backend</code>).</li>
+          <li>Botón <b>Imprimir / Guardar PDF</b> de la barra superior (o <b>Ctrl+P</b>).</li>
+          <li>En el diálogo: papel A4 o Letter, sin encabezados ni pies, y destino *Guardar como PDF*.</li>
+        </ol>
+        <p><span class="lbl">Resultado esperado</span> · Una sola hoja, texto oscuro sobre blanco, sin barra ni selectores, con el pie *Versión completa* y la URL del perfil sin token ni tema.</p>
+        <p><span class="lbl">Errores típicos</span> · En un perfil protegido el botón no aparece en la pantalla del token. Imprimir no registra una visita.</p>
+        <p><span class="lbl">Casos</span> · <a href="#tc31">TC-31</a></p>
+      </article>
+
+      <article class="tour" id="r9">
+        <h3>Leer la analítica</h3>
+        <ol>
+          <li><b>Dashboard</b> → elegí el <b>rango</b> (7, 30, 90 días o un año).</li>
+          <li>Mirá los totales (<b>Visitas en el rango</b>, <b>Perfiles vistos</b>, <b>Idiomas</b>) y <b>Visitas por día</b>.</li>
+          <li>En <b>Por perfil</b> abrí el constructor o la vista pública con los enlaces de cada fila; el perfil archivado lleva la marca <code>archivado</code>.</li>
+          <li><b>Por origen</b> muestra de dónde llegó cada visita: <code>directo</code>, <code>linkedin.com</code>, <code>google.com</code>…</li>
+        </ol>
+        <p><span class="lbl">Resultado esperado</span> · Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos, 2 idiomas, y los orígenes directo, linkedin.com, google.com y empleos.example.com.</p>
+        <p><span class="lbl">Errores típicos</span> · Las visitas de hoy cuentan (defecto D-01 corregido). La vista previa del panel y la carga de otra persona de <code>/admin</code> no suman visitas.</p>
+        <p><span class="lbl">Casos</span> · <a href="#tc18">TC-18</a></p>
+      </article>
+
+    </section>
+    <!-- ───────────── Manual del backoffice ───────────── -->
+    <section class="block" id="manual-backoffice">
+      <h2>Manual del backoffice por pantalla</h2>
+      <p class="lede">Una subsección por pantalla del panel (<code>/admin</code>). La etiqueta de cada campo es la que se ve; la columna <b>Mensaje</b> cita el texto literal del código, y <code>npm run manual:check</code> lo comprueba contra <code>frontend/src</code>.</p>
+
+      <article class="screen" id="b1">
+        <h3>Login</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/login</code>. Entrada al panel. La sesión es una cookie <code>httpOnly</code>: el navegador nunca guarda el token y el panel deriva la sesión de <code>GET /api/auth/me</code>. <code>/admin</code> redirige acá sin sesión y vuelve al destino original tras entrar.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Email</td><td>texto (email)</td><td>Sí</td><td>Formato de email</td><td><code>capture@example.com</code></td></tr>
+<tr><td>Contraseña</td><td>texto (oculto)</td><td>Sí</td><td>No se valida el formato; la API responde 401 si no coincide</td><td>—</td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">Email o contraseña incorrectos</td><td>La API respondió 401. El email escrito se conserva.</td></tr>
+<tr><td class="msg">No pudimos contactar al servidor. Intentá de nuevo.</td><td>Cualquier otro error (red caída, API apagada).</td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · El login está limitado a 5 intentos por minuto y por IP (429 con <code>Retry-After</code>).</p>
+        <p>Para la guía y las capturas se usa un administrador de prueba (<code>npm run admin:bootstrap</code> con una contraseña aleatoria de la sesión).</p>
+        <figure class="shot" id="img-tc11-login"><img src="tc11-login.jpg" width="800" height="500" alt="Login del backoffice"></figure>
+        <figure class="shot" id="img-tc11-login-error"><img src="tc11-login-error.jpg" width="800" height="500" alt="Error de credenciales"></figure>
+      </article>
+
+      <article class="screen" id="b2">
+        <h3>Dashboard</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin</code>. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales, <b>Visitas por día</b>, <b>Por perfil</b> (con enlaces al constructor y a la vista pública y la marca <code>archivado</code>), <b>Por idioma</b> y <b>Por origen</b>.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Rango</td><td>selector</td><td>Sí (30 días por defecto)</td><td>7, 30, 90 días o último año</td><td>Últimos 30 días</td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">Todavía no hay visitas</td><td>No hay visitas en el rango elegido; el texto de apoyo es «Cuando alguien abra un perfil curado en el rango elegido, aparecerá acá.»</td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · Solo lectura. Las visitas se registran en la ruta pública, no en la vista previa del panel.</p>
+        <p>Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos y 2 idiomas.</p>
+        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="800" height="705" alt="Dashboard de analítica"></figure>
+      </article>
+
+      <article class="screen" id="b3">
+        <h3>Portada (con Idiomas)</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/portada</code>. El perfil base: lo primero que se lee en todos los links. <b>Identidad y contacto</b>, <b>Disponibilidad</b>, una <b>Vista previa</b> del hero (la resuelve el backend, con el mismo mapper de la ruta pública) e <b>Idiomas</b>. El <code>PUT</code> de la Portada <b>reemplaza todo el perfil</b>: guardá siempre desde esta pantalla, no editando campos sueltos por la API.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Nombre completo</td><td>texto</td><td>Sí</td><td>No vacío</td><td><code>Alex Rivera Duarte</code></td></tr>
+<tr><td>Titular</td><td>ES/EN</td><td>Sí (ES)</td><td>Español obligatorio</td><td><code>Ingeniera de Software Senior · …</code></td></tr>
+<tr><td>Resumen</td><td>ES/EN</td><td>Sí (ES)</td><td>Español obligatorio</td><td><code>Ingeniera de software con más de diez años…</code></td></tr>
+<tr><td>Email</td><td>texto</td><td>Sí</td><td>Formato de email</td><td><code>alex.rivera@example.com</code></td></tr>
+<tr><td>Teléfono</td><td>texto</td><td>No</td><td>—</td><td><code>+1 555 0142</code></td></tr>
+<tr><td>Ubicación</td><td>texto</td><td>Sí</td><td>No vacío</td><td><code>Ciudad Ejemplo, Ejemplandia</code></td></tr>
+<tr><td>Huso horario</td><td>texto</td><td>No</td><td>—</td><td><code>UTC-03:00</code></td></tr>
+<tr><td>Años de experiencia</td><td>entero</td><td>Sí</td><td>Entero mayor o igual a 0</td><td><code>11</code></td></tr>
+<tr><td>Fecha de inicio / Modalidad / Tipo de contrato</td><td>ES/EN</td><td>No</td><td>—</td><td><code>A convenir</code> · <code>Remoto / Híbrido</code></td></tr>
+<tr><td>Idioma · Nombre / Nombre mostrado / Nivel / Detalle</td><td>texto / ES/EN</td><td>Nombre y Nivel (ES)</td><td>El español del nivel es obligatorio</td><td><code>Inglés</code> · <code>Avanzado (C1)</code> / <code>Advanced (C1)</code></td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">El nombre es obligatorio</td><td>Nombre completo vacío.</td></tr>
+<tr><td class="msg">El titular en español es obligatorio</td><td>Titular sin español.</td></tr>
+<tr><td class="msg">El resumen en español es obligatorio</td><td>Resumen sin español.</td></tr>
+<tr><td class="msg">El email no es válido</td><td>Email con formato inválido.</td></tr>
+<tr><td class="msg">La ubicación es obligatoria</td><td>Ubicación vacía.</td></tr>
+<tr><td class="msg">Los años deben ser un entero mayor o igual a 0</td><td>Años de experiencia negativos o con decimales.</td></tr>
+<tr><td class="msg">El nombre y el nivel son obligatorios</td><td>Diálogo de idioma sin nombre o sin nivel.</td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · <b>Guardar portada</b> (habilitado solo con cambios). Borrar un idioma pide confirmación: «Se borrará "…" del perfil base y de todos los links.» Salir con cambios abre <b>Tenés cambios sin guardar</b> (TC-29); cambiar el idioma de la vista previa no cuenta como cambio.</p>
+        <p>El titular base lo usan la home y todo perfil curado sin titular propio.</p>
+        <figure class="shot" id="img-tc25-portada"><img src="tc25-portada.jpg" width="800" height="500" alt="Portada con la vista previa del hero"></figure>
+        <figure class="shot" id="img-bo-portada-idioma"><img src="bo-portada-idioma.jpg" width="800" height="500" alt="Diálogo de idioma con el nivel en ES y EN"></figure>
+      </article>
+
+      <article class="screen" id="b4">
+        <h3>Experiencias</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/experiencias</code>. Lista cronológica con empresa, período, tags y orden; las ocultas se atenúan y llevan la marca *Oculta*. <b>Nueva experiencia</b> y el lápiz abren el formulario en un diálogo.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Empresa</td><td>texto</td><td>Sí</td><td>No vacío</td><td><code>Cobalto Ejemplo</code></td></tr>
+<tr><td>Ubicación</td><td>texto</td><td>Sí</td><td>No vacío</td><td><code>Ciudad Ejemplo · Remoto</code></td></tr>
+<tr><td>Rol</td><td>ES/EN</td><td>Sí (ES)</td><td>Español obligatorio</td><td><code>Tech Lead Backend</code></td></tr>
+<tr><td>Inicio</td><td>mes (AAAA-MM)</td><td>Sí</td><td>No vacío</td><td><code>2025-02</code></td></tr>
+<tr><td>Fin</td><td>mes</td><td>No</td><td>Vacío si es <b>Actual</b></td><td><code>2025-01</code></td></tr>
+<tr><td>Actual</td><td>interruptor</td><td>No</td><td>Implica Fin vacío</td><td>activado</td></tr>
+<tr><td>Orden</td><td>entero</td><td>No</td><td>Mayor o igual a 0; desempata el mismo inicio</td><td><code>0</code></td></tr>
+<tr><td>Visible en el portafolio</td><td>interruptor</td><td>No (activado)</td><td>Apagado: no sale en ningún perfil, ni forzado con <code>includeIds</code></td><td>Terracota Demo: apagado</td></tr>
+<tr><td>Resumen</td><td>ES/EN</td><td>Sí (ES)</td><td>Español obligatorio</td><td><code>Liderazgo técnico de un equipo…</code></td></tr>
+<tr><td>Logros (es) / Logros (en)</td><td>lista de textos</td><td>No</td><td>Un renglón por logro</td><td><code>Definí los estándares…</code></td></tr>
+<tr><td>Tecnologías / Tags / Sector</td><td>chips</td><td>No</td><td>Los <b>tags</b> alimentan <code>filterTags</code></td><td><code>java</code> · <code>spring-boot</code></td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">La empresa es obligatoria</td><td>Empresa vacía.</td></tr>
+<tr><td class="msg">El rol en español es obligatorio</td><td>Rol sin español.</td></tr>
+<tr><td class="msg">La fecha de inicio es obligatoria</td><td>Inicio vacío.</td></tr>
+<tr><td class="msg">La ubicación es obligatoria</td><td>Ubicación vacía.</td></tr>
+<tr><td class="msg">El resumen en español es obligatorio</td><td>Resumen sin español.</td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · Borrar pide confirmación: «Se borrará "rol" en empresa. Esta acción no se puede deshacer.» Cerrar el diálogo con cambios abre <b>Tenés cambios sin guardar</b> (TC-30).</p>
+        <p>El formulario expone <b>Logros (es)</b> y <b>Logros (en)</b>. La traducción al inglés es opcional: si falta, la vista en inglés muestra el español.</p>
+        <figure class="shot" id="img-tc19a-experiencias"><img src="tc19a-experiencias.jpg" width="800" height="500" alt="Lista de experiencias"></figure>
+        <figure class="shot" id="img-tc19b-formulario"><img src="tc19b-formulario.jpg" width="800" height="500" alt="Formulario de experiencia"></figure>
+        <figure class="shot" id="img-bo-experiencia-errores"><img src="bo-experiencia-errores.jpg" width="800" height="500" alt="Errores de validación al guardar vacío"></figure>
+      </article>
+
+      <article class="screen" id="b5">
+        <h3>Skills</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/skills</code>. Las skills viven dentro de categorías. <b>Nueva categoría</b> (nombre ES/EN y orden) y, dentro de cada una, <b>Nueva skill</b> (nombre, tags y orden). Una skill se mueve de categoría editándola.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Categoría · Nombre</td><td>ES/EN</td><td>Sí (ES)</td><td>Español obligatorio</td><td><code>Lenguajes</code> / <code>Languages</code></td></tr>
+<tr><td>Categoría · Orden</td><td>entero</td><td>No</td><td>Mayor o igual a 0</td><td><code>0</code></td></tr>
+<tr><td>Skill · Nombre</td><td>texto</td><td>Sí</td><td>No vacío</td><td><code>Spring Boot</code></td></tr>
+<tr><td>Skill · Tags</td><td>chips</td><td>No</td><td>Deciden en qué perfiles aparece</td><td><code>java</code> · <code>spring-boot</code></td></tr>
+<tr><td>Skill · Orden</td><td>entero</td><td>No</td><td>Mayor o igual a 0</td><td><code>0</code></td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · Sin mensaje en línea: con el nombre vacío, <b>Guardar</b> no hace nada. Borrar una categoría borra sus skills y el diálogo de confirmación lo dice con la cuenta de skills (*«Se borrará "…" y también sus N skills. Esta acción no se puede deshacer.»*).</p>
+        <p>Una categoría entra en un perfil si alguna de sus skills comparte un tag con <code>filterTags</code>. En el ejemplo, la categoría *Backend* usa skills <code>{ name, tags }</code> y *Lenguajes* un tag por categoría.</p>
+        <figure class="shot" id="img-tc20-skills"><img src="tc20-skills.jpg" width="800" height="500" alt="Skills por categoría"></figure>
+        <figure class="shot" id="img-bo-skills-dialogo"><img src="bo-skills-dialogo.jpg" width="800" height="500" alt="Diálogo de skill con sus tags"></figure>
+      </article>
+
+      <article class="screen" id="b6">
+        <h3>Formación</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/formacion</code>. Dos listas, <b>Educación</b> y <b>Certificaciones</b>, con el mismo patrón de lista y diálogo. Desmarcar <b>Visible en el sitio</b> oculta un ítem sin borrarlo.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Título</td><td>ES/EN</td><td>Sí (ES)</td><td>Español obligatorio</td><td><code>Maestría en Ingeniería de Software</code></td></tr>
+<tr><td>Institución</td><td>texto</td><td>Sí</td><td>No vacío</td><td><code>Universidad Ejemplo</code></td></tr>
+<tr><td>Inicio</td><td>AAAA-MM o AAAA</td><td>Sí</td><td>Formato AAAA-MM o AAAA</td><td><code>2010</code></td></tr>
+<tr><td>Fin</td><td>AAAA-MM o AAAA</td><td>No</td><td>No anterior al inicio; vacío si está <b>En curso</b></td><td><code>2014</code></td></tr>
+<tr><td>En curso</td><td>interruptor</td><td>No</td><td>Excluye la fecha de fin</td><td>activado en la maestría</td></tr>
+<tr><td>Certificación · Nombre</td><td>ES/EN</td><td>Sí (ES)</td><td>Español obligatorio</td><td><code>Arquitecto de Soluciones en la Nube</code></td></tr>
+<tr><td>Certificación · Emisor</td><td>texto</td><td>Sí</td><td>No vacío</td><td><code>Consorcio Cloud Ejemplo</code></td></tr>
+<tr><td>Certificación · Año</td><td>AAAA</td><td>No</td><td>Cuatro dígitos</td><td><code>2023</code> (vacío en *Liderazgo técnico…*)</td></tr>
+<tr><td>Orden / Visible en el sitio</td><td>entero / interruptor</td><td>No</td><td>Orden mayor o igual a 0</td><td><code>0</code> · activado</td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">El título en español es obligatorio</td><td>Formación sin título en español.</td></tr>
+<tr><td class="msg">La institución es obligatoria</td><td>Institución vacía.</td></tr>
+<tr><td class="msg">La fecha de inicio es obligatoria</td><td>Inicio vacío.</td></tr>
+<tr><td class="msg">Usá el formato AAAA-MM o AAAA</td><td>Fecha de inicio o fin con otro formato.</td></tr>
+<tr><td class="msg">Una formación en curso no lleva fecha de fin</td><td>En curso con fecha de fin.</td></tr>
+<tr><td class="msg">La fecha de fin no puede ser anterior al inicio</td><td>Fin anterior al inicio.</td></tr>
+<tr><td class="msg">El nombre en español es obligatorio</td><td>Certificación sin nombre en español.</td></tr>
+<tr><td class="msg">El emisor es obligatorio</td><td>Emisor vacío.</td></tr>
+<tr><td class="msg">Usá el formato AAAA</td><td>Año de una certificación con otro formato (por ejemplo <code>20x</code>).</td></tr>
+<tr><td class="msg">El orden no puede ser negativo</td><td>Orden menor que 0.</td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · Borrar pide confirmación. Los ocultos siguen en el panel con la marca *Oculto*.</p>
+        <figure class="shot" id="img-tc26-formacion"><img src="tc26-formacion.jpg" width="800" height="500" alt="Formación en el panel"></figure>
+        <figure class="shot" id="img-bo-formacion-certificacion"><img src="bo-formacion-certificacion.jpg" width="800" height="500" alt="Certificación con el error de año"></figure>
+      </article>
+
+      <article class="screen" id="b7">
+        <h3>Proyectos y enlaces</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/proyectos</code>. Proyectos destacados y enlaces sociales. Un proyecto con <b>tags</b> que coincidan con los <code>filterTags</code> de un perfil aparece en él, con su <b>URL</b> como enlace.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Proyecto · Nombre</td><td>texto</td><td>Sí</td><td>No vacío</td><td><code>Plataforma de Reservas</code></td></tr>
+<tr><td>Proyecto · Período</td><td>texto</td><td>Sí</td><td>No vacío</td><td><code>2024</code></td></tr>
+<tr><td>Proyecto · Rol / Resumen</td><td>ES/EN</td><td>Sí (ES)</td><td>Español obligatorio</td><td><code>Arquitecta y líder técnica</code></td></tr>
+<tr><td>Proyecto · URL</td><td>texto</td><td>No</td><td>Absoluta, con http:// o https://</td><td><code>https://reservas.example.com</code></td></tr>
+<tr><td>Proyecto · Tecnologías / Tags</td><td>chips</td><td>No</td><td>Los tags alimentan <code>filterTags</code></td><td><code>java</code> · <code>microservices</code></td></tr>
+<tr><td>Proyecto · Orden / Visible en el portafolio</td><td>entero / interruptor</td><td>No</td><td>Orden entero mayor o igual a 0</td><td><code>0</code> · activado</td></tr>
+<tr><td>Enlace · Plataforma</td><td>texto</td><td>Sí</td><td>Solo minúsculas, dígitos y guiones</td><td><code>github</code></td></tr>
+<tr><td>Enlace · Usuario</td><td>texto</td><td>Sí</td><td>No vacío</td><td><code>alexrivera-ejemplo</code></td></tr>
+<tr><td>Enlace · URL</td><td>texto</td><td>Sí</td><td>Absoluta, con http:// o https://</td><td><code>https://github.example.com/alexrivera-ejemplo</code></td></tr>
+<tr><td>Enlace · Etiqueta / Descripción</td><td>ES/EN</td><td>Etiqueta sí (ES)</td><td>La descripción en inglés exige la del español</td><td><code>Código y proyectos abiertos</code></td></tr>
+<tr><td>Enlace · Estadísticas (JSON)</td><td>objeto JSON</td><td>No</td><td>Un objeto, no un array ni un texto</td><td><code>{ "repos": 42 }</code></td></tr>
+<tr><td>Enlace · Destacado / Visible en el portafolio</td><td>interruptores</td><td>No</td><td>—</td><td>GitHub destacado</td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">El nombre es obligatorio</td><td>Proyecto sin nombre.</td></tr>
+<tr><td class="msg">El período es obligatorio</td><td>Proyecto sin período.</td></tr>
+<tr><td class="msg">El rol en español es obligatorio</td><td>Proyecto sin rol en español.</td></tr>
+<tr><td class="msg">El resumen en español es obligatorio</td><td>Proyecto sin resumen en español.</td></tr>
+<tr><td class="msg">Usá una URL absoluta que empiece con http:// o https://</td><td>URL del proyecto o del enlace sin esquema.</td></tr>
+<tr><td class="msg">La plataforma es obligatoria</td><td>Enlace sin plataforma.</td></tr>
+<tr><td class="msg">Solo minúsculas, dígitos y guiones (por ejemplo, github)</td><td>Plataforma con mayúsculas, espacios u otros símbolos.</td></tr>
+<tr><td class="msg">El usuario es obligatorio</td><td>Enlace sin usuario.</td></tr>
+<tr><td class="msg">La URL es obligatoria</td><td>Enlace sin URL.</td></tr>
+<tr><td class="msg">La etiqueta en español es obligatoria</td><td>Enlace sin etiqueta en español.</td></tr>
+<tr><td class="msg">Si cargás la traducción, completá también la descripción en español</td><td>Descripción solo en inglés.</td></tr>
+<tr><td class="msg">Las estadísticas deben ser un objeto JSON, por ejemplo {"repos": 67}</td><td>Estadísticas con un JSON que no es un objeto o con JSON roto.</td></tr>
+<tr><td class="msg">El orden debe ser un entero</td><td>Orden con decimales.</td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · Borrar pide confirmación («Se borrará "…". Esta acción no se puede deshacer.» para un proyecto). Un JSON inválido en estadísticas cuenta como cambio y bloquea el envío.</p>
+        <figure class="shot" id="img-tc27-proyectos"><img src="tc27-proyectos.jpg" width="800" height="500" alt="Proyectos y enlaces sociales"></figure>
+        <figure class="shot" id="img-bo-enlace-stats"><img src="bo-enlace-stats.jpg" width="800" height="500" alt="Enlace social con estadísticas inválidas"></figure>
+      </article>
+
+      <article class="screen" id="b8">
+        <h3>Perfiles</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles</code>. Lista de perfiles curados con su slug, visibilidad, taxonomía y visitas, y las marcas <code>Archivado</code> y <code>No enumerado</code>. Por fila: abrir en el portafolio, editar, <b>Duplicar</b> y borrar. <b>Nuevo perfil</b> abre el constructor vacío.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Acciones por fila</td><td>botones</td><td>—</td><td>Abrir, Editar, Duplicar, Borrar</td><td><code>ejemplo-backend</code></td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">Todavía no hay perfiles curados</td><td>La lista está vacía.</td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · <b>Duplicar</b> pide confirmar: la copia nace privada y sin enumerar, sin token ni visitas ni archivo, y se abre en el constructor. <b>Borrar</b> advierte que se pierden las visitas y sugiere archivar.</p>
+        <p>Es la entrada al constructor (B9 a B13).</p>
+        <figure class="shot" id="img-tc12a-perfiles-lista"><img src="tc12a-perfiles-lista.jpg" width="800" height="500" alt="Lista de perfiles curados"></figure>
+        <figure class="shot" id="img-tc21-duplicar"><img src="tc21-duplicar.jpg" width="800" height="500" alt="Diálogo Duplicar perfil curado"></figure>
+      </article>
+
+      <article class="screen" id="b9">
+        <h3>Constructor · Identidad</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles/:id</code>. Primera de las cuatro pestañas del constructor (<b>Identidad</b>, <b>Selección</b>, <b>Diseño</b>, <b>Publicación</b>), con la vista previa en vivo a la derecha. Guardar un perfil nuevo lo crea y deja el constructor abierto sobre él.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Slug</td><td>kebab-case</td><td>Sí</td><td>Minúsculas, números y guiones; es la URL pública</td><td><code>ejemplo-backend</code></td></tr>
+<tr><td>Título</td><td>ES/EN</td><td>Sí (ES)</td><td>Español obligatorio</td><td><code>Ingeniera Backend Java</code></td></tr>
+<tr><td>Titular</td><td>ES/EN</td><td>No</td><td>Vacío: el hero usa el del perfil base; con inglés exige el español</td><td><code>Ingeniera Backend Java · Spring Boot…</code></td></tr>
+<tr><td>Descripción</td><td>ES/EN</td><td>No</td><td>—</td><td><code>Perfil que filtra por tags…</code></td></tr>
+<tr><td>Tipo de rol</td><td>ES/EN</td><td>No</td><td>Agrupa el menú público</td><td><code>Backend</code></td></tr>
+<tr><td>Tecnología destacada</td><td>texto</td><td>No</td><td>Etiqueta bajo el título en el menú</td><td><code>Java</code></td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">El slug es obligatorio</td><td>Slug vacío.</td></tr>
+<tr><td class="msg">Usá kebab-case: solo minúsculas, números y guiones</td><td>Slug con mayúsculas, espacios u otros símbolos.</td></tr>
+<tr><td class="msg">El título en español es obligatorio</td><td>Título sin español.</td></tr>
+<tr><td class="msg">Falta el titular en español</td><td>Titular con inglés y sin español.</td></tr>
+<tr><td class="msg">Ya existe un perfil con ese slug</td><td>La API respondió 409: el slug es de otro perfil o es el alias de otro.</td></tr>
+<tr><td class="msg">Revisá los campos marcados</td><td>Guardar con errores de validación.</td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · Cambiar el slug de un perfil guardado deja el anterior como <b>alias</b> (R4). Salir con cambios abre <b>Tenés cambios sin guardar</b> (TC-28).</p>
+        <figure class="shot" id="img-tc12b-identidad"><img src="tc12b-identidad.jpg" width="800" height="500" alt="Constructor, pestaña Identidad"></figure>
+      </article>
+
+      <article class="screen" id="b10">
+        <h3>Constructor · Selección</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles/:id</code>. Qué entra en el perfil. Los <b>Tags de filtrado</b> se activan como chips (abajo, los tags disponibles en los datos). Cada experiencia lleva <b>Incluir</b> y <b>Excluir</b>.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Tags de filtrado</td><td>chips</td><td>No</td><td>Sin tags entran todas las experiencias visibles</td><td><code>java</code> · <code>microservices</code></td></tr>
+<tr><td>Incluir (por experiencia)</td><td>botón</td><td>No</td><td>Fuerza la inclusión; solo de ítems visibles</td><td>Brújula Demo en <code>ejemplo-overrides</code></td></tr>
+<tr><td>Excluir (por experiencia)</td><td>botón</td><td>No</td><td>Fuerza la exclusión; siempre gana</td><td>Atlas Demo en <code>ejemplo-overrides</code></td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · <b>Limitación vigente:</b> incluir y excluir en el panel cubre <b>solo experiencias</b>. Para forzar o quitar skills y proyectos hay que usar la API (<code>includeIds</code> / <code>excludeIds</code> con los ids de skills y proyectos). La vista previa se recalcula con cada clic.</p>
+        <p>Los ítems con <code>visible: false</code> nunca entran, ni forzándolos: en <code>ejemplo-overrides</code>, Terracota Demo (oculta) no aparece aunque esté en <code>includeRefs</code>.</p>
+        <figure class="shot" id="img-tc13-seleccion"><img src="tc13-seleccion.jpg" width="800" height="500" alt="Constructor, pestaña Selección"></figure>
+      </article>
+
+      <article class="screen" id="b11">
+        <h3>Constructor · Diseño</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles/:id</code>. Layout, <b>Secciones</b> (un interruptor de visibilidad y las flechas <b>Subir</b> y <b>Bajar</b> por cada una de las nueve) y el customizador de <b>Tema</b>: tema base, ocho colores, fuentes, densidad y efectos. Solo se guardan las diferencias contra el tema base en <code>themeOverrides</code>.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Layout</td><td>selector</td><td>Sí (<code>classic</code>)</td><td><code>classic</code> o <code>sidebar</code></td><td><code>sidebar</code> en <code>ejemplo-secciones</code></td></tr>
+<tr><td>Secciones · Mostrar / Subir / Bajar</td><td>interruptor y flechas</td><td>No</td><td>Una sección con datos que no figura en el orden va al final</td><td>Estadísticas y Presencia ocultas</td></tr>
+<tr><td>Tema base</td><td>selector</td><td>Sí</td><td>Uno de los cinco presets</td><td><code>elegant</code></td></tr>
+<tr><td>Colores (8)</td><td>hexadecimal</td><td>No</td><td>Hexadecimal válido; uno inválido se marca y no rompe la vista previa</td><td>Acento <code>#1A365D</code></td></tr>
+<tr><td>Fuente del cuerpo / Fuente de títulos</td><td>selector</td><td>No</td><td>—</td><td><code>Georgia</code> en <code>ejemplo-secciones</code></td></tr>
+<tr><td>Densidad</td><td>selector</td><td>No</td><td>Compacta, Cómoda o Amplia</td><td>Cómoda</td></tr>
+<tr><td>Restablecer</td><td>botón</td><td>—</td><td>Vuelve al preset y descarta los ajustes</td><td>—</td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">Cambiar el tema base</td><td>Título del diálogo al elegir otro preset con ajustes hechos.</td></tr>
+<tr><td class="msg">Los ajustes de color, tipografía y espaciado que hiciste sobre el tema actual se perderán.</td><td>Texto de ese diálogo de confirmación.</td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · Cambiar el tema base pide confirmar si había ajustes. Los colores se aplican como variables <code>--t-*</code> solo en el contenedor de la vista previa.</p>
+        <p>Ver <a href="#r5">R5</a>.</p>
+        <figure class="shot" id="img-tc14-secciones"><img src="tc14-secciones.jpg" width="800" height="500" alt="Constructor, pestaña Diseño con las secciones"></figure>
+        <figure class="shot" id="img-tc15-tema"><img src="tc15-tema.jpg" width="800" height="500" alt="Customizador de tema"></figure>
+        <figure class="shot" id="img-bo-constructor-diseno"><img src="bo-constructor-diseno.jpg" width="800" height="892" alt="Pestaña Diseño completa"></figure>
+      </article>
+
+      <article class="screen" id="b12">
+        <h3>Constructor · Publicación</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles/:id</code>. Los tres ejes: <b>Visibilidad</b>, <b>Enumerar en la home y el sitemap</b> y <b>Archivado</b>, más el <b>Link público</b> (copiar y abrir) y el aviso de faltantes de traducción.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Visibilidad</td><td>selector</td><td>Sí</td><td>Público, Protegido o Privado</td><td>Protegido en <code>ejemplo-protegido</code></td></tr>
+<tr><td>Token de acceso</td><td>texto</td><td>Sí si es Protegido</td><td>No vacío</td><td><code>ejemplo-token-2026</code></td></tr>
+<tr><td>Enumerar en la home y el sitemap</td><td>interruptor</td><td>No (activado)</td><td>No cambia el acceso: un no enumerado abre por su link</td><td>Apagado en <code>ejemplo-dirigido</code></td></tr>
+<tr><td>Archivado</td><td>botón</td><td>—</td><td>Archivar pide confirmar; Desarchivar es directo</td><td><code>ejemplo-archivado</code></td></tr>
+<tr><td>Link público</td><td>solo lectura</td><td>—</td><td>Copiar y Abrir; avisa si no resuelve</td><td><code>/ejemplo-borrador</code></td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">Un perfil protegido necesita un token de acceso</td><td>Visibilidad Protegido sin token.</td></tr>
+<tr><td class="msg">Este link no resuelve: un perfil privado responde 404. Usalo para borradores.</td><td>Aviso bajo el link de un perfil privado.</td></tr>
+<tr><td class="msg">Este link no resuelve: el perfil está archivado y responde 404.</td><td>Aviso bajo el link de un perfil archivado.</td></tr>
+<tr><td class="msg">Archivar perfil curado</td><td>Título del diálogo de <b>Archivar</b>.</td></tr>
+<tr><td class="msg">El link deja de funcionar (responde 404) y el perfil sale del listado y del sitemap. Las visitas se conservan y siguen en el dashboard. Se puede desarchivar.</td><td>Texto del diálogo de <b>Archivar</b>.</td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · <b>Archivar</b> → confirmar. <b>Desarchivar</b> vuelve al estado anterior. El aviso de faltantes (<code>Falta 1 traducción en EN</code>) vive acá, bajo el link.</p>
+        <figure class="shot" id="img-tc16-publicacion"><img src="tc16-publicacion.jpg" width="800" height="500" alt="Constructor, pestaña Publicación"></figure>
+        <figure class="shot" id="img-tc22-archivado"><img src="tc22-archivado.jpg" width="800" height="500" alt="Publicación de un perfil archivado"></figure>
+        <figure class="shot" id="img-tc23-dirigido"><img src="tc23-dirigido.jpg" width="800" height="500" alt="Publicación de un perfil no enumerado"></figure>
+      </article>
+
+      <article class="screen" id="b13">
+        <h3>Vista previa</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles/:id</code>. A la derecha del constructor, con los componentes reales del portafolio. La resuelve el backend con el mismo servicio que la ruta pública, así que no puede divergir y <b>no persiste ni cuenta visitas</b>. El conmutador <b>ES / EN</b> pide la vista previa en el otro idioma (<code>?locale=en</code>); es estado de vista y no se guarda.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Idioma de la vista previa</td><td>conmutador ES/EN</td><td>—</td><td>Vuelve a español al recargar</td><td>EN en <code>ejemplo-borrador</code></td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">Completá los campos obligatorios para ver la vista previa.</td><td>El borrador no es válido y no se pide la vista previa.</td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · La vista previa refleja el borrador sin guardar: tocar el Slug o un tag la recalcula. Con <code>ejemplo-borrador</code> en EN, la pestaña Publicación muestra <code>Falta 1 traducción en EN</code>.</p>
+        <figure class="shot" id="img-tc17-preview-en"><img src="tc17-preview-en.jpg" width="800" height="500" alt="Vista previa en inglés con un borrador sin guardar"></figure>
+        <figure class="shot" id="img-tc32-faltantes"><img src="tc32-faltantes.jpg" width="800" height="500" alt="Aviso de faltantes de traducción"></figure>
+      </article>
+
+    </section>
     <!-- ───────────── Vista pública ───────────── -->
     <section class="block" id="publica">
       <h2>Casos de la vista pública</h2>
       <p class="lede">Lo que ve quien recibe un link. No requieren sesión.</p>
 
-      <article class="case" data-status="ok" id="tc01">
-        <div class="case-head"><span class="case-id">TC-01</span><h3>La home resuelve el perfil completo</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc01"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc01" data-area="publica" data-change="add-public-frontend-theming">
+        <div class="case-head"><span class="case-id">TC-01</span><h3>La home resuelve el perfil completo</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · Abrir <code>http://localhost:5173/?lang=es</code>.</p>
         <p><span class="lbl">Esperado</span> · Se renderiza el perfil <code>all</code> con el hero, el badge de disponibilidad, los datos de contacto y la fila de métricas. El título del documento es <code>Perfil Completo · &lt;nombre&gt;</code>.</p>
-        <p><span class="lbl">Observado</span> · 15 experiencias, 80 tecnologías, 8 certificaciones.</p>
-        <figure class="shot" id="img-tc01-home-es"><img src="tc01-home-es.jpg" width="800" height="455" alt="Home del portafolio en español"><figcaption>La home es el perfil curado <code>all</code>.</figcaption></figure>
-      </article>
+        <p><span class="lbl">Observado</span> · 5 experiencias, 16 tecnologías, 2 certificaciones, 2 proyectos, 4 categorías con 16 skills y las 9 secciones (27 de octubre de 2026, base de ejemplo).</p>
+        <figure class="shot" id="img-tc01-home-es"><img src="tc01-home-es.jpg" width="800" height="500" alt="Home del portafolio en español"><figcaption>La home es el perfil curado <code>all</code>.</figcaption></figure>
+              <fieldset class="run" data-run="tc01"><legend>Resultado de la corrida · TC-01</legend><label><input type="radio" name="r-tc01" value="pass"> pasa</label><label><input type="radio" name="r-tc01" value="fail"> falla</label><label><input type="radio" name="r-tc01" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-01"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc02">
-        <div class="case-head"><span class="case-id">TC-02</span><h3>El idioma se negocia y se puede forzar</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc02"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc02" data-area="publica" data-change="add-public-frontend-theming">
+        <div class="case-head"><span class="case-id">TC-02</span><h3>El idioma se negocia y se puede forzar</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · Abrir <code>/</code> sin parámetros con el navegador en inglés, y después <code>/?lang=es</code>.</p>
         <p><span class="lbl">Esperado</span> · Sin parámetro, el contenido sale en el idioma del <code>Accept-Language</code> y el selector marca EN. Con <code>?lang=es</code> todo pasa a español, incluido el título del documento. Los datos no se duplican: es el mismo registro resuelto en otro idioma.</p>
-        <figure class="shot" id="img-tc02-home-en"><img src="tc02-home-en.jpg" width="800" height="455" alt="Home del portafolio en inglés"><figcaption>Mismo registro, idioma negociado por <code>Accept-Language</code>.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc02-home-en"><img src="tc02-home-en.jpg" width="800" height="500" alt="Home del portafolio en inglés"><figcaption>Mismo registro, idioma negociado por <code>Accept-Language</code>.</figcaption></figure>
+              <fieldset class="run" data-run="tc02"><legend>Resultado de la corrida · TC-02</legend><label><input type="radio" name="r-tc02" value="pass"> pasa</label><label><input type="radio" name="r-tc02" value="fail"> falla</label><label><input type="radio" name="r-tc02" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-02"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc03">
-        <div class="case-head"><span class="case-id">TC-03</span><h3>Un perfil curado filtra el contenido</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc03"> ejecutado</label></div>
-        <p><span class="lbl">Pasos</span> · Abrir <code>/tech-lead-dotnet?lang=es</code>.</p>
+      <article class="case" data-status="ok" id="tc03" data-area="publica" data-change="add-public-frontend-theming">
+        <div class="case-head"><span class="case-id">TC-03</span><h3>Un perfil curado filtra el contenido</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Pasos</span> · Abrir <code>/ejemplo-backend?lang=es</code>.</p>
         <p><span class="lbl">Esperado</span> · El titular pasa a ser el del perfil, se antepone su descripción al resumen general y las métricas bajan respecto de la home porque el contenido está filtrado por <code>filterTags</code>.</p>
-        <div class="note"><b>Cómo se comprueba el filtro sin mirar.</b> Comparar las métricas con TC-01: en un perfil con <code>filterTags: ["dotnet"]</code> se pasa de 15 experiencias y 80 tecnologías a 7 y 57.</div>
-        <figure class="shot" id="img-tc03-perfil-curado"><img src="tc03-perfil-curado.jpg" width="800" height="450" alt="Perfil curado Tech Lead .NET"><figcaption>Titular y descripción propios del perfil curado.</figcaption></figure>
-      </article>
+        <div class="note"><b>Cómo se comprueba el filtro sin mirar.</b> Comparar las métricas con TC-01: en <code>ejemplo-backend</code> (<code>filterTags</code>: <code>java</code>, <code>spring-boot</code>, <code>microservices</code>) se pasa de 5 experiencias y 16 tecnologías a 2 y 7.</div>
+        <figure class="shot" id="img-tc03-perfil-curado"><img src="tc03-perfil-curado.jpg" width="800" height="500" alt="Perfil curado ejemplo-backend"><figcaption>Titular y descripción propios del perfil curado.</figcaption></figure>
+              <fieldset class="run" data-run="tc03"><legend>Resultado de la corrida · TC-03</legend><label><input type="radio" name="r-tc03" value="pass"> pasa</label><label><input type="radio" name="r-tc03" value="fail"> falla</label><label><input type="radio" name="r-tc03" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-03"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc04">
-        <div class="case-head"><span class="case-id">TC-04</span><h3>Tema y layout se cambian desde la URL</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc04"> ejecutado</label></div>
-        <p><span class="lbl">Pasos</span> · Abrir <code>/tech-lead-dotnet?lang=es&amp;theme=corporate&amp;layout=sidebar</code>.</p>
+      <article class="case" data-status="ok" id="tc04" data-area="publica" data-change="add-public-frontend-theming">
+        <div class="case-head"><span class="case-id">TC-04</span><h3>Tema y layout se cambian desde la URL</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Pasos</span> · Abrir <code>/ejemplo-backend?lang=es&amp;theme=corporate&amp;layout=sidebar</code>.</p>
         <p><span class="lbl">Esperado</span> · El preset cambia la paleta completa en caliente, sin recargar ni reconstruir, y <code>sidebar</code> reorganiza la página en dos columnas. Lo guardado en el perfil no se modifica: es una vista alternativa que se puede compartir.</p>
         <div class="tablewrap"><table>
           <thead><tr><th>Parámetro</th><th>Valores</th><th>Por defecto</th></tr></thead>
@@ -460,122 +1097,127 @@ curl -s $API/api/auth/me -H "$AUTH" | jq</pre></div>
             <tr><td><code>?token=</code></td><td>el token del perfil</td><td>—</td></tr>
           </tbody>
         </table></div>
-        <figure class="shot" id="img-tc04-tema-layout"><img src="tc04-tema-layout.jpg" width="800" height="455" alt="Perfil con tema corporate y layout sidebar"><figcaption>Preset <code>corporate</code> con layout <code>sidebar</code>.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc04-tema-layout"><img src="tc04-tema-layout.jpg" width="800" height="500" alt="Perfil con tema corporate y layout sidebar"><figcaption>Preset <code>corporate</code> con layout <code>sidebar</code>.</figcaption></figure>
+              <fieldset class="run" data-run="tc04"><legend>Resultado de la corrida · TC-04</legend><label><input type="radio" name="r-tc04" value="pass"> pasa</label><label><input type="radio" name="r-tc04" value="fail"> falla</label><label><input type="radio" name="r-tc04" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-04"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc05">
-        <div class="case-head"><span class="case-id">TC-05</span><h3>El menú ofrece los demás perfiles, solo en la home</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc05"> ejecutado</label></div>
-        <p><span class="lbl">Pasos</span> · En la home (<code>/</code>), abrir el desplegable <b>Perfiles</b>. Después abrir un perfil por su link, por ejemplo <code>/tech-lead-dotnet</code>.</p>
+      <article class="case" data-status="ok" id="tc05" data-area="publica" data-change="add-public-frontend-theming">
+        <div class="case-head"><span class="case-id">TC-05</span><h3>El menú ofrece los demás perfiles, solo en la home</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Pasos</span> · En la home (<code>/</code>), abrir el desplegable <b>Perfiles</b>. Después abrir un perfil por su link, por ejemplo <code>/ejemplo-backend</code>.</p>
         <p><span class="lbl">Esperado</span> · En la home, el menú lista los perfiles públicos, enumerados y no archivados, agrupados por <code>roleType</code>, cada uno con su <code>techFocus</code> debajo. En <code>/:slug</code> no hay menú.</p>
         <div class="note"><b>Desde el change <code>add-curated-profile-lifecycle</code></b> el menú solo se monta en la home: quien recibe un link no ve los otros perfiles.</div>
-        <figure class="shot" id="img-tc05-menu-perfiles"><img src="tc05-menu-perfiles.jpg" width="792" height="802" alt="Menú de perfiles abierto en la home"><figcaption>El desplegable en la home, agrupado por tipo de rol. En la misma ejecución, <code>/tech-lead-dotnet</code> no tenía el botón Perfiles.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc05-menu-perfiles"><img src="tc05-menu-perfiles.jpg" width="800" height="500" alt="Menú de perfiles abierto en la home"><figcaption>El desplegable en la home, agrupado por tipo de rol, sobre la base de ejemplo. En <code>/ejemplo-backend</code> no hay botón Perfiles.</figcaption></figure>
+              <fieldset class="run" data-run="tc05"><legend>Resultado de la corrida · TC-05</legend><label><input type="radio" name="r-tc05" value="pass"> pasa</label><label><input type="radio" name="r-tc05" value="fail"> falla</label><label><input type="radio" name="r-tc05" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-05"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc06">
-        <div class="case-head"><span class="case-id">TC-06</span><h3>Un perfil protegido pide token</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc06"> ejecutado</label></div>
-        <p><span class="lbl">Precondición</span> · Un perfil con <code>visibility: PROTECTED</code> y <code>accessToken</code>.</p>
+      <article class="case" data-status="ok" id="tc06" data-area="publica" data-change="add-public-frontend-theming">
+        <div class="case-head"><span class="case-id">TC-06</span><h3>Un perfil protegido pide token</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Precondición</span> · Base de ejemplo: <code>ejemplo-protegido</code> (<code>visibility: PROTECTED</code>, token <code>ejemplo-token-2026</code>). Se abre <code>/ejemplo-protegido</code> sin <code>?token=</code>.</p>
         <p><span class="lbl">Esperado</span> · La API responde <b>401</b> y la vista muestra el formulario de token, sin filtrar ningún dato del perfil.</p>
-        <figure class="shot" id="img-tc06-token-form"><img src="tc06-token-form.jpg" width="533" height="540" alt="Formulario de token de acceso"><figcaption>Nada del perfil se filtra antes de validar el token.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc06-token-form"><img src="tc06-token-form.jpg" width="800" height="500" alt="Formulario de token de acceso"><figcaption>Nada del perfil se filtra antes de validar el token.</figcaption></figure>
+              <fieldset class="run" data-run="tc06"><legend>Resultado de la corrida · TC-06</legend><label><input type="radio" name="r-tc06" value="pass"> pasa</label><label><input type="radio" name="r-tc06" value="fail"> falla</label><label><input type="radio" name="r-tc06" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-06"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc07">
-        <div class="case-head"><span class="case-id">TC-07</span><h3>Con el token correcto, el perfil resuelve</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc07"> ejecutado</label></div>
-        <p><span class="lbl">Pasos</span> · Escribir el token y pulsar <b>Acceder</b>.</p>
+      <article class="case" data-status="ok" id="tc07" data-area="publica" data-change="add-public-frontend-theming">
+        <div class="case-head"><span class="case-id">TC-07</span><h3>Con el token correcto, el perfil resuelve</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Pasos</span> · Escribir el token (<code>ejemplo-token-2026</code>) y pulsar <b>Acceder</b>.</p>
         <p><span class="lbl">Esperado</span> · El token pasa a la URL como <code>?token=</code>, la API responde 200 y el perfil se renderiza. El link con el token es compartible tal cual.</p>
-        <figure class="shot" id="img-tc07-token-resuelto"><img src="tc07-token-resuelto.jpg" width="792" height="802" alt="Perfil protegido ya resuelto"><figcaption>Resuelto, y con las métricas ya filtradas.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc07-token-resuelto"><img src="tc07-token-resuelto.jpg" width="800" height="500" alt="Perfil protegido ya resuelto"><figcaption>Resuelto, y con las métricas ya filtradas.</figcaption></figure>
+              <fieldset class="run" data-run="tc07"><legend>Resultado de la corrida · TC-07</legend><label><input type="radio" name="r-tc07" value="pass"> pasa</label><label><input type="radio" name="r-tc07" value="fail"> falla</label><label><input type="radio" name="r-tc07" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-07"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc08">
-        <div class="case-head"><span class="case-id">TC-08</span><h3>Un slug inexistente o privado da 404</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc08"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc08" data-area="publica" data-change="add-public-frontend-theming">
+        <div class="case-head"><span class="case-id">TC-08</span><h3>Un slug inexistente o privado da 404</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Esperado</span> · La API responde <b>404</b> y la vista muestra el 404 propio. Un perfil <code>PRIVATE</code> responde exactamente igual, <b>a propósito</b>: un 403 confirmaría que el slug existe.</p>
-        <figure class="shot" id="img-tc08-404"><img src="tc08-404.jpg" width="792" height="802" alt="Página 404 del portafolio"><figcaption>Indistinguible de un perfil privado.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc08-404"><img src="tc08-404.jpg" width="800" height="500" alt="Página 404 del portafolio"><figcaption>Indistinguible de un perfil privado.</figcaption></figure>
+              <fieldset class="run" data-run="tc08"><legend>Resultado de la corrida · TC-08</legend><label><input type="radio" name="r-tc08" value="pass"> pasa</label><label><input type="radio" name="r-tc08" value="fail"> falla</label><label><input type="radio" name="r-tc08" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-08"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc09">
-        <div class="case-head"><span class="case-id">TC-09</span><h3>La vista funciona en móvil</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc09"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc09" data-area="publica" data-change="add-public-frontend-theming">
+        <div class="case-head"><span class="case-id">TC-09</span><h3>La vista funciona en móvil</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Esperado</span> · Una sola columna, el menú colapsa en hamburguesa, los selectores de tema e idioma siguen accesibles y no hay scroll horizontal.</p>
-        <figure class="shot" id="img-tc09-movil"><img src="tc09-movil.jpg" width="375" height="812" alt="Vista móvil del perfil" style="max-width:375px"><figcaption>375 × 812.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc09-movil"><img src="tc09-movil.jpg" width="390" height="844" alt="Vista móvil del perfil" style="max-width:390px"><figcaption>390 × 844.</figcaption></figure>
+              <fieldset class="run" data-run="tc09"><legend>Resultado de la corrida · TC-09</legend><label><input type="radio" name="r-tc09" value="pass"> pasa</label><label><input type="radio" name="r-tc09" value="fail"> falla</label><label><input type="radio" name="r-tc09" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-09"></fieldset>
+</article>
 
-      <article class="case" data-status="part" id="tc10">
-        <div class="case-head"><span class="case-id">TC-10</span><h3>Los códigos de estado por visibilidad</h3><span class="pill part">parcial</span>
-          <label class="run"><input type="checkbox" data-run="tc10"> ejecutado</label></div>
-        <div class="codewrap"><pre>curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/demo-protegido
+      <article class="case" data-status="part" id="tc10" data-area="publica" data-change="add-auth-and-crud">
+        <div class="case-head"><span class="case-id">TC-10</span><h3>Los códigos de estado por visibilidad</h3><span class="pill part">parcial</span></div>
+        <div class="codewrap"><pre>curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/ejemplo-protegido
 # 401   ← PROTECTED sin token
 
-curl -s -o /dev/null -w '%{http_code}\n' "$API/api/curated-profiles/demo-protegido?token=EL-TOKEN"
+curl -s -o /dev/null -w '%{http_code}\n' "$API/api/curated-profiles/ejemplo-protegido?token=ejemplo-token-2026"
 # 200   ← PROTECTED con token
 
 curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
 # 404   ← inexistente, y lo mismo devuelve un PRIVATE</pre></div>
         <p>El token también viaja en la cabecera <code>X-Access-Token</code>. En los logs el <code>?token=</code> sale censurado, y <code>Referrer-Policy: no-referrer</code> evita que se filtre al navegar a un enlace externo.</p>
-      </article>
+              <fieldset class="run" data-run="tc10"><legend>Resultado de la corrida · TC-10</legend><label><input type="radio" name="r-tc10" value="pass"> pasa</label><label><input type="radio" name="r-tc10" value="fail"> falla</label><label><input type="radio" name="r-tc10" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-10"></fieldset>
+</article>
 
-      <article class="case" data-status="part" id="tc31">
-        <div class="case-head"><span class="case-id">TC-31</span><h3>Imprimir un perfil en una hoja</h3><span class="pill part">parcial</span>
-          <label class="run"><input type="checkbox" data-run="tc31"> ejecutado</label></div>
-        <p><span class="lbl">Pasos</span> · Abrir <code>/tech-lead-dotnet</code> y, sin hacer scroll, apretar <b>Ctrl+P</b>: papel <b>A4</b>, márgenes por defecto, <i>Encabezados y pies de página</i> y <i>Gráficos de fondo</i> desactivados. Repetir con el botón <b>Imprimir / Guardar PDF</b>, con <code>?lang=en</code>, con <code>?theme=modern-dark&amp;layout=sidebar</code> y en <b>Letter</b>. Guardar como PDF y repetir el primer paso en Firefox.</p>
+      <article class="case" data-status="part" id="tc31" data-area="publica" data-change="add-printable-one-page">
+        <div class="case-head"><span class="case-id">TC-31</span><h3>Imprimir un perfil en una hoja</h3><span class="pill part">parcial</span></div>
+        <p><span class="lbl">Pasos</span> · Abrir <code>/ejemplo-backend</code> y, sin hacer scroll, apretar <b>Ctrl+P</b>: papel <b>A4</b>, márgenes por defecto, <i>Encabezados y pies de página</i> y <i>Gráficos de fondo</i> desactivados. Repetir con el botón <b>Imprimir / Guardar PDF</b>, con <code>?lang=en</code>, con <code>?theme=modern-dark&amp;layout=sidebar</code> y en <b>Letter</b>. Guardar como PDF y repetir el primer paso en Firefox.</p>
         <p><span class="lbl">Esperado</span> · Una sola hoja, con texto oscuro sobre blanco aunque el tema sea oscuro (también con <i>Gráficos de fondo</i> activado), el nombre visible y el orden de secciones del perfil. Sin barra superior, selectores ni pie del sitio. Lo omitido dice <i>«y N experiencias más»</i> y el pie trae <b>Versión completa</b> con la URL del perfil, sin <code>token</code>, <code>theme</code> ni <code>layout</code>. En la pantalla del token de un perfil <code>PROTECTED</code> el botón no aparece. Imprimir no hace ninguna petición ni suma una visita.</p>
         <p><span class="lbl">Observado</span> · <code>npm run print:check</code> automatiza el caso en Chrome, sin el diálogo: genera el PDF de cada perfil público y de <code>all</code>, en <code>es</code> y <code>en</code>, en A4 y Letter, con el tema del perfil y con <code>?theme=modern-dark&amp;layout=sidebar</code>, cuenta las páginas y mide el contraste. Requiere <code>PRINT_CHECK_DISPOSABLE_DB=1</code>, que confirma que la API apunta a una base descartable: cada caso registra una visita, y sin la variable el script sale con código 2.</p>
-        <div class="codewrap"><pre>56 casos (14 perfiles), 0 con problemas. Contraste mínimo: 9.74:1
+        <div class="codewrap"><pre>24 casos (6 perfiles), 0 con problemas. Contraste mínimo: 9.74:1
 A4 = 1 página · Letter = 1 página en todos los casos</pre></div>
         <div class="note">El diálogo de impresión y Firefox son pasos manuales: <code>print:check</code> usa el mismo motor de Chrome pero no abre el diálogo. Los PDF de ejemplo están en el archivo del change <code>add-printable-one-page</code>.</div>
-      </article>
+        <figure class="shot" id="img-tc31-imprimir"><img src="tc31-imprimir.jpg" width="800" height="500" alt="Hoja imprimible con print emulado"><figcaption>La hoja de <code>ejemplo-backend</code> con <code>print</code> emulado: una página, texto oscuro sobre blanco.</figcaption></figure>
+              <fieldset class="run" data-run="tc31"><legend>Resultado de la corrida · TC-31</legend><label><input type="radio" name="r-tc31" value="pass"> pasa</label><label><input type="radio" name="r-tc31" value="fail"> falla</label><label><input type="radio" name="r-tc31" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-31"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc32">
-        <div class="case-head"><span class="case-id">TC-32</span><h3>El nivel del idioma en los dos idiomas</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc32"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc32" data-area="backoffice" data-change="localize-language-level">
+        <div class="case-head"><span class="case-id">TC-32</span><h3>El nivel del idioma en los dos idiomas</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · <code>/admin/portada</code> → <b>Idiomas</b> → editar <i>Inglés</i>: el <b>Nivel</b> tiene pestañas ES/EN (español obligatorio, inglés opcional; un nivel legado se abre en ES con EN vacío). Escribir el inglés, guardar, recargar y reabrir. Abrir <code>/?lang=en</code> y la vista de impresión. Vaciar el inglés del nivel y mirar el aviso de faltantes del constructor (pestaña <b>Publicación</b>, vista previa en EN).</p>
-        <p><span class="lbl">Esperado</span> · Con el seed, <code>/?lang=en</code> muestra <i>Spanish · Native</i> y <i>English · B1-B2</i>; <code>/?lang=es</code>, <i>Español · Nativo</i>. El aviso dice <i>Idiomas — Inglés: Nivel</i>; es solo informativo y en inglés el nivel sale en español. Una base migrada desde la anterior queda igual.</p>
-        <p><span class="lbl">Observado</span> · 10 de octubre de 2026, copia de la base de desarrollo (<code>portfolio_levelfix</code>), API en el 3300 y panel en el 5173.</p>
+        <p><span class="lbl">Esperado</span> · Con la base de ejemplo, <code>/?lang=en</code> muestra <i>Spanish · Native</i>, <i>English · Advanced (C1)</i> y <i>Portuguese · Intermediate</i>; <code>/?lang=es</code>, <i>Español · Nativo</i>, <i>Inglés · Avanzado (C1)</i> y <i>Portugués · Intermedio</i>. Con la vista previa de <code>ejemplo-borrador</code> en EN, el aviso dice <i>Falta 1 traducción en EN</i> (<code>Descripción</code> del perfil curado); es solo informativo y en inglés el nivel sale en español. Una base migrada desde la anterior queda igual.</p>
+        <p><span class="lbl">Observado</span> · 10 de octubre de 2026, con el CV real de ese momento (no se repitió sobre el ejemplo), copia de la base de desarrollo (<code>portfolio_levelfix</code>), API en el 3300 y panel en el 5173.</p>
         <div class="codewrap"><pre>GET /api/curated-profiles/all?lang=en              -> Spanish · Native
 GET /api/curated-profiles/all?lang=es              -> Español · Nativo
 POST /api/admin/languages  level: "B2"             -> 400 (level must be an object)
 Portada: EN del nivel, guardar, recargar            -> ES="B1-B2" EN="B1-B2 (working proficiency)"
 Constructor, vista previa en EN, nivel sin inglés   -> Falta 1 traducción en EN · Idiomas · Inglés: Nivel</pre></div>
-        <figure class="shot" id="img-tc32-faltantes"><img src="tc32-faltantes.png" width="1280" height="900" style="max-width:640px" alt="Aviso de faltantes con un nivel de idioma sin inglés"><figcaption>El aviso nombra el idioma con la lista de <code>GET /api/admin/languages</code>.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc32-faltantes"><img src="tc32-faltantes.jpg" width="800" height="500" alt="Aviso de faltantes de traducción"><figcaption>La pestaña Publicación de <code>ejemplo-borrador</code> con la vista previa en EN: <code>Falta 1 traducción en EN</code>.</figcaption></figure>
+              <fieldset class="run" data-run="tc32"><legend>Resultado de la corrida · TC-32</legend><label><input type="radio" name="r-tc32" value="pass"> pasa</label><label><input type="radio" name="r-tc32" value="fail"> falla</label><label><input type="radio" name="r-tc32" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-32"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc33">
-        <div class="case-head"><span class="case-id">TC-33</span><h3>Navegación por teclado y foco visible</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc33"> ejecutado</label></div>
-        <p><span class="lbl">Pasos</span> · Abrir <code>/tech-lead-dotnet</code> y, sin tocar el mouse, apretar <b>Tab</b>: aparece <i>Saltar al contenido</i> (<i>Skip to content</i> con <code>?lang=en</code>); con <b>Enter</b> el foco pasa al contenido y el siguiente Tab cae en el primer control del hero. Recorrer la barra y el hero con Tab, también con <code>?theme=modern-light</code> y <code>?theme=modern-dark</code>. Abrir con Enter el menú de perfiles y el selector de tema (en móvil, el menú lateral): el foco entra y <b>Escape</b> lo devuelve al botón. En <code>/admin</code> repetir el salto; en <code>/admin/experiencias</code> abrir <b>Nueva experiencia</b> con Enter y cerrar con Escape. Con <code>prefers-reduced-motion: reduce</code> emulado, activar el salto.</p>
+      <article class="case" data-status="ok" id="tc33" data-area="publica" data-change="improve-a11y-and-performance">
+        <div class="case-head"><span class="case-id">TC-33</span><h3>Navegación por teclado y foco visible</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Pasos</span> · Abrir <code>/ejemplo-backend</code> y, sin tocar el mouse, apretar <b>Tab</b>: aparece <i>Saltar al contenido</i> (<i>Skip to content</i> con <code>?lang=en</code>); con <b>Enter</b> el foco pasa al contenido y el siguiente Tab cae en el primer control del hero. Recorrer la barra y el hero con Tab, también con <code>?theme=modern-light</code> y <code>?theme=modern-dark</code>. Abrir con Enter el menú de perfiles y el selector de tema (en móvil, el menú lateral): el foco entra y <b>Escape</b> lo devuelve al botón. En <code>/admin</code> repetir el salto; en <code>/admin/experiencias</code> abrir <b>Nueva experiencia</b> con Enter y cerrar con Escape. Con <code>prefers-reduced-motion: reduce</code> emulado, activar el salto.</p>
         <p><span class="lbl">Esperado</span> · Cada control enfocado muestra un contorno sólido de 2 px, separado del borde, del color de acento legible del tema; el foco nunca queda invisible ni se pierde (tampoco al cerrar un diálogo); el salto lleva siempre al <code>&lt;main&gt;</code> y, con movimiento reducido, el desplazamiento no es animado.</p>
         <p><span class="lbl">Observado</span> · 15 de octubre de 2026, contra la imagen de producción del frontend y una base descartable. <code>npm run a11y:check</code> automatiza el recorrido en la home, dos perfiles y el panel (el contorno de cada control alcanzado mide ≥ 3:1 contra el fondo).</p>
-        <div class="codewrap"><pre>Tab 1 en /tech-lead-dotnet            -> Skip to content / Saltar al contenido
+        <div class="codewrap"><pre>Tab 1 en /ejemplo-backend            -> Skip to content / Saltar al contenido
 Enter                                 -> document.activeElement = main#contenido
 Menú de perfiles, tema, Sheet móvil   -> foco adentro; Escape devuelve el foco al botón
 Nueva experiencia / categoría / proyecto + Escape -> el foco vuelve al botón (antes: &lt;body&gt;)
 prefers-reduced-motion: reduce        -> scroll-behavior: auto</pre></div>
-      </article>
+        <figure class="shot" id="img-tc33-foco"><img src="tc33-foco.jpg" width="800" height="500" alt="Salto al contenido con el foco visible"><figcaption>Tras el primer <b>Tab</b>: <b>Saltar al contenido</b> con el foco visible.</figcaption></figure>
+              <fieldset class="run" data-run="tc33"><legend>Resultado de la corrida · TC-33</legend><label><input type="radio" name="r-tc33" value="pass"> pasa</label><label><input type="radio" name="r-tc33" value="fail"> falla</label><label><input type="radio" name="r-tc33" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-33"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc34">
-        <div class="case-head"><span class="case-id">TC-34</span><h3>Contraste con un acento oscuro</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc34"> ejecutado</label></div>
-        <p><span class="lbl">Pasos</span> · Abrir <code>/tech-lead-dotnet</code> (acento <code>#5B2C87</code>, 1,72:1 contra la tarjeta de <code>modern-dark</code>): el titular del hero, el <i>eyebrow</i> de cada sección y las etiquetas del menú se leen, con el tono del acento más claro. El botón <i>Contactar</i> conserva el relleno <code>#5B2C87</code>. Repetir con <code>/software-architect</code> (<code>#1E293B</code>). Con <code>?theme=modern-light</code> el botón primario lleva texto oscuro (4,70:1). En <code>/admin/perfiles/&lt;id&gt;</code> → <b>Diseño</b> elegir el acento <code>#1E293B</code>: la vista previa se lee, y lo guardado es el color elegido, no el derivado.</p>
-        <p><span class="lbl">Esperado</span> · Ningún texto del sitio baja de 4,5:1 contra su fondo, con ningún preset ni con los acentos de los 14 perfiles; el dato guardado no cambia.</p>
-        <p><span class="lbl">Observado</span> · 15 de octubre de 2026: <code>a11y:check</code> sobre la home, cada preset × layout, <code>?lang=en</code>, los 13 perfiles con acento bajo y el panel: 0 violaciones en 72 cargas (antes, 1376 nodos de <code>color-contrast</code> en los perfiles y 420 en el panel). El texto atenuado pasó de 3,5–4,0:1 a ≥ 4,5:1 en los cinco presets.</p>
+      <article class="case" data-status="ok" id="tc34" data-area="publica" data-change="improve-a11y-and-performance">
+        <div class="case-head"><span class="case-id">TC-34</span><h3>Contraste con un acento oscuro</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Pasos</span> · Abrir <code>/ejemplo-backend</code> (acento <code>#1A365D</code>, 1,38:1 contra la tarjeta de <code>modern-dark</code>): el titular del hero, el <i>eyebrow</i> de cada sección y las etiquetas del menú se leen, con el tono del acento más claro. El botón <i>Contactar</i> conserva el relleno <code>#1A365D</code>. Repetir con <code>/ejemplo-secciones</code> (<code>#8a5a00</code> sobre <code>elegant</code>, 2,60:1). Con <code>?theme=modern-light</code> el botón primario lleva texto oscuro (4,70:1). En <code>/admin/perfiles/&lt;id&gt;</code> → <b>Diseño</b> elegir el acento <code>#1A365D</code>: la vista previa se lee, y lo guardado es el color elegido, no el derivado.</p>
+        <p><span class="lbl">Esperado</span> · Ningún texto del sitio baja de 4,5:1 contra su fondo, con ningún preset ni con los acentos de los perfiles del ejemplo; el dato guardado no cambia.</p>
+        <p><span class="lbl">Observado</span> · 15 de octubre de 2026, con el CV real de ese momento (no se repitió sobre el ejemplo): <code>a11y:check</code> sobre la home, cada preset × layout, <code>?lang=en</code>, los 13 perfiles con acento bajo y el panel: 0 violaciones en 72 cargas (antes, 1376 nodos de <code>color-contrast</code> en los perfiles y 420 en el panel). El texto atenuado pasó de 3,5–4,0:1 a ≥ 4,5:1 en los cinco presets.</p>
         <div class="codewrap"><pre>acento    como texto antes  -> --t-accent-ink  después
-#5B2C87   1,72:1            -> #a575d2         4,86:1   (tech-lead-dotnet)
-#1E293B   1,15:1            -> #6c87b4         4,61:1   (software-architect)
-#0078D4   3,71:1            -> #008ffd         5,08:1   (devops-azure y dos más)
+#1A365D   1,38:1            -> #5588cf         4,65:1   (ejemplo-backend, modern-dark)
+#8a5a00   2,60:1            -> #c78200         4,87:1   (ejemplo-secciones, elegant)
 #38bdf8   7,85:1            -> #38bdf8         7,85:1   (all: sin cambio)
-#0284c7   3,74:1            -> #0270a9         4,92:1   (modern-light)</pre></div>
-      </article>
+#0284c7   4,10:1            -> #0270a9         5,39:1   (preset modern-light)
+medido el 27 de octubre de 2026 en la base de ejemplo, contra la tarjeta de cada tema</pre></div>
+        <figure class="shot" id="img-tc34-acento"><img src="tc34-acento.jpg" width="800" height="500" alt="Perfil con el acento derivado legible"><figcaption><code>ejemplo-backend</code> con el preset <code>modern-light</code>: el texto en acento se lee.</figcaption></figure>
+              <fieldset class="run" data-run="tc34"><legend>Resultado de la corrida · TC-34</legend><label><input type="radio" name="r-tc34" value="pass"> pasa</label><label><input type="radio" name="r-tc34" value="fail"> falla</label><label><input type="radio" name="r-tc34" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-34"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc35">
-        <div class="case-head"><span class="case-id">TC-35</span><h3>El perfil abre rápido en un móvil</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc35"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc35" data-area="publica" data-change="improve-mobile-performance">
+        <div class="case-head"><span class="case-id">TC-35</span><h3>El perfil abre rápido en un móvil</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Precondición</span> · Base <b>descartable</b> seedeada (nunca la del owner: cada carga registra una visita), la API en <code>NODE_ENV=production</code> y el frontend como se sirve en producción (la imagen de <code>frontend/Dockerfile</code>, o <code>dist/</code> con el <code>Caddyfile</code> del repo en <code>caddy:2-alpine</code>); Chrome. Para el último paso, un perfil <code>PROTECTED</code> con su token.</p>
-        <p><span class="lbl">Pasos</span> · En Chrome → DevTools con <i>Device toolbar</i> a <b>375 px</b> y CPU <b>4× slowdown</b>, abrir <code>/tech-lead-dotnet</code>: el hero (nombre, titular, resumen) aparece primero y las demás secciones llegan enseguida, sin que el contenido de arriba se mueva. En <i>Network</i>, filtrar por <code>curated-profiles</code>: hay <b>una sola</b> petición de <code>GET /api/curated-profiles/tech-lead-dotnet?locale=es</code>, que sale de <code>profile-prefetch.js</code>. En la base descartable, <code>SELECT count(*) FROM "ProfileView"</code> antes y después: <b>+1</b>. Cambiar de idioma con el selector <code>ES</code>/<code>EN</code> y repetir con <code>?layout=sidebar</code>: no hay parpadeo ni salto de diseño. Con <i>Slow 3G</i>, enfocar el botón de tema con Tab y apretar Enter antes de que cargue su módulo: el menú abre al llegar, con el foco adentro; Escape lo cierra. Repetir con el menú de perfiles. Abrir <code>/&lt;perfil-protegido&gt;?token=&lt;token&gt;&amp;lang=en</code>: una sola petición, con <code>X-Access-Token</code>, y +1 en <code>ProfileView</code>.</p>
+        <p><span class="lbl">Pasos</span> · En Chrome → DevTools con <i>Device toolbar</i> a <b>375 px</b> y CPU <b>4× slowdown</b>, abrir <code>/ejemplo-backend</code>: el hero (nombre, titular, resumen) aparece primero y las demás secciones llegan enseguida, sin que el contenido de arriba se mueva. En <i>Network</i>, filtrar por <code>curated-profiles</code>: hay <b>una sola</b> petición de <code>GET /api/curated-profiles/ejemplo-backend?locale=es</code>, que sale de <code>profile-prefetch.js</code>. En la base descartable, <code>SELECT count(*) FROM "ProfileView"</code> antes y después: <b>+1</b>. Cambiar de idioma con el selector <code>ES</code>/<code>EN</code> y repetir con <code>?layout=sidebar</code>: no hay parpadeo ni salto de diseño. Con <i>Slow 3G</i>, enfocar el botón de tema con Tab y apretar Enter antes de que cargue su módulo: el menú abre al llegar, con el foco adentro; Escape lo cierra. Repetir con el menú de perfiles. Abrir <code>/&lt;perfil-protegido&gt;?token=&lt;token&gt;&amp;lang=en</code>: una sola petición, con <code>X-Access-Token</code>, y +1 en <code>ProfileView</code>.</p>
         <p><span class="lbl">Esperado</span> · El hero se ve antes que el resto, el pie no salta (CLS ≤ 0,01), una sola petición del perfil y una sola visita por carga, y los menús abren con teclado aunque se activen al instante. La consola no muestra violaciones de CSP.</p>
         <p><span class="lbl">Observado</span> · 15 de octubre de 2026, contra el <code>dist/</code> y el <code>Caddyfile</code> del repo en <code>caddy:2-alpine</code> y una base descartable; el detalle está en el <code>verification.md</code> del change <code>improve-mobile-performance</code> (§ Recorrido en 375 px y § Una visita por carga). <code>perf:budget</code> fija el arranque (≤ 155 KB gzip en un solo JS de módulo) y <code>perf:check</code> mide Lighthouse (Performance ≥ 85, mediana de 5, en el CI); ver <a href="#calidad">§ 8.1</a>.</p>
-      </article>
+        <figure class="shot" id="img-tc35-movil-hero"><img src="tc35-movil-hero.jpg" width="390" height="844" alt="Hero en 390 px" style="max-width:390px"><figcaption>El hero en 390 px, primer tiempo de la carga.</figcaption></figure>
+              <fieldset class="run" data-run="tc35"><legend>Resultado de la corrida · TC-35</legend><label><input type="radio" name="r-tc35" value="pass"> pasa</label><label><input type="radio" name="r-tc35" value="fail"> falla</label><label><input type="radio" name="r-tc35" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-35"></fieldset>
+</article>
     </section>
 
     <!-- ───────────── Backoffice ───────────── -->
@@ -583,17 +1225,17 @@ prefers-reduced-motion: reduce        -> scroll-behavior: auto</pre></div>
       <h2>Casos del backoffice</h2>
       <p class="lede">Requieren sesión. Los nueve se recorrieron en el panel real el 5 de octubre, con la base del seed.</p>
 
-      <article class="case" data-status="ok" id="tc11">
-        <div class="case-head"><span class="case-id">TC-11</span><h3>Entrar al panel</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc11"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc11" data-area="backoffice" data-change="add-admin-backoffice">
+        <div class="case-head"><span class="case-id">TC-11</span><h3>Entrar al panel</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Esperado</span> · <code>/admin</code> redirige a <code>/admin/login</code>. Tras entrar, se llega al Dashboard y se vuelve al destino original si se había pedido otra ruta.</p>
         <p>La sesión es una cookie <b>httpOnly</b>: el cliente nunca guarda el JWT y el estado se deriva de <code>GET /api/auth/me</code>. Al expirar, el panel vuelve al login en la siguiente petición.</p>
-        <figure class="shot" id="img-tc10-login"><img src="tc10-login.jpg" width="792" height="802" alt="Pantalla de login del backoffice" style="max-width:480px"><figcaption>El panel vive en el mismo frontend, en un chunk aparte.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc11-login"><img src="tc11-login.jpg" width="800" height="500" alt="Pantalla de login del backoffice"><figcaption>El panel vive en el mismo frontend, en un chunk aparte.</figcaption></figure>
+        <figure class="shot" id="img-tc11-login-error"><img src="tc11-login-error.jpg" width="800" height="500" alt="Error de credenciales"><figcaption>Con un email inexistente y una contraseña de relleno: <code>Email o contraseña incorrectos</code>.</figcaption></figure>
+              <fieldset class="run" data-run="tc11"><legend>Resultado de la corrida · TC-11</legend><label><input type="radio" name="r-tc11" value="pass"> pasa</label><label><input type="radio" name="r-tc11" value="fail"> falla</label><label><input type="radio" name="r-tc11" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-11"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc12">
-        <div class="case-head"><span class="case-id">TC-12</span><h3>Crear un perfil curado para una vacante</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc12"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc12" data-area="backoffice" data-change="add-admin-backoffice">
+        <div class="case-head"><span class="case-id">TC-12</span><h3>Crear un perfil curado para una vacante</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · <code>/admin/perfiles</code> → <b>Nuevo perfil</b> → pestaña <b>Identidad</b>: <code>slug</code> en kebab-case (es la URL y se valida), <code>title</code>, <code>headline</code> y <code>description</code> en ES y EN, <code>roleType</code> y <code>techFocus</code>. Guardar.</p>
         <div class="codewrap"><pre>curl -s -X POST $API/api/admin/curated-profiles -H "$AUTH" \
   -H 'Content-Type: application/json' -d '{
@@ -615,13 +1257,13 @@ POST omitiendo "title" (obligatorio)   -> 400  ✅ después: "title should not b
 POST con accentColor                   -> 400  campo retirado (retire-accent-color)</pre></div>
         <div class="note"><b>Nota.</b> <code>accentColor</code> se retiró en el change <code>retire-accent-color</code>: un cuerpo que lo traiga responde 400. El acento de un perfil es <code>themeOverrides.colors.accent</code> (TC-15).</div>
         <div class="note"><b>Recomendado.</b> Crealo <code>PRIVATE</code> y pasalo a <code>PUBLIC</code> recién cuando esté listo. Un <code>PRIVATE</code> devuelve 404, así que nadie lo encuentra mientras lo armás.</div>
-        <figure class="shot" id="img-tc12a-perfiles-lista"><img src="tc12a-perfiles-lista.jpg" width="800" height="455" alt="Lista de perfiles curados en el panel"><figcaption>Slug, visibilidad, taxonomía y visitas de cada perfil.</figcaption></figure>
-        <figure class="shot" id="img-tc12b-identidad"><img src="tc12b-identidad.jpg" width="800" height="455" alt="Pestaña Identidad del constructor"><figcaption>Pestaña Identidad, con la vista previa en vivo: <code>12 experiencias · 10 categorías · 1 proyectos</code> ya filtradas.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc12a-perfiles-lista"><img src="tc12a-perfiles-lista.jpg" width="800" height="500" alt="Lista de perfiles curados en el panel"><figcaption>Slug, visibilidad, taxonomía y visitas de cada perfil.</figcaption></figure>
+        <figure class="shot" id="img-tc12b-identidad"><img src="tc12b-identidad.jpg" width="800" height="500" alt="Pestaña Identidad del constructor"><figcaption>Pestaña Identidad, con la vista previa en vivo: <code>2 experiencias · 3 categorías · 1 proyectos</code> ya filtradas (en <code>ejemplo-backend</code>).</figcaption></figure>
+              <fieldset class="run" data-run="tc12"><legend>Resultado de la corrida · TC-12</legend><label><input type="radio" name="r-tc12" value="pass"> pasa</label><label><input type="radio" name="r-tc12" value="fail"> falla</label><label><input type="radio" name="r-tc12" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-12"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc13">
-        <div class="case-head"><span class="case-id">TC-13</span><h3>Elegir qué entra con tags y overrides</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc13"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc13" data-area="backoffice" data-change="add-admin-backoffice">
+        <div class="case-head"><span class="case-id">TC-13</span><h3>Elegir qué entra con tags y overrides</h3><span class="pill ok">pasa</span></div>
         <div class="tablewrap"><table>
           <thead><tr><th>Mecanismo</th><th>Efecto</th></tr></thead>
           <tbody>
@@ -637,12 +1279,12 @@ filterTags=[suite-tag]                    -> 1; la visible entró, la oculta no
 includeIds sobre una experiencia oculta   -> no entró  (no fuerza invisibles)
 mismo id en includeIds y excludeIds       -> no entró  (excludeIds siempre gana)</pre></div>
         <p>El orden de salida siempre es cronológico: <code>startDate</code> descendente, <code>order</code> ascendente como desempate. No se reordena item por item, a propósito.</p>
-        <figure class="shot" id="img-tc13-seleccion"><img src="tc13-seleccion.jpg" width="800" height="455" alt="Pestaña Selección con los chips de tags"><figcaption>Los tags activos arriba y el universo disponible debajo, sacado de los datos reales.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc13-seleccion"><img src="tc13-seleccion.jpg" width="800" height="500" alt="Pestaña Selección con los chips de tags"><figcaption>Los tags activos arriba y el universo disponible debajo, sacado de los datos reales.</figcaption></figure>
+              <fieldset class="run" data-run="tc13"><legend>Resultado de la corrida · TC-13</legend><label><input type="radio" name="r-tc13" value="pass"> pasa</label><label><input type="radio" name="r-tc13" value="fail"> falla</label><label><input type="radio" name="r-tc13" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-13"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc14">
-        <div class="case-head"><span class="case-id">TC-14</span><h3>Ordenar y ocultar secciones</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc14"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc14" data-area="backoffice" data-change="add-admin-backoffice">
+        <div class="case-head"><span class="case-id">TC-14</span><h3>Ordenar y ocultar secciones</h3><span class="pill ok">pasa</span></div>
         <p>Las nueve secciones conocidas: <code>hero</code>, <code>stats</code>, <code>experience</code>, <code>skills</code>, <code>projects</code>, <code>education</code>, <code>certifications</code>, <code>presence</code>, <code>contact</code>.</p>
         <p><span class="lbl">Observado</span></p>
         <div class="codewrap"><pre>sectionsOrder=[hero,experience]                 -> sections=[hero,experience]
@@ -651,23 +1293,23 @@ sectionsOrder=[hero,skills,experience,contact]
                                                    hiddenSections=[skills]</pre></div>
         <div class="note"><b>Dos reglas.</b> Una sección <b>con datos</b> que no figure en <code>sectionsOrder</code> se agrega al final; para ocultarla hay que ponerla en <code>sectionsHidden</code>. Una sección <b>sin datos</b> no se renderiza aunque esté en el orden.</div>
         <div class="note">Desde el change <code>unify-section-catalog</code> el catálogo es uno solo, con <b>9</b> secciones, y el backend aplica el relleno: <code>sections</code> trae al final, en orden canónico, las secciones con datos que no figuran en el orden ni están ocultas. La transcripción de arriba es anterior al change. Un id fuera del catálogo ahora responde 400.</div>
-        <figure class="shot" id="img-tc14-secciones"><img src="tc14-secciones.jpg" width="800" height="455" alt="Pestaña Diseño con la lista de secciones"><figcaption><code>projects</code> y <code>presence</code> quedan en las posiciones 8 y 9 porque el orden guardado trae solo siete.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc14-secciones"><img src="tc14-secciones.jpg" width="800" height="500" alt="Pestaña Diseño con la lista de secciones"><figcaption>Las nueve secciones de <code>ejemplo-secciones</code>, reordenadas, con Estadísticas y Presencia apagadas.</figcaption></figure>
+              <fieldset class="run" data-run="tc14"><legend>Resultado de la corrida · TC-14</legend><label><input type="radio" name="r-tc14" value="pass"> pasa</label><label><input type="radio" name="r-tc14" value="fail"> falla</label><label><input type="radio" name="r-tc14" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-14"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc15">
-        <div class="case-head"><span class="case-id">TC-15</span><h3>Personalizar el tema</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc15"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc15" data-area="backoffice" data-change="add-admin-backoffice">
+        <div class="case-head"><span class="case-id">TC-15</span><h3>Personalizar el tema</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · Pestaña <b>Diseño</b>, bloque <i>Tema</i>: tema base entre los cinco presets, ocho controles de color (Fondo, Fondo suave, Tarjeta, Borde, Texto, Texto tenue, Acento y Acento 2), densidad Compacta / Cómoda / Amplia, y <b>Restablecer</b>.</p>
         <p><span class="lbl">Esperado</span> · El preview cambia al instante, porque los tokens se aplican como variables CSS <code>--t-*</code> en el contenedor del preview y no en el documento. Y <b>solo se guardan las diferencias</b> contra el tema base, en <code>themeOverrides</code>: si mañana cambia el preset, el perfil hereda la mejora y conserva su ajuste.</p>
         <div class="note"><b>Perfiles existentes.</b> Al retirarse <code>accentColor</code> (<code>retire-accent-color</code>), el color de cada perfil pasó a <code>themeOverrides.colors.accent</code>. El customizador muestra ese <b>Acento</b> como una diferencia respecto del preset, y <b>Restablecer</b> lo devuelve al del preset (<code>#38bdf8</code> en <code>modern-dark</code>). Varios de esos colores contrastan poco con el fondo oscuro: se corrigen desde este control, perfil por perfil.</div>
         <div class="codewrap"><pre>GET /api/admin/themes  -> 5 temas: corporate, elegant, minimal, modern-dark, modern-light
 PATCH themeOverrides   -> se guarda {"colors":{"accent":"#5B2C87"}}, solo la diferencia</pre></div>
-        <figure class="shot" id="img-tc15-tema"><img src="tc15-tema.jpg" width="800" height="455" alt="Customizador de tema"><figcaption>Tema base, los ocho colores con su hexadecimal, y <b>Restablecer</b> para volver al preset.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc15-tema"><img src="tc15-tema.jpg" width="800" height="500" alt="Customizador de tema"><figcaption>Tema base, los ocho colores con su hexadecimal, y <b>Restablecer</b> para volver al preset.</figcaption></figure>
+              <fieldset class="run" data-run="tc15"><legend>Resultado de la corrida · TC-15</legend><label><input type="radio" name="r-tc15" value="pass"> pasa</label><label><input type="radio" name="r-tc15" value="fail"> falla</label><label><input type="radio" name="r-tc15" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-15"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc16">
-        <div class="case-head"><span class="case-id">TC-16</span><h3>Publicar, proteger o esconder</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc16"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc16" data-area="backoffice" data-change="add-admin-backoffice">
+        <div class="case-head"><span class="case-id">TC-16</span><h3>Publicar, proteger o esconder</h3><span class="pill ok">pasa</span></div>
         <p>Un perfil tiene <b>tres ejes independientes</b>, y la pestaña <b>Publicación</b> los presenta por separado:</p>
         <div class="tablewrap"><table>
           <thead><tr><th>Eje</th><th>Decide</th><th>Dónde se cambia</th></tr></thead>
@@ -694,12 +1336,12 @@ PRIVATE   sin token -> 404
 PRIVATE   con token -> 404   (no revela que existe)
 slug inexistente    -> 404   (indistinguible del PRIVATE)
 el PRIVATE figura en el sitemap -> no</pre></div>
-        <figure class="shot" id="img-tc16-publicacion"><img src="tc16-publicacion.jpg" width="800" height="455" alt="Pestaña Publicación"><figcaption>Visibilidad, el link público con copiar y abrir, y el contador de visitas.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc16-publicacion"><img src="tc16-publicacion.jpg" width="800" height="500" alt="Pestaña Publicación"><figcaption>Visibilidad, el link público con copiar y abrir, y el contador de visitas.</figcaption></figure>
+              <fieldset class="run" data-run="tc16"><legend>Resultado de la corrida · TC-16</legend><label><input type="radio" name="r-tc16" value="pass"> pasa</label><label><input type="radio" name="r-tc16" value="fail"> falla</label><label><input type="radio" name="r-tc16" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-16"></fieldset>
+</article>
 
-      <article class="case" data-status="part" id="tc17">
-        <div class="case-head"><span class="case-id">TC-17</span><h3>Previsualizar sin guardar</h3><span class="pill part">parcial</span>
-          <label class="run"><input type="checkbox" data-run="tc17"> ejecutado</label></div>
+      <article class="case" data-status="part" id="tc17" data-area="backoffice" data-change="add-admin-backoffice">
+        <div class="case-head"><span class="case-id">TC-17</span><h3>Previsualizar sin guardar</h3><span class="pill part">parcial</span></div>
         <p>El preview <b>no lo calcula el navegador</b>: lo resuelve el backend con el mismo servicio que la ruta pública (<code>CuratedProfileComposer</code>), para que no puedan divergir.</p>
         <div class="codewrap"><pre>curl -s -X POST $API/api/admin/curated-profiles/preview -H "$AUTH" \
   -H 'Content-Type: application/json' -d '{
@@ -713,11 +1355,12 @@ el PRIVATE figura en el sitemap -> no</pre></div>
         <p><span class="lbl">Aviso de faltantes</span> · el preview devuelve además <code>missingTranslations</code>: los campos bilingües vacíos en el idioma pedido, que caerían al español. La pestaña <b>Publicación</b>, junto al link público, los muestra con el conteo y la lista agrupada por entidad; si no falta nada lo dice en una línea («Sin faltantes de traducción en EN»). Es informativo: no impide guardar ni publicar. Un texto igual en ambos idiomas (<code>Tech Lead</code>, <code>.NET</code>) no cuenta como faltante, y la ruta pública no trae el informe.</p>
         <div class="codewrap"><pre>curl -s -X POST "$API/api/admin/curated-profiles/preview?locale=en" -H "$AUTH"   -H 'Content-Type: application/json' -d '{ "filterTags": ["dotnet"] }'   | jq '.missingTranslations'</pre></div>
         <div class="note"><b>Cuidado con los nombres.</b> Lo que mandás usa <code>sectionsOrder</code> y <code>sectionsHidden</code>; lo que vuelve resuelto trae <code>sections</code> y <code>hiddenSections</code>. Es la diferencia entre la configuración y el resultado.</div>
-      </article>
+        <figure class="shot" id="img-tc17-preview-en"><img src="tc17-preview-en.jpg" width="800" height="500" alt="Vista previa en inglés con un borrador sin guardar"><figcaption>La vista previa en EN de <code>ejemplo-backend</code> con el slug editado y sin guardar: es estado de vista, no se persiste.</figcaption></figure>
+              <fieldset class="run" data-run="tc17"><legend>Resultado de la corrida · TC-17</legend><label><input type="radio" name="r-tc17" value="pass"> pasa</label><label><input type="radio" name="r-tc17" value="fail"> falla</label><label><input type="radio" name="r-tc17" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-17"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc18">
-        <div class="case-head"><span class="case-id">TC-18</span><h3>Medir qué pasó con los links</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc18"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc18" data-area="backoffice" data-change="add-admin-backoffice">
+        <div class="case-head"><span class="case-id">TC-18</span><h3>Medir qué pasó con los links</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · <code>/admin</code> es el dashboard: rango de 7, 30 (por defecto), 90 días o el último año; totales de visitas, perfiles vistos e idiomas; y tablas por día, por perfil y por idioma.</p>
         <p><span class="lbl">Observado</span></p>
         <div class="codewrap"><pre>views del perfil antes                 -> 2
@@ -726,13 +1369,13 @@ tras un preview del panel              -> 4   ✅ el preview no cuenta como visi
 GET analytics/views?from=hoy&amp;to=hoy    -> total=0   ❌ antes del arreglo de D-01
 GET analytics/views?from=hoy&amp;to=hoy    -> total=4   ✅ después</pre></div>
         <div class="note"><b>Fallaba el rango, no el registro.</b> El contador del perfil y el registro de <code>ProfileView</code> siempre funcionaron. <code>to</code> era exclusivo y el dashboard pide <code>[hoy-29, hoy]</code>, así que las visitas de hoy no aparecían. Corregido: ver <a href="#defectos">D-01</a>.</div>
-        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="1280" height="1098" alt="Dashboard de analítica"><figcaption>381 visitas en el rango, 7 perfiles y 2 idiomas, con las de hoy incluidas (D-01 corregido). Las cuatro tablas: por día, por perfil, por idioma y por origen.</figcaption></figure>
+        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="800" height="705" alt="Dashboard de analítica"><figcaption>105 visitas en 30 días, 5 perfiles y 2 idiomas, sobre la base de ejemplo (el archivado conserva las suyas). Las cuatro tablas: por día, por perfil, por idioma y por origen.</figcaption></figure>
         <p>De cada visita se guarda el perfil, el idioma, la fecha y la IP <b>solo como HMAC</b> con <code>ANALYTICS_SALT</code>. No hay cookies de seguimiento, y si el registro falla la respuesta al visitante no se altera.</p>
-      </article>
+              <fieldset class="run" data-run="tc18"><legend>Resultado de la corrida · TC-18</legend><label><input type="radio" name="r-tc18" value="pass"> pasa</label><label><input type="radio" name="r-tc18" value="fail"> falla</label><label><input type="radio" name="r-tc18" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-18"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc19">
-        <div class="case-head"><span class="case-id">TC-19</span><h3>Mantener las experiencias</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc19"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc19" data-area="backoffice" data-change="add-admin-backoffice">
+        <div class="case-head"><span class="case-id">TC-19</span><h3>Mantener las experiencias</h3><span class="pill ok">pasa</span></div>
         <div class="tablewrap"><table>
           <thead><tr><th>Campo</th><th>Notas</th></tr></thead>
           <tbody>
@@ -751,131 +1394,206 @@ GET /api/experiences (público)           -> la oculta no aparece
 GET /api/admin/experiences               -> la oculta aparece, con visible=false
 POST omitiendo "summary" (obligatorio)   -> 500  ❌ antes del arreglo de D-02
 POST omitiendo "summary" (obligatorio)   -> 400  ✅ después: "summary should not be null or undefined"</pre></div>
-        <figure class="shot" id="img-tc19a-experiencias"><img src="tc19a-experiencias.jpg" width="800" height="455" alt="Lista de experiencias"><figcaption>Cada fila con su empresa, periodo, tags y orden.</figcaption></figure>
-        <figure class="shot" id="img-tc19b-formulario"><img src="tc19b-formulario.jpg" width="800" height="450" alt="Formulario de experiencia"><figcaption>Los campos bilingües llevan conmutador ES/EN. <b>Logros (es)</b> no lo tiene: la limitación de abajo, a la vista.</figcaption></figure>
-        <div class="note warn"><b>Limitación actual.</b> El formulario expone los logros solo en español. El inglés se conserva al guardar, pero no se puede editar desde el panel. Lo resuelve el change <code>add-bilingual-builder-parity</code>.</div>
-      </article>
+        <figure class="shot" id="img-tc19a-experiencias"><img src="tc19a-experiencias.jpg" width="800" height="500" alt="Lista de experiencias"><figcaption>Cada fila con su empresa, periodo, tags y orden.</figcaption></figure>
+        <figure class="shot" id="img-tc19b-formulario"><img src="tc19b-formulario.jpg" width="800" height="500" alt="Formulario de experiencia"><figcaption>Los campos bilingües llevan conmutador ES/EN; <b>Logros (es)</b> y <b>Logros (en)</b> son dos listas, y el inglés es opcional.</figcaption></figure>
+              <fieldset class="run" data-run="tc19"><legend>Resultado de la corrida · TC-19</legend><label><input type="radio" name="r-tc19" value="pass"> pasa</label><label><input type="radio" name="r-tc19" value="fail"> falla</label><label><input type="radio" name="r-tc19" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-19"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc20">
-        <div class="case-head"><span class="case-id">TC-20</span><h3>Mantener skills y categorías</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc20"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc20" data-area="backoffice" data-change="add-admin-backoffice">
+        <div class="case-head"><span class="case-id">TC-20</span><h3>Mantener skills y categorías</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · <code>/admin/skills</code>. Las skills viven dentro de categorías: nueva categoría con nombre bilingüe y orden, y dentro nueva skill con nombre, tags y orden. Una skill se mueve de categoría editando su campo de categoría.</p>
         <p><span class="lbl">Observado</span></p>
         <div class="codewrap"><pre>POST categoría "Suite Cat"                    -> 201
 POST skill "SuiteSkill" con tags=[suite-tag]  -> 201
 preview con filterTags=[suite-tag]            -> la categoría entra por el tag de su skill
 DELETE de la categoría                        -> se lleva sus skills</pre></div>
-        <figure class="shot" id="img-tc20-skills"><img src="tc20-skills.jpg" width="800" height="455" alt="Skills agrupadas por categoría"><figcaption>Cada skill lleva los tags que deciden en qué perfiles aparece.</figcaption></figure>
+        <figure class="shot" id="img-tc20-skills"><img src="tc20-skills.jpg" width="800" height="500" alt="Skills agrupadas por categoría"><figcaption>Cada skill lleva los tags que deciden en qué perfiles aparece.</figcaption></figure>
         <p>Una categoría entra en un perfil curado si <b>alguna de sus skills</b> comparte un tag con <code>filterTags</code>; dentro, se muestran solo las skills que pasan el filtro.</p>
-      </article>
+              <fieldset class="run" data-run="tc20"><legend>Resultado de la corrida · TC-20</legend><label><input type="radio" name="r-tc20" value="pass"> pasa</label><label><input type="radio" name="r-tc20" value="fail"> falla</label><label><input type="radio" name="r-tc20" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-20"></fieldset>
+</article>
 
-      <article class="case" data-status="part" id="tc21">
-        <div class="case-head"><span class="case-id">TC-21</span><h3>Duplicar un perfil para otra vacante</h3><span class="pill part">parcial</span>
-          <label class="run"><input type="checkbox" data-run="tc21"> ejecutado</label></div>
+      <article class="case" data-status="part" id="tc21" data-area="backoffice" data-change="add-curated-profile-lifecycle">
+        <div class="case-head"><span class="case-id">TC-21</span><h3>Duplicar un perfil para otra vacante</h3><span class="pill part">parcial</span></div>
         <p><span class="lbl">Pasos</span> · <code>/admin/perfiles</code> → botón <b>Duplicar</b> de un perfil → confirmar.</p>
         <p><span class="lbl">Esperado</span> · Una copia con toda la configuración (tags, inclusiones, exclusiones, secciones, tema y layout) y el constructor abierto sobre ella. La copia nace <b>privada y no enumerada</b>, sin token, sin visitas y sin archivar, con el slug del original más el primer sufijo libre (<code>-2</code>, <code>-3</code>, …). Para publicarla alcanza con cambiar slug, título, titular y visibilidad.</p>
         <div class="codewrap"><pre>curl -s -X POST $API/api/admin/curated-profiles/$ID/duplicate -H "$AUTH" \
   | jq '{slug, visibility, listed, accessToken, views}'</pre></div>
-        <p><span class="lbl">Observado</span> · en la app real: duplicar <code>tech-lead-dotnet</code> dio <code>/tech-lead-dotnet-2</code>, privado; publicado como <code>acme-tech-lead</code> cambiando solo slug, título y titular, respondió 200 con sus 13 experiencias. El original quedó intacto.</p>
-      </article>
+        <p><span class="lbl">Observado</span> · 27 de octubre de 2026, base de ejemplo, por API: duplicar <code>ejemplo-backend</code> dio <code>ejemplo-backend-2</code> (201), <code>PRIVATE</code>, no enumerado, sin token y con 0 visitas; publicado como <code>ejemplo-vacante</code> cambiando slug, título, <code>filterTags</code>, tema y secciones, respondió 200 con su contenido filtrado. El original quedó intacto.</p>
+        <figure class="shot" id="img-tc21-duplicar"><img src="tc21-duplicar.jpg" width="800" height="500" alt="Diálogo Duplicar perfil curado"><figcaption>El diálogo de <b>Duplicar</b>: la copia nace privada y sin enumerar.</figcaption></figure>
+              <fieldset class="run" data-run="tc21"><legend>Resultado de la corrida · TC-21</legend><label><input type="radio" name="r-tc21" value="pass"> pasa</label><label><input type="radio" name="r-tc21" value="fail"> falla</label><label><input type="radio" name="r-tc21" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-21"></fieldset>
+</article>
 
-      <article class="case" data-status="part" id="tc22">
-        <div class="case-head"><span class="case-id">TC-22</span><h3>Retirar un perfil sin perder sus visitas</h3><span class="pill part">parcial</span>
-          <label class="run"><input type="checkbox" data-run="tc22"> ejecutado</label></div>
+      <article class="case" data-status="part" id="tc22" data-area="backoffice" data-change="add-curated-profile-lifecycle">
+        <div class="case-head"><span class="case-id">TC-22</span><h3>Retirar un perfil sin perder sus visitas</h3><span class="pill part">parcial</span></div>
         <p><span class="lbl">Pasos</span> · Pestaña <b>Publicación</b> → <b>Archivar</b> → confirmar. Para volver atrás, <b>Desarchivar</b>.</p>
         <p><span class="lbl">Esperado</span> · El link responde <b>404</b>, igual que un slug que nunca existió, incluso con token si era <code>PROTECTED</code>. Sale del listado, del menú y del sitemap, pero <b>conserva sus visitas</b>, que siguen en el dashboard marcadas como <i>archivado</i>. Archivar dos veces conserva la primera fecha y no se registran visitas nuevas.</p>
         <div class="codewrap"><pre>curl -s -X POST $API/api/admin/curated-profiles/$ID/archive -H "$AUTH" | jq .archivedAt
 curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/acme-tech-lead   # 404
 curl -s -X POST $API/api/admin/curated-profiles/$ID/unarchive -H "$AUTH" | jq .archivedAt   # null</pre></div>
         <div class="note"><b>Archivar en lugar de borrar.</b> Borrar se lleva las visitas; archivar las conserva y se puede deshacer. <code>archivedAt</code> no se escribe por <code>PATCH</code> (400).</div>
-        <p><span class="lbl">Observado</span> · en la app real: archivado <code>acme-tech-lead</code> con 3 visitas, el link dio 404, el panel pasó a <i>Desarchivar</i> sin recargar y el dashboard siguió mostrando sus 3 visitas.</p>
-      </article>
+        <p><span class="lbl">Observado</span> · 27 de octubre de 2026, base de ejemplo, por API: archivada la copia <code>ejemplo-vacante</code> el link dio 404; archivar dos veces conservó la primera fecha; <code>PATCH</code> con <code>archivedAt</code> dio 400; <i>Desarchivar</i> la devolvió a 200. <code>ejemplo-archivado</code> responde 404 y conserva sus 14 visitas.</p>
+        <figure class="shot" id="img-tc22-archivado"><img src="tc22-archivado.jpg" width="800" height="500" alt="Publicación de un perfil archivado"><figcaption>La pestaña Publicación de <code>ejemplo-archivado</code>: el link avisa que no resuelve.</figcaption></figure>
+              <fieldset class="run" data-run="tc22"><legend>Resultado de la corrida · TC-22</legend><label><input type="radio" name="r-tc22" value="pass"> pasa</label><label><input type="radio" name="r-tc22" value="fail"> falla</label><label><input type="radio" name="r-tc22" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-22"></fieldset>
+</article>
 
-      <article class="case" data-status="part" id="tc23">
-        <div class="case-head"><span class="case-id">TC-23</span><h3>Un link dirigido que no aparece en ningún listado</h3><span class="pill part">parcial</span>
-          <label class="run"><input type="checkbox" data-run="tc23"> ejecutado</label></div>
+      <article class="case" data-status="part" id="tc23" data-area="backoffice" data-change="add-curated-profile-lifecycle">
+        <div class="case-head"><span class="case-id">TC-23</span><h3>Un link dirigido que no aparece en ningún listado</h3><span class="pill part">parcial</span></div>
         <p><span class="lbl">Pasos</span> · Pestaña <b>Publicación</b> → apagar <b>Enumerar en la home y el sitemap</b> → Guardar.</p>
         <p><span class="lbl">Esperado</span> · El perfil sigue abriendo por su link (200 si es <code>PUBLIC</code>; 401 sin token y 200 con token si es <code>PROTECTED</code>), pero no figura en <code>GET /api/curated-profiles</code>, en el menú de la home ni en el <code>sitemap.xml</code>.</p>
         <div class="codewrap"><pre>curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
   -H 'Content-Type: application/json' -d '{"listed":false}' | jq .listed</pre></div>
-        <div class="note">Los 13 perfiles del seed nacen enumerados, igual que antes: dejarlos de enumerar los retiraría de los buscadores. Es una decisión perfil por perfil.</div>
-      </article>
+        <div class="note">Los perfiles del seed nacen enumerados, salvo los que el ejemplo marca a propósito (<code>ejemplo-dirigido</code> y <code>ejemplo-protegido</code>). <b>Observado</b> el 27 de octubre de 2026: <code>ejemplo-dirigido</code> responde 200 por su link y no figura en <code>GET /api/curated-profiles</code> ni en <code>/sitemap.xml</code>.</div>
+        <figure class="shot" id="img-tc23-dirigido"><img src="tc23-dirigido.jpg" width="800" height="500" alt="Publicación de un perfil no enumerado"><figcaption>La pestaña Publicación de <code>ejemplo-dirigido</code>, con <b>Enumerar</b> apagado y su link.</figcaption></figure>
+              <fieldset class="run" data-run="tc23"><legend>Resultado de la corrida · TC-23</legend><label><input type="radio" name="r-tc23" value="pass"> pasa</label><label><input type="radio" name="r-tc23" value="fail"> falla</label><label><input type="radio" name="r-tc23" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-23"></fieldset>
+</article>
 
-      <article class="case" data-status="part" id="tc24">
-        <div class="case-head"><span class="case-id">TC-24</span><h3>Renombrar un slug sin romper los links ya enviados</h3><span class="pill part">parcial</span>
-          <label class="run"><input type="checkbox" data-run="tc24"> ejecutado</label></div>
+      <article class="case" data-status="part" id="tc24" data-area="backoffice" data-change="add-curated-profile-lifecycle">
+        <div class="case-head"><span class="case-id">TC-24</span><h3>Renombrar un slug sin romper los links ya enviados</h3><span class="pill part">parcial</span></div>
         <p><span class="lbl">Pasos</span> · Pestaña <b>Identidad</b> → cambiar el <b>Slug</b> → Guardar.</p>
         <p><span class="lbl">Esperado</span> · El slug anterior <b>sigue funcionando</b>: responde el mismo perfil con su slug canónico en el cuerpo y en <code>Content-Location</code>, y el navegador corrige la URL solo. El sitemap y el <code>canonical</code> usan solo el slug nuevo. Tomar el slug anterior de otro perfil da 409; volver al propio borra el alias; el alias de un archivado también da 404.</p>
         <div class="codewrap"><pre>curl -s -D - -o /dev/null $API/api/curated-profiles/el-slug-viejo | grep -i content-location</pre></div>
-      </article>
+        <p><span class="lbl">Observado</span> · 27 de octubre de 2026, base de ejemplo: <code>/ejemplo-nombre-anterior</code> responde 200 con el perfil <code>ejemplo-renombrado</code> y <code>Content-Location: /api/curated-profiles/ejemplo-renombrado</code>. Tomar ese slug para otro perfil dio <b>409</b>.</p>
+        <figure class="shot" id="img-tc24-alias"><img src="tc24-alias.jpg" width="800" height="500" alt="Perfil renombrado resolviendo desde el slug anterior"><figcaption><code>/ejemplo-nombre-anterior</code> abre el perfil <code>ejemplo-renombrado</code>.</figcaption></figure>
+              <fieldset class="run" data-run="tc24"><legend>Resultado de la corrida · TC-24</legend><label><input type="radio" name="r-tc24" value="pass"> pasa</label><label><input type="radio" name="r-tc24" value="fail"> falla</label><label><input type="radio" name="r-tc24" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-24"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc25">
-        <div class="case-head"><span class="case-id">TC-25</span><h3>Cambiar el titular y la disponibilidad</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc25"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc25" data-area="backoffice" data-change="add-profile-content-admin">
+        <div class="case-head"><span class="case-id">TC-25</span><h3>Cambiar el titular y la disponibilidad</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · <code>/admin/portada</code>. Editar el titular o la fecha de inicio: la vista previa del hero cambia sin guardar, con su selector ES/EN. <b>Guardar portada</b> y el cambio se ve en <code>/</code> y en cada perfil curado, sin correr el seed. Los idiomas se administran en la misma página.</p>
         <p><span class="lbl">Observado</span></p>
         <div class="codewrap"><pre>preview con startDate "Desde noviembre 2026"  -> el badge cambia, nada se guarda
-PUT /api/admin/profile                        -> 200; all, fullstack-nest-react y tech-lead-dotnet lo sirven
+PUT /api/admin/profile                        -> 200; all, fullstack-nest-react y ejemplo-backend lo sirven
 PUT con un campo desconocido                  -> 400 y el perfil queda idéntico
 PUT con email vacío                           -> 400 y conserva el anterior</pre></div>
-        <figure class="shot" id="img-tc25-portada"><img src="tc25-portada.jpg" width="560" height="420" alt="Portada con la vista previa del hero"><figcaption>La vista previa la resuelve el backend con el mismo mapper que la ruta pública.</figcaption></figure>
+        <figure class="shot" id="img-tc25-portada"><img src="tc25-portada.jpg" width="800" height="500" alt="Portada con la vista previa del hero"><figcaption>La vista previa la resuelve el backend con el mismo mapper que la ruta pública.</figcaption></figure>
         <div class="note">El titular base se ve en la home y en todo perfil curado <b>sin titular propio</b> (decisión D7). Las plantillas del seed traen el suyo y lo conservan; para volver al titular base, vaciá el del perfil en la pestaña Identidad.</div>
-      </article>
+              <fieldset class="run" data-run="tc25"><legend>Resultado de la corrida · TC-25</legend><label><input type="radio" name="r-tc25" value="pass"> pasa</label><label><input type="radio" name="r-tc25" value="fail"> falla</label><label><input type="radio" name="r-tc25" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-25"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc26">
-        <div class="case-head"><span class="case-id">TC-26</span><h3>Formación: ocultar sin borrar</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc26"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc26" data-area="backoffice" data-change="add-profile-content-admin">
+        <div class="case-head"><span class="case-id">TC-26</span><h3>Formación: ocultar sin borrar</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · <code>/admin/formacion</code>. Educación y certificaciones con lista y diálogo. Fechas <code>YYYY-MM</code> o <code>YYYY</code>; <i>en curso</i> excluye el fin. Desmarcar <b>Visible en el sitio</b> lo saca de la vista pública y lo deja en el panel con la marca <i>Oculto</i>.</p>
         <div class="codewrap"><pre>PATCH {visible:false}       -> fuera de /api/certifications, sigue en /api/admin/certifications
 GET /api/admin/education    -> incluye las ocultas, con visible y order</pre></div>
-        <figure class="shot" id="img-tc26-formacion"><img src="tc26-formacion.jpg" width="560" height="426" alt="Formación en el panel"><figcaption>La formación del seed, editable desde el panel.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc26-formacion"><img src="tc26-formacion.jpg" width="800" height="500" alt="Formación en el panel"><figcaption>La formación del seed, editable desde el panel.</figcaption></figure>
+              <fieldset class="run" data-run="tc26"><legend>Resultado de la corrida · TC-26</legend><label><input type="radio" name="r-tc26" value="pass"> pasa</label><label><input type="radio" name="r-tc26" value="fail"> falla</label><label><input type="radio" name="r-tc26" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-26"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc27">
-        <div class="case-head"><span class="case-id">TC-27</span><h3>Proyectos y enlaces sociales</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc27"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc27" data-area="backoffice" data-change="add-profile-content-admin">
+        <div class="case-head"><span class="case-id">TC-27</span><h3>Proyectos y enlaces sociales</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · <code>/admin/proyectos</code>. Un proyecto con tags que coincidan con los <code>filterTags</code> de un perfil curado aparece en él con su url; «Sin enlace» marca los que todavía no la tienen. Los enlaces sociales llevan <code>stats</code> como JSON: un objeto, nunca un array.</p>
-        <div class="codewrap"><pre>POST proyecto con tags del perfil  -> aparece en tech-lead-dotnet con su url
+        <div class="codewrap"><pre>POST proyecto con tags del perfil  -> aparece en ejemplo-backend con su url
 DELETE enlace social               -> 204 y sale de /api/social-links
 POST enlace con stats=[1,2]        -> 400</pre></div>
-        <figure class="shot" id="img-tc27-proyectos"><img src="tc27-proyectos.jpg" width="560" height="426" alt="Proyectos y enlaces sociales en el panel"><figcaption>Los dos proyectos del seed, todavía sin enlace.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc27-proyectos"><img src="tc27-proyectos.jpg" width="800" height="500" alt="Proyectos y enlaces sociales en el panel"><figcaption>Los dos proyectos del seed, todavía sin enlace.</figcaption></figure>
+              <fieldset class="run" data-run="tc27"><legend>Resultado de la corrida · TC-27</legend><label><input type="radio" name="r-tc27" value="pass"> pasa</label><label><input type="radio" name="r-tc27" value="fail"> falla</label><label><input type="radio" name="r-tc27" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-27"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc28">
-        <div class="case-head"><span class="case-id">TC-28</span><h3>El constructor avisa antes de descartar cambios</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc28"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc28" data-area="backoffice" data-change="polish-builder-and-edge">
+        <div class="case-head"><span class="case-id">TC-28</span><h3>El constructor avisa antes de descartar cambios</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · <code>/admin/perfiles/:id</code>. Editar el <b>Título</b> de la pestaña Identidad y pulsar <b>Volver</b> (o un enlace del menú lateral, o <i>Atrás</i>): aparece <i>Tenés cambios sin guardar</i> y la página no se mueve. <b>Seguir editando</b> conserva lo escrito; <b>Salir sin guardar</b> navega y descarta. Recargar o cerrar la pestaña con cambios dispara el aviso nativo del navegador.</p>
         <p><span class="lbl">Esperado</span> · Escribir y borrar el mismo carácter, o un espacio final, vuelve a «limpio». Cambiar solo el idioma del preview o archivar el perfil no cuentan como cambio. Un perfil nuevo sin tocar sale sin diálogo y un guardado exitoso deja la ficha limpia.</p>
         <p><span class="lbl">Observado</span></p>
-        <div class="codewrap"><pre>Título de tech-lead-dotnet editado -> Volver abre el aviso, sigue en /admin/perfiles/:id
+        <div class="codewrap"><pre>Título de ejemplo-backend editado -> Volver abre el aviso, sigue en /admin/perfiles/:id
 Salir sin guardar                  -> /admin/perfiles, el título guardado sigue "Tech Lead .NET"</pre></div>
-        <figure class="shot" id="img-tc28-constructor-con-cambios"><img src="tc28-constructor-con-cambios.jpg" width="742" height="586" alt="El constructor con el aviso de cambios sin guardar"><figcaption>El aviso aparece sobre el constructor sin salir de la página.</figcaption></figure>
+        <figure class="shot" id="img-tc28-constructor-con-cambios"><img src="tc28-constructor-con-cambios.jpg" width="800" height="500" alt="El constructor con el aviso de cambios sin guardar"><figcaption>El aviso aparece sobre el constructor sin salir de la página.</figcaption></figure>
         <div class="note">El aviso nativo de <code>beforeunload</code> lo dibuja el navegador y no se capturó en la app real: lo cubren los tests del guardián y de <code>ProfileBuilderPage</code>.</div>
-      </article>
+              <fieldset class="run" data-run="tc28"><legend>Resultado de la corrida · TC-28</legend><label><input type="radio" name="r-tc28" value="pass"> pasa</label><label><input type="radio" name="r-tc28" value="fail"> falla</label><label><input type="radio" name="r-tc28" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-28"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc29">
-        <div class="case-head"><span class="case-id">TC-29</span><h3>La Portada avisa; cambiar el idioma no</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc29"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc29" data-area="backoffice" data-change="polish-builder-and-edge">
+        <div class="case-head"><span class="case-id">TC-29</span><h3>La Portada avisa; cambiar el idioma no</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · <code>/admin/portada</code>. Con el formulario en <i>Cambios sin guardar</i> (por ejemplo, un titular editado), elegir <i>Experiencias</i> en el menú lateral: aparece el mismo aviso que en el constructor, con <i>Seguir editando</i> / <i>Salir sin guardar</i>.</p>
         <p><span class="lbl">Esperado</span> · Cambiar el idioma de la vista previa (<code>?lang=</code>) con cambios pendientes no pide confirmación, porque solo cambia la query. <b>Guardar portada</b> deja la página limpia.</p>
         <p><span class="lbl">Observado</span> · Se editó la Ubicación: cambiar el idioma de la vista previa (EN y de vuelta a ES) no abrió el aviso y la edición se conservó. Ir a Skills desde el menú lateral abrió «Tenés cambios sin guardar»; <i>Salir sin guardar</i> llevó a <code>/admin/skills</code> y la ubicación guardada siguió «Santa Cruz de la Sierra, Bolivia».</p>
-        <figure class="shot" id="img-tc29-portada-con-cambios"><img src="tc29-portada-con-cambios.jpg" width="742" height="586" alt="La Portada con el aviso de cambios sin guardar"><figcaption>El aviso de la Portada es el mismo que el del constructor.</figcaption></figure>
-      </article>
+        <figure class="shot" id="img-tc29-portada-con-cambios"><img src="tc29-portada-con-cambios.jpg" width="800" height="500" alt="La Portada con el aviso de cambios sin guardar"><figcaption>El aviso de la Portada es el mismo que el del constructor.</figcaption></figure>
+              <fieldset class="run" data-run="tc29"><legend>Resultado de la corrida · TC-29</legend><label><input type="radio" name="r-tc29" value="pass"> pasa</label><label><input type="radio" name="r-tc29" value="fail"> falla</label><label><input type="radio" name="r-tc29" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-29"></fieldset>
+</article>
 
-      <article class="case" data-status="ok" id="tc30">
-        <div class="case-head"><span class="case-id">TC-30</span><h3>Los formularios en diálogo avisan antes de descartar</h3><span class="pill ok">pasa</span>
-          <label class="run"><input type="checkbox" data-run="tc30"> ejecutado</label></div>
+      <article class="case" data-status="ok" id="tc30" data-area="backoffice" data-change="polish-builder-and-edge">
+        <div class="case-head"><span class="case-id">TC-30</span><h3>Los formularios en diálogo avisan antes de descartar</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · Cualquier formulario en diálogo: experiencia, categoría y skill, formación y certificación, proyecto, enlace social e idioma. Ejemplo: <code>/admin/skills</code> → <b>Nueva categoría</b>, escribir un nombre y cerrar con <b>Escape</b>, un clic fuera, la X o <b>Cancelar</b>.</p>
         <p><span class="lbl">Esperado</span> · Aparece <i>Tenés cambios sin guardar</i> («Si lo cerrás ahora, se descartan los cambios de este formulario.») con el formulario abierto detrás. <b>Seguir editando</b> conserva los valores; <b>Descartar</b> cierra sin crear nada. Sin cambios cierra directo y guardar con éxito cierra sin aviso. Con cambios, recargar dispara el aviso nativo.</p>
         <p><span class="lbl">Observado</span></p>
         <div class="codewrap"><pre>Skills > Nueva categoría > nombre escrito > Escape -> aviso con el formulario abierto detrás
 Descartar                                          -> cierra, la categoría no se crea</pre></div>
-        <figure class="shot" id="img-tc30-dialogo-con-cambios"><img src="tc30-dialogo-con-cambios.jpg" width="742" height="586" alt="Aviso al cerrar el formulario de categoría con cambios"><figcaption>El aviso se monta sobre el formulario, que sigue abierto.</figcaption></figure>
+        <figure class="shot" id="img-tc30-dialogo-con-cambios"><img src="tc30-dialogo-con-cambios.jpg" width="800" height="500" alt="Aviso al cerrar el formulario de categoría con cambios"><figcaption>El aviso se monta sobre el formulario, que sigue abierto.</figcaption></figure>
         <div class="note"><i>Atrás</i> del navegador con un diálogo abierto no tiene aviso propio (decisión D11). En la app real se probó <i>Escape</i>; clic fuera, X y <i>Cancelar</i> los cubren los tests del guardián y de cada página.</div>
-      </article>
+              <fieldset class="run" data-run="tc30"><legend>Resultado de la corrida · TC-30</legend><label><input type="radio" name="r-tc30" value="pass"> pasa</label><label><input type="radio" name="r-tc30" value="fail"> falla</label><label><input type="radio" name="r-tc30" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-30"></fieldset>
+</article>
     </section>
 
     <!-- ───────────── Defectos ───────────── -->
+    <section class="block" id="datos">
+      <h2>Casos de los datos de ejemplo</h2>
+      <p class="lede">Enseñan a cargar la base de ejemplo y comprueban que no se puede cargar sobre otra. Guía completa: <code>docs/DATA-POPULATION.md</code> § 11.</p>
+
+      <article class="case" data-status="ok" id="tc36" data-area="datos" data-change="add-learning-guide-and-example-data">
+        <div class="case-head"><span class="case-id">TC-36</span><h3>Cargar los datos de ejemplo en una base descartable</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Precondición</span> · <code>docker compose up -d</code> (Postgres en el 5434) y una base <b>aparte</b>, vacía y migrada. Nunca la base <code>portfolio</code>.</p>
+        <p><span class="lbl">Pasos · PowerShell</span></p>
+        <div class="codewrap"><pre>docker exec portfolio-postgres createdb -U portfolio portfolio_example
+cd backend
+$env:DATABASE_URL = "postgresql://portfolio:portfolio@localhost:5434/portfolio_example?schema=public"
+npm run prisma:status          # tiene que decir: database "portfolio_example"
+npm run prisma:deploy
+$env:SEED_DISPOSABLE_DB = "1"
+npm run seed:example           # se puede repetir
+npm run seed:example:verify</pre></div>
+        <p><span class="lbl">Pasos · bash</span></p>
+        <div class="codewrap"><pre>docker exec portfolio-postgres createdb -U portfolio portfolio_example
+cd backend
+export DATABASE_URL="postgresql://portfolio:portfolio@localhost:5434/portfolio_example?schema=public"
+npm run prisma:status &amp;&amp; npm run prisma:deploy
+SEED_DISPOSABLE_DB=1 npm run seed:example
+npm run seed:example:verify</pre></div>
+        <p><span class="lbl">Esperado</span> · Las dos cargas salen con código 0 y la verificación coincide con el archivo. Con la API de ejemplo (<code>PORT=3310</code>) y el frontend (<code>VITE_PROXY_TARGET=http://localhost:3310</code>), la home muestra a <b>Alex Rivera Duarte</b> con las nueve secciones.</p>
+        <p><span class="lbl">Observado</span> · 27 de octubre de 2026:</p>
+        <div class="codewrap"><pre>$ npm run seed:example
+🛡️  Base descartable confirmada: localhost:5434/portfolio_example
+🌱 Iniciando seed...  (6 experiencias, 4 categorías de skills, 3 formaciones, 3 certificaciones,
+   3 proyectos, 4 enlaces, 5 temas, 8 perfiles curados y 105 visitas de ejemplo)
+✅ Seed completado con éxito.            exit=0
+(segunda carga, sin vaciar antes)        exit=0
+$ npm run seed:example:verify
+  ✅ Profile 1 · Language 3 · Experience 6 · SkillCategory 4 · Skill 16 · Education 3 · Certification 3
+  ✅ Project 3 · SocialLink 4 · FeaturedRepository 0 · Theme 5 · CuratedProfile 9
+  ✅ CuratedProfileSlugAlias 1 · ProfileView 105
+  ✅ los 8 perfiles curados: visibilidad, listed, archivado, layout, tema, secciones, alias y overrides
+✅ La base coincide con el archivo de ejemplo.     exit=0</pre></div>
+        <figure class="shot" id="img-tc36-ejemplo-home"><img src="tc36-ejemplo-home.jpg" width="800" height="1062" alt="Home sembrada con el ejemplo"><figcaption>La home (<code>all</code>) sobre la base de ejemplo: persona ficticia, experiencias, skills y las demás secciones.</figcaption></figure>
+              <fieldset class="run" data-run="tc36"><legend>Resultado de la corrida · TC-36</legend><label><input type="radio" name="r-tc36" value="pass"> pasa</label><label><input type="radio" name="r-tc36" value="fail"> falla</label><label><input type="radio" name="r-tc36" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-36"></fieldset>
+</article>
+
+      <article class="case" data-status="ok" id="tc37" data-area="datos" data-change="add-learning-guide-and-example-data">
+        <div class="case-head"><span class="case-id">TC-37</span><h3>El seed de ejemplo se niega contra una base con otros datos</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Precondición</span> · Una base descartable <b>sembrada con <code>docs/cv-data.json</code></b> (<code>portfolio_seedguard</code>, nunca <code>portfolio</code>).</p>
+        <p><span class="lbl">Pasos</span> · Correr <code>npm run seed:example</code> (a) sin la variable, (b) con <code>SEED_DISPOSABLE_DB=1</code> y (c) con <code>NODE_ENV=production</code>; después <code>npm run seed:verify</code>.</p>
+        <p><span class="lbl">Esperado</span> · Las tres salen con código <b>2</b>, dicen cuál de las capas falló, muestran el destino como <code>host:puerto/base</code> (sin contraseña) y no escriben nada: los conteos y el <code>Profile</code> quedan como estaban.</p>
+        <p><span class="lbl">Observado</span> · 27 de octubre de 2026:</p>
+        <div class="codewrap"><pre># Base descartable portfolio_seedguard, sembrada con docs/cv-data.json (1 Profile, 15 Experience, 14 CuratedProfile)
+
+$ npm run seed:example                       (sin SEED_DISPOSABLE_DB)
+❌ Negativa: no se carga el archivo alternativo en localhost:5434/portfolio_seedguard.
+  - capa 1: falta SEED_DISPOSABLE_DB=1: confirma que la base de destino es descartable.
+No se escribió nada.                         exit=2
+
+$ SEED_DISPOSABLE_DB=1 npm run seed:example  (la base tiene el perfil de otra persona)
+❌ Negativa: no se carga el archivo alternativo en localhost:5434/portfolio_seedguard.
+  - capa 3: la base ya tiene el contenido de otro perfil (no está vacía ni es una recarga del mismo archivo).
+No se escribió nada.                         exit=2
+
+$ SEED_DISPOSABLE_DB=1 NODE_ENV=production npm run seed:example
+  - capa 2: NODE_ENV=production: un archivo alternativo nunca se carga en producción.
+No se escribió nada.                         exit=2
+
+Conteos antes y después: Profile=1 · Experience=15 · CuratedProfile=14 · ProfileView=0   (sin cambios)
+$ npm run seed:verify                        -&gt; ✅ La base coincide con cv-data.json   exit=0</pre></div>
+        <p>Sin captura: es salida de terminal. La capa 3 cubre el olvido más probable (<code>backend/.env</code> apunta a la base del owner y <code>DATABASE_URL</code> no se redefinió): esa base tiene otro <code>Profile</code>, así que el seed se niega aunque la variable esté puesta.</p>
+              <fieldset class="run" data-run="tc37"><legend>Resultado de la corrida · TC-37</legend><label><input type="radio" name="r-tc37" value="pass"> pasa</label><label><input type="radio" name="r-tc37" value="fail"> falla</label><label><input type="radio" name="r-tc37" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-37"></fieldset>
+</article>
+    </section>
+
     <section class="block" id="defectos">
       <h2>Defectos encontrados al ejecutar la suite</h2>
       <p class="lede">Los dos aparecieron al ejecutar estos casos por primera vez de punta a punta. Ninguno estaba reportado. <b>Los dos están corregidos</b>; quedan documentados acá porque la suite los sigue cubriendo.</p>
@@ -1037,12 +1755,43 @@ echo "$SITIO/acme-tech-lead"</pre></div>
     </section>
 
     <p class="empty" id="noresults" hidden>Ningún caso coincide con el filtro.</p>
-  </main>
+      <section class="block" id="glosario">
+      <h2>Glosario</h2>
+      <p class="lede">Cada término enlaza el concepto, el recorrido o el caso donde se usa.</p>
+      <dl class="gloss">
+        <div class="g"><dt id="g-slug">slug</dt><dd>La parte de la URL que identifica un perfil curado (<code>/ejemplo-backend</code>). Kebab-case y único. <span class="refs"><a href="#b9">B9 · Constructor · Identidad</a>, <a href="#r4">R4 · Renombrar el slug sin romper los links</a>, <a href="#tc12">TC-12</a></span></dd></div>
+        <div class="g"><dt id="g-perfil-base">perfil base</dt><dd>La información profesional única (nombre, contacto, idiomas…) de la que sale todo lo demás. <span class="refs"><a href="#c1">C1 · Perfil base</a>, <a href="#b3">B3 · Portada (con Idiomas)</a></span></dd></div>
+        <div class="g"><dt id="g-perfil-curado">perfil curado</dt><dd>Una vista filtrada y personalizada del perfil base, con su slug, tema y reglas. <span class="refs"><a href="#c2">C2 · Perfil curado</a>, <a href="#b8">B8 · Perfiles</a>, <a href="#tc12">TC-12</a></span></dd></div>
+        <div class="g"><dt id="g-filtertags"><code>filterTags</code></dt><dd>Lista de tags: un ítem entra si comparte al menos uno. Vacía, entra todo. <span class="refs"><a href="#c3">C3 · Tags y overrides</a>, <a href="#b10">B10 · Constructor · Selección</a>, <a href="#tc13">TC-13</a></span></dd></div>
+        <div class="g"><dt id="g-includeids-excludeids"><code>includeIds</code> / <code>excludeIds</code></dt><dd>Overrides de selección: forzar incluir (solo visibles) o excluir (siempre gana). <span class="refs"><a href="#c3">C3 · Tags y overrides</a>, <a href="#b10">B10 · Constructor · Selección</a>, <a href="#tc13">TC-13</a></span></dd></div>
+        <div class="g"><dt id="g-secci-n">sección</dt><dd>Cada bloque de la página; son nueve y se pueden reordenar y ocultar por perfil. <span class="refs"><a href="#c4">C4 · Secciones</a>, <a href="#b11">B11 · Constructor · Diseño</a>, <a href="#tc14">TC-14</a></span></dd></div>
+        <div class="g"><dt id="g-preset">preset</dt><dd>Uno de los cinco temas base (<code>modern-dark</code>, <code>modern-light</code>, <code>minimal</code>, <code>elegant</code>, <code>corporate</code>). <span class="refs"><a href="#c5">C5 · Tema</a>, <a href="#b11">B11 · Constructor · Diseño</a>, <a href="#tc15">TC-15</a></span></dd></div>
+        <div class="g"><dt id="g-token-de-dise-o">token de diseño</dt><dd>Un valor de color, tipografía o espaciado guardado en la base y aplicado como variable CSS. <span class="refs"><a href="#c5">C5 · Tema</a>, <a href="#b11">B11 · Constructor · Diseño</a></span></dd></div>
+        <div class="g"><dt id="g-themeoverrides"><code>themeOverrides</code></dt><dd>Las diferencias de un perfil contra su preset; solo se guarda lo que cambió. <span class="refs"><a href="#c5">C5 · Tema</a>, <a href="#r5">R5 · Ajustar el tema y el acento</a>, <a href="#tc15">TC-15</a></span></dd></div>
+        <div class="g"><dt id="g-visibilidad">visibilidad</dt><dd><code>PUBLIC</code>, <code>PROTECTED</code> (pide token) o <code>PRIVATE</code> (404): quién puede abrir el link. <span class="refs"><a href="#c6">C6 · Visibilidad, enumeración y archivo</a>, <a href="#b12">B12 · Constructor · Publicación</a>, <a href="#tc16">TC-16</a></span></dd></div>
+        <div class="g"><dt id="g-listed"><code>listed</code></dt><dd>Si el perfil se enumera en el menú, el listado y el sitemap; no cambia el acceso. <span class="refs"><a href="#c6">C6 · Visibilidad, enumeración y archivo</a>, <a href="#r2">R2 · Mandarlo a una sola empresa</a>, <a href="#tc23">TC-23</a></span></dd></div>
+        <div class="g"><dt id="g-archivado">archivado</dt><dd>Retirado de circulación (404) conservando sus visitas; se puede desarchivar. <span class="refs"><a href="#c6">C6 · Visibilidad, enumeración y archivo</a>, <a href="#r3">R3 · Retirar un perfil sin perder sus visitas</a>, <a href="#tc22">TC-22</a></span></dd></div>
+        <div class="g"><dt id="g-alias-de-slug">alias de slug</dt><dd>El slug anterior de un perfil renombrado, que sigue resolviendo al perfil. <span class="refs"><a href="#r4">R4 · Renombrar el slug sin romper los links</a>, <a href="#tc24">TC-24</a></span></dd></div>
+        <div class="g"><dt id="g-localizedtext"><code>LocalizedText</code></dt><dd>Un texto bilingüe <code>{ "es": "…", "en": "…" }</code> en un solo registro. <span class="refs"><a href="#c7">C7 · Idiomas</a>, <a href="#b3">B3 · Portada (con Idiomas)</a></span></dd></div>
+        <div class="g"><dt id="g-faltante-de-traducci-n">faltante de traducción</dt><dd>Un campo bilingüe sin contenido en el idioma pedido; es solo un aviso. <span class="refs"><a href="#c7">C7 · Idiomas</a>, <a href="#r7">R7 · Traducir y revisar faltantes</a>, <a href="#tc32">TC-32</a></span></dd></div>
+        <div class="g"><dt id="g-profileview"><code>ProfileView</code></dt><dd>El registro de una visita pública (perfil, idioma, origen, fecha, IP como HMAC). <span class="refs"><a href="#c8">C8 · Analítica</a>, <a href="#b2">B2 · Dashboard</a>, <a href="#tc18">TC-18</a></span></dd></div>
+      </dl>
+    </section>
+</main>
 </div>
 
 <script>
   (function () {
     var root = document.documentElement;
+    root.setAttribute('lang', 'es');
+    /* Las regiones que desbordan (código y tablas anchas) se recorren con el teclado. */
+    function markScrollable() {
+      Array.prototype.forEach.call(document.querySelectorAll('pre, .tablewrap'), function (el) {
+        if (el.scrollWidth > el.clientWidth + 1) el.setAttribute('tabindex', '0'); else el.removeAttribute('tabindex');
+      });
+    }
+    window.addEventListener('load', markScrollable);
+    window.addEventListener('resize', markScrollable);
     var store = {
       get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
       set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* sin almacenamiento */ } },
@@ -1081,64 +1830,169 @@ echo "$SITIO/acme-tech-lead"</pre></div>
       var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
     }
 
-    /* ── Filtro y búsqueda ── */
+    /* ── Filtros: estado, área, change y búsqueda (se combinan con Y) ──
+       El filtro activo se recuerda en localStorage solo como conveniencia: sin
+       almacenamiento arranca en "Todos" y todo funciona durante la sesión. */
     var cases = Array.prototype.slice.call(document.querySelectorAll('.case[id]'));
-    var chips = Array.prototype.slice.call(document.querySelectorAll('#filters .chip'));
+    var statusChips = Array.prototype.slice.call(document.querySelectorAll('#filters .chip'));
+    var areaChips = Array.prototype.slice.call(document.querySelectorAll('#areafilters .chip'));
+    var changeSel = document.getElementById('changesel');
     var q = document.getElementById('q');
     var noresults = document.getElementById('noresults');
-    var active = 'all';
+    var countEl = document.getElementById('count');
+    var state = { status: 'all', area: 'all', change: 'all' };
+
+    try {
+      var saved = JSON.parse(store.get('manual-filter') || 'null');
+      if (saved && typeof saved === 'object') {
+        ['status', 'area', 'change'].forEach(function (k) { if (typeof saved[k] === 'string') state[k] = saved[k]; });
+      }
+    } catch (e) { /* valor guardado ilegible: se ignora */ }
+
+    function syncChips() {
+      statusChips.forEach(function (c) { c.setAttribute('aria-pressed', String(c.getAttribute('data-filter') === state.status)); });
+      areaChips.forEach(function (c) { c.setAttribute('aria-pressed', String(c.getAttribute('data-area') === state.area)); });
+      changeSel.value = state.change;
+      if (changeSel.value !== state.change) { state.change = 'all'; changeSel.value = 'all'; }
+    }
+    function saveFilters() { store.set('manual-filter', JSON.stringify(state)); }
 
     function apply() {
       var term = q.value.trim().toLowerCase();
       var shown = 0;
       cases.forEach(function (c) {
-        var okStatus = active === 'all' || c.getAttribute('data-status') === active;
-        var okTerm = !term || c.textContent.toLowerCase().indexOf(term) !== -1;
-        var show = okStatus && okTerm;
-        c.hidden = !show;
-        if (show) shown++;
+        var ok = (state.status === 'all' || c.getAttribute('data-status') === state.status) &&
+          (state.area === 'all' || c.getAttribute('data-area') === state.area) &&
+          (state.change === 'all' || c.getAttribute('data-change') === state.change) &&
+          (!term || c.textContent.toLowerCase().indexOf(term) !== -1);
+        c.hidden = !ok;
+        if (ok) shown++;
       });
-      /* Oculta una sección entera si ninguno de sus casos quedó visible */
+      /* Las secciones de aprendizaje, recorridos, backoffice y glosario no se filtran por
+         estado, área ni change, pero sí entran en la búsqueda. */
+      Array.prototype.forEach.call(document.querySelectorAll('.concept, .tour, .screen, .gloss .g'), function (el) {
+        el.hidden = !!term && el.textContent.toLowerCase().indexOf(term) === -1;
+      });
       Array.prototype.forEach.call(document.querySelectorAll('.block'), function (b) {
         var inner = b.querySelectorAll('.case[id]');
-        if (!inner.length) { b.hidden = (active !== 'all' || !!term); return; }
-        var any = Array.prototype.some.call(inner, function (c) { return !c.hidden; });
-        b.hidden = !any;
+        if (inner.length) {
+          b.hidden = !Array.prototype.some.call(inner, function (c) { return !c.hidden; });
+          return;
+        }
+        var items = b.querySelectorAll('.concept, .tour, .screen, .gloss .g');
+        if (items.length) {
+          b.hidden = !Array.prototype.some.call(items, function (c) { return !c.hidden; });
+        } else {
+          b.hidden = !!term && b.textContent.toLowerCase().indexOf(term) === -1;
+        }
       });
       noresults.hidden = shown > 0;
+      countEl.textContent = shown + (shown === 1 ? ' caso' : ' casos') + ' de ' + cases.length;
     }
+    function onFilter() { syncChips(); saveFilters(); apply(); }
 
-    chips.forEach(function (chip) {
-      chip.addEventListener('click', function () {
-        active = chip.getAttribute('data-filter');
-        chips.forEach(function (c) { c.setAttribute('aria-pressed', String(c === chip)); });
-        apply();
-      });
+    statusChips.forEach(function (chip) {
+      chip.addEventListener('click', function () { state.status = chip.getAttribute('data-filter'); onFilter(); });
     });
+    areaChips.forEach(function (chip) {
+      chip.addEventListener('click', function () { state.area = chip.getAttribute('data-area'); onFilter(); });
+    });
+    changeSel.addEventListener('change', function () { state.change = changeSel.value; onFilter(); });
     q.addEventListener('input', apply);
 
-    /* ── Corrida: marcar casos ── */
-    var boxes = Array.prototype.slice.call(document.querySelectorAll('input[data-run]'));
+    /* ── Registro de una corrida: pasa / falla / omitido, con nota ──
+       El estado vive en el DOM (los radios y las notas); localStorage solo lo conserva entre
+       visitas. Una marca '1' heredada del formato anterior se lee como "pasa". */
+    var runFields = Array.prototype.slice.call(document.querySelectorAll('fieldset.run'));
     var fill = document.getElementById('progfill');
     var text = document.getElementById('progtext');
+    var LABEL = { pass: 'pasa', fail: 'falla', skip: 'omitido' };
 
-    function paint() {
-      var done = boxes.filter(function (b) { return b.checked; }).length;
-      fill.style.width = (boxes.length ? (done / boxes.length) * 100 : 0) + '%';
-      text.textContent = done + ' de ' + boxes.length + ' marcados en esta corrida';
+    function resultOf(f) {
+      var c = f.querySelector('input[type="radio"]:checked');
+      return c ? c.value : '';
     }
-    boxes.forEach(function (b) {
-      var key = 'manual-run-' + b.getAttribute('data-run');
-      if (store.get(key) === '1') b.checked = true;
-      b.addEventListener('change', function () {
-        if (b.checked) store.set(key, '1'); else store.del(key);
-        paint();
+    function paint() {
+      var n = { pass: 0, fail: 0, skip: 0 };
+      runFields.forEach(function (f) { var r = resultOf(f); if (r) n[r]++; });
+      var done = n.pass + n.fail + n.skip;
+      fill.style.width = (runFields.length ? (done / runFields.length) * 100 : 0) + '%';
+      text.textContent = done + ' de ' + runFields.length + ' con resultado · ' + n.pass + ' pasan · ' + n.fail + ' fallan · ' + n.skip + ' omitidos';
+    }
+    runFields.forEach(function (f) {
+      var tc = f.getAttribute('data-run');
+      var saved = store.get('manual-run-' + tc);
+      if (saved === '1') saved = 'pass';
+      Array.prototype.forEach.call(f.querySelectorAll('input[type="radio"]'), function (r) {
+        r.checked = r.value === saved;
+        r.addEventListener('change', function () { store.set('manual-run-' + tc, r.value); paint(); });
+      });
+      var note = f.querySelector('input[type="text"]');
+      note.value = store.get('manual-note-' + tc) || '';
+      note.addEventListener('input', function () {
+        if (note.value) store.set('manual-note-' + tc, note.value); else store.del('manual-note-' + tc);
       });
     });
     document.getElementById('reset').addEventListener('click', function () {
-      boxes.forEach(function (b) { b.checked = false; store.del('manual-run-' + b.getAttribute('data-run')); });
+      runFields.forEach(function (f) {
+        var tc = f.getAttribute('data-run');
+        Array.prototype.forEach.call(f.querySelectorAll('input[type="radio"]'), function (r) { r.checked = false; });
+        f.querySelector('input[type="text"]').value = '';
+        store.del('manual-run-' + tc); store.del('manual-note-' + tc);
+      });
+      document.getElementById('reportout').hidden = true;
       paint();
     });
+
+    function localIso(d) {
+      function p(n) { return (n < 10 ? '0' : '') + n; }
+      var o = -d.getTimezoneOffset(), s = o >= 0 ? '+' : '-';
+      o = Math.abs(o);
+      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()) + s + p(Math.floor(o / 60)) + ':' + p(o % 60);
+    }
+    function cell(s) { return String(s || '').replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim(); }
+    function buildReport() {
+      var base = document.getElementById('runbase').value.trim() || 'base de ejemplo';
+      var n = { pass: 0, fail: 0, skip: 0 };
+      runFields.forEach(function (f) { var r = resultOf(f); if (r) n[r]++; });
+      var lines = ['# Resultado de la corrida del manual', '',
+        '- Fecha: ' + localIso(new Date()),
+        '- Base: ' + base,
+        '- Totales: ' + n.pass + ' pasan · ' + n.fail + ' fallan · ' + n.skip + ' omitidos · ' + (runFields.length - n.pass - n.fail - n.skip) + ' sin resultado (de ' + runFields.length + ')'];
+      var active = [];
+      if (state.status !== 'all') active.push('estado=' + state.status);
+      if (state.area !== 'all') active.push('área=' + state.area);
+      if (state.change !== 'all') active.push('change=' + state.change);
+      if (q.value.trim()) active.push('búsqueda="' + q.value.trim() + '"');
+      if (active.length) lines.push('- Filtros activos: ' + active.join(', '));
+      lines.push('', '| Caso | Título | Estado documentado | Resultado | Nota |', '|---|---|---|---|---|');
+      cases.forEach(function (c) {
+        var f = c.querySelector('fieldset.run');
+        var r = f ? resultOf(f) : '';
+        var title = c.querySelector('h3');
+        var tcid = c.querySelector('.case-id');
+        lines.push('| ' + cell(tcid && tcid.textContent) + ' | ' + cell(title && title.textContent) + ' | ' + cell(c.getAttribute('data-status')) +
+          ' | ' + (r ? LABEL[r] : '—') + ' | ' + cell(f && f.querySelector('input[type="text"]').value) + ' |');
+      });
+      return lines.join('\n') + '\n';
+    }
+    document.getElementById('copyrun').addEventListener('click', function () {
+      var textOut = buildReport();
+      var out = document.getElementById('reportout');
+      function fallback() {
+        out.value = textOut; out.hidden = false; out.focus(); out.select();
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textOut).then(function () {
+          out.hidden = true;
+          var b = document.getElementById('copyrun'); b.textContent = 'Copiado';
+          setTimeout(function () { b.textContent = 'Copiar resultado'; }, 1400);
+        }, fallback);
+      } else { fallback(); }
+    });
+
+    syncChips();
+    apply();
     paint();
 
     /* ── Ir a un caso ──
@@ -1149,9 +2003,8 @@ echo "$SITIO/acme-tech-lead"</pre></div>
       var el = id && document.getElementById(id);
       if (!el) return false;
       if (el.hidden || (el.closest && el.closest('[hidden]'))) {
-        active = 'all'; q.value = '';
-        chips.forEach(function (c) { c.setAttribute('aria-pressed', String(c.getAttribute('data-filter') === 'all')); });
-        apply();
+        state.status = 'all'; state.area = 'all'; state.change = 'all'; q.value = '';
+        syncChips(); apply();
       }
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       el.scrollIntoView({ behavior: smooth && !reduce ? 'smooth' : 'auto', block: 'start' });
@@ -1194,22 +2047,32 @@ echo "$SITIO/acme-tech-lead"</pre></div>
       Array.prototype.forEach.call(document.querySelectorAll('section[id], .case[id]'), function (el) { io.observe(el); });
     }
 
-    /* ── Lightbox ── */
+    /* ── Lightbox (con teclado: Enter o Espacio abren, Escape cierra y devuelve el foco) ── */
     Array.prototype.forEach.call(document.querySelectorAll('.shot img'), function (img) {
-      img.addEventListener('click', function () {
+      img.setAttribute('tabindex', '0');
+      img.setAttribute('role', 'button');
+      img.setAttribute('aria-label', 'Ampliar la captura: ' + (img.getAttribute('alt') || ''));
+      function open() {
         var lb = document.createElement('div');
         lb.className = 'lb';
+        lb.setAttribute('role', 'dialog');
+        lb.setAttribute('aria-modal', 'true');
+        lb.setAttribute('aria-label', 'Captura ampliada');
         lb.innerHTML = '<button class="iconbtn close" type="button">Cerrar</button>';
         var big = document.createElement('img');
         big.src = img.getAttribute('src');
         big.alt = img.getAttribute('alt') || '';
         lb.appendChild(big);
-        function close() { lb.remove(); document.removeEventListener('keydown', onKey); }
+        function close() { lb.remove(); document.removeEventListener('keydown', onKey); img.focus(); }
         function onKey(e) { if (e.key === 'Escape') close(); }
         lb.addEventListener('click', function (e) { if (e.target !== big) close(); });
         document.addEventListener('keydown', onKey);
         document.body.appendChild(lb);
         lb.querySelector('.close').focus();
+      }
+      img.addEventListener('click', open);
+      img.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
       });
     });
   })();

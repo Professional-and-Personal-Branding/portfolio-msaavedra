@@ -5,12 +5,14 @@
 > Guía interactiva: cada funcionalidad está escrita como un **caso de prueba funcional** con precondición, pasos, resultado esperado y evidencia. Se puede leer como manual de uso o ejecutar como suite de regresión manual antes de cada release.
 >
 > Para desplegar: [`DEPLOY-RAILWAY.md`](DEPLOY-RAILWAY.md) (guía corta) y [`DEPLOY.md`](DEPLOY.md) (referencia). Este documento empieza donde terminan esos.
+>
+> **Base de referencia:** todos los casos, recorridos y capturas parten de la **base de ejemplo**, ficticia (`docs/examples/cv-data.example.json`, ver § 0 y [`DATA-POPULATION.md`](DATA-POPULATION.md) § 11). Nunca se ejecutan contra la base del owner.
 
 **Leyenda de estado**
 
 | | Significado |
 |---|---|
-| ✅ | Ejecutado y verificado el 4 de octubre de 2026 sobre la base del seed, con captura |
+| ✅ | Ejecutado y verificado sobre la **base de ejemplo** (`portfolio_example`), con captura o transcripción |
 | 🔍 | Ejecutado y verificado contra la API, con la salida transcrita |
 | 📝 | Documentado paso a paso; la captura de pantalla queda pendiente (ver § 6) |
 | ❌ | Ejecutado y **falla**: el comportamiento real no es el esperado. Ver § 6.1 |
@@ -40,6 +42,23 @@ cd ../frontend
 npm ci && npm run dev                     # sitio en http://localhost:5173
 ```
 
+### Base de ejemplo (la que usa todo el manual)
+
+Los casos, los recorridos y las capturas corren sobre una base **aparte** (`portfolio_example`), sembrada con una persona ficticia. **Nunca contra la base `portfolio`**: crean y borran datos y cada carga pública suma una visita. El seed se niega a cargar el ejemplo sobre otra base (TC-37).
+
+```powershell
+docker exec portfolio-postgres createdb -U portfolio portfolio_example
+cd backend
+$env:DATABASE_URL = "postgresql://portfolio:portfolio@localhost:5434/portfolio_example?schema=public"
+npm run prisma:status && npm run prisma:deploy      # tiene que decir: database "portfolio_example"
+$env:SEED_DISPOSABLE_DB = "1"; npm run seed:example && npm run seed:example:verify
+$env:PORT = "3310"; npm run start:dev               # API de ejemplo en otro puerto: la del owner sigue en el 3300
+# en otra terminal
+cd frontend; $env:VITE_PROXY_TARGET = "http://localhost:3310"; npm run dev
+```
+
+En los `curl` de este manual, `API=http://localhost:3310`. Para el panel hace falta un administrador de prueba **de esa base** (`npm run admin:bootstrap` con `ADMIN_EMAIL=capture@example.com` y una contraseña aleatoria de la sesión, que no se guarda en ningún archivo). Guía completa: [`DATA-POPULATION.md`](DATA-POPULATION.md) § 11.
+
 ### Puertos
 
 | Servicio | Puerto | Cómo se cambia |
@@ -47,7 +66,8 @@ npm ci && npm run dev                     # sitio en http://localhost:5173
 | Postgres | **5434** | `POSTGRES_PORT=5555 docker compose up -d` |
 | Adminer | 8080 | `ADMINER_PORT=8081 docker compose up -d` |
 | API (NestJS) | 3300 | `PORT` en `backend/.env` |
-| Sitio (Vite) | 5173 | `npm run dev -- --port 5174` |
+| API de ejemplo | 3310 | `PORT=3310` en la terminal, con `DATABASE_URL` de `portfolio_example` |
+| Sitio (Vite) | 5173 | `npm run dev -- --port 5174` (con la API de ejemplo: `VITE_PROXY_TARGET=http://localhost:3310`) |
 
 > El Postgres del portafolio **no usa el 5432** a propósito: ese puerto suele estar tomado por otro Postgres local. Si el 5434 también lo está, cambialo con `POSTGRES_PORT` y ajustá `DATABASE_URL` en `backend/.env`.
 
@@ -84,7 +104,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq
 | Ruta | Qué es |
 |---|---|
 | `/` | La home. Es el perfil curado con slug `all` |
-| `/:slug` | Un perfil curado. Ej. `/tech-lead-dotnet` |
+| `/:slug` | Un perfil curado. Ej. `/ejemplo-backend` |
 | cualquier otra | 404 propio |
 | `/robots.txt`, `/sitemap.xml` | Los genera el backend con los perfiles `PUBLIC` |
 
@@ -113,14 +133,559 @@ curl -s $API/api/auth/me -H "$AUTH" | jq
 
 ---
 
+## A. Ruta de aprendizaje
+
+Ocho conceptos, en este orden: cada uno se apoya en el anterior. Todos los ejemplos salen de la **base de ejemplo** (`docs/examples/cv-data.example.json`, ver § 0 y `docs/DATA-POPULATION.md` § 11): una persona ficticia, sin datos reales.
+
+### C1 — Perfil base
+
+Es tu información profesional **una sola vez**: nombre, titular, resumen, contacto, disponibilidad e idiomas (el perfil base), más las listas de experiencias, skills, formación, certificaciones, proyectos y enlaces. Todo lo que se publica sale de acá: un perfil curado nunca guarda copias, solo decide qué mostrar.
+
+- **En el ejemplo:** Alex Rivera Duarte y su contenido: 6 experiencias (una oculta), 4 categorías con 16 skills, 3 formaciones, 3 certificaciones, 3 proyectos y 4 enlaces.
+- **Dónde se edita:** B3 (Portada (con Idiomas)), B4 (Experiencias), B5 (Skills), B6 (Formación), B7 (Proyectos y enlaces)
+- **Casos que lo verifican:** TC-01, TC-25, TC-26, TC-27
+
+### C2 — Perfil curado
+
+Una **vista filtrada y personalizada** del perfil base, accesible por un `slug` único (`/ejemplo-backend`). Tiene su propio titular, descripción, tema, orden de secciones y reglas de selección. La home es el perfil curado `all`, que no filtra nada.
+
+- **En el ejemplo:** `ejemplo-backend` (Java y microservicios, acento `#1A365D`) y `all` (la home con las 9 secciones).
+- **Dónde se edita:** B8 (Perfiles), B9 (Constructor · Identidad)
+- **Casos que lo verifican:** TC-03, TC-12, TC-21
+
+### C3 — Tags y overrides
+
+Cada experiencia, skill y proyecto lleva **tags**. Un perfil incluye lo que comparte al menos un tag de su `filterTags` (vacío = todo). Encima, `includeIds` fuerza la inclusión (solo de ítems visibles) y `excludeIds` fuerza la exclusión y **siempre gana**. El orden de salida es cronológico, igual para todos los perfiles.
+
+- **En el ejemplo:** `ejemplo-overrides` fuerza una experiencia sin tags comunes (Brújula Demo), intenta forzar una oculta (se ignora), suma un proyecto y quita una experiencia y una skill que sí coincidían.
+- **Dónde se edita:** B10 (Constructor · Selección)
+- **Casos que lo verifican:** TC-03, TC-13, TC-20
+
+### C4 — Secciones
+
+La página se arma con nueve secciones: `hero`, `stats`, `experience`, `skills`, `projects`, `education`, `certifications`, `presence` y `contact`. Cada perfil puede **reordenarlas** y **ocultarlas**. Una sección con datos que no figura en el orden se agrega al final; una sin datos no se muestra.
+
+- **En el ejemplo:** `ejemplo-secciones` reordena las nueve y oculta Estadísticas y Presencia. La home (`all`) muestra las nueve.
+- **Dónde se edita:** B11 (Constructor · Diseño)
+- **Casos que lo verifican:** TC-14, TC-36
+
+### C5 — Tema
+
+Los colores, la tipografía y el espaciado son **tokens de diseño** guardados en la base y aplicados como variables CSS en el navegador, sin reconstruir nada. Un perfil elige un **preset** (cinco disponibles) y guarda solo sus diferencias en `themeOverrides`. El acento se deriva solo para que el texto siga siendo legible.
+
+- **En el ejemplo:** `ejemplo-backend` usa `modern-dark` con acento `#1A365D`; `ejemplo-secciones` usa `elegant`, layout `sidebar` y overrides de tipografía y radio.
+- **Dónde se edita:** B11 (Constructor · Diseño)
+- **Casos que lo verifican:** TC-04, TC-15, TC-34
+
+### C6 — Visibilidad, enumeración y archivo
+
+Tres ejes independientes. La **visibilidad** decide quién abre el link (`PUBLIC`, `PROTECTED` con token, `PRIVATE` da 404). La **enumeración** (`listed`) decide si figura en el menú, el listado y el sitemap. El **archivo** retira el perfil (404) conservando sus visitas. Renombrar un slug deja un **alias** que sigue funcionando.
+
+- **En el ejemplo:** `ejemplo-protegido` (token `ejemplo-token-2026`), `ejemplo-borrador` (privado), `ejemplo-dirigido` (no enumerado), `ejemplo-archivado` y `ejemplo-renombrado` (alias `ejemplo-nombre-anterior`).
+- **Dónde se edita:** B12 (Constructor · Publicación)
+- **Casos que lo verifican:** TC-06, TC-07, TC-08, TC-10, TC-16, TC-22, TC-23, TC-24
+
+### C7 — Idiomas
+
+Los datos son **bilingües ES/EN en un solo registro**: cada texto traducible es `{ "es": "…", "en": "…" }`. El sitio lo resuelve con `?lang=`; si falta el inglés, muestra el español y el constructor lo **avisa** como faltante de traducción, sin bloquear nada.
+
+- **En el ejemplo:** Todo el ejemplo está en los dos idiomas salvo `description.en` de `ejemplo-borrador`, que falta a propósito.
+- **Dónde se edita:** B3 (Portada (con Idiomas)), B13 (Vista previa)
+- **Casos que lo verifican:** TC-02, TC-17, TC-32
+
+### C8 — Analítica
+
+Cada carga de una ruta pública registra una **visita** (`ProfileView`): perfil, idioma, origen y fecha; la IP solo como HMAC. Las vistas previas del panel no cuentan. El dashboard resume por día, perfil, idioma y origen, y los perfiles archivados conservan su historial.
+
+- **En el ejemplo:** 105 visitas sintéticas en 5 perfiles (`all`, `ejemplo-backend`, `ejemplo-secciones`, `ejemplo-archivado`, `ejemplo-protegido`), con orígenes directo, LinkedIn, buscador y un dominio de `example.com`.
+- **Dónde se edita:** B2 (Dashboard)
+- **Casos que lo verifican:** TC-18
+
+
+---
+
+## B. Recorridos por objetivo
+
+Nueve tareas reales, con los pasos por pantalla, lo que tiene que pasar, los errores típicos y los casos que las verifican. Se ejecutaron sobre la base de ejemplo (ver `openspec/changes/add-learning-guide-and-example-data/verification/5.3-recorridos.md`).
+
+### R1 — Preparar un perfil para una vacante
+
+1. **Perfiles** → botón **Duplicar** en `ejemplo-backend` → confirmar (también se puede crear con **Nuevo perfil**). La copia nace privada y sin enumerar, y se abre en el constructor.
+2. **Identidad**: cambiá el **Slug** (kebab-case, es la URL), el **Título** y el **Titular** en ES y EN, y el **Tipo de rol**.
+3. **Selección**: activá los **Tags de filtrado** de la vacante y mirá la vista previa. Con *Incluir* o *Excluir* ajustás experiencias puntuales.
+4. **Diseño**: elegí el **Tema** y el **Acento**, y ordená u ocultá las **Secciones**.
+5. **Guardar**. Después, en **Publicación**, cambiá la **Visibilidad** a `Público` (o `Protegido` con token) y copiá el **Link público**.
+
+**Resultado esperado:** El link responde 200 y muestra solo lo que pasa el filtro, con el titular y el tema del perfil nuevo. Mientras fue privado, nadie lo veía (404).
+
+**Errores típicos:** `Ya existe un perfil con ese slug` (409) al elegir un slug tomado, o que es el alias de otro perfil. Si la vista previa queda vacía, los tags no coinciden con ninguna experiencia: mirá los tags disponibles en **Selección**.
+
+**Casos:** TC-12, TC-13, TC-15, TC-16, TC-21
+
+### R2 — Mandarlo a una sola empresa
+
+1. En **Perfiles** abrí el perfil (por ejemplo `ejemplo-dirigido`) → pestaña **Publicación**.
+2. Apagá **Enumerar en la home y el sitemap** y **Guardar**. El perfil sigue abriendo por su link pero sale del menú, del listado y del sitemap.
+3. Si además querés que lo abra solo quien tiene una clave: **Visibilidad** → `Protegido` y completá el **Token de acceso** (obligatorio). Compartí el link con `?token=`.
+4. Copiá el **Link público** y comprobalo en una ventana privada.
+
+**Resultado esperado:** `ejemplo-dirigido` responde 200 por su link y no figura en `/sitemap.xml`, en `GET /api/curated-profiles` ni en el menú de la home. `ejemplo-protegido` responde 401 sin token y 200 con `?token=ejemplo-token-2026`.
+
+**Errores típicos:** Un protegido sin token guardado: `Un perfil protegido necesita un token de acceso`. Un perfil **privado** no sirve para esto: da 404 incluso con el link (úsalo para borradores).
+
+**Casos:** TC-16, TC-23, TC-06, TC-07
+
+### R3 — Retirar un perfil sin perder sus visitas
+
+1. **Perfiles** → abrí el perfil → pestaña **Publicación**.
+2. Bloque **Archivado** → **Archivar** → confirmar. El perfil sale del listado, del menú y del sitemap.
+3. Para volver atrás, el mismo bloque ofrece **Desarchivar**.
+4. Verificá en el **Dashboard**: el perfil sigue en *Por perfil*, marcado como `archivado`, con sus visitas.
+
+**Resultado esperado:** `ejemplo-archivado` responde 404 por su link, incluso con token, pero conserva sus 14 visitas en el dashboard.
+
+**Errores típicos:** Borrar en lugar de archivar elimina las visitas con el perfil (el diálogo lo advierte). Un `PATCH` con `archivedAt` da 400: usá los botones.
+
+**Casos:** TC-22, TC-18
+
+### R4 — Renombrar el slug sin romper los links
+
+1. Abrí el perfil en el constructor → pestaña **Identidad**.
+2. Cambiá el **Slug** por el nuevo y **Guardar**.
+3. Abrí el slug anterior en el navegador: el sitio resuelve el mismo perfil y corrige la URL solo.
+
+**Resultado esperado:** `/ejemplo-nombre-anterior` responde 200 con el perfil `ejemplo-renombrado`; el sitemap y el `canonical` usan solo el slug nuevo.
+
+**Errores típicos:** `Ya existe un perfil con ese slug` (409) si el nuevo es el de otro perfil o el alias de otro. Volver a un slug anterior propio libera el alias.
+
+**Casos:** TC-24
+
+### R5 — Ajustar el tema y el acento
+
+1. Constructor → pestaña **Diseño** → **Tema base**: elegí un preset. Si ya hiciste ajustes, el panel pregunta antes de perderlos (**Cambiar el tema base**).
+2. Ajustá los **Colores** (ocho controles, con su valor hexadecimal), las **Fuentes**, la **Densidad** y los efectos. La vista previa cambia al instante.
+3. Para un acento oscuro (por ejemplo `#1A365D`) escribilo en **Acento**: el sitio deriva solo un tono legible para el texto, sin cambiar lo que guardás.
+4. **Restablecer** vuelve al preset. **Guardar**.
+
+**Resultado esperado:** Se guarda solo la diferencia contra el preset en `themeOverrides`. En `ejemplo-backend` el texto en acento se lee con contraste de 4,5:1 o más aunque el color de relleno sea oscuro.
+
+**Errores típicos:** Un hexadecimal inválido se marca en el campo y no rompe la vista previa. Cambiar el preset descarta los ajustes: el aviso lo dice.
+
+**Casos:** TC-04, TC-15, TC-34
+
+### R6 — Editar el contenido base
+
+1. **Portada**: editá el titular, el resumen, el contacto y la disponibilidad (pestañas ES/EN) y **Guardar portada**.
+2. **Experiencias**: **Nueva experiencia** o el lápiz de una existente. Los **Tags** deciden en qué perfiles entra; apagá **Visible en el portafolio** para ocultarla sin borrarla.
+3. **Skills**: categorías y skills, con sus **Tags**.
+4. **Formación** (educación y certificaciones) y **Proyectos y enlaces**: lo mismo, con **Visible** para ocultar.
+5. Recargá `/`: los cambios se ven al instante, sin correr el seed.
+
+**Resultado esperado:** El cambio aparece en la home y en cada perfil curado que lo incluya. Lo oculto sigue en el panel con la marca *Oculto*.
+
+**Errores típicos:** Mensajes en línea como `La empresa es obligatoria` o `Usá el formato AAAA-MM o AAAA`; ver cada pantalla. **No corras `npm run seed`** sobre una base con contenido editado: lo pisa.
+
+**Casos:** TC-19, TC-20, TC-25, TC-26, TC-27
+
+### R7 — Traducir y revisar faltantes
+
+1. Abrí el constructor del perfil (por ejemplo `ejemplo-borrador`) y elegí **EN** en el conmutador de la **Vista previa**.
+2. Pestaña **Publicación**: el aviso lista cada campo sin traducir (`Falta 1 traducción en EN`).
+3. Completá el inglés donde corresponda (Identidad: pestañas ES/EN de cada campo; contenido base: sus pantallas) y volvé a mirar el aviso.
+4. Es solo un aviso: podés guardar y publicar igual; donde falta, el sitio muestra el español.
+
+**Resultado esperado:** En `ejemplo-borrador` el único faltante es `Descripción` del perfil curado. Al completarlo, el aviso pasa a `Sin faltantes de traducción en EN`.
+
+**Errores típicos:** Si el aviso muestra `Comprobando traducciones en EN…` mucho rato, la vista previa no cargó: revisá que el borrador tenga los obligatorios.
+
+**Casos:** TC-17, TC-32, TC-02
+
+### R8 — Imprimir o guardar en PDF
+
+1. Abrí el perfil público (por ejemplo `/ejemplo-backend`).
+2. Botón **Imprimir / Guardar PDF** de la barra superior (o **Ctrl+P**).
+3. En el diálogo: papel A4 o Letter, sin encabezados ni pies, y destino *Guardar como PDF*.
+
+**Resultado esperado:** Una sola hoja, texto oscuro sobre blanco, sin barra ni selectores, con el pie *Versión completa* y la URL del perfil sin token ni tema.
+
+**Errores típicos:** En un perfil protegido el botón no aparece en la pantalla del token. Imprimir no registra una visita.
+
+**Casos:** TC-31
+
+### R9 — Leer la analítica
+
+1. **Dashboard** → elegí el **rango** (7, 30, 90 días o un año).
+2. Mirá los totales (**Visitas en el rango**, **Perfiles vistos**, **Idiomas**) y **Visitas por día**.
+3. En **Por perfil** abrí el constructor o la vista pública con los enlaces de cada fila; el perfil archivado lleva la marca `archivado`.
+4. **Por origen** muestra de dónde llegó cada visita: `directo`, `linkedin.com`, `google.com`…
+
+**Resultado esperado:** Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos, 2 idiomas, y los orígenes directo, linkedin.com, google.com y empleos.example.com.
+
+**Errores típicos:** Las visitas de hoy cuentan (defecto D-01 corregido). La vista previa del panel y la carga de otra persona de `/admin` no suman visitas.
+
+**Casos:** TC-18
+
+
+---
+
+## C. Manual del backoffice por pantalla
+
+Una subsección por pantalla del panel (`/admin`). Las tablas de campos usan la **etiqueta tal como se ve**; la columna *Mensaje* cita el texto **literal** del código (`npm run manual:check` lo comprueba contra `frontend/src`). Los ejemplos son del archivo de ejemplo.
+
+### B1 — Login
+
+Ruta: `/admin/login`. Entrada al panel. La sesión es una cookie `httpOnly`: el navegador nunca guarda el token y el panel deriva la sesión de `GET /api/auth/me`. `/admin` redirige acá sin sesión y vuelve al destino original tras entrar.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Email | texto (email) | Sí | Formato de email | `capture@example.com` |
+| Contraseña | texto (oculto) | Sí | No se valida el formato; la API responde 401 si no coincide | — |
+
+| Mensaje | Cuándo |
+|---|---|
+| Email o contraseña incorrectos | La API respondió 401. El email escrito se conserva. |
+| No pudimos contactar al servidor. Intentá de nuevo. | Cualquier otro error (red caída, API apagada). |
+
+**Acciones y avisos:** El login está limitado a 5 intentos por minuto y por IP (429 con `Retry-After`).
+
+Para la guía y las capturas se usa un administrador de prueba (`npm run admin:bootstrap` con una contraseña aleatoria de la sesión).
+
+![Login del backoffice](manual/tc11-login.jpg)
+
+![Error de credenciales](manual/tc11-login-error.jpg)
+
+### B2 — Dashboard
+
+Ruta: `/admin`. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales, **Visitas por día**, **Por perfil** (con enlaces al constructor y a la vista pública y la marca `archivado`), **Por idioma** y **Por origen**.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Rango | selector | Sí (30 días por defecto) | 7, 30, 90 días o último año | Últimos 30 días |
+
+| Mensaje | Cuándo |
+|---|---|
+| Todavía no hay visitas | No hay visitas en el rango elegido; el texto de apoyo es «Cuando alguien abra un perfil curado en el rango elegido, aparecerá acá.» |
+
+**Acciones y avisos:** Solo lectura. Las visitas se registran en la ruta pública, no en la vista previa del panel.
+
+Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos y 2 idiomas.
+
+![Dashboard de analítica](manual/tc18-dashboard.jpg)
+
+### B3 — Portada (con Idiomas)
+
+Ruta: `/admin/portada`. El perfil base: lo primero que se lee en todos los links. **Identidad y contacto**, **Disponibilidad**, una **Vista previa** del hero (la resuelve el backend, con el mismo mapper de la ruta pública) e **Idiomas**. El `PUT` de la Portada **reemplaza todo el perfil**: guardá siempre desde esta pantalla, no editando campos sueltos por la API.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Nombre completo | texto | Sí | No vacío | `Alex Rivera Duarte` |
+| Titular | ES/EN | Sí (ES) | Español obligatorio | `Ingeniera de Software Senior · …` |
+| Resumen | ES/EN | Sí (ES) | Español obligatorio | `Ingeniera de software con más de diez años…` |
+| Email | texto | Sí | Formato de email | `alex.rivera@example.com` |
+| Teléfono | texto | No | — | `+1 555 0142` |
+| Ubicación | texto | Sí | No vacío | `Ciudad Ejemplo, Ejemplandia` |
+| Huso horario | texto | No | — | `UTC-03:00` |
+| Años de experiencia | entero | Sí | Entero mayor o igual a 0 | `11` |
+| Fecha de inicio / Modalidad / Tipo de contrato | ES/EN | No | — | `A convenir` · `Remoto / Híbrido` |
+| Idioma · Nombre / Nombre mostrado / Nivel / Detalle | texto / ES/EN | Nombre y Nivel (ES) | El español del nivel es obligatorio | `Inglés` · `Avanzado (C1)` / `Advanced (C1)` |
+
+| Mensaje | Cuándo |
+|---|---|
+| El nombre es obligatorio | Nombre completo vacío. |
+| El titular en español es obligatorio | Titular sin español. |
+| El resumen en español es obligatorio | Resumen sin español. |
+| El email no es válido | Email con formato inválido. |
+| La ubicación es obligatoria | Ubicación vacía. |
+| Los años deben ser un entero mayor o igual a 0 | Años de experiencia negativos o con decimales. |
+| El nombre y el nivel son obligatorios | Diálogo de idioma sin nombre o sin nivel. |
+
+**Acciones y avisos:** **Guardar portada** (habilitado solo con cambios). Borrar un idioma pide confirmación: «Se borrará "…" del perfil base y de todos los links.» Salir con cambios abre **Tenés cambios sin guardar** (TC-29); cambiar el idioma de la vista previa no cuenta como cambio.
+
+El titular base lo usan la home y todo perfil curado sin titular propio.
+
+![Portada con la vista previa del hero](manual/tc25-portada.jpg)
+
+![Diálogo de idioma con el nivel en ES y EN](manual/bo-portada-idioma.jpg)
+
+### B4 — Experiencias
+
+Ruta: `/admin/experiencias`. Lista cronológica con empresa, período, tags y orden; las ocultas se atenúan y llevan la marca *Oculta*. **Nueva experiencia** y el lápiz abren el formulario en un diálogo.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Empresa | texto | Sí | No vacío | `Cobalto Ejemplo` |
+| Ubicación | texto | Sí | No vacío | `Ciudad Ejemplo · Remoto` |
+| Rol | ES/EN | Sí (ES) | Español obligatorio | `Tech Lead Backend` |
+| Inicio | mes (AAAA-MM) | Sí | No vacío | `2025-02` |
+| Fin | mes | No | Vacío si es **Actual** | `2025-01` |
+| Actual | interruptor | No | Implica Fin vacío | activado |
+| Orden | entero | No | Mayor o igual a 0; desempata el mismo inicio | `0` |
+| Visible en el portafolio | interruptor | No (activado) | Apagado: no sale en ningún perfil, ni forzado con `includeIds` | Terracota Demo: apagado |
+| Resumen | ES/EN | Sí (ES) | Español obligatorio | `Liderazgo técnico de un equipo…` |
+| Logros (es) / Logros (en) | lista de textos | No | Un renglón por logro | `Definí los estándares…` |
+| Tecnologías / Tags / Sector | chips | No | Los **tags** alimentan `filterTags` | `java` · `spring-boot` |
+
+| Mensaje | Cuándo |
+|---|---|
+| La empresa es obligatoria | Empresa vacía. |
+| El rol en español es obligatorio | Rol sin español. |
+| La fecha de inicio es obligatoria | Inicio vacío. |
+| La ubicación es obligatoria | Ubicación vacía. |
+| El resumen en español es obligatorio | Resumen sin español. |
+
+**Acciones y avisos:** Borrar pide confirmación: «Se borrará "rol" en empresa. Esta acción no se puede deshacer.» Cerrar el diálogo con cambios abre **Tenés cambios sin guardar** (TC-30).
+
+El formulario expone **Logros (es)** y **Logros (en)**. La traducción al inglés es opcional: si falta, la vista en inglés muestra el español.
+
+![Lista de experiencias](manual/tc19a-experiencias.jpg)
+
+![Formulario de experiencia](manual/tc19b-formulario.jpg)
+
+![Errores de validación al guardar vacío](manual/bo-experiencia-errores.jpg)
+
+### B5 — Skills
+
+Ruta: `/admin/skills`. Las skills viven dentro de categorías. **Nueva categoría** (nombre ES/EN y orden) y, dentro de cada una, **Nueva skill** (nombre, tags y orden). Una skill se mueve de categoría editándola.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Categoría · Nombre | ES/EN | Sí (ES) | Español obligatorio | `Lenguajes` / `Languages` |
+| Categoría · Orden | entero | No | Mayor o igual a 0 | `0` |
+| Skill · Nombre | texto | Sí | No vacío | `Spring Boot` |
+| Skill · Tags | chips | No | Deciden en qué perfiles aparece | `java` · `spring-boot` |
+| Skill · Orden | entero | No | Mayor o igual a 0 | `0` |
+
+**Acciones y avisos:** Sin mensaje en línea: con el nombre vacío, **Guardar** no hace nada. Borrar una categoría borra sus skills y el diálogo de confirmación lo dice con la cuenta de skills (*«Se borrará "…" y también sus N skills. Esta acción no se puede deshacer.»*).
+
+Una categoría entra en un perfil si alguna de sus skills comparte un tag con `filterTags`. En el ejemplo, la categoría *Backend* usa skills `{ name, tags }` y *Lenguajes* un tag por categoría.
+
+![Skills por categoría](manual/tc20-skills.jpg)
+
+![Diálogo de skill con sus tags](manual/bo-skills-dialogo.jpg)
+
+### B6 — Formación
+
+Ruta: `/admin/formacion`. Dos listas, **Educación** y **Certificaciones**, con el mismo patrón de lista y diálogo. Desmarcar **Visible en el sitio** oculta un ítem sin borrarlo.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Título | ES/EN | Sí (ES) | Español obligatorio | `Maestría en Ingeniería de Software` |
+| Institución | texto | Sí | No vacío | `Universidad Ejemplo` |
+| Inicio | AAAA-MM o AAAA | Sí | Formato AAAA-MM o AAAA | `2010` |
+| Fin | AAAA-MM o AAAA | No | No anterior al inicio; vacío si está **En curso** | `2014` |
+| En curso | interruptor | No | Excluye la fecha de fin | activado en la maestría |
+| Certificación · Nombre | ES/EN | Sí (ES) | Español obligatorio | `Arquitecto de Soluciones en la Nube` |
+| Certificación · Emisor | texto | Sí | No vacío | `Consorcio Cloud Ejemplo` |
+| Certificación · Año | AAAA | No | Cuatro dígitos | `2023` (vacío en *Liderazgo técnico…*) |
+| Orden / Visible en el sitio | entero / interruptor | No | Orden mayor o igual a 0 | `0` · activado |
+
+| Mensaje | Cuándo |
+|---|---|
+| El título en español es obligatorio | Formación sin título en español. |
+| La institución es obligatoria | Institución vacía. |
+| La fecha de inicio es obligatoria | Inicio vacío. |
+| Usá el formato AAAA-MM o AAAA | Fecha de inicio o fin con otro formato. |
+| Una formación en curso no lleva fecha de fin | En curso con fecha de fin. |
+| La fecha de fin no puede ser anterior al inicio | Fin anterior al inicio. |
+| El nombre en español es obligatorio | Certificación sin nombre en español. |
+| El emisor es obligatorio | Emisor vacío. |
+| Usá el formato AAAA | Año de una certificación con otro formato (por ejemplo `20x`). |
+| El orden no puede ser negativo | Orden menor que 0. |
+
+**Acciones y avisos:** Borrar pide confirmación. Los ocultos siguen en el panel con la marca *Oculto*.
+
+![Formación en el panel](manual/tc26-formacion.jpg)
+
+![Certificación con el error de año](manual/bo-formacion-certificacion.jpg)
+
+### B7 — Proyectos y enlaces
+
+Ruta: `/admin/proyectos`. Proyectos destacados y enlaces sociales. Un proyecto con **tags** que coincidan con los `filterTags` de un perfil aparece en él, con su **URL** como enlace.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Proyecto · Nombre | texto | Sí | No vacío | `Plataforma de Reservas` |
+| Proyecto · Período | texto | Sí | No vacío | `2024` |
+| Proyecto · Rol / Resumen | ES/EN | Sí (ES) | Español obligatorio | `Arquitecta y líder técnica` |
+| Proyecto · URL | texto | No | Absoluta, con http:// o https:// | `https://reservas.example.com` |
+| Proyecto · Tecnologías / Tags | chips | No | Los tags alimentan `filterTags` | `java` · `microservices` |
+| Proyecto · Orden / Visible en el portafolio | entero / interruptor | No | Orden entero mayor o igual a 0 | `0` · activado |
+| Enlace · Plataforma | texto | Sí | Solo minúsculas, dígitos y guiones | `github` |
+| Enlace · Usuario | texto | Sí | No vacío | `alexrivera-ejemplo` |
+| Enlace · URL | texto | Sí | Absoluta, con http:// o https:// | `https://github.example.com/alexrivera-ejemplo` |
+| Enlace · Etiqueta / Descripción | ES/EN | Etiqueta sí (ES) | La descripción en inglés exige la del español | `Código y proyectos abiertos` |
+| Enlace · Estadísticas (JSON) | objeto JSON | No | Un objeto, no un array ni un texto | `{ "repos": 42 }` |
+| Enlace · Destacado / Visible en el portafolio | interruptores | No | — | GitHub destacado |
+
+| Mensaje | Cuándo |
+|---|---|
+| El nombre es obligatorio | Proyecto sin nombre. |
+| El período es obligatorio | Proyecto sin período. |
+| El rol en español es obligatorio | Proyecto sin rol en español. |
+| El resumen en español es obligatorio | Proyecto sin resumen en español. |
+| Usá una URL absoluta que empiece con http:// o https:// | URL del proyecto o del enlace sin esquema. |
+| La plataforma es obligatoria | Enlace sin plataforma. |
+| Solo minúsculas, dígitos y guiones (por ejemplo, github) | Plataforma con mayúsculas, espacios u otros símbolos. |
+| El usuario es obligatorio | Enlace sin usuario. |
+| La URL es obligatoria | Enlace sin URL. |
+| La etiqueta en español es obligatoria | Enlace sin etiqueta en español. |
+| Si cargás la traducción, completá también la descripción en español | Descripción solo en inglés. |
+| Las estadísticas deben ser un objeto JSON, por ejemplo {"repos": 67} | Estadísticas con un JSON que no es un objeto o con JSON roto. |
+| El orden debe ser un entero | Orden con decimales. |
+
+**Acciones y avisos:** Borrar pide confirmación («Se borrará "…". Esta acción no se puede deshacer.» para un proyecto). Un JSON inválido en estadísticas cuenta como cambio y bloquea el envío.
+
+![Proyectos y enlaces sociales](manual/tc27-proyectos.jpg)
+
+![Enlace social con estadísticas inválidas](manual/bo-enlace-stats.jpg)
+
+### B8 — Perfiles
+
+Ruta: `/admin/perfiles`. Lista de perfiles curados con su slug, visibilidad, taxonomía y visitas, y las marcas `Archivado` y `No enumerado`. Por fila: abrir en el portafolio, editar, **Duplicar** y borrar. **Nuevo perfil** abre el constructor vacío.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Acciones por fila | botones | — | Abrir, Editar, Duplicar, Borrar | `ejemplo-backend` |
+
+| Mensaje | Cuándo |
+|---|---|
+| Todavía no hay perfiles curados | La lista está vacía. |
+
+**Acciones y avisos:** **Duplicar** pide confirmar: la copia nace privada y sin enumerar, sin token ni visitas ni archivo, y se abre en el constructor. **Borrar** advierte que se pierden las visitas y sugiere archivar.
+
+Es la entrada al constructor (B9 a B13).
+
+![Lista de perfiles curados](manual/tc12a-perfiles-lista.jpg)
+
+![Diálogo Duplicar perfil curado](manual/tc21-duplicar.jpg)
+
+### B9 — Constructor · Identidad
+
+Ruta: `/admin/perfiles/:id`. Primera de las cuatro pestañas del constructor (**Identidad**, **Selección**, **Diseño**, **Publicación**), con la vista previa en vivo a la derecha. Guardar un perfil nuevo lo crea y deja el constructor abierto sobre él.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Slug | kebab-case | Sí | Minúsculas, números y guiones; es la URL pública | `ejemplo-backend` |
+| Título | ES/EN | Sí (ES) | Español obligatorio | `Ingeniera Backend Java` |
+| Titular | ES/EN | No | Vacío: el hero usa el del perfil base; con inglés exige el español | `Ingeniera Backend Java · Spring Boot…` |
+| Descripción | ES/EN | No | — | `Perfil que filtra por tags…` |
+| Tipo de rol | ES/EN | No | Agrupa el menú público | `Backend` |
+| Tecnología destacada | texto | No | Etiqueta bajo el título en el menú | `Java` |
+
+| Mensaje | Cuándo |
+|---|---|
+| El slug es obligatorio | Slug vacío. |
+| Usá kebab-case: solo minúsculas, números y guiones | Slug con mayúsculas, espacios u otros símbolos. |
+| El título en español es obligatorio | Título sin español. |
+| Falta el titular en español | Titular con inglés y sin español. |
+| Ya existe un perfil con ese slug | La API respondió 409: el slug es de otro perfil o es el alias de otro. |
+| Revisá los campos marcados | Guardar con errores de validación. |
+
+**Acciones y avisos:** Cambiar el slug de un perfil guardado deja el anterior como **alias** (R4). Salir con cambios abre **Tenés cambios sin guardar** (TC-28).
+
+![Constructor, pestaña Identidad](manual/tc12b-identidad.jpg)
+
+### B10 — Constructor · Selección
+
+Ruta: `/admin/perfiles/:id`. Qué entra en el perfil. Los **Tags de filtrado** se activan como chips (abajo, los tags disponibles en los datos). Cada experiencia lleva **Incluir** y **Excluir**.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Tags de filtrado | chips | No | Sin tags entran todas las experiencias visibles | `java` · `microservices` |
+| Incluir (por experiencia) | botón | No | Fuerza la inclusión; solo de ítems visibles | Brújula Demo en `ejemplo-overrides` |
+| Excluir (por experiencia) | botón | No | Fuerza la exclusión; siempre gana | Atlas Demo en `ejemplo-overrides` |
+
+**Acciones y avisos:** **Limitación vigente:** incluir y excluir en el panel cubre **solo experiencias**. Para forzar o quitar skills y proyectos hay que usar la API (`includeIds` / `excludeIds` con los ids de skills y proyectos). La vista previa se recalcula con cada clic.
+
+Los ítems con `visible: false` nunca entran, ni forzándolos: en `ejemplo-overrides`, Terracota Demo (oculta) no aparece aunque esté en `includeRefs`.
+
+![Constructor, pestaña Selección](manual/tc13-seleccion.jpg)
+
+### B11 — Constructor · Diseño
+
+Ruta: `/admin/perfiles/:id`. Layout, **Secciones** (un interruptor de visibilidad y las flechas **Subir** y **Bajar** por cada una de las nueve) y el customizador de **Tema**: tema base, ocho colores, fuentes, densidad y efectos. Solo se guardan las diferencias contra el tema base en `themeOverrides`.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Layout | selector | Sí (`classic`) | `classic` o `sidebar` | `sidebar` en `ejemplo-secciones` |
+| Secciones · Mostrar / Subir / Bajar | interruptor y flechas | No | Una sección con datos que no figura en el orden va al final | Estadísticas y Presencia ocultas |
+| Tema base | selector | Sí | Uno de los cinco presets | `elegant` |
+| Colores (8) | hexadecimal | No | Hexadecimal válido; uno inválido se marca y no rompe la vista previa | Acento `#1A365D` |
+| Fuente del cuerpo / Fuente de títulos | selector | No | — | `Georgia` en `ejemplo-secciones` |
+| Densidad | selector | No | Compacta, Cómoda o Amplia | Cómoda |
+| Restablecer | botón | — | Vuelve al preset y descarta los ajustes | — |
+
+| Mensaje | Cuándo |
+|---|---|
+| Cambiar el tema base | Título del diálogo al elegir otro preset con ajustes hechos. |
+| Los ajustes de color, tipografía y espaciado que hiciste sobre el tema actual se perderán. | Texto de ese diálogo de confirmación. |
+
+**Acciones y avisos:** Cambiar el tema base pide confirmar si había ajustes. Los colores se aplican como variables `--t-*` solo en el contenedor de la vista previa.
+
+Ver R5 (Ajustar el tema y el acento).
+
+![Constructor, pestaña Diseño con las secciones](manual/tc14-secciones.jpg)
+
+![Customizador de tema](manual/tc15-tema.jpg)
+
+![Pestaña Diseño completa](manual/bo-constructor-diseno.jpg)
+
+### B12 — Constructor · Publicación
+
+Ruta: `/admin/perfiles/:id`. Los tres ejes: **Visibilidad**, **Enumerar en la home y el sitemap** y **Archivado**, más el **Link público** (copiar y abrir) y el aviso de faltantes de traducción.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Visibilidad | selector | Sí | Público, Protegido o Privado | Protegido en `ejemplo-protegido` |
+| Token de acceso | texto | Sí si es Protegido | No vacío | `ejemplo-token-2026` |
+| Enumerar en la home y el sitemap | interruptor | No (activado) | No cambia el acceso: un no enumerado abre por su link | Apagado en `ejemplo-dirigido` |
+| Archivado | botón | — | Archivar pide confirmar; Desarchivar es directo | `ejemplo-archivado` |
+| Link público | solo lectura | — | Copiar y Abrir; avisa si no resuelve | `/ejemplo-borrador` |
+
+| Mensaje | Cuándo |
+|---|---|
+| Un perfil protegido necesita un token de acceso | Visibilidad Protegido sin token. |
+| Este link no resuelve: un perfil privado responde 404. Usalo para borradores. | Aviso bajo el link de un perfil privado. |
+| Este link no resuelve: el perfil está archivado y responde 404. | Aviso bajo el link de un perfil archivado. |
+| Archivar perfil curado | Título del diálogo de **Archivar**. |
+| El link deja de funcionar (responde 404) y el perfil sale del listado y del sitemap. Las visitas se conservan y siguen en el dashboard. Se puede desarchivar. | Texto del diálogo de **Archivar**. |
+
+**Acciones y avisos:** **Archivar** → confirmar. **Desarchivar** vuelve al estado anterior. El aviso de faltantes (`Falta 1 traducción en EN`) vive acá, bajo el link.
+
+![Constructor, pestaña Publicación](manual/tc16-publicacion.jpg)
+
+![Publicación de un perfil archivado](manual/tc22-archivado.jpg)
+
+![Publicación de un perfil no enumerado](manual/tc23-dirigido.jpg)
+
+### B13 — Vista previa
+
+Ruta: `/admin/perfiles/:id`. A la derecha del constructor, con los componentes reales del portafolio. La resuelve el backend con el mismo servicio que la ruta pública, así que no puede divergir y **no persiste ni cuenta visitas**. El conmutador **ES / EN** pide la vista previa en el otro idioma (`?locale=en`); es estado de vista y no se guarda.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Idioma de la vista previa | conmutador ES/EN | — | Vuelve a español al recargar | EN en `ejemplo-borrador` |
+
+| Mensaje | Cuándo |
+|---|---|
+| Completá los campos obligatorios para ver la vista previa. | El borrador no es válido y no se pide la vista previa. |
+
+**Acciones y avisos:** La vista previa refleja el borrador sin guardar: tocar el Slug o un tag la recalcula. Con `ejemplo-borrador` en EN, la pestaña Publicación muestra `Falta 1 traducción en EN`.
+
+![Vista previa en inglés con un borrador sin guardar](manual/tc17-preview-en.jpg)
+
+![Aviso de faltantes de traducción](manual/tc32-faltantes.jpg)
+
+---
+
 ## 2. Casos de la vista pública
 
 ### TC-01 — La home resuelve el perfil completo ✅
 
-**Precondición:** base seedeada, sitio levantado.
+**Precondición:** base de ejemplo, sitio levantado.
 **Pasos:** abrir `http://localhost:5173/?lang=es`.
 **Resultado esperado:** se renderiza el perfil `all` con el hero, el badge de disponibilidad, los datos de contacto y la fila de métricas. El título del documento es `Perfil Completo · <nombre>`.
-**Verificado:** 15 experiencias, 80 tecnologías, 8 certificaciones.
+**Verificado** (27 de octubre de 2026, base de ejemplo): 5 experiencias, 16 tecnologías, 2 certificaciones, 2 proyectos, 4 categorías con 16 skills y las 9 secciones.
 
 ![Home en español](manual/tc01-home-es.jpg)
 
@@ -136,56 +701,56 @@ curl -s $API/api/auth/me -H "$AUTH" | jq
 
 ### TC-03 — Un perfil curado filtra el contenido ✅
 
-**Pasos:** abrir `/tech-lead-dotnet?lang=es`.
-**Resultado esperado:** el titular pasa a ser el del perfil (`Tech Lead · Líder Técnico de Desarrollo · .NET · Microservicios · Modernización Legacy`), se antepone la descripción del perfil al resumen general, y las métricas bajan respecto de la home porque el contenido está filtrado por `filterTags`.
+**Pasos:** abrir `/ejemplo-backend?lang=es`.
+**Resultado esperado:** el titular pasa a ser el del perfil (`Ingeniera Backend Java · Spring Boot · Microservicios`), se antepone la descripción del perfil al resumen general, y las métricas bajan respecto de la home porque el contenido está filtrado por `filterTags`.
 
 ![Perfil curado](manual/tc03-perfil-curado.jpg)
 
-> **Cómo se comprueba el filtro sin mirar:** compará las métricas con las de TC-01. En un perfil con `filterTags: ["dotnet"]` se pasa de 15 experiencias y 80 tecnologías a 7 y 57.
+> **Cómo se comprueba el filtro sin mirar:** compará las métricas con las de TC-01. En `ejemplo-backend` (`filterTags`: `java`, `spring-boot`, `microservices`) se pasa de 5 experiencias y 16 tecnologías a 2 y 7.
 
 ### TC-04 — Tema y layout se cambian desde la URL ✅
 
-**Pasos:** abrir `/tech-lead-dotnet?lang=es&theme=corporate&layout=sidebar`.
+**Pasos:** abrir `/ejemplo-backend?lang=es&theme=corporate&layout=sidebar`.
 **Resultado esperado:** el preset `corporate` cambia la paleta completa en caliente, sin recargar ni reconstruir, y `sidebar` reorganiza la página en dos columnas con los datos fijos a la izquierda. Lo guardado en el perfil **no** se modifica: es una vista alternativa que se puede compartir.
 
 ![Tema corporate con layout sidebar](manual/tc04-tema-layout.jpg)
 
 ### TC-05 — El menú ofrece los demás perfiles, solo en la home ✅
 
-**Pasos:** en la home (`/`), abrir el desplegable **Perfiles**. Después abrir un perfil por su link, por ejemplo `/tech-lead-dotnet`.
-**Resultado esperado:** en la home, el menú lista los perfiles públicos, enumerados y no archivados, agrupados por `roleType` (Perfil Completo, Backend, Fullstack, DevOps…), cada uno con su `techFocus` debajo. En `/:slug` **no hay menú**: quien recibe un link no ve los otros perfiles hechos para otras vacantes.
+**Pasos:** en la home (`/`), abrir el desplegable **Perfiles**. Después abrir un perfil por su link, por ejemplo `/ejemplo-backend`.
+**Resultado esperado:** en la home, el menú lista los perfiles públicos, enumerados y no archivados, agrupados por `roleType` (en el ejemplo: Backend, Generalista, Fullstack; los perfiles protegido, privado, dirigido y archivado no se enumeran), cada uno con su `techFocus` debajo. En `/:slug` **no hay menú**: quien recibe un link no ve los otros perfiles hechos para otras vacantes.
 
 ![Menú de perfiles](manual/tc05-menu-perfiles.jpg)
 
-*El desplegable abierto en la home, agrupado por tipo de rol. Capturada el 8 de octubre de 2026; en la misma ejecución, `/tech-lead-dotnet` no tenía el botón **Perfiles**.*
+*El desplegable abierto en la home, agrupado por tipo de rol, sobre la base de ejemplo. En `/ejemplo-backend` no hay botón **Perfiles**.*
 
 > Desde el change `add-curated-profile-lifecycle` el menú solo se monta en la home. La captura del perfil sin menú está en `openspec/changes/archive/*-add-curated-profile-lifecycle/verification/05-perfil-sin-menu.png`.
 
 ### TC-06 — Un perfil protegido pide token ✅
 
-**Precondición:** un perfil con `visibility: PROTECTED` y `accessToken`.
-**Pasos:** abrir su slug sin `?token=`.
+**Precondición:** base de ejemplo: `ejemplo-protegido` (`visibility: PROTECTED`, token `ejemplo-token-2026`).
+**Pasos:** abrir `/ejemplo-protegido` sin `?token=`.
 **Resultado esperado:** la API responde **401** y la vista muestra el formulario de token, sin filtrar ningún dato del perfil.
 
 ![Formulario de token](manual/tc06-token-form.jpg)
 
 ### TC-07 — Con el token correcto, el perfil resuelve ✅
 
-**Pasos:** escribir el token y pulsar **Acceder**.
+**Pasos:** escribir el token (`ejemplo-token-2026`) y pulsar **Acceder**.
 **Resultado esperado:** el token pasa a la URL como `?token=`, la API responde 200 y el perfil se renderiza. El link con el token es compartible tal cual.
 
 ![Perfil protegido resuelto](manual/tc07-token-resuelto.jpg)
 
 ### TC-08 — Un slug inexistente o privado da 404 ✅
 
-**Pasos:** abrir `/no-existe`.
+**Pasos:** abrir `/no-existe` y también `/ejemplo-borrador` (privado).
 **Resultado esperado:** la API responde **404** y la vista muestra el 404 propio con el enlace al perfil completo. Un perfil `PRIVATE` responde exactamente igual: **a propósito**, para no confirmar que el slug existe.
 
 ![404](manual/tc08-404.jpg)
 
 ### TC-09 — La vista funciona en móvil ✅
 
-**Pasos:** abrir cualquier perfil con el viewport en 375×812.
+**Pasos:** abrir `/ejemplo-backend` con el viewport en 390×844.
 **Resultado esperado:** una sola columna, el menú colapsa en hamburguesa, los selectores de tema e idioma siguen accesibles y no hay scroll horizontal.
 
 ![Vista móvil](manual/tc09-movil.jpg)
@@ -195,10 +760,10 @@ curl -s $API/api/auth/me -H "$AUTH" | jq
 **Pasos y resultado verificado:**
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/demo-protegido
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/ejemplo-protegido
 # 401   ← PROTECTED sin token
 
-curl -s -o /dev/null -w '%{http_code}\n' "$API/api/curated-profiles/demo-protegido?token=EL-TOKEN"
+curl -s -o /dev/null -w '%{http_code}\n' "$API/api/curated-profiles/ejemplo-protegido?token=ejemplo-token-2026"
 # 200   ← PROTECTED con token
 
 curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
@@ -209,9 +774,9 @@ El token también viaja en la cabecera `X-Access-Token`. En los logs el `?token=
 
 ### TC-31 — Imprimir un perfil en una hoja 🔍
 
-**Precondición:** base seedeada, sitio levantado, Chrome (y Firefox para el paso 6).
+**Precondición:** base de ejemplo, sitio levantado, Chrome (y Firefox para el paso 6).
 **Pasos:**
-1. Abrir `/tech-lead-dotnet` y, **sin hacer scroll**, apretar **Ctrl+P**.
+1. Abrir `/ejemplo-backend` y, **sin hacer scroll**, apretar **Ctrl+P**.
 2. En el diálogo: papel **A4**, márgenes por defecto, **Encabezados y pies de página desactivados** y **Gráficos de fondo desactivados**.
 3. Cerrar el diálogo y repetir con el botón **Imprimir / Guardar PDF** de la barra superior.
 4. Repetir con `?lang=en`, con `?theme=modern-dark&layout=sidebar` y con papel **Letter**.
@@ -230,18 +795,22 @@ npm run dev                       # y la API en el 3300
 PRINT_CHECK_DISPOSABLE_DB=1 PRINT_CHECK_TOKENS=slug=token npm run print:check   # el token es opcional (perfiles PROTECTED)
 ```
 
-**Verificado:** 56 casos (14 perfiles × `es`/`en` × 2 temas) con una página en A4 y en Letter y un contraste mínimo de 9,7:1. El detalle y los PDF están en el archivo del change `add-printable-one-page`. Los pasos con el diálogo de impresión y Firefox son manuales.
+**Verificado** (27 de octubre de 2026, base de ejemplo): 24 casos (6 perfiles × `es`/`en` × 2 temas) con una página en A4 y en Letter y un contraste mínimo de 9,7:1. Los pasos con el diálogo de impresión y Firefox son manuales.
+
+![Hoja imprimible con print emulado](manual/tc31-imprimir.jpg)
+
+*La hoja de `ejemplo-backend` con `print` emulado: una página, texto oscuro sobre blanco.*
 
 ### TC-32 — El nivel del idioma en los dos idiomas ✅
 
-**Precondición:** base seedeada, sitio y API levantados, sesión iniciada en `/admin`.
+**Precondición:** base de ejemplo, sitio y API levantados, sesión iniciada en `/admin`.
 **Pasos:**
 1. `/admin/portada` → **Idiomas** → editar *Inglés*. El **Nivel** tiene pestañas ES/EN, como el detalle: el español es obligatorio y el inglés opcional. Un nivel legado (texto plano, p. ej. `C1`) se abre en ES con EN vacío.
 2. En la pestaña EN escribir *B1-B2 (working proficiency)* y **Guardar**. Recargar y reabrir: ES y EN se conservan.
 3. Abrir `/?lang=en`: el contacto dice *English · B1-B2 (working proficiency)*; con `?lang=es` dice el español. La vista de impresión (Ctrl+P o **Imprimir / Guardar PDF**) muestra lo mismo, porque lee el texto ya resuelto.
 4. Vaciar el inglés del nivel y guardar. En el constructor (`/admin/perfiles/<id>` → **Publicación**), con la vista previa en EN, el aviso de faltantes dice *Idiomas — Inglés: Nivel*. Es solo un aviso: se puede guardar y publicar igual, y en inglés el nivel sale en español.
 
-**Resultado esperado:** con el seed, `/?lang=en` muestra *Spanish · Native* y *English · B1-B2*, y `/?lang=es` muestra *Español · Nativo*. Una base migrada desde la anterior queda igual (la migración `localize_language_level` convierte `Nativo` en `{ es: "Nativo", en: "Native" }`).
+**Resultado esperado:** con la base de ejemplo, `/?lang=en` muestra *Spanish · Native*, *English · Advanced (C1)* y *Portuguese · Intermediate*, y `/?lang=es` muestra *Español · Nativo*, *Inglés · Avanzado (C1)* y *Portugués · Intermedio*. Con la vista previa de `ejemplo-borrador` en EN, el aviso dice *Falta 1 traducción en EN* (`Descripción` del perfil curado). Una base migrada desde la anterior queda igual (la migración `localize_language_level` convierte `Nativo` en `{ es: "Nativo", en: "Native" }`).
 
 ```bash
 curl -s "$API/api/profile?lang=en" | jq '.languages[] | {name, level}'
@@ -251,24 +820,26 @@ curl -s -X POST $API/api/admin/languages -H "$AUTH" -H 'Content-Type: applicatio
   -d '{"name":"X","level":"B2"}'                                            # 400: level debe ser { es, en? }
 ```
 
-**Ejecutado** (10 de octubre de 2026, contra una copia de la base de desarrollo, `portfolio_levelfix`, con la API en el 3300 y el panel en el 5173; transcripción en el `verification.md` del change archivado [`2026-10-10-localize-language-level`](../openspec/changes/archive/2026-10-10-localize-language-level/verification.md)):
+**Ejecutado** (10 de octubre de 2026, con los datos del CV real de ese momento; no se repitió sobre el ejemplo, contra una copia de la base de desarrollo, `portfolio_levelfix`, con la API en el 3300 y el panel en el 5173; transcripción en el `verification.md` del change archivado [`2026-10-10-localize-language-level`](../openspec/changes/archive/2026-10-10-localize-language-level/verification.md)):
 
 ```
 GET /api/curated-profiles/all?lang=en            -> languages[0] = Spanish · Native
 GET /api/curated-profiles/all?lang=es            -> languages[0] = Español · Nativo
-GET /api/curated-profiles/tech-lead-dotnet?lang=en -> Spanish · Native
+GET /api/curated-profiles/ejemplo-backend?lang=en -> Spanish · Native
 POST /api/admin/languages  level: "B2"           -> 400 (level must be an object)
 Portada: EN del nivel -> guardar -> recargar     -> ES="B1-B2" EN="B1-B2 (working proficiency)"
 Constructor, vista previa en EN, nivel sin inglés -> "Falta 1 traducción en EN · Idiomas · Inglés: Nivel"
 ```
 
-![Aviso de faltantes con un nivel de idioma sin inglés](manual/tc32-faltantes.png)
+![Aviso de faltantes de traducción](manual/tc32-faltantes.jpg)
+
+*La pestaña Publicación de `ejemplo-borrador` con la vista previa en EN: `Falta 1 traducción en EN`.*
 
 ### TC-33 — Navegación por teclado y foco visible ✅
 
-**Precondición:** base seedeada, sitio levantado, Chrome; para los pasos 4 y 5, sesión iniciada en `/admin`.
+**Precondición:** base de ejemplo, sitio levantado, Chrome; para los pasos 4 y 5, sesión iniciada en `/admin`.
 **Pasos:**
-1. Abrir `/tech-lead-dotnet` y, sin tocar el mouse, apretar **Tab**: lo primero que aparece es **Saltar al contenido** (*Skip to content* con `?lang=en`). Con **Enter** el foco pasa al contenido; el siguiente Tab cae en el primer control del hero, no en la barra superior.
+1. Abrir `/ejemplo-backend` y, sin tocar el mouse, apretar **Tab**: lo primero que aparece es **Saltar al contenido** (*Skip to content* con `?lang=en`). Con **Enter** el foco pasa al contenido; el siguiente Tab cae en el primer control del hero, no en la barra superior.
 2. Volver a empezar y recorrer con Tab la barra (marca, menú de perfiles, diseño, tema, idioma, imprimir) y el hero. Cada control muestra un contorno **sólido de 2 px**, separado del borde, del color de acento legible del tema. Repetir con `?theme=modern-light` y `?theme=modern-dark`.
 3. En la home, abrir con **Enter** el menú de perfiles y el selector de tema (en móvil, el menú lateral): el foco entra, **Escape** cierra y el foco vuelve al botón.
 4. En `/admin`: el primer Tab es **Saltar al contenido**; con Enter, el siguiente Tab entra al contenido de la pantalla y no al menú lateral.
@@ -279,45 +850,54 @@ Constructor, vista previa en EN, nivel sin inglés -> "Falta 1 traducción en EN
 
 `a11y:check` automatiza los pasos 1 y 2 en la home y en dos perfiles (primer Tab en el salto, Enter enfoca `<main id="contenido">`, el contorno de cada control alcanzado con Tab mide ≥ 3:1 contra el fondo) y los pasos 4 y 5 en el panel; los menús y los diálogos se recorrieron con Chrome controlado por `puppeteer-core`.
 
-**Ejecutado** (15 de octubre de 2026, contra la imagen de producción de `frontend/Dockerfile` y una base descartable):
+**Ejecutado** (15 de octubre de 2026, con el CV real de ese momento; no se repitió sobre el ejemplo; contra la imagen de producción de `frontend/Dockerfile` y una base descartable):
 
 ```
-Tab 1 en /tech-lead-dotnet            -> "Skip to content" / "Saltar al contenido"
+Tab 1 en /ejemplo-backend            -> "Skip to content" / "Saltar al contenido"
 Enter                                 -> document.activeElement = main#contenido
 Menú de perfiles, tema, Sheet móvil   -> foco adentro; Escape devuelve el foco al botón
 Nueva experiencia / categoría / proyecto + Escape -> el foco vuelve al botón (antes: <body>)
 prefers-reduced-motion: reduce        -> scroll-behavior: auto
 ```
 
+![Salto al contenido con el foco visible](manual/tc33-foco.jpg)
+
+*Tras el primer **Tab**: **Saltar al contenido** con el foco visible.*
+
 ### TC-34 — Contraste con un acento oscuro ✅
 
-**Precondición:** base seedeada, sitio levantado, sesión iniciada en `/admin` para el paso 4.
+**Precondición:** base de ejemplo, sitio levantado, sesión iniciada en `/admin` para el paso 4.
 **Pasos:**
-1. Abrir `/tech-lead-dotnet` (`themeOverrides.colors.accent = #5B2C87`, 1,72:1 contra la tarjeta de `modern-dark`). El titular del hero, el *eyebrow* de cada sección y las etiquetas del menú se leen: tienen el **tono** del acento, más claro.
-2. El botón *Contactar* conserva el relleno `#5B2C87` con texto blanco. Repetir con `/software-architect` (`#1E293B`, 1,15:1).
-3. Abrir `/tech-lead-dotnet?theme=modern-light`: el botón primario lleva texto oscuro (4,70:1) y no blanco (4,10:1).
-4. En `/admin/perfiles/<id>` → **Diseño**, elegir como acento `#1E293B`: en la vista previa se lee como texto. Guardar y reabrir: lo guardado es `#1E293B`, el color elegido, no el derivado.
+1. Abrir `/ejemplo-backend` (`themeOverrides.colors.accent = #1A365D`, 1,38:1 contra la tarjeta de `modern-dark`). El titular del hero, el *eyebrow* de cada sección y las etiquetas del menú se leen: tienen el **tono** del acento, más claro.
+2. El botón *Contactar* conserva el relleno `#1A365D` con texto blanco. Repetir con `/ejemplo-secciones` (`#8a5a00` sobre el preset `elegant`, 2,60:1).
+3. Abrir `/ejemplo-backend?theme=modern-light`: el botón primario lleva texto oscuro (4,70:1) y no blanco (4,10:1).
+4. En `/admin/perfiles/<id>` → **Diseño**, elegir como acento `#1A365D`: en la vista previa se lee como texto. Guardar y reabrir: lo guardado es `#1A365D`, el color elegido, no el derivado.
 
-**Resultado esperado:** ningún texto del sitio baja de 4,5:1 contra su fondo, con ningún preset ni con los acentos de los 14 perfiles; el dato guardado no cambia. Medido sobre los tokens (`css-vars` y su spec) y sobre el sitio (axe, `a11y:check`):
+**Resultado esperado:** ningún texto del sitio baja de 4,5:1 contra su fondo, con ningún preset ni con los acentos de los perfiles del ejemplo; el dato guardado no cambia. Medido sobre los tokens (`css-vars` y su spec) y sobre el sitio (axe, `a11y:check`):
 
 | Acento | Como texto antes | `--t-accent-ink` | Como texto después |
 |---|---|---|---|
-| `#5B2C87` (tech-lead-dotnet) | 1,72:1 | `#a575d2` | 4,86:1 |
-| `#1E293B` (software-architect) | 1,15:1 | `#6c87b4` | 4,61:1 |
-| `#0078D4` (devops-azure y dos más) | 3,71:1 | `#008ffd` | 5,08:1 |
-| `#38bdf8` (all, modern-dark) | 7,85:1 | `#38bdf8` | 7,85:1 (sin cambio) |
-| `#0284c7` (modern-light) | 3,74:1 | `#0270a9` | 4,92:1 |
+| `#1A365D` (ejemplo-backend, `modern-dark`) | 1,38:1 | `#5588cf` | 4,65:1 |
+| `#8a5a00` (ejemplo-secciones, `elegant`) | 2,60:1 | `#c78200` | 4,87:1 |
+| `#38bdf8` (all, `modern-dark`) | 7,85:1 | `#38bdf8` | 7,85:1 (sin cambio) |
+| `#0284c7` (preset `modern-light`) | 4,10:1 | `#0270a9` | 5,39:1 |
+
+Medido el 27 de octubre de 2026 en la base de ejemplo, contra el fondo de la tarjeta de cada tema.
 
 El texto atenuado (`text-dim`) pasó de 3,5–4,0:1 a ≥ 4,5:1 en los cinco presets.
 
-**Ejecutado** (15 de octubre de 2026): `a11y:check` sobre la home, cada preset × layout, `?lang=en`, los 13 perfiles con acento bajo y el panel: 0 violaciones en 72 cargas. Antes: 1376 nodos de `color-contrast` en las vistas de perfil y 420 en el panel.
+**Ejecutado** (15 de octubre de 2026, con el CV real de ese momento; no se repitió sobre el ejemplo): `a11y:check` sobre la home, cada preset × layout, `?lang=en`, los 13 perfiles con acento bajo y el panel: 0 violaciones en 72 cargas. Antes: 1376 nodos de `color-contrast` en las vistas de perfil y 420 en el panel.
+
+![Perfil con el acento derivado legible](manual/tc34-acento.jpg)
+
+*`ejemplo-backend` con el preset `modern-light`: el texto en acento se lee.*
 
 ### TC-35 — El perfil abre rápido en un móvil ✅
 
-**Precondición:** base **descartable** seedeada (nunca la del owner: cada carga registra una visita), la API en `NODE_ENV=production` y el frontend como se sirve en producción (la imagen de `frontend/Dockerfile`, o `dist/` con el `Caddyfile` del repo en `caddy:2-alpine`); Chrome. Para el paso 6, un perfil `PROTECTED` con su token.
+**Precondición:** base de ejemplo (descartable; nunca la del owner: cada carga registra una visita), la API en `NODE_ENV=production` y el frontend como se sirve en producción (la imagen de `frontend/Dockerfile`, o `dist/` con el `Caddyfile` del repo en `caddy:2-alpine`); Chrome. Para el paso 6, un perfil `PROTECTED` con su token.
 **Pasos:**
-1. En Chrome → DevTools → *Device toolbar* a **375 px** y *Performance* con CPU **4× slowdown**; abrir `/tech-lead-dotnet`. El **hero** (nombre, titular, resumen) aparece primero; las demás secciones llegan enseguida, sin que el contenido de arriba se mueva ni el pie salte a la vista.
-2. En la pestaña *Network*, filtrar por `curated-profiles`: hay **una sola** petición de `GET /api/curated-profiles/tech-lead-dotnet?locale=es` (no dos), y sale del script `profile-prefetch.js` antes de que termine el bundle.
+1. En Chrome → DevTools → *Device toolbar* a **375 px** y *Performance* con CPU **4× slowdown**; abrir `/ejemplo-backend`. El **hero** (nombre, titular, resumen) aparece primero; las demás secciones llegan enseguida, sin que el contenido de arriba se mueva ni el pie salte a la vista.
+2. En la pestaña *Network*, filtrar por `curated-profiles`: hay **una sola** petición de `GET /api/curated-profiles/ejemplo-backend?locale=es` (no dos), y sale del script `profile-prefetch.js` antes de que termine el bundle.
 3. En la base descartable, `SELECT count(*) FROM "ProfileView"` antes y después de la carga: **+1**.
 4. Cambiar de idioma con el selector `ES`/`EN`: las secciones no desaparecen ni parpadean; el texto se traduce en su lugar. Repetir con `?layout=sidebar`: no hay salto de diseño al aparecer las secciones.
 5. Antes de que cargue el selector de tema (en *Network* → *Throttling* → *Slow 3G*, o bloqueando `ThemeSwitcher-*.js`), enfocar el botón de tema con **Tab** y apretar **Enter**: el menú abre en cuanto llega el módulo, con el foco adentro; **Escape** lo cierra y el foco vuelve al botón. Repetir con el menú de perfiles de la home (en 375 px, el menú lateral).
@@ -327,7 +907,11 @@ El texto atenuado (`text-dim`) pasó de 3,5–4,0:1 a ≥ 4,5:1 en los cinco pre
 
 `perf:budget` fija lo ganado en el arranque (≤ 155 KB gzip en un solo JS de módulo) y `perf:check` mide el resultado en Lighthouse (Performance ≥ 85, mediana de 5, en el CI). Los pasos 1 a 3 y 6 los automatizan los scripts de la evidencia del change `improve-mobile-performance`, con Chrome controlado por `puppeteer-core`.
 
-**Ejecutado** (15 de octubre de 2026, contra el `dist/` y el `Caddyfile` del repo en `caddy:2-alpine` y una base descartable): ver `verification.md` del change `improve-mobile-performance` (§ Recorrido en 375 px y § Una visita por carga).
+**Ejecutado** (15 de octubre de 2026, con el CV real de ese momento; no se repitió sobre el ejemplo; contra el `dist/` y el `Caddyfile` del repo en `caddy:2-alpine` y una base descartable): ver `verification.md` del change `improve-mobile-performance` (§ Recorrido en 375 px y § Una visita por carga).
+
+![Hero en 390 px](manual/tc35-movil-hero.jpg)
+
+*El hero en 390 px, primer tiempo de la carga.*
 
 ---
 
@@ -338,7 +922,11 @@ El texto atenuado (`text-dim`) pasó de 3,5–4,0:1 a ≥ 4,5:1 en los cinco pre
 **Pasos:** abrir `/admin`.
 **Resultado esperado:** redirige a `/admin/login`. Tras entrar con credenciales válidas, se llega al Dashboard y se vuelve al destino original si se había pedido otra ruta.
 
-![Login del backoffice](manual/tc10-login.jpg)
+![Login del backoffice](manual/tc11-login.jpg)
+
+![Error de credenciales](manual/tc11-login-error.jpg)
+
+*Con un email inexistente y una contraseña de relleno: `Email o contraseña incorrectos`.*
 
 La sesión es una cookie **httpOnly**: el cliente nunca guarda el JWT y el estado se deriva de `GET /api/auth/me`. Al expirar (`JWT_EXPIRES_IN`, por defecto `1d`), el panel vuelve al login en la siguiente petición.
 
@@ -387,7 +975,7 @@ POST con accentColor                   -> 400  campo retirado (retire-accent-col
 
 ![Pestaña Identidad del constructor](manual/tc12b-identidad.jpg)
 
-*Pestaña Identidad, con la vista previa en vivo a la derecha: `12 experiencias · 10 categorías · 1 proyectos` ya filtradas.*
+*Pestaña Identidad, con la vista previa en vivo a la derecha: `2 experiencias · 3 categorías · 1 proyectos` ya filtradas (en `ejemplo-backend`).*
 
 Los campos que no mandás toman su valor por defecto: `filterTags`, `includeIds`, `excludeIds`, `sectionsOrder` y `sectionsHidden` vacíos, `layout` en `classic`, `visibility` en `PUBLIC`.
 
@@ -450,7 +1038,7 @@ Las nueve secciones conocidas: `hero`, `stats`, `experience`, `skills`, `project
 
 ![Pestaña Diseño con las secciones](manual/tc14-secciones.jpg)
 
-*Las nueve secciones con su interruptor y sus flechas. `projects` y `presence` quedan en las posiciones 8 y 9 porque el orden guardado trae solo siete.*
+*Las nueve secciones de `ejemplo-secciones`, reordenadas, con **Estadísticas** y **Presencia** apagadas.*
 
 ```bash
 curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
@@ -579,6 +1167,10 @@ curl -s -X POST "$API/api/admin/curated-profiles/preview?locale=en" -H "$AUTH"  
 
 > **Cuidado con los nombres:** lo que **mandás** usa `sectionsOrder` y `sectionsHidden`; lo que **vuelve resuelto** trae `sections` (ya ordenadas y filtradas) y `hiddenSections`. Es la diferencia entre la configuración y el resultado.
 
+![Vista previa en inglés con un borrador sin guardar](manual/tc17-preview-en.jpg)
+
+*La vista previa en EN de `ejemplo-backend` con el slug editado y sin guardar: es estado de vista, no se persiste.*
+
 ### TC-18 — Medir qué pasó con los links ✅
 
 **Pasos:** `/admin` es el dashboard.
@@ -609,7 +1201,7 @@ El contador del perfil y el registro de `ProfileView` siempre funcionaron. Lo qu
 
 ![Dashboard de analítica](manual/tc18-dashboard.jpg)
 
-*Capturada el 8 de octubre de 2026 con sesión iniciada: 381 visitas en el rango, en 7 perfiles y 2 idiomas, con las de hoy incluidas (D-01 corregido). Las cuatro tablas: por día, por perfil, por idioma y por origen.*
+*Capturada el 27 de octubre de 2026 sobre la base de ejemplo, con sesión iniciada: 105 visitas en 30 días, en 5 perfiles y 2 idiomas (el archivado conserva las suyas). Las cuatro tablas: por día, por perfil, por idioma y por origen.*
 
 De cada visita se guarda el perfil, el idioma, la fecha y la IP **solo como HMAC** con `ANALYTICS_SALT`. No hay cookies de seguimiento. Las visitas se registran únicamente en la ruta pública, nunca en el preview, y si el registro falla la respuesta al visitante no se altera.
 
@@ -660,9 +1252,8 @@ POST omitiendo "summary" (obligatorio)         -> 400  ✅ después: "summary sh
 
 ![Formulario de experiencia](manual/tc19b-formulario.jpg)
 
-*Los campos bilingües llevan su conmutador ES/EN. **Logros (es)** no lo tiene: es la limitación de abajo, a la vista.*
+*Los campos bilingües llevan su conmutador ES/EN; **Logros (es)** y **Logros (en)** son dos listas, y el inglés es opcional.*
 
-> **Limitación actual:** el formulario expone los logros solo en español. El inglés se conserva al guardar, pero no se puede editar desde el panel. Lo resuelve el change `add-bilingual-builder-parity`.
 
 ### TC-20 — Mantener skills y categorías ✅
 
@@ -711,7 +1302,11 @@ curl -s -X POST $API/api/admin/curated-profiles/$ID/duplicate -H "$AUTH" \
   | jq '{slug, visibility, listed, accessToken, views}'
 ```
 
-**Ejecutado** en la app real (2026-10-05): duplicar `tech-lead-dotnet` dio `/tech-lead-dotnet-2`, privado; publicado como `acme-tech-lead` cambiando solo slug, título y titular, respondió 200 con sus 13 experiencias. El original quedó intacto. Transcripción y capturas: `openspec/changes/archive/*-add-curated-profile-lifecycle/verification/7.4-app-real.txt`.
+**Ejecutado** (27 de octubre de 2026, base de ejemplo, por API): duplicar `ejemplo-backend` dio `ejemplo-backend-2` (201), `PRIVATE`, no enumerado, sin token y con 0 visitas; publicado como `ejemplo-vacante` cambiando slug, título, `filterTags`, tema y secciones y pasándolo a `PUBLIC`, respondió 200 con su contenido filtrado. El original quedó intacto. Transcripción en `openspec/changes/add-learning-guide-and-example-data/verification/5.3-recorridos.md`.
+
+![Diálogo Duplicar perfil curado](manual/tc21-duplicar.jpg)
+
+*El diálogo de **Duplicar**: la copia nace privada y sin enumerar.*
 
 ### TC-22 — Retirar un perfil sin perder sus visitas 🔍
 
@@ -727,7 +1322,11 @@ curl -s -X POST $API/api/admin/curated-profiles/$ID/unarchive -H "$AUTH" | jq .a
 
 > **Archivar en lugar de borrar.** Borrar se lleva las visitas con el perfil. Archivar lo retira conservándolas, y se puede deshacer. `archivedAt` no se escribe por `PATCH`: un `PATCH` con ese campo da 400.
 
-**Ejecutado** en la app real: archivado `acme-tech-lead` con 3 visitas, el link dio 404, el panel pasó a *Desarchivar* sin recargar y el dashboard siguió mostrando sus 3 visitas.
+**Ejecutado** (27 de octubre de 2026, base de ejemplo, por API): archivada la copia `ejemplo-vacante` el link dio 404; archivar dos veces conservó la primera fecha; `PATCH` con `archivedAt` dio 400; *Desarchivar* la devolvió a 200. `ejemplo-archivado` responde 404 y conserva sus 14 visitas en la analítica.
+
+![Publicación de un perfil archivado](manual/tc22-archivado.jpg)
+
+*La pestaña Publicación de `ejemplo-archivado`: el link avisa que no resuelve.*
 
 ### TC-23 — Un link dirigido que no aparece en ningún listado 🔍
 
@@ -740,7 +1339,13 @@ curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
   -H 'Content-Type: application/json' -d '{"listed":false}' | jq .listed
 ```
 
-> Los 13 perfiles del seed nacen enumerados, igual que antes: dejarlos de enumerar los retiraría de los buscadores. Es una decisión perfil por perfil, desde el panel.
+> Los perfiles del seed nacen enumerados, salvo los que el ejemplo marca a propósito (`ejemplo-dirigido` y `ejemplo-protegido`): dejarlos de enumerar los retiraría de los buscadores. Es una decisión perfil por perfil, desde el panel.
+>
+> **Ejecutado** (27 de octubre de 2026, base de ejemplo): `ejemplo-dirigido` responde 200 por su link y no figura en `GET /api/curated-profiles` ni en `/sitemap.xml`. Una copia pasada a `listed: false` siguió abriendo y salió del listado.
+
+![Publicación de un perfil no enumerado](manual/tc23-dirigido.jpg)
+
+*La pestaña Publicación de `ejemplo-dirigido`, con **Enumerar** apagado y su link.*
 
 ### TC-24 — Renombrar un slug sin romper los links ya enviados 🔍
 
@@ -751,6 +1356,12 @@ curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
 ```bash
 curl -s -D - -o /dev/null $API/api/curated-profiles/el-slug-viejo | grep -i content-location
 ```
+
+**Ejecutado** (27 de octubre de 2026, base de ejemplo): `/ejemplo-nombre-anterior` responde 200 con el perfil `ejemplo-renombrado` y `Content-Location: /api/curated-profiles/ejemplo-renombrado`. Renombrar la copia `ejemplo-backend-2` a `ejemplo-vacante` dejó el anterior funcionando. Tomar `ejemplo-nombre-anterior` para otro perfil dio **409**.
+
+![Perfil renombrado resolviendo desde el slug anterior](manual/tc24-alias.jpg)
+
+*`/ejemplo-nombre-anterior` abre el perfil `ejemplo-renombrado`.*
 
 ## 4. Administrar el resto del contenido
 
@@ -765,7 +1376,7 @@ Desde el change `add-profile-content-admin`, todo lo que el sitio muestra se edi
 3. Un obligatorio vacío (nombre, titular o resumen en español, email, ubicación) no se envía; si llega a la API, es 400 y el perfil queda como estaba.
 4. **Idiomas**, en la misma página: agregar, editar y borrar con confirmación. El nombre mostrado, el **nivel** y el detalle tienen pestañas ES/EN (el español del nivel es obligatorio); ver TC-32.
 
-> El titular base se ve en la home y en todo perfil curado **sin titular propio** (decisión D7). Las 13 plantillas del seed traen el suyo, pensado para su rol, y lo conservan; la home `all` no tiene ninguno. Para que un perfil curado vuelva a usar el titular base, vaciá su titular en la pestaña Identidad del constructor.
+> El titular base se ve en la home y en todo perfil curado **sin titular propio** (decisión D7). Las plantillas del seed traen el suyo, pensado para su rol, y lo conservan; la home `all` no tiene ninguno. Para que un perfil curado vuelva a usar el titular base, vaciá su titular en la pestaña Identidad del constructor.
 
 ```bash
 # El perfil es un singleton: no hay id en la ruta. El PUT reemplaza todo.
@@ -808,7 +1419,7 @@ GET /api/admin/education                   -> incluye la oculta, con visible y o
 2. Enlaces sociales: plataforma (`github`, `linkedin`, …), handle, url, etiqueta bilingüe, *destacado*, y `stats` como JSON (un objeto; un array o un texto es 400).
 
 ```
-POST proyecto con tags del perfil          -> aparece en /api/curated-profiles/tech-lead-dotnet con su url
+POST proyecto con tags del perfil          -> aparece en /api/curated-profiles/ejemplo-backend con su url
 DELETE enlace social                       -> 204 y desaparece de /api/social-links
 POST enlace con stats=[1,2]                -> 400
 POST de cualquiera de las cinco entidades con un campo extra -> 400
@@ -818,7 +1429,7 @@ POST de cualquiera de las cinco entidades con un campo extra -> 400
 
 ### TC-28 — El constructor avisa antes de descartar cambios ✅
 
-**Pasos:** `/admin/perfiles/:id` (por ejemplo `tech-lead-dotnet`).
+**Pasos:** `/admin/perfiles/:id` (por ejemplo `ejemplo-backend`).
 
 1. Editar un campo, por ejemplo el **Título** de la pestaña Identidad. El botón *Guardar* sigue igual; lo que cambia es que salir ya no es gratis.
 2. Pulsar **Volver** (o un enlace del menú lateral, o *Atrás* del navegador): aparece **Tenés cambios sin guardar** y la página no se mueve.
@@ -827,7 +1438,7 @@ POST de cualquiera de las cinco entidades con un campo extra -> 400
 5. Escribir y borrar el mismo carácter, o un espacio final, vuelve a "limpio". Cambiar solo el idioma del preview o archivar el perfil nunca cuentan como cambio. Un perfil nuevo sin tocar sale sin diálogo, y un guardado exitoso deja la ficha limpia.
 
 ```
-Título de tech-lead-dotnet editado -> Volver abre el aviso, sigue en /admin/perfiles/:id
+Título de ejemplo-backend editado -> Volver abre el aviso, sigue en /admin/perfiles/:id
 Salir sin guardar                  -> /admin/perfiles, el título guardado sigue "Tech Lead .NET"
 ```
 
@@ -873,6 +1484,93 @@ cd backend && npm run seed && npm run seed:verify
 ```
 
 > `seed` **sobrescribe**: correrlo sobre una base con contenido administrado desde el panel **pisa ese trabajo** (portada, formación, proyectos, enlaces, experiencias y skills). Antes de correrlo en producción, hacé el `pg_dump` del § 7 de [`DEPLOY.md`](DEPLOY.md).
+
+---
+
+## 4.1 Casos de los datos de ejemplo
+
+Los dos casos de esta sección enseñan a cargar la base de ejemplo y comprueban que **no se puede** cargar sobre otra. Guía completa: [`DATA-POPULATION.md`](DATA-POPULATION.md) § 11.
+
+### TC-36 — Cargar los datos de ejemplo en una base descartable ✅
+
+**Precondición:** `docker compose up -d` (Postgres en el 5434) y una base **aparte**, vacía y migrada. Nunca la base `portfolio`.
+**Pasos (PowerShell):**
+
+```powershell
+docker exec portfolio-postgres createdb -U portfolio portfolio_example
+cd backend
+$env:DATABASE_URL = "postgresql://portfolio:portfolio@localhost:5434/portfolio_example?schema=public"
+npm run prisma:status          # tiene que decir: database "portfolio_example"
+npm run prisma:deploy
+$env:SEED_DISPOSABLE_DB = "1"
+npm run seed:example           # se puede repetir
+npm run seed:example:verify
+```
+
+**Pasos (bash):**
+
+```bash
+docker exec portfolio-postgres createdb -U portfolio portfolio_example
+cd backend
+export DATABASE_URL="postgresql://portfolio:portfolio@localhost:5434/portfolio_example?schema=public"
+npm run prisma:status && npm run prisma:deploy
+SEED_DISPOSABLE_DB=1 npm run seed:example
+npm run seed:example:verify
+```
+
+**Resultado esperado:** las dos cargas salen con código 0 y la verificación coincide con el archivo. Con la API de ejemplo (`PORT=3310`) y el frontend (`VITE_PROXY_TARGET=http://localhost:3310`), la home muestra a **Alex Rivera Duarte** con las nueve secciones.
+
+**Ejecutado** (27 de octubre de 2026):
+
+```
+$ npm run seed:example
+🛡️  Base descartable confirmada: localhost:5434/portfolio_example
+🌱 Iniciando seed...  (6 experiencias, 4 categorías de skills, 3 formaciones, 3 certificaciones,
+   3 proyectos, 4 enlaces, 5 temas, 8 perfiles curados y 105 visitas de ejemplo)
+✅ Seed completado con éxito.            exit=0
+(segunda carga, sin vaciar antes)        exit=0
+$ npm run seed:example:verify
+  ✅ Profile 1 · Language 3 · Experience 6 · SkillCategory 4 · Skill 16 · Education 3 · Certification 3
+  ✅ Project 3 · SocialLink 4 · FeaturedRepository 0 · Theme 5 · CuratedProfile 9
+  ✅ CuratedProfileSlugAlias 1 · ProfileView 105
+  ✅ los 8 perfiles curados: visibilidad, listed, archivado, layout, tema, secciones, alias y overrides
+✅ La base coincide con el archivo de ejemplo.     exit=0
+```
+
+![Home sembrada con el ejemplo](manual/tc36-ejemplo-home.jpg)
+
+*La home (`all`) sobre la base de ejemplo: persona ficticia, experiencias, skills y las demás secciones.*
+
+### TC-37 — El seed de ejemplo se niega contra una base con otros datos ✅
+
+**Precondición:** una base descartable **sembrada con `docs/cv-data.json`** (`portfolio_seedguard`, nunca `portfolio`).
+**Pasos:** correr `npm run seed:example` (a) sin la variable, (b) con `SEED_DISPOSABLE_DB=1` y (c) con `NODE_ENV=production`; después `npm run seed:verify`.
+**Resultado esperado:** las tres salen con código **2**, dicen cuál de las capas falló, muestran el destino como `host:puerto/base` (sin contraseña) y no escriben nada: los conteos y el `Profile` quedan como estaban.
+
+**Ejecutado** (27 de octubre de 2026):
+
+```
+# Base descartable portfolio_seedguard, sembrada con docs/cv-data.json (1 Profile, 15 Experience, 14 CuratedProfile)
+
+$ npm run seed:example                       (sin SEED_DISPOSABLE_DB)
+❌ Negativa: no se carga el archivo alternativo en localhost:5434/portfolio_seedguard.
+  - capa 1: falta SEED_DISPOSABLE_DB=1: confirma que la base de destino es descartable.
+No se escribió nada.                         exit=2
+
+$ SEED_DISPOSABLE_DB=1 npm run seed:example  (la base tiene el perfil de otra persona)
+❌ Negativa: no se carga el archivo alternativo en localhost:5434/portfolio_seedguard.
+  - capa 3: la base ya tiene el contenido de otro perfil (no está vacía ni es una recarga del mismo archivo).
+No se escribió nada.                         exit=2
+
+$ SEED_DISPOSABLE_DB=1 NODE_ENV=production npm run seed:example
+  - capa 2: NODE_ENV=production: un archivo alternativo nunca se carga en producción.
+No se escribió nada.                         exit=2
+
+Conteos antes y después: Profile=1 · Experience=15 · CuratedProfile=14 · ProfileView=0   (sin cambios)
+$ npm run seed:verify                        -> ✅ La base coincide con cv-data.json   exit=0
+```
+
+Sin captura: es salida de terminal. La capa 3 cubre el olvido más probable (`backend/.env` apunta a la base del owner y `DATABASE_URL` no se redefinió): esa base tiene otro `Profile`, así que el seed se niega aunque la variable esté puesta.
 
 ---
 
@@ -932,7 +1630,7 @@ El umbral de Performance es 85 en CI porque el runner de GitHub es el equipo de 
 
 ## 6. Suite de regresión manual
 
-Antes de cada release, recorrer en este orden. Último caso ejecutado: **15 de octubre de 2026** (TC-33 a TC-35). Última ejecución completa de la suite: **5 de octubre de 2026**, contra la base del seed (14 perfiles, 15 experiencias), con la API en `localhost:3300`.
+Antes de cada release, recorrer en este orden. Último caso ejecutado: **27 de octubre de 2026** (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 44 capturas con `manual:capture`. TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
 
 Los casos del backoffice están automatizados en [`manual/suite-backoffice.ps1`](manual/suite-backoffice.ps1): ejecuta TC-12 a TC-20 contra la API, imprime el resultado real junto al esperado y borra todos los datos de prueba que crea, pase o falle.
 
@@ -977,8 +1675,10 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-33 | Navegación por teclado y foco visible | ✅ | `a11y:check` (recorrido de teclado) · menús y diálogos con Chrome controlado · capturas del foco en el archivo del change |
 | TC-34 | Contraste con un acento oscuro | ✅ | `a11y:check` (0 violaciones en 72 cargas) · tabla de contraste por acento · tests de `css-vars` |
 | TC-35 | El perfil abre rápido en un móvil | ✅ | recorrido en 375 px con Chrome controlado · una petición y una visita por carga · `perf:budget` y `perf:check` · tests de la vista, el script y los menús |
+| TC-36 | Cargar los datos de ejemplo en una base descartable | ✅ | captura · salida de `seed:example` y `seed:example:verify` · dos cargas |
+| TC-37 | El seed de ejemplo se niega contra una base con otros datos | ✅ | salida transcrita · código 2 en las tres capas · conteos sin cambios |
 
-**Los 35 casos pasan.** Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
+**Los 37 casos pasan.** TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; las 44 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
@@ -1088,3 +1788,28 @@ echo "$SITIO/acme-tech-lead"
 | Renombré un slug y el link viejo sigue respondiendo | es a propósito: el slug anterior queda como alias y redirige al nuevo (TC-24) |
 | `409` al usar un slug que nadie tiene | es el slug anterior de otro perfil |
 | `400` al mandar `archivedAt` | no se escribe por `PATCH`: usar `/archive` y `/unarchive` |
+
+---
+
+## 9. Glosario
+
+Cada término enlaza el concepto, el recorrido o el caso donde se usa.
+
+| Término | Qué es | Dónde se usa |
+|---|---|---|
+| **slug** | La parte de la URL que identifica un perfil curado (`/ejemplo-backend`). Kebab-case y único. | B9 (Constructor · Identidad), R4 (Renombrar el slug sin romper los links), TC-12 |
+| **perfil base** | La información profesional única (nombre, contacto, idiomas…) de la que sale todo lo demás. | C1 (Perfil base), B3 (Portada (con Idiomas)) |
+| **perfil curado** | Una vista filtrada y personalizada del perfil base, con su slug, tema y reglas. | C2 (Perfil curado), B8 (Perfiles), TC-12 |
+| **`filterTags`** | Lista de tags: un ítem entra si comparte al menos uno. Vacía, entra todo. | C3 (Tags y overrides), B10 (Constructor · Selección), TC-13 |
+| **`includeIds` / `excludeIds`** | Overrides de selección: forzar incluir (solo visibles) o excluir (siempre gana). | C3 (Tags y overrides), B10 (Constructor · Selección), TC-13 |
+| **sección** | Cada bloque de la página; son nueve y se pueden reordenar y ocultar por perfil. | C4 (Secciones), B11 (Constructor · Diseño), TC-14 |
+| **preset** | Uno de los cinco temas base (`modern-dark`, `modern-light`, `minimal`, `elegant`, `corporate`). | C5 (Tema), B11 (Constructor · Diseño), TC-15 |
+| **token de diseño** | Un valor de color, tipografía o espaciado guardado en la base y aplicado como variable CSS. | C5 (Tema), B11 (Constructor · Diseño) |
+| **`themeOverrides`** | Las diferencias de un perfil contra su preset; solo se guarda lo que cambió. | C5 (Tema), R5 (Ajustar el tema y el acento), TC-15 |
+| **visibilidad** | `PUBLIC`, `PROTECTED` (pide token) o `PRIVATE` (404): quién puede abrir el link. | C6 (Visibilidad, enumeración y archivo), B12 (Constructor · Publicación), TC-16 |
+| **`listed`** | Si el perfil se enumera en el menú, el listado y el sitemap; no cambia el acceso. | C6 (Visibilidad, enumeración y archivo), R2 (Mandarlo a una sola empresa), TC-23 |
+| **archivado** | Retirado de circulación (404) conservando sus visitas; se puede desarchivar. | C6 (Visibilidad, enumeración y archivo), R3 (Retirar un perfil sin perder sus visitas), TC-22 |
+| **alias de slug** | El slug anterior de un perfil renombrado, que sigue resolviendo al perfil. | R4 (Renombrar el slug sin romper los links), TC-24 |
+| **`LocalizedText`** | Un texto bilingüe `{ "es": "…", "en": "…" }` en un solo registro. | C7 (Idiomas), B3 (Portada (con Idiomas)) |
+| **faltante de traducción** | Un campo bilingüe sin contenido en el idioma pedido; es solo un aviso. | C7 (Idiomas), R7 (Traducir y revisar faltantes), TC-32 |
+| **`ProfileView`** | El registro de una visita pública (perfil, idioma, origen, fecha, IP como HMAC). | C8 (Analítica), B2 (Dashboard), TC-18 |

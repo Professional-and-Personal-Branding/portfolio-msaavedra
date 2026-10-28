@@ -1,15 +1,24 @@
 # Suite de regresion manual del backoffice - casos TC-12 a TC-20 de docs/MANUAL.md
 #
-# Ejecuta cada caso contra la API local, imprime el resultado real junto al esperado
+# Ejecuta cada caso contra la API, imprime el resultado real junto al esperado
 # y borra todos los datos de prueba que crea, pase o falle.
 #
-#   cd docs/manual && pwsh ./suite-backoffice.ps1
+# Corre contra la BASE DE EJEMPLO (`portfolio_example`, sembrada con `npm run seed:example`) y su API
+# de ejemplo, NUNCA contra la del owner: crea y borra datos y cada llamada publica suma visitas.
+# No depende de los conteos de la base, pero se niega a correr si la API no sirve el perfil ficticio
+# de docs/examples/cv-data.example.json (codigo 2).
 #
-# Requiere: backend en http://localhost:3300 y las credenciales en backend/.env.
+#   cd docs/manual
+#   $env:SUITE_ADMIN_EMAIL = 'capture@example.com'; $env:SUITE_ADMIN_PASSWORD = '<contraseña de prueba>'
+#   pwsh ./suite-backoffice.ps1                         # API de ejemplo en http://localhost:3310
+#   pwsh ./suite-backoffice.ps1 -Api http://localhost:3310
+#
+# El administrador de prueba se crea con `npm run admin:bootstrap` en la base de ejemplo, con una
+# contraseña aleatoria de la sesion (no se guarda en ningun archivo).
 # Los defectos D-01 y D-02 que encontro esta suite estan corregidos: ver docs/MANUAL.md § 6.1.
+param([string]$Api = 'http://localhost:3310')
 $ErrorActionPreference = 'Stop'
-$API = 'http://localhost:3300'
-$R = "D:\projects\portfolio-msaavedra\portfolio-msaavedra"
+$API = $Api.TrimEnd('/')
 
 function Code($method, $url, $headers, $body) {
   try {
@@ -26,9 +35,16 @@ function J($method, $url, $headers, $body) {
   Invoke-RestMethod @p
 }
 
-$e  = Get-Content "$R\backend\.env"
-$em = ($e | Select-String '^ADMIN_EMAIL=').Line -replace '^ADMIN_EMAIL=','' -replace '"',''
-$pw = ($e | Select-String '^ADMIN_PASSWORD=').Line -replace '^ADMIN_PASSWORD=','' -replace '"',''
+# Guarda: la API tiene que servir el perfil ficticio del ejemplo (nunca el del owner).
+$ejemplo = (Get-Content (Join-Path $PSScriptRoot '..\examples\cv-data.example.json') -Raw -Encoding UTF8 | ConvertFrom-Json).profile.fullName
+$servido = (J GET "$API/api/profile" $null $null).fullName
+if ($servido -ne $ejemplo) {
+  [Console]::Error.WriteLine("La API de $API sirve el perfil '$servido', no el del archivo de ejemplo ('$ejemplo'). No se ejecuto nada.")
+  exit 2
+}
+$em = $env:SUITE_ADMIN_EMAIL
+$pw = $env:SUITE_ADMIN_PASSWORD
+if (-not $em -or -not $pw) { [Console]::Error.WriteLine('Faltan SUITE_ADMIN_EMAIL y SUITE_ADMIN_PASSWORD (administrador de prueba de la base de ejemplo).'); exit 1 }
 $tok = (J POST "$API/api/auth/login" $null (@{email=$em;password=$pw}|ConvertTo-Json)).accessToken
 $H = @{ Authorization = "Bearer $tok" }
 
@@ -50,6 +66,7 @@ $c = Code POST "$API/api/admin/curated-profiles" $H $body
 "  POST con el mismo slug                      -> $c  (esperado 409)"
 $c = Code POST "$API/api/admin/curated-profiles" $H (@{slug='x';title=@{es='a';en='a'};headline=@{es='a';en='a'};campoInventado='x'}|ConvertTo-Json -Depth 5)
 "  POST con un campo fuera del DTO             -> $c  (esperado 400)"
+# `accentColor` se retiro (retire-accent-color): se manda a proposito para comprobar que la API lo rechaza.
 $c = Code POST "$API/api/admin/curated-profiles" $H (@{slug='x';title=@{es='a';en='a'};accentColor='#5B2C87'}|ConvertTo-Json -Depth 5)
 "  POST con accentColor (retirado)             -> $c  (esperado 400)"
 $c = Code POST "$API/api/admin/curated-profiles" $H (@{slug='x';headline=@{es='a';en='a'}}|ConvertTo-Json -Depth 5)
