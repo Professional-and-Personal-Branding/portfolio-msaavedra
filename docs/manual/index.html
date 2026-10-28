@@ -97,7 +97,40 @@
 
   /* ── Estructura ── */
   .shell { max-width: 1280px; margin: 0 auto; padding: 0 16px; display: grid; gap: 28px; grid-template-columns: 232px minmax(0, 1fr); padding-block: 24px 64px; }
-  @media (max-width: 900px) { .shell { grid-template-columns: minmax(0, 1fr); } .side { position: static; max-height: none; } }
+  main { min-width: 0; overflow-wrap: break-word; }
+
+  /* ── Índice plegable: abierto en escritorio, plegado en el teléfono ── */
+  .toc > summary { display: none; }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: minmax(0, 1fr); gap: 18px; padding-block: 16px 48px; }
+    .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+    .toc > summary {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      list-style: none; cursor: pointer; padding: 10px 14px;
+      font-family: var(--display); font-weight: 600; font-size: 14px;
+    }
+    .toc > summary::-webkit-details-marker { display: none; }
+    .toc > summary::after { content: "▾"; color: var(--fg-muted); transition: transform .15s; }
+    .toc[open] > summary::after { transform: rotate(180deg); }
+    .toc[open] > summary { border-bottom: 1px solid var(--border); }
+    .toc .toc-body { padding: 10px 8px 12px; max-height: 60vh; overflow-y: auto; }
+
+    /* La barra deja de quedar fija y los filtros van en una sola fila deslizable */
+    .topbar { position: static; backdrop-filter: none; }
+    .topbar-in { gap: 8px; padding: 10px 16px; }
+    .brand { flex: 1 1 100%; }
+    .spacer { display: none; }
+    .filters { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; scrollbar-width: none; padding-bottom: 2px; }
+    .filters::-webkit-scrollbar { display: none; }
+    .chip { flex: none; }
+    .sel { flex: 1 1 100%; }
+    .sel select { flex: 1 1 auto; max-width: none; }
+    .search { flex: 1 1 140px; width: auto; }
+
+    .case, .concept, .tour, .screen { padding: 14px; }
+    .run { margin-left: 0; }
+    .codewrap .copy { opacity: 1; }
+  }
 
   .side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 112px); align-self: start; max-height: calc(100vh - 130px); overflow-y: auto; }
   .side h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--fg-muted); margin: 18px 0 7px; }
@@ -110,6 +143,11 @@
   .side a:hover { color: var(--fg); background: var(--surface-2); }
   .side a.active { color: var(--fg); border-left-color: var(--accent); background: var(--surface-2); }
   .side a .id { font-family: var(--mono); font-size: 11px; color: var(--fg-muted); flex: none; }
+  /* En el teléfono el índice plegado queda pegado arriba: se abre desde cualquier punto de la página */
+  @media (max-width: 900px) {
+    .side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 8px); z-index: 20; max-height: none; overflow: visible; }
+    .toc { box-shadow: var(--shadow); }
+  }
   .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
   .dot.ok { background: var(--ok); }
   .dot.part { background: var(--warn); }
@@ -166,7 +204,9 @@
   code:not(pre code) {
     background: var(--surface-2); border: 1px solid var(--border);
     border-radius: 4px; padding: 1px 5px; font-size: 12.5px;
+    overflow-wrap: break-word;
   }
+  p code, li code, dd code, figcaption code, .note code { overflow-wrap: anywhere; }
 
   /* ── Tablas ── */
   .tablewrap { overflow-x: auto; margin: 12px 0; border: 1px solid var(--border); border-radius: 8px; }
@@ -229,7 +269,8 @@
   .gloss .g { padding: 10px 0; border-bottom: 1px solid var(--border); }
   .gloss dt { font-weight: 600; }
   .gloss dd { margin: 2px 0 0; color: var(--fg-muted); }
-  .gloss .refs { font-size: 12.5px; white-space: nowrap; }
+  .gloss .refs { font-size: 12.5px; display: block; margin-top: 4px; }
+  .gloss .refs a { white-space: nowrap; }
   td.msg { font-family: var(--mono); font-size: 12.5px; }
 
   /* ── Filtros por área y change; registro de la corrida ── */
@@ -284,6 +325,9 @@
 
 <div class="shell">
   <nav class="side" aria-label="Índice">
+   <details class="toc" id="toc" open>
+   <summary>Índice</summary>
+   <div class="toc-body">
     <h3>Empezar</h3>
     <a href="#entorno"><span class="id">§0</span> Entorno y puertos</a>
     <a href="#base-ejemplo"><span class="id">§0b</span> Base de ejemplo</a>
@@ -341,6 +385,8 @@
     <a href="#receta"><span class="id">§9</span> Receta completa</a>
     <a href="#fallas"><span class="id">§10</span> Qué falla y por qué</a>
     <a href="#glosario"><span class="id">§11</span> Glosario</a>
+   </div>
+   </details>
   </nav>
 
   <main>
@@ -2028,6 +2074,23 @@ echo "$SITIO/acme-tech-lead"</pre></div>
        de tipografía modifica la altura del texto y desplaza el objetivo. */
     window.addEventListener('load', function () { fromHash(false); });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fromHash(false); });
+
+    /* ── Índice plegable ──
+       En el teléfono arranca plegado y se pliega al elegir una entrada;
+       en escritorio queda siempre abierto (el resumen está oculto por CSS). */
+    var toc = document.getElementById('toc');
+    var narrow = window.matchMedia ? window.matchMedia('(max-width: 900px)') : null;
+    function syncToc() { if (toc) toc.open = !(narrow && narrow.matches); }
+    syncToc();
+    if (narrow) {
+      if (narrow.addEventListener) narrow.addEventListener('change', syncToc);
+      else if (narrow.addListener) narrow.addListener(syncToc);
+    }
+    /* En fase de captura: el índice se pliega antes de que el enlace desplace,
+       así el cambio de altura no corta el desplazamiento hacia el destino. */
+    if (toc) toc.addEventListener('click', function (e) {
+      if (narrow && narrow.matches && e.target.closest && e.target.closest('a')) toc.open = false;
+    }, true);
 
     /* ── Índice activo ── */
     var links = Array.prototype.slice.call(document.querySelectorAll('.side a'));
