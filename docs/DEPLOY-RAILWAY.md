@@ -4,7 +4,7 @@
 >
 > La configuración de build ya está versionada (`backend/railway.json`, `frontend/railway.json`, `frontend/Dockerfile`, `frontend/Caddyfile`). **En el panel se cargan variables, la ruta del archivo de configuración y el dominio.**
 >
-> Decisiones tomadas: plan **Hobby**; dominio propio **sin `www`** (el apex). Mientras el dominio no esté elegido, esta guía usa el marcador `<dominio>`; `FRONTEND_URL` se completa recién cuando exista (paso 6). Comandos para **PowerShell**; los `curl` se escriben `curl.exe` para no chocar con el alias de PowerShell.
+> Decisiones tomadas: plan **Hobby**; dominio propio **`mjsaavedra.com`**, sin `www` (el apex), registrado en **Cloudflare Registrar** (precio mayorista, renovación al mismo precio; Cloudflare exige sus nameservers, lo que además resuelve el CNAME en el apex). `FRONTEND_URL` se completa en el paso 6. Comandos para **PowerShell**; los `curl` se escriben `curl.exe` para no chocar con el alias de PowerShell.
 
 **Arquitectura:** tres servicios en un proyecto. `web` (Caddy) sirve la SPA y hace de **proxy** de `/api/*`, `/health*`, `/robots.txt` y `/sitemap.xml` hacia `api` por la red privada. Un solo origen → cookie `SameSite=strict`, sin CORS, `VITE_API_URL` vacío. (§ 0, § 9.5)
 
@@ -21,7 +21,7 @@ navegador → [web: Caddy] ──/api/*──▶ [api: NestJS] ──privada─�
 - [ ] El repositorio conectado a Railway (GitHub) y `main` al día con este cambio.
 - [ ] En tu máquina: Node 22, `git`, **Docker** (para la prueba de restauración del paso 9) y el `.env` de `backend/` apuntando a **tu base local**, nunca a producción.
 - [ ] Un gestor de contraseñas abierto: ahí van los secretos del paso 1.
-- [ ] `<dominio>`: si todavía no lo elegiste, podés hacer los pasos 1 a 5 y 7 con el dominio `*.up.railway.app` del servicio `web`; el paso 6 y el `FRONTEND_URL` definitivo quedan para cuando exista.
+- [ ] `mjsaavedra.com` comprado en Cloudflare Registrar (confirmá la disponibilidad al pagar). Hasta tenerlo, los pasos 1 a 5 y 7 se pueden hacer con el dominio `*.up.railway.app` del servicio `web`; el paso 6 y el `FRONTEND_URL` definitivo quedan para cuando exista.
 
 ---
 
@@ -76,7 +76,7 @@ LOG_LEVEL=info
 THROTTLE_TTL=60
 THROTTLE_LIMIT=120
 THROTTLE_LOGIN_LIMIT=5
-FRONTEND_URL=https://<dominio>
+FRONTEND_URL=https://mjsaavedra.com
 ```
 
 - **`FRONTEND_URL`** lleva el dominio real, que se completa en el paso 6. La API en producción exige un valor https; si querés probar antes de tener dominio, poné provisoriamente `https://<dominio-up.railway.app-de-web>` y reemplazalo en el paso 6.
@@ -169,24 +169,25 @@ VITE_API_URL=
 
 ## 6. Dominio propio, sin `www` (§ 0)
 
-- [ ] En `web` → **Settings → Networking → Custom Domain** → agregar `<dominio>` (el apex). El panel muestra los registros **exactos** (CNAME o ALIAS y, si lo pide, un TXT de verificación): cargalos en el DNS tal cual. Para el apex hace falta un DNS que admita CNAME/ALIAS en la raíz (*CNAME flattening*); si el tuyo no, pasá la zona a uno que sí.
+- [ ] En `web` → **Settings → Networking → Custom Domain** → agregar `mjsaavedra.com` (el apex). El panel muestra los registros **exactos** (CNAME y, si lo pide, un TXT de verificación): cargalos en **Cloudflare → DNS** tal cual. Cloudflare aplana el CNAME en la raíz (*CNAME flattening*), así que el apex funciona sin más.
+- [ ] **Importante:** en Cloudflare, el registro del apex va en **solo DNS (nube gris)**, no *Proxied* (nube naranja). Con el proxy de Cloudflare delante, Railway vería la IP de Cloudflare en `X-Real-IP` y se rompería la IP real del cliente (límite de peticiones y login compartidos; § 9.5 «IP real del cliente»), además de duplicar el TLS.
 - [ ] Esperar a que el certificado quede emitido (el panel lo marca; puede tardar minutos).
-- [ ] Redirección de `www.<dominio>` a `<dominio>`: hacerla en el registrador o en el DNS (301). No se agrega `www` como dominio del servicio.
-- [ ] En `api`: **`FRONTEND_URL=https://<dominio>`** (origen exacto, sin barra final; de él dependen CORS, el `canonical`, la `og:image` y las URLs del sitemap).
+- [ ] Redirección de `www.mjsaavedra.com` a `mjsaavedra.com` (301): en Cloudflare, un registro `www` proxied (nube naranja, solo para la redirección) más una regla **Rules → Redirect Rules** de `www.mjsaavedra.com/*` a `https://mjsaavedra.com/${1}` conservando la query. No se agrega `www` como dominio del servicio.
+- [ ] En `api`: **`FRONTEND_URL=https://mjsaavedra.com`** (origen exacto, sin barra final; de él dependen CORS, el `canonical`, la `og:image` y las URLs del sitemap).
 - [ ] **Redeploy de `api`.**
-- [ ] Verificar: `curl.exe -s https://<dominio>/tech-lead-dotnet | Select-String 'og:title|canonical'` muestra el título del perfil y `https://<dominio>/tech-lead-dotnet` (no `localhost`).
+- [ ] Verificar: `curl.exe -s https://mjsaavedra.com/tech-lead-dotnet | Select-String 'og:title|canonical'` muestra el título del perfil y `https://mjsaavedra.com/tech-lead-dotnet` (no `localhost`).
 
 ---
 
 ## 7. Verificación completa (§ 5)
 
 ```powershell
-$SITIO = 'https://<dominio>'
+$SITIO = 'https://mjsaavedra.com'
 
 curl.exe -s $SITIO/health                                              # 1. JSON, status ok, base arriba
 curl.exe -s -o NUL -w "%{http_code}`n" $SITIO/tech-lead-dotnet         # 2. 200: fallback de la SPA con el head del perfil
-curl.exe -s $SITIO/robots.txt                                          # 3. con el dominio (Sitemap: https://<dominio>/sitemap.xml)
-curl.exe -s $SITIO/sitemap.xml | Select-Object -First 5                #    URLs con https://<dominio>
+curl.exe -s $SITIO/robots.txt                                          # 3. con el dominio (Sitemap: https://mjsaavedra.com/sitemap.xml)
+curl.exe -s $SITIO/sitemap.xml | Select-Object -First 5                #    URLs con https://mjsaavedra.com
 curl.exe -s $SITIO/api/curated-profiles/no-existe                      # 4. error sin stack ni detalles
 curl.exe -s -o NUL -w "%{http_code}`n" $SITIO/api/docs-json            # 5. 404: Swagger cerrado
 curl.exe -sI $SITIO/ | Select-String -Pattern 'content-security-policy|x-content-type|referrer-policy'   # 6. CSP presente
@@ -261,7 +262,7 @@ Remove-Item Env:PGURL
 
 ## 10. Cierre
 
-- [ ] Search Console: dar de alta `<dominio>` y enviar `https://<dominio>/sitemap.xml`. (§ 8)
+- [ ] Search Console: dar de alta `mjsaavedra.com` y enviar `https://mjsaavedra.com/sitemap.xml`. (§ 8)
 - [ ] **Alerta de uso** del plan Hobby: configurar el aviso de gasto en Railway y mirar el panel de uso la primera semana (tres servicios encendidos superan los USD 5 incluidos).
 - [ ] Verificar que el redeploy es selectivo: un cambio trivial en `backend/` (p. ej. un comentario) y push a `main` tiene que redesplegar **solo `api`**, no `web` (por los `watchPatterns` `/backend/**` y `/frontend/**`).
 - [ ] `git tag v1.0.0 && git push --tags`.
@@ -283,7 +284,7 @@ Remove-Item Env:PGURL
 | El login del panel no persiste la sesión | la cookie viaja a otro origen: revisar `SESSION_COOKIE_SAMESITE` y que el navegador use el dominio de `web` | § 0 |
 | El proxy no encuentra la API | `API_ORIGIN` con otro nombre de servicio o otro puerto que el `PORT` de `api` | § 9.5 |
 | **429 en el login para todos** (o para vos desde cualquier red) | la API ve una sola IP: falta o se rompió el `header_up X-Forwarded-For` del `Caddyfile`. Esperá 60 s a que expire la ventana | § 9.5, *IP real del cliente* |
-| Todos los perfiles se previsualizan iguales (**cards genéricas**) | el head del servidor no llega: `api` caída o lenta (el sitio degrada al genérico a propósito) o `index.html` sin pasar por `templates`. LinkedIn y Slack guardan en caché la tarjeta anterior: reintentá en Post Inspector | `curl.exe -s https://<dominio>/<slug> \| Select-String og:title` · § 9.5 |
+| Todos los perfiles se previsualizan iguales (**cards genéricas**) | el head del servidor no llega: `api` caída o lenta (el sitio degrada al genérico a propósito) o `index.html` sin pasar por `templates`. LinkedIn y Slack guardan en caché la tarjeta anterior: reintentá en Post Inspector | `curl.exe -s https://mjsaavedra.com/<slug> \| Select-String og:title` · § 9.5 |
 | `canonical` u `og:image` apuntan a `localhost` o a otro dominio | `FRONTEND_URL` de `api` sin el dominio público | § 9.5 |
 | El HTML responde 500 | un error dentro del template de `index.html`: se tocó una acción `<!--# … -->` o se quitó el `handle_errors` del `Caddyfile` | `frontend/Caddyfile` |
 
