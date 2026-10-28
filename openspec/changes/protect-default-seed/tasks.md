@@ -27,7 +27,7 @@
 
   Verificar: tests de 3.2.
 - [x] 2.6 `backend/scripts/seed.ts`: pasar `overwrite` a `executeSeed` y reescribir el comentario de cabecera: base vacía carga, con contenido se niega (código 2) salvo `--overwrite`, en producción además `SEED_ALLOW_PRODUCTION=1`, `--overwrite` no se combina con `--file`, y la tabla de códigos de salida. Verificar: revisión del diff.
-- [ ] 2.7 `backend/scripts/verify-seed.ts`: si `parseSeedArgs` devuelve `overwrite: true`, sale con 1 y el mensaje de D5 (`--overwrite solo aplica a npm run seed: seed:verify no escribe.`). El resto no cambia: los conteos esperados y las comparaciones son los mismos. Verificar: `npm run seed:verify -- --overwrite` sale con 1 sin conectarse (salida en `verification/4.6-verify-overwrite.txt`) y revisión del diff.
+- [x] 2.7 `backend/scripts/verify-seed.ts`: si `parseSeedArgs` devuelve `overwrite: true`, sale con 1 y el mensaje de D5 (`--overwrite solo aplica a npm run seed: seed:verify no escribe.`). El resto no cambia: los conteos esperados y las comparaciones son los mismos. Verificar: `npm run seed:verify -- --overwrite` sale con 1 sin conectarse (salida en `verification/4.6-verify-overwrite.txt`) y revisión del diff.
 
 ## 3. Pruebas sin base (D7)
 
@@ -59,7 +59,7 @@
 
 ## 4. Evidencia contra bases descartables (nunca `portfolio`)
 
-- [ ] 4.1 Crear las bases y migrar solo la primera:
+- [x] 4.1 Crear las bases y migrar solo la primera:
 
   ```powershell
   docker exec portfolio-postgres createdb -U portfolio portfolio_seed_guard
@@ -67,7 +67,7 @@
   ```
 
   Después, con `DATABASE_URL` apuntando a `portfolio_seed_guard`: `npm run prisma:status` (debe nombrar `portfolio_seed_guard`) y `npm run prisma:deploy`. Verificar: salida en `verification/4.1-bases.txt`, con el `current_database()` de cada una.
-- [ ] 4.2 Escenarios locales sobre `portfolio_seed_guard`, con el código de salida después de cada comando (`$LASTEXITCODE`) y los conteos de `Profile`, `Experience`, `CuratedProfile` y `ProfileView` antes y después de cada negativa:
+- [x] 4.2 Escenarios locales sobre `portfolio_seed_guard`, con el código de salida después de cada comando (`$LASTEXITCODE`) y los conteos de `Profile`, `Experience`, `CuratedProfile` y `ProfileView` antes y después de cada negativa:
   1. `npm run seed` con la base vacía → 0.
   2. `npm run seed` otra vez → 2, con el texto de D8 completo y los conteos sin cambios.
   3. `npm run seed -- --overwrite` → 0 con el aviso de D3, y `npm run seed:verify` → 0.
@@ -75,16 +75,16 @@
   5. Opcional, si hay `pg_dump` en la máquina: ejecutar el comando sugerido por la negativa con `PGPASSWORD` definida en la sesión, para comprobar que libpq acepta la URI (D8), y borrar el `.dump` al terminar. Si no hay, ejecutarlo con `docker exec portfolio-postgres pg_dump "<uri con host localhost y puerto 5432>" -Fc -f /tmp/x.dump`.
 
   Verificar: salida en `verification/4.2-local.txt`.
-- [ ] 4.3 Escenarios de producción sobre `portfolio_seed_guard`, con `$env:NODE_ENV = "production"` solo en esta sesión:
+- [x] 4.3 Escenarios de producción sobre `portfolio_seed_guard`, con `$env:NODE_ENV = "production"` solo en esta sesión:
   1. `npm run seed -- --overwrite` sin la variable → 2, con el mensaje de la variable faltante.
   2. `$env:SEED_ALLOW_PRODUCTION = "1"`; `npm run seed` sin `--overwrite` → 2.
   3. `npm run seed -- --overwrite` con las dos llaves → 0, con la marca de producción en el aviso, y `npm run seed:verify` → 0.
   4. Recrear la base vacía (`dropdb` + `createdb` + `prisma:deploy`) y correr `npm run seed` sin flags y sin la variable → 0.
 
   Al terminar, `Remove-Item Env:NODE_ENV, Env:SEED_ALLOW_PRODUCTION`. Si hay un proyecto de Railway de prueba (nunca el de producción con datos), comprobar además si `railway run` pasa una variable local al proceso, para resolver P1. Si no lo hay, dejar P1 abierta. Verificar: salida en `verification/4.3-produccion.txt`.
-- [ ] 4.4 Falla al contar sobre `portfolio_seed_guard_nomig` (sin migrar): `npm run seed -- --overwrite` → 1, el error nombra la tabla inexistente (*«The table `public.ProfileView` does not exist…»*) y dice «No se escribió nada.». La base sigue sin tablas. Verificar: salida en `verification/4.4-sin-migrar.txt`, con `\dt` vacío después.
-- [ ] 4.5 Comprobar que el ejemplo sigue funcionando sobre una base descartable (puede ser `portfolio_seed_guard` recreada): `SEED_DISPOSABLE_DB=1 npm run seed:example` dos veces → 0 y 0 (D5: sin cuenta de contenido). Verificar: salida en `verification/4.5-ejemplo.txt`.
-- [ ] 4.6 `npm run seed:verify -- --overwrite` → 1 sin conectarse (2.7). Después, borrar las dos bases (`docker exec portfolio-postgres dropdb -U portfolio portfolio_seed_guard` y lo mismo para `_nomig`) y confirmar con `\l` que `portfolio` sigue con sus conteos (solo lectura: `select count(*)` de `Profile` y `CuratedProfile`). Verificar: salida en `verification/4.6-verify-overwrite.txt`.
+- [x] 4.4 Falla al contar sobre `portfolio_seed_guard_nomig` (sin migrar): `npm run seed -- --overwrite` → 1, el error nombra la tabla inexistente (*«The table `public.ProfileView` does not exist…»*) y dice «No se escribió nada.». La base sigue sin tablas. Verificar: salida en `verification/4.4-sin-migrar.txt`, con `\dt` vacío después.
+- [x] 4.5 Comprobar que el ejemplo sigue funcionando sobre una base descartable (puede ser `portfolio_seed_guard` recreada): `SEED_DISPOSABLE_DB=1 npm run seed:example` dos veces → 0 y 0 (D5: sin cuenta de contenido). Verificar: salida en `verification/4.5-ejemplo.txt`.
+- [x] 4.6 `npm run seed:verify -- --overwrite` → 1 sin conectarse (2.7). Después, borrar las dos bases (`docker exec portfolio-postgres dropdb -U portfolio portfolio_seed_guard` y lo mismo para `_nomig`) y confirmar con `\l` que `portfolio` sigue con sus conteos (solo lectura: `select count(*)` de `Profile` y `CuratedProfile`). Verificar: salida en `verification/4.6-verify-overwrite.txt`.
 
 ## 5. Documentación (sin tocar código)
 

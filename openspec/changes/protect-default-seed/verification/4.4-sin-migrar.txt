@@ -1,0 +1,21 @@
+# 4.4 falla al contar sobre portfolio_seed_guard_nomig (sin migrar)
+destino: portfolio_seed_guard_nomig en localhost:5434
+tablas antes: (vacio)
+
+> portfolio-backend@0.1.0 seed
+> tsx scripts/seed.ts --overwrite
+
+❌ No se pudo comprobar si localhost:5434/portfolio_seed_guard_nomig tiene contenido: 
+Invalid `p.profileView.count()` invocation in
+D:\projects\***-msaavedra\***-msaavedra\.claude\worktrees\compassionate-sammet-12b825\backend\scripts\lib\seed-guard.ts:115:77
+
+  112 
+  113 /** Las 13 tablas que el seed limpia, en el orden de sus `deleteMany` (D1). `AdminUser` no cuenta. */
+  114 export const SEED_CONTENT_TABLES: readonly ContentTable[] = [
+→ 115   { model: 'profileView', label: 'ProfileView', count: (p) => p.profileView.count(
+The table `public.ProfileView` does not exist in the current database.
+¿Aplicaste las migraciones? (npm run prisma:deploy)
+No se escribió nada.
+exit: 1
+\dt despues:
+Did not find any relations.
