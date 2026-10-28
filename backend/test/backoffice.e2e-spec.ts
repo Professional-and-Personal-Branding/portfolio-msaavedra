@@ -231,6 +231,9 @@ describe('Backoffice: preview y catálogo de temas (e2e)', () => {
     });
 
     it('no registra visitas ni mueve el contador del perfil', async () => {
+      // El test anterior abre la ruta pública: su visita se guarda en segundo plano y,
+      // si no se espera, entra después de tomar la línea base y suma uno al contador.
+      await settleBackgroundTasks(app);
       const profile = await adminProfile();
       const viewsBefore = await prisma.profileView.count({
         where: { curatedProfileId: profile.id },
