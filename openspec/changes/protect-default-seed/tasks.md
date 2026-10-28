@@ -12,33 +12,33 @@
 
 ## 1. Punto de partida
 
-- [ ] 1.1 Confirmar que la rama de trabajo contiene `add-learning-guide-and-example-data` (al menos sus grupos 1 a 3): existen `backend/scripts/lib/seed-guard.ts`, `backend/scripts/lib/seed-runner.ts` y `backend/test/seed-runner.spec.ts` con `LEGACY_CALLS = 79`. Confirmar también que `backend/railway.json` tiene `"preDeployCommand": ["npm run prisma:deploy"]` y que ningún script de `backend/package.json` llama al seed salvo `seed`, `seed:example` y `prisma.seed`. Verificar: `npm test` verde en `backend/` antes de tocar nada, y la salida de `Select-String` sobre `railway.json` y `package.json` en `verification/1.1-punto-de-partida.txt`.
+- [x] 1.1 Confirmar que la rama de trabajo contiene `add-learning-guide-and-example-data` (al menos sus grupos 1 a 3): existen `backend/scripts/lib/seed-guard.ts`, `backend/scripts/lib/seed-runner.ts` y `backend/test/seed-runner.spec.ts` con `LEGACY_CALLS = 79`. Confirmar también que `backend/railway.json` tiene `"preDeployCommand": ["npm run prisma:deploy"]` y que ningún script de `backend/package.json` llama al seed salvo `seed`, `seed:example` y `prisma.seed`. Verificar: `npm test` verde en `backend/` antes de tocar nada, y la salida de `Select-String` sobre `railway.json` y `package.json` en `verification/1.1-punto-de-partida.txt`.
 
 ## 2. Guard y orquestador (D1–D6, D8)
 
-- [ ] 2.1 `backend/scripts/lib/seed-guard.ts`: `SEED_CONTENT_TABLES` con las 13 tablas en el orden de los `deleteMany` de `writeSeed` (modelo de Prisma, etiqueta PascalCase y función de conteo), y `loadContentCounts(prisma)`, que las cuenta en secuencia y devuelve `{ label, rows }[]`. Es la única función con acceso a la base de esta parte; el resto es puro. Verificar: tests de 3.1.
-- [ ] 2.2 En el mismo módulo, `evaluateDefaultSeed({ counts, overwrite, env })`, que devuelve `load`, `load-overwrite` o una negativa con su motivo (`content`, `production-needs-overwrite`, `production-needs-allow`). Sigue D3 y la tabla de D4: `NODE_ENV === 'production'` exacto y `SEED_ALLOW_PRODUCTION === '1'` exacto, que se ignora fuera de producción. Verificar: tests de 3.1, uno por fila de la tabla de D4 y los dos casos locales.
-- [ ] 2.3 `describePgDumpCommand(databaseUrl, now)` (D8): URI de libpq sin contraseña, puerto `5432` por defecto, solo `sslmode` de la query string (sin `schema`), archivo `<base>-AAAA-MM-DD.dump` con la fecha local, la línea de `DATABASE_PUBLIC_URL` si el host termina en `.railway.internal` y la indicación genérica (que remite a `docs/DEPLOY.md` § 7) si la URL falta o no se puede leer. Verificar: tests de 3.1.
-- [ ] 2.4 `formatDefaultSeedRefusal(...)` con los tres textos literales de D8, con la misma forma que `formatGuardFailure`. También los avisos de `--overwrite` de D3 y D4 y el mensaje de falla al contar de D6. Verificar: tests de 3.1 que comparan el texto completo para una entrada fija.
-- [ ] 2.5 `backend/scripts/lib/seed-runner.ts`:
+- [x] 2.1 `backend/scripts/lib/seed-guard.ts`: `SEED_CONTENT_TABLES` con las 13 tablas en el orden de los `deleteMany` de `writeSeed` (modelo de Prisma, etiqueta PascalCase y función de conteo), y `loadContentCounts(prisma)`, que las cuenta en secuencia y devuelve `{ label, rows }[]`. Es la única función con acceso a la base de esta parte; el resto es puro. Verificar: tests de 3.1.
+- [x] 2.2 En el mismo módulo, `evaluateDefaultSeed({ counts, overwrite, env })`, que devuelve `load`, `load-overwrite` o una negativa con su motivo (`content`, `production-needs-overwrite`, `production-needs-allow`). Sigue D3 y la tabla de D4: `NODE_ENV === 'production'` exacto y `SEED_ALLOW_PRODUCTION === '1'` exacto, que se ignora fuera de producción. Verificar: tests de 3.1, uno por fila de la tabla de D4 y los dos casos locales.
+- [x] 2.3 `describePgDumpCommand(databaseUrl, now)` (D8): URI de libpq sin contraseña, puerto `5432` por defecto, solo `sslmode` de la query string (sin `schema`), archivo `<base>-AAAA-MM-DD.dump` con la fecha local, la línea de `DATABASE_PUBLIC_URL` si el host termina en `.railway.internal` y la indicación genérica (que remite a `docs/DEPLOY.md` § 7) si la URL falta o no se puede leer. Verificar: tests de 3.1.
+- [x] 2.4 `formatDefaultSeedRefusal(...)` con los tres textos literales de D8, con la misma forma que `formatGuardFailure`. También los avisos de `--overwrite` de D3 y D4 y el mensaje de falla al contar de D6. Verificar: tests de 3.1 que comparan el texto completo para una entrada fija.
+- [x] 2.5 `backend/scripts/lib/seed-runner.ts`:
   - `SeedArgs` suma `overwrite: boolean`. `parseSeedArgs` acepta `--overwrite` (sin valor) y rechaza `--overwrite=…` como argumento desconocido y la combinación con `--file` con el mensaje de D5.
   - `RunSeedOptions` suma `overwrite`. Sin `--file`, `executeSeed` sigue el orden de D2: valida la fuente, cuenta (un fallo → código 1 con el mensaje de D6), decide (negativa → `SEED_GUARD_EXIT_CODE`) y recién entonces llama a `writeSeed`, que no cambia.
   - Con `--file`, el camino actual no cambia y no se cuenta nada.
 
   Verificar: tests de 3.2.
-- [ ] 2.6 `backend/scripts/seed.ts`: pasar `overwrite` a `executeSeed` y reescribir el comentario de cabecera: base vacía carga, con contenido se niega (código 2) salvo `--overwrite`, en producción además `SEED_ALLOW_PRODUCTION=1`, `--overwrite` no se combina con `--file`, y la tabla de códigos de salida. Verificar: revisión del diff.
+- [x] 2.6 `backend/scripts/seed.ts`: pasar `overwrite` a `executeSeed` y reescribir el comentario de cabecera: base vacía carga, con contenido se niega (código 2) salvo `--overwrite`, en producción además `SEED_ALLOW_PRODUCTION=1`, `--overwrite` no se combina con `--file`, y la tabla de códigos de salida. Verificar: revisión del diff.
 - [ ] 2.7 `backend/scripts/verify-seed.ts`: si `parseSeedArgs` devuelve `overwrite: true`, sale con 1 y el mensaje de D5 (`--overwrite solo aplica a npm run seed: seed:verify no escribe.`). El resto no cambia: los conteos esperados y las comparaciones son los mismos. Verificar: `npm run seed:verify -- --overwrite` sale con 1 sin conectarse (salida en `verification/4.6-verify-overwrite.txt`) y revisión del diff.
 
 ## 3. Pruebas sin base (D7)
 
-- [ ] 3.1 `backend/test/seed-guard.spec.ts`:
+- [x] 3.1 `backend/test/seed-guard.spec.ts`:
   - `evaluateDefaultSeed`: todos los conteos en 0, con y sin `--overwrite` y en producción; una sola tabla con filas (`Experience`); cada fila de la tabla de D4; `SEED_ALLOW_PRODUCTION=1` fuera de producción, que se ignora.
   - `describePgDumpCommand`: sin contraseña, sin `schema`, con `sslmode`, puerto por defecto, sin usuario, host `.railway.internal`, URL ausente e ilegible.
   - Los textos completos de D8, con una fila con conteo 0 que no se lista.
   - Que ningún mensaje contenga la contraseña de la URL de prueba.
 
   Verificar: `npm test` verde, y que el test de la contraseña falla si se pasa la URL sin depurar.
-- [ ] 3.2 `backend/test/seed-runner.spec.ts`:
+- [x] 3.2 `backend/test/seed-runner.spec.ts`:
   - **Simulado:** el contador avanza solo con escrituras. `count` devuelve 0 y `findMany` devuelve `[]` por defecto. Una respuesta configurada que sea un `Error` rechaza la llamada.
   - **Instantánea:** `LEGACY_CALLS` y `LEGACY_SHA256` sin cambios, comparados contra `writes(calls)`. Además, las primeras 13 llamadas son los `count` en el orden de `SEED_CONTENT_TABLES` y la 14.ª es `profileView.deleteMany`.
   - **Test reemplazado:** *«no exige SEED_DISPOSABLE_DB ni consulta la base antes de escribir»* pasa a *«con la base vacía solo cuenta antes de escribir»*.
@@ -55,7 +55,7 @@
   - Los tests de `--file` mantienen sus expectativas.
 
   Verificar: `npm test` verde, y que la instantánea falla si se cambia el orden de dos `deleteMany` en `writeSeed` (prueba local, sin commitear).
-- [ ] 3.3 Lint y tipos: `npm run lint` y `npx tsc --noEmit -p tsconfig.json` (o el comando de tipos que use el CI del backend) sin errores. Verificar: salida limpia en el PR.
+- [x] 3.3 Lint y tipos: `npm run lint` y `npx tsc --noEmit -p tsconfig.json` (o el comando de tipos que use el CI del backend) sin errores. Verificar: salida limpia en el PR.
 
 ## 4. Evidencia contra bases descartables (nunca `portfolio`)
 

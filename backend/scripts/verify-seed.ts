@@ -110,6 +110,10 @@ async function main(): Promise<number> {
     console.error(`❌ ${args.error}`);
     return 1;
   }
+  if (args.value.overwrite) {
+    console.error('❌ --overwrite solo aplica a npm run seed: seed:verify no escribe.');
+    return 1;
+  }
   const fileMode = args.value.file !== undefined;
   const file = args.value.file ?? DEFAULT_SEED_FILE;
   const raw = readSeedFile(file);
