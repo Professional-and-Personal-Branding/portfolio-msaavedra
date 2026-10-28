@@ -74,14 +74,22 @@ FRONTEND_URL=https://PENDIENTE
 ```bash
 cd backend
 railway link          # elegir el proyecto y el servicio api
-railway run npm run seed
+railway run npm run seed          # carga porque la base está vacía
 railway run npm run seed:verify
 railway run npm run admin:bootstrap
 ```
 
 - [ ] Entrar a `/admin` y **cambiar la contraseña** del paso 0.
 
-> `npm run seed` **sobrescribe** el contenido del portafolio. No volver a correrlo sobre datos reales.
+> El seed es de **una sola vez**: si la base ya tiene datos, `npm run seed` se niega (código 2, sin escribir) y muestra qué se perdería. Un deploy nunca lo corre: el `preDeployCommand` solo migra.
+>
+> Para recargar a propósito desde `docs/cv-data.json` (borra lo editado en el panel), hacé primero el `pg_dump` del § 7 y después definí `SEED_ALLOW_PRODUCTION=1` **dentro del mismo comando remoto**, para que llegue al proceso con independencia de cómo `railway run` trate las variables locales:
+>
+> ```bash
+> railway run -- sh -c 'SEED_ALLOW_PRODUCTION=1 npm run seed -- --overwrite'
+> ```
+>
+> (En PowerShell no hay `sh`: usá un shell de bash o Git Bash para este comando.) Sin la variable, el seed se niega aunque pases `--overwrite`.
 
 ---
 
@@ -151,7 +159,7 @@ curl -sI -H "Origin: https://otro-sitio.com" $API/api/profile | grep -i access-c
 # Acceso externo: en el servicio Postgres, Settings → Networking → Public Access.
 # Desde fuera la conexión exige sslmode=require; la cadena está en DATABASE_PUBLIC_URL.
 
-pg_dump "$DATABASE_PUBLIC_URL" -Fc -f portafolio-$(date +%F).dump
+pg_dump "$DATABASE_PUBLIC_URL" -Fc -f portafolio-$(date +%F).dump   # también, antes de cualquier recarga con --overwrite
 
 createdb portafolio_restore_test
 pg_restore -d portafolio_restore_test portafolio-$(date +%F).dump
@@ -190,7 +198,8 @@ dropdb portafolio_restore_test
 ## Nunca
 
 - `prisma db push` en producción — solo `prisma migrate deploy` (lo corre el pre-deploy).
-- `npm run seed` sobre datos reales.
+- `npm run seed -- --overwrite` sobre datos reales sin el `pg_dump` del § 7 hecho antes.
+- `SEED_ALLOW_PRODUCTION` como variable del servicio `api`: va solo en el comando de recarga, nunca guardada.
 - Commitear `.env` ni secretos. Van en las variables del servicio.
 - Confiar en un backup que no se restauró nunca.
 

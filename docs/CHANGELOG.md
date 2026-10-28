@@ -1,12 +1,23 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (`protect-default-seed`)
+
+`npm run seed` ya no puede pisar una base con contenido por accidente.
+
+- **Comportamiento.** Sin `--file`, el seed cuenta las filas de las 13 tablas que limpia (no `AdminUser`). Con todas en cero, carga sin flags: primer arranque local, primer deploy y `prisma migrate reset`. Con alguna fila, sale con **código 2** y no escribe: muestra el destino sin credenciales, los conteos por tabla, un `pg_dump` sin contraseña (`<base>-AAAA-MM-DD.dump`) y cómo forzar.
+- **`--overwrite`.** `npm run seed -- --overwrite` borra y recarga aunque haya contenido, con un aviso previo de lo que se pierde. Sin confirmación interactiva ni `pg_dump` automático: el respaldo se recomienda, no se exige.
+- **Producción.** Con `NODE_ENV=production` y contenido hacen falta las dos llaves: `--overwrite` y `SEED_ALLOW_PRODUCTION=1`, esta última solo para el comando y nunca como variable del servicio `api`. El `preDeployCommand` sigue siendo solo `prisma:deploy`: un deploy no siembra.
+- **Códigos de salida.** 0 ok · 1 fuente inválida, error de uso (`--overwrite` con `--file`, o en `seed:verify`) o falla al contar (base sin migrar o sin conexión: no se borra nada) · 2 negativa.
+- **Operación.** Un `npm run seed` de rutina sobre una base con datos ahora sale con 2: usar `--overwrite` (con `pg_dump` previo) si la recarga es a propósito.
+- **Docs.** `docs/DEPLOY.md`, `docs/DEPLOY-RAILWAY.md` (comando de recarga en producción: `railway run -- sh -c 'SEED_ALLOW_PRODUCTION=1 npm run seed -- --overwrite'`), `docs/DATA-POPULATION.md`, `docs/MANUAL.md` (TC-38) y `backend/README.md`.
+
 ## Update — Octubre 2026 (`add-learning-guide-and-example-data`)
 
 Una guía para aprender a poblar y usar la plataforma, sobre una base de datos de ejemplo. Sin cambios de esquema ni de contrato HTTP.
 
 - **Datos de ejemplo ficticios** (`docs/examples/cv-data.example.json`): una persona inventada con las 9 secciones, todas las entidades y todos los mecanismos del perfil curado (filtro por tags, incluir y excluir, secciones reordenadas y ocultas, tema y layout propios, las tres visibilidades, no enumerado, archivado, alias de slug) y 105 visitas sintéticas. Es la base de referencia del manual.
 - **Seed con formato extendido** (`backend/scripts/lib/`): `npm run seed -- --file <ruta>`, `seed:example` y `seed:example:verify`. Campos opcionales por plantilla (`theme`, `layout`, `visibility`, `accessToken`, `sectionsOrder`, `sectionsHidden`, `includeRefs`/`excludeRefs`, `archived`, `slugAliases`) y `exampleViews`; sin ellos el seed hace exactamente lo de siempre (instantánea de 79 llamadas). La fuente se valida completa **antes** de borrar (código 1).
-- **Negativa en tres capas** con `--file`: `SEED_DISPOSABLE_DB=1`, `NODE_ENV` distinto de `production` y base vacía o con el mismo perfil. Si falla alguna, código 2 sin escribir y con el destino sin contraseña. Proteger también el `npm run seed` por defecto queda para un change aparte.
+- **Negativa en tres capas** con `--file`: `SEED_DISPOSABLE_DB=1`, `NODE_ENV` distinto de `production` y base vacía o con el mismo perfil. Si falla alguna, código 2 sin escribir y con el destino sin contraseña. El `npm run seed` por defecto lo protege `protect-default-seed`.
 - **Guía** (`docs/DATA-POPULATION.md` § 11 y 12): cómo crear, sembrar y borrar la base de ejemplo y una referencia campo por campo.
 - **Manual** (`docs/MANUAL.md`, `docs/manual/index.html`): ruta de aprendizaje de ocho conceptos, nueve recorridos por objetivo, manual del backoffice por pantalla con los mensajes literales del código, TC-36 y TC-37, glosario, filtros por área y por change y registro de una corrida con *Copiar resultado*. 44 capturas regeneradas con `npm run manual:capture`.
 - **`npm run manual:check`** (corre en el CI): casos, conceptos, recorridos y pantallas alineados entre los dos formatos, imágenes sin huérfanas, mensajes literales en `frontend/src` y topes de tamaño (150 KB por imagen, 4 MB en total, 300 KB el HTML).

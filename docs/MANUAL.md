@@ -33,7 +33,7 @@ docker compose up -d                      # Postgres en 5434 y Adminer en 8080
 cd backend
 npm ci
 npm run prisma:migrate                    # solo la primera vez
-npm run seed && npm run seed:verify       # carga docs/cv-data.json
+npm run seed && npm run seed:verify       # carga docs/cv-data.json (base recién migrada, vacía); con contenido se niega: TC-38
 npm run admin:bootstrap                   # crea el administrador
 npm run start:dev                         # API en http://localhost:3300
 
@@ -1479,11 +1479,60 @@ Descartar                                          -> cierra, la categoría no s
 ### El seed ya no es la forma de editar
 
 ```bash
-# Solo para una base vacía (o para volver al estado del CV a propósito)
+# Base vacía: carga sin flags
 cd backend && npm run seed && npm run seed:verify
+
+# Base con contenido: se niega (código 2). Para volver al estado del CV a propósito:
+npm run seed -- --overwrite
 ```
 
-> `seed` **sobrescribe**: correrlo sobre una base con contenido administrado desde el panel **pisa ese trabajo** (portada, formación, proyectos, enlaces, experiencias y skills). Antes de correrlo en producción, hacé el `pg_dump` del § 7 de [`DEPLOY.md`](DEPLOY.md).
+> `seed` **sobrescribe**: pisaría el trabajo del panel (portada, formación, proyectos, enlaces, experiencias y skills). Por eso, sobre una base con contenido, `npm run seed` sale con código 2 y no escribe nada: lista qué se perdería y sugiere el `pg_dump`. Solo `--overwrite` fuerza la recarga; en producción además hace falta `SEED_ALLOW_PRODUCTION=1`, definida solo para ese comando. Hacé el `pg_dump` del § 7 de [`DEPLOY.md`](DEPLOY.md) antes (caso TC-38).
+
+### TC-38 — El seed por defecto se niega sobre una base con contenido ✅
+
+**Precondición:** una base **descartable** (nunca la del owner), migrada. Crear una aparte y confirmar el destino antes de escribir:
+
+```powershell
+docker exec portfolio-postgres createdb -U portfolio portfolio_seed_guard
+cd backend
+$env:DATABASE_URL = "postgresql://portfolio:portfolio@localhost:5434/portfolio_seed_guard?schema=public"
+npm run prisma:status     # debe nombrar portfolio_seed_guard
+npm run prisma:deploy
+```
+
+En bash, `export DATABASE_URL="postgresql://portfolio:portfolio@localhost:5434/portfolio_seed_guard?schema=public"` y el mismo resto.
+
+**Pasos:**
+1. `npm run seed` con la base vacía.
+2. `npm run seed` otra vez.
+3. `npm run seed -- --overwrite` y después `npm run seed:verify`.
+4. `npm run seed -- --overwrite --file ../docs/examples/cv-data.example.json`.
+5. Con `NODE_ENV=production` (PowerShell: `$env:NODE_ENV = "production"`; bash: `NODE_ENV=production npm run seed …`): `npm run seed -- --overwrite` sin más; después `SEED_ALLOW_PRODUCTION=1 npm run seed` sin `--overwrite`; por último `SEED_ALLOW_PRODUCTION=1 npm run seed -- --overwrite`.
+
+**Resultado esperado:**
+1. Código **0**: carga la base vacía sin flags ni variables.
+2. Código **2**: «Negativa: no se recarga docs/cv-data.json en localhost:5434/portfolio_seed_guard: la base ya tiene contenido.», los conteos de las tablas con filas, un `pg_dump` sin contraseña, `npm run seed -- --overwrite` y «No se escribió nada.». Los conteos de la base no cambian.
+3. Código **0** con el aviso «--overwrite: se borra el contenido de …»; `seed:verify` termina con **0**.
+4. Código **1**: «--overwrite no se combina con --file…», sin leer el archivo ni conectarse.
+5. Los dos primeros comandos salen con **2** (el segundo dice que falta `SEED_ALLOW_PRODUCTION=1`; el tercero, con la variable sola, se niega igual) y el último con **0**, con el aviso marcado «en producción».
+
+Transcripción de la ejecución del 27 de octubre de 2026 (el resto está en `openspec/changes/protect-default-seed/verification/`):
+
+```text
+> npm run seed          (base con contenido)
+❌ Negativa: no se recarga docs/cv-data.json en localhost:5434/portfolio_seed_guard: la base ya tiene contenido.
+  - CuratedProfile: 14
+  - Theme: 5
+  - Skill: 108
+  …
+Si querés conservarlo, respaldalo antes (pg_dump pide la contraseña):
+  pg_dump "postgresql://portfolio@localhost:5434/portfolio_seed_guard" -Fc -f portfolio_seed_guard-2026-10-27.dump
+Para borrarlo y recargar desde docs/cv-data.json: npm run seed -- --overwrite
+No se escribió nada.
+exit: 2
+```
+
+Al terminar: `docker exec portfolio-postgres dropdb -U portfolio portfolio_seed_guard`.
 
 ---
 
@@ -1677,8 +1726,9 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-35 | El perfil abre rápido en un móvil | ✅ | recorrido en 375 px con Chrome controlado · una petición y una visita por carga · `perf:budget` y `perf:check` · tests de la vista, el script y los menús |
 | TC-36 | Cargar los datos de ejemplo en una base descartable | ✅ | captura · salida de `seed:example` y `seed:example:verify` · dos cargas |
 | TC-37 | El seed de ejemplo se niega contra una base con otros datos | ✅ | salida transcrita · código 2 en las tres capas · conteos sin cambios |
+| TC-38 | El seed por defecto se niega sobre una base con contenido | ✅ | transcripción de las salidas (códigos 0, 2, 1) contra una base descartable · tests de `seed-guard` y `seed-runner` |
 
-**Los 37 casos pasan.** TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; las 44 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
+**Los 38 casos pasan.** TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 44 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
