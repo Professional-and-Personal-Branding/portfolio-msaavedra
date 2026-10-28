@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { SECTION_IDS } from '../src/modules/curated-profile/domain/services/resolve-sections';
+import { SEED_CONTENT_TABLES } from '../scripts/lib/seed-guard';
 import { executeSeed, parseSeedArgs, readSeedFile } from '../scripts/lib/seed-runner';
 
 /**
@@ -16,7 +17,14 @@ interface Call {
   args: unknown;
 }
 
-/** Cliente simulado: registra cada llamada y devuelve `{ id: "<modelo>-<n>" }`, como el harness de la instantánea. */
+const WRITE_METHODS = new Set(['create', 'createMany', 'update', 'deleteMany']);
+
+/**
+ * Cliente simulado: registra cada llamada. Las escrituras devuelven `{ id: "<modelo>-<n>" }` y
+ * solo ellas avanzan el contador (protect-default-seed, D7): los ids de las escrituras no
+ * dependen de cuántas lecturas hubo antes. `count` devuelve 0 y `findMany` `[]` por defecto;
+ * una respuesta configurada que sea un `Error` rechaza la llamada.
+ */
 function fakePrisma(responses: Record<string, unknown> = {}): {
   prisma: PrismaClient;
   calls: Call[];
@@ -34,10 +42,13 @@ function fakePrisma(responses: Record<string, unknown> = {}): {
             get(_u, method: string) {
               return (args: unknown) => {
                 calls.push({ model, method, args: args ?? null });
-                counter += 1;
-                return Promise.resolve(
-                  responses[`${model}.${method}`] ?? { id: `${model}-${counter}` },
-                );
+                const configured = responses[`${model}.${method}`];
+                if (configured instanceof Error) return Promise.reject(configured);
+                if (configured !== undefined) return Promise.resolve(configured);
+                if (method === 'count') return Promise.resolve(0);
+                if (method === 'findMany') return Promise.resolve([]);
+                if (WRITE_METHODS.has(method)) counter += 1;
+                return Promise.resolve({ id: `${model}-${counter}` });
               };
             },
           },
@@ -68,16 +79,30 @@ describe('executeSeed · seed por defecto (sin --file)', () => {
     const { prisma, calls } = fakePrisma();
     const code = await executeSeed(prisma, cvData(), { guarded: false, env: {}, ...quiet });
     expect(code).toBe(0);
-    expect(calls).toHaveLength(LEGACY_CALLS);
-    const digest = crypto.createHash('sha256').update(JSON.stringify(calls)).digest('hex');
+    const written = writes(calls);
+    expect(written).toHaveLength(LEGACY_CALLS);
+    const digest = crypto.createHash('sha256').update(JSON.stringify(written)).digest('hex');
     expect(digest).toBe(LEGACY_SHA256);
+    // Con la base vacía solo se agregan los 13 conteos, antes de la primera escritura.
+    expect(calls).toHaveLength(LEGACY_CALLS + SEED_CONTENT_TABLES.length);
+    expect(calls.slice(0, 13).map((c) => `${c.model}.${c.method}`)).toEqual(
+      SEED_CONTENT_TABLES.map((t) => `${t.model}.count`),
+    );
   });
 
-  it('no exige SEED_DISPOSABLE_DB ni consulta la base antes de escribir', async () => {
+  it('con la base vacía solo cuenta antes de escribir y no exige SEED_DISPOSABLE_DB', async () => {
     const { prisma, calls } = fakePrisma();
     await executeSeed(prisma, cvData(), { guarded: false, env: {}, ...quiet });
-    expect(calls[0].method).toBe('deleteMany');
+    expect(calls.slice(0, 13).every((c) => c.method === 'count')).toBe(true);
+    expect(`${calls[13].model}.${calls[13].method}`).toBe('profileView.deleteMany');
     expect(calls.some((c) => c.method === 'findMany')).toBe(false);
+  });
+
+  it('SEED_CONTENT_TABLES coincide con la secuencia de deleteMany del seed (D1)', async () => {
+    const { prisma, calls } = fakePrisma();
+    await executeSeed(prisma, cvData(), { guarded: false, env: {}, ...quiet });
+    const cleaned = calls.filter((c) => c.method === 'deleteMany').map((c) => c.model);
+    expect(SEED_CONTENT_TABLES.map((t) => t.model)).toEqual(cleaned);
   });
 
   it('cada plantilla queda con los valores por defecto de siempre', async () => {
@@ -228,8 +253,12 @@ describe('executeSeed · formato extendido (D3, D7, D8)', () => {
 
     const first = calls.find((c) => c.model === 'curatedProfile' && c.method === 'create');
     const data = (first?.args as { data: Mutable }).data;
-    expect(data['excludeIds']).toEqual(['experience-' + (calls.indexOf(expCreates[0]) + 1)]);
-    expect(data['includeIds']).toEqual(['experience-' + (calls.indexOf(expCreates[1]) + 1)]);
+    expect(data['excludeIds']).toEqual([
+      'experience-' + (writes(calls).indexOf(expCreates[0]) + 1),
+    ]);
+    expect(data['includeIds']).toEqual([
+      'experience-' + (writes(calls).indexOf(expCreates[1]) + 1),
+    ]);
     expect(data['sectionsHidden']).toEqual(['stats']);
     expect(data['slugAliases']).toEqual({ create: [{ slug: 'nombre-anterior' }] });
     expect(data['archivedAt']).toEqual(now);
@@ -242,7 +271,7 @@ describe('executeSeed · formato extendido (D3, D7, D8)', () => {
     const elegant = themeCalls.findIndex(
       (c) => (c.args as { data: Mutable }).data['slug'] === 'elegant',
     );
-    expect(data['themeId']).toBe('theme-' + (calls.indexOf(themeCalls[elegant]) + 1));
+    expect(data['themeId']).toBe('theme-' + (writes(calls).indexOf(themeCalls[elegant]) + 1));
   });
 
   it('crea las visitas sintéticas en un solo createMany y actualiza views', async () => {
@@ -272,15 +301,18 @@ describe('parseSeedArgs y readSeedFile (D5)', () => {
   const cwd = path.resolve('/trabajo/backend');
 
   it('sin argumentos usa la fuente por defecto', () => {
-    expect(parseSeedArgs([], cwd)).toEqual({ ok: true, value: {} });
+    expect(parseSeedArgs([], cwd)).toEqual({ ok: true, value: { overwrite: false } });
   });
 
   it('resuelve --file contra el directorio actual', () => {
     const r = parseSeedArgs(['--file', '../docs/otro.json'], cwd);
-    expect(r).toEqual({ ok: true, value: { file: path.resolve(cwd, '../docs/otro.json') } });
+    expect(r).toEqual({
+      ok: true,
+      value: { overwrite: false, file: path.resolve(cwd, '../docs/otro.json') },
+    });
     expect(parseSeedArgs(['--file=x.json'], cwd)).toEqual({
       ok: true,
-      value: { file: path.resolve(cwd, 'x.json') },
+      value: { overwrite: false, file: path.resolve(cwd, 'x.json') },
     });
   });
 
@@ -288,6 +320,25 @@ describe('parseSeedArgs y readSeedFile (D5)', () => {
     expect(parseSeedArgs(['--file'], cwd).ok).toBe(false);
     expect(parseSeedArgs(['--file', '--otra'], cwd).ok).toBe(false);
     expect(parseSeedArgs(['--nada'], cwd).ok).toBe(false);
+  });
+
+  it('acepta --overwrite sin valor y rechaza --overwrite=x', () => {
+    expect(parseSeedArgs(['--overwrite'], cwd)).toEqual({ ok: true, value: { overwrite: true } });
+    const r = parseSeedArgs(['--overwrite=x'], cwd);
+    expect(r.ok ? '' : r.error).toContain('argumento desconocido');
+  });
+
+  it('--overwrite con --file es un error de uso, en los dos órdenes (D5)', () => {
+    for (const argv of [
+      ['--overwrite', '--file', 'x.json'],
+      ['--file', 'x.json', '--overwrite'],
+    ]) {
+      const r = parseSeedArgs(argv, cwd);
+      expect(r.ok).toBe(false);
+      expect(r.ok ? '' : r.error).toBe(
+        '--overwrite no se combina con --file: un archivo alternativo tiene su propia negativa (ver docs/DATA-POPULATION.md § 11).',
+      );
+    }
   });
 
   it('una ruta inexistente es un error de lectura, antes de conectarse', () => {
@@ -306,5 +357,123 @@ describe('parseSeedArgs y readSeedFile (D5)', () => {
 
   it('lee docs/cv-data.json', () => {
     expect(readSeedFile(cvDataPath).ok).toBe(true);
+  });
+});
+
+describe('executeSeed · negativa del seed por defecto (protect-default-seed)', () => {
+  const url = 'postgresql://portfolio:s3cr3t-pass@localhost:5434/portfolio?schema=public';
+  const withContent = {
+    'experience.count': 15,
+    'curatedProfile.count': 14,
+    'profileView.count': 230,
+  };
+  const run = async (
+    responses: Record<string, unknown>,
+    env: Record<string, string | undefined>,
+    overwrite = false,
+  ) => {
+    const out: string[] = [];
+    const { prisma, calls } = fakePrisma(responses);
+    const code = await executeSeed(prisma, cvData(), {
+      guarded: false,
+      overwrite,
+      env: { DATABASE_URL: url, ...env },
+      now: new Date(2026, 9, 27, 12),
+      log: (m) => out.push(m),
+      error: (m) => out.push(m),
+    });
+    return { code, calls, text: out.join('\n') };
+  };
+  const countsOnly = (calls: Call[]): boolean =>
+    calls.length === 13 && calls.every((c) => c.method === 'count');
+
+  it('base con contenido sin flag: código 2, solo los 13 count y el mensaje completo', async () => {
+    const { code, calls, text } = await run(withContent, {});
+    expect(code).toBe(2);
+    expect(countsOnly(calls)).toBe(true);
+    expect(text).toContain('localhost:5434/portfolio');
+    expect(text).toContain('  - ProfileView: 230');
+    expect(text).toContain('  - Experience: 15');
+    expect(text).toContain('pg_dump "postgresql://portfolio@localhost:5434/portfolio" -Fc');
+    expect(text).toContain('npm run seed -- --overwrite');
+    expect(text).toContain('No se escribió nada.');
+    expect(text).not.toContain('s3cr3t-pass');
+  });
+
+  it('--overwrite local: código 0, avisa y escribe lo de la instantánea', async () => {
+    const { code, calls, text } = await run(withContent, {}, true);
+    expect(code).toBe(0);
+    expect(text).toContain('--overwrite: se borra el contenido de localhost:5434/portfolio');
+    expect(writes(calls)).toHaveLength(LEGACY_CALLS);
+    const digest = crypto
+      .createHash('sha256')
+      .update(JSON.stringify(writes(calls)))
+      .digest('hex');
+    expect(digest).toBe(LEGACY_SHA256);
+  });
+
+  it('base vacía con --overwrite: carga sin aviso', async () => {
+    const { code, text } = await run({}, {}, true);
+    expect(code).toBe(0);
+    expect(text).not.toContain('se borra el contenido');
+  });
+
+  it('producción con la base vacía: código 0', async () => {
+    expect((await run({}, { NODE_ENV: 'production' })).code).toBe(0);
+  });
+
+  it('producción con contenido: sin --overwrite, solo --overwrite o solo la variable, código 2', async () => {
+    const cases: [boolean, Record<string, string>][] = [
+      [false, { NODE_ENV: 'production' }],
+      [true, { NODE_ENV: 'production' }],
+      [false, { NODE_ENV: 'production', SEED_ALLOW_PRODUCTION: '1' }],
+    ];
+    for (const [overwrite, env] of cases) {
+      const { code, calls, text } = await run(withContent, env, overwrite);
+      expect(code).toBe(2);
+      expect(countsOnly(calls)).toBe(true);
+      expect(text).toContain('(NODE_ENV=production)');
+    }
+    const missing = await run(withContent, { NODE_ENV: 'production' }, true);
+    expect(missing.text).toContain('falta SEED_ALLOW_PRODUCTION=1');
+  });
+
+  it('producción con las dos llaves: código 0 con la marca de producción', async () => {
+    const { code, text, calls } = await run(
+      withContent,
+      { NODE_ENV: 'production', SEED_ALLOW_PRODUCTION: '1' },
+      true,
+    );
+    expect(code).toBe(0);
+    expect(text).toContain('--overwrite en producción (SEED_ALLOW_PRODUCTION=1)');
+    expect(writes(calls)).toHaveLength(LEGACY_CALLS);
+  });
+
+  it('un count que falla: código 1, sin escrituras y sin la contraseña (D6)', async () => {
+    const err = new Error(
+      'The table `public.ProfileView` does not exist (postgresql://portfolio:s3cr3t-pass@localhost:5434/portfolio)',
+    );
+    const { code, calls, text } = await run({ 'profileView.count': err }, {}, true);
+    expect(code).toBe(1);
+    expect(writes(calls)).toEqual([]);
+    expect(text).toContain('public.ProfileView');
+    expect(text).toContain('No se escribió nada.');
+    expect(text).not.toContain('s3cr3t-pass');
+  });
+
+  it('un count que falla a mitad de camino tampoco escribe', async () => {
+    const { code, calls } = await run({ 'project.count': new Error('conexión perdida') }, {});
+    expect(code).toBe(1);
+    expect(calls.some((c) => c.method === 'deleteMany')).toBe(false);
+  });
+
+  it('con --file no se cuenta nada', async () => {
+    const { prisma, calls } = fakePrisma({ 'profile.findMany': [] });
+    await executeSeed(prisma, cvData(), {
+      guarded: true,
+      env: { SEED_DISPOSABLE_DB: '1', NODE_ENV: 'test' },
+      ...quiet,
+    });
+    expect(calls.some((c) => c.method === 'count')).toBe(false);
   });
 });

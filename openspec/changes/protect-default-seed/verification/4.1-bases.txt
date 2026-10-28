@@ -1,0 +1,70 @@
+# 4.1 bases descartables (2026-10-27)
+--- prisma:status (antes de migrar)
+
+> portfolio-backend@0.1.0 prisma:status
+> prisma migrate status
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "portfolio_seed_guard", schema "public" at "localhost:5434"
+
+4 migrations found in prisma/migrations
+Following migrations have not yet been applied:
+20260906055928_init
+20261005201934_curated_profile_lifecycle
+20261009120000_retire_accent_color
+20261010120000_localize_language_level
+
+To apply migrations in development run prisma migrate dev.
+To apply migrations in production run prisma migrate deploy.
+
+--- prisma:deploy
+
+> portfolio-backend@0.1.0 prisma:deploy
+> prisma migrate deploy
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "portfolio_seed_guard", schema "public" at "localhost:5434"
+
+4 migrations found in prisma/migrations
+
+Applying migration `20260906055928_init`
+Applying migration `20261005201934_curated_profile_lifecycle`
+Applying migration `20261009120000_retire_accent_color`
+Applying migration `20261010120000_localize_language_level`
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 6.19.3 -> 8.0.0-rc.28                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260906055928_init/
+    └─ migration.sql
+  └─ 20261005201934_curated_profile_lifecycle/
+    └─ migration.sql
+  └─ 20261009120000_retire_accent_color/
+    └─ migration.sql
+  └─ 20261010120000_localize_language_level/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+
+--- current_database() en portfolio_seed_guard
+portfolio_seed_guard
+--- current_database() en portfolio_seed_guard_nomig
+portfolio_seed_guard_nomig

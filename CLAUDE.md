@@ -124,7 +124,7 @@ npm run start:dev        # NestJS en watch
 npm run prisma:migrate   # prisma migrate dev
 npm run prisma:generate  # prisma generate
 npm run prisma:status    # prisma migrate status
-npm run seed             # carga docs/cv-data.json
+npm run seed             # carga docs/cv-data.json solo sobre una base vacía; con contenido se niega (código 2) salvo --overwrite, y en producción además SEED_ALLOW_PRODUCTION=1
 npm run seed:verify      # compara conteos DB vs cv-data.json
 npm run seed -- --file <ruta>   # carga otro archivo (solo en una base DESCARTABLE: exige SEED_DISPOSABLE_DB=1, NODE_ENV != production y base vacía o con el mismo perfil; si no, sale con 2)
 npm run seed:example     # carga docs/examples/cv-data.example.json (datos FICTICIOS) en una base aparte, p. ej. portfolio_example; nunca en la del owner

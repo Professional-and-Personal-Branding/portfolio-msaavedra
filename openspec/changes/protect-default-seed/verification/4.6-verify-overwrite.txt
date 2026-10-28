@@ -1,0 +1,21 @@
+# 4.6 seed:verify rechaza --overwrite, y limpieza
+(DATABASE_URL apunta a un puerto cerrado para probar que no se conecta)
+
+> portfolio-backend@0.1.0 seed:verify
+> tsx scripts/verify-seed.ts --overwrite
+
+❌ --overwrite solo aplica a npm run seed: seed:verify no escribe.
+exit: 1
+
+--- dropdb de las dos bases descartables (ya borradas al reintentar: 'does not exist')
+--- lista de bases
+portfolio
+postgres
+template0
+template1
+--- solo lectura sobre la base del owner (select count)
+ profile | curated_profile 
+---------+-----------------
+       1 |              14
+(1 row)
+

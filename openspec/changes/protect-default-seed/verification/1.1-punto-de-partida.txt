@@ -1,0 +1,16 @@
+# 1.1 Punto de partida (2026-10-27)
+backend/scripts/lib/seed-guard.ts
+backend/scripts/lib/seed-runner.ts
+backend/test/seed-runner.spec.ts
+63:const LEGACY_CALLS = 79;
+--- railway.json
+9:    "preDeployCommand": ["npm run prisma:deploy"],
+10:    "startCommand": "npm run start:prod",
+--- package.json (scripts que llaman al seed)
+29:    "seed": "tsx scripts/seed.ts",
+30:    "seed:verify": "tsx scripts/verify-seed.ts",
+31:    "seed:example": "tsx scripts/seed.ts --file ../docs/examples/cv-data.example.json",
+32:    "seed:example:verify": "tsx scripts/verify-seed.ts --file ../docs/examples/cv-data.example.json",
+37:    "seed": "tsx scripts/seed.ts"
+103:    "testRegex": "(src/.*\\.spec\\.ts|test/(architecture|security|dto-validation|seed-[a-z-]+)\\.spec\\.ts)$",
+--- npm test baseline: Test Suites: 81 passed, Tests: 629 passed

@@ -27,7 +27,7 @@ npm install
 # 2. Esquema y datos
 npm run prisma:generate     # cliente Prisma
 npm run prisma:migrate      # prisma migrate dev --name init (migración versionada; NUNCA db push)
-npm run seed                # carga docs/cv-data.json. SOBRESCRIBE: borra y recarga el contenido (incluidas las visitas); solo en una base vacía o a propósito
+npm run seed                # carga docs/cv-data.json solo sobre una base vacía; con contenido se niega (código 2). --overwrite fuerza la recarga (borra el contenido, incluidas las visitas)
 npm run seed:verify         # compara conteos DB vs cv-data.json
 npm run admin:bootstrap     # crea/actualiza el administrador desde ADMIN_EMAIL / ADMIN_PASSWORD / ADMIN_NAME
 ```
@@ -106,7 +106,7 @@ Reglas: cuerpos validados con `class-validator`; campos desconocidos → 400; `P
 | `npm run test:all` | Ambos |
 | `npm run prisma:migrate` / `prisma:status` | Migración `init` / estado de migraciones (desarrollo) |
 | `npm run prisma:deploy` | `prisma migrate deploy`: aplica migraciones en producción. **Nunca usar `db push`** |
-| `npm run seed` / `seed:verify` | Cargar / verificar datos. **El seed sobrescribe** el contenido (incluidas las visitas) y no toca `AdminUser` |
+| `npm run seed` / `seed:verify` | Cargar / verificar datos. El seed carga solo sobre una base vacía y se niega (código 2) si hay contenido; `-- --overwrite` borra y recarga (incluidas las visitas), y no toca `AdminUser` |
 | `npm run admin:bootstrap` | Crear/actualizar el administrador (hash argon2id, upsert por email) |
 | `npm run openapi:export` | Escribe `backend/openapi.json` (mismo documento que `/api/docs-json`) sin levantar servidor ni conectar a la base; el frontend genera sus tipos desde él (`npm run api:types`). Se versiona: correrlo cuando cambie el contrato |
 
@@ -204,7 +204,7 @@ Evidencia: [`../openspec/changes/archive/2026-09-07-add-auth-and-crud/verificati
 ## Notas
 
 - **Puerto:** `.env.example` usa 3300 (el 3000 suele estar ocupado y el proxy de Vite apunta al 3300). Si también está ocupado, cambiá `PORT` en tu `.env` (no versionado) y `VITE_PROXY_TARGET` en el frontend.
-- **Seed destructivo:** `npm run seed` borra y recarga el contenido (perfil, idiomas, experiencias, skills, formación, proyectos, enlaces, temas, perfiles curados y visitas). Como todo se edita desde el panel, **solo se corre en una base vacía o a propósito**, y en producción después de un `pg_dump` (`docs/DEPLOY.md` § 7). No toca `AdminUser`.
+- **Seed destructivo:** `npm run seed` borra y recarga el contenido (perfil, idiomas, experiencias, skills, formación, proyectos, enlaces, temas, perfiles curados y visitas). Como todo se edita desde el panel, **se niega (código 2) sobre una base con contenido** y muestra los conteos y un `pg_dump` sugerido; recargar exige `npm run seed -- --overwrite` y, en producción, además `SEED_ALLOW_PRODUCTION=1` solo para ese comando (nunca como variable del servicio), después de un `pg_dump` (`docs/DEPLOY.md` § 7). No se combina con `--file`. Si no puede contar (base sin migrar), sale con 1 sin borrar. No toca `AdminUser`.
 - **Versiones fijadas:** NestJS ~11.2 y Prisma ~6.19 (ver `openspec/changes/archive/2026-09-06-add-backend-base/design.md`, D1/D2). Los upgrades a NestJS 12 / Prisma 7 se harán como changes propios.
 - **Overrides de perfiles curados:** `includeIds`/`excludeIds` referencian ids `cuid` generados en el seed, así que no viven en `cv-data.json`; se gestionan desde el constructor del panel.
 - **Analítica:** cada visita pública registra un `ProfileView` (IP solo como HMAC). No hay política de retención definida.
