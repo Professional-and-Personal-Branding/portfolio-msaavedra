@@ -3,9 +3,10 @@
   "build": {
     "builder": "DOCKERFILE",
     "dockerfilePath": "Dockerfile",
-    "watchPatterns": ["src/**", "index.html", "Caddyfile", "package.json", "package-lock.json"]
+    "watchPatterns": ["/frontend/**"]
   },
   "deploy": {
+    "healthcheckPath": "/",
     "restartPolicyType": "ON_FAILURE"
   }
 }
