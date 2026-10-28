@@ -76,6 +76,8 @@ Guardalos en el gestor de secretos del proveedor, nunca en el repositorio. La AP
 | `THROTTLE_LOGIN_LIMIT` | `5` | intentos de login por ventana e IP |
 | `ENABLE_API_DOCS` | *(sin definir)* | definila en `true` solo si querés Swagger público |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | los del administrador | solo se usan al correr `admin:bootstrap` |
+| `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` | `10` | solo Railway, servicio `api`. La API espera hasta 5 s a registrar las visitas en vuelo al apagarse; tiene que quedar **por encima de 5** (ver § 9.5, *Apagado de la API*) |
+| `CSP_HEADER` | *(sin definir)* | **del servicio `web`, no de la API.** Nombre de la cabecera de la CSP del sitio; sin definir bloquea, con `Content-Security-Policy-Report-Only` solo reporta (ver § 9.5, *Content-Security-Policy del sitio*) |
 
 ### Comandos
 
@@ -235,7 +237,7 @@ Anotá la fecha de la última prueba de restauración en `docs/RELEASE-1.0.0-CHE
 ## 8. Después del despliegue
 
 - **Search Console**: dar de alta el dominio y enviar el sitemap.
-- **Vista previa de los links**: al compartir un perfil en LinkedIn o WhatsApp verás los datos genéricos del portafolio, no los del perfil concreto. Es una limitación conocida: esos rastreadores no ejecutan JavaScript. Está anotada para 1.1 (ver `add-production-hardening/design.md` D6).
+- **Vista previa de los links**: resuelto en 1.1 por `add-server-rendered-head` (el head de cada perfil sale del servidor, § 9.5). Falta verificarlo con el sitio desplegado: pegar dos perfiles distintos en el [Post Inspector de LinkedIn](https://www.linkedin.com/post-inspector/) y en un canal de Slack; las tarjetas tienen que mostrar títulos distintos y la imagen. Si salen genéricas, ver *Qué falla y por qué* en `docs/MANUAL.md`.
 - **Escalar a más de una instancia**: el límite de peticiones se cuenta en memoria, así que cada instancia lleva su propio contador. Si algún día hace falta escalar horizontalmente (en Railway, subir las réplicas del servicio), hay que moverlo a un almacén compartido.
 - **Costo**: Railway cobra por uso (RAM $10/GB/mes, vCPU $20/vCPU/mes) y el plan Hobby incluye $5. Tres servicios siempre encendidos lo superan; mirá el panel de uso la primera semana para saber en qué se estabiliza.
 
@@ -403,7 +405,7 @@ La tercera migración (`init`, `curated_profile_lifecycle`, `retire_accent_color
 
 #### Migración `localize_language_level` (de datos, no destructiva)
 
-La cuarta migración (`init`, `curated_profile_lifecycle`, `retire_accent_color`, `localize_language_level`) cambia el tipo de `Language.level` de `TEXT` a `JSONB` en la misma fila, con un único `ALTER COLUMN … TYPE JSONB USING …`. Cada valor pasa a texto bilingüe: un nivel conocido en español (`Nativo`, `Avanzado`, …) queda `{ es, en }`; un código MCER (`B1-B2`, `C1`), `{ es: x, en: x }`; cualquier otro texto, `{ es: x }`, sin inventar el inglés. No borra ni agrega filas; la tabla de traducciones está en `openspec/changes/localize-language-level/design.md` (D2).
+La cuarta migración (`init`, `curated_profile_lifecycle`, `retire_accent_color`, `localize_language_level`) cambia el tipo de `Language.level` de `TEXT` a `JSONB` en la misma fila, con un único `ALTER COLUMN … TYPE JSONB USING …`. Cada valor pasa a texto bilingüe: un nivel conocido en español (`Nativo`, `Avanzado`, …) queda `{ es, en }`; un código MCER (`B1-B2`, `C1`), `{ es: x, en: x }`; cualquier otro texto, `{ es: x }`, sin inventar el inglés. No borra ni agrega filas; la tabla de traducciones está en `openspec/changes/archive/2026-10-10-localize-language-level/design.md` (D2).
 
 - Corre en el `preDeployCommand` con `prisma migrate deploy`, como las demás. Nunca con `migrate dev` ni `db push`.
 - Sobre una base vacía (el primer deploy) solo cambia el tipo de la columna. Después se corre el seed, que ya trae `level` como `{ es, en }`.

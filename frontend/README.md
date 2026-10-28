@@ -1,10 +1,10 @@
 # Frontend — Portafolio Administrable
 
-SPA del portafolio: la vista pública (Fase 4, change `add-public-frontend-theming`) con home, perfil curado por slug, motor de theming por design tokens, dos layouts y bilingüe ES/EN; y el backoffice en `/admin` (Fase 5, change `add-admin-backoffice`). Todo el contenido viene de la API del backend; no hay datos hardcodeados.
+SPA del portafolio: la vista pública (Fase 4, change `add-public-frontend-theming`) con home, perfil curado por slug, motor de theming por design tokens, dos layouts, bilingüe ES/EN y hoja imprimible (`add-printable-one-page`); y el backoffice en `/admin` (Fase 5, change `add-admin-backoffice`, ampliado en la ronda 1.1). Todo el contenido viene de la API del backend; no hay datos hardcodeados.
 
 ## Stack
 
-React 19 · Vite 8 · TypeScript 5.9 (estricto) · Tailwind CSS 4 (`@tailwindcss/vite`, config CSS-first) · shadcn/ui (`new-york`) · Motion (`motion/react`) · lucide-react · TanStack Query 5 · react-router 8 (declarativo) · Zustand · Zod · openapi-fetch + openapi-typescript · Vitest + Testing Library + MSW.
+React 19 · Vite 8 · TypeScript 5.9 (estricto) · Tailwind CSS 4 (`@tailwindcss/vite`, config CSS-first) · shadcn/ui (`new-york`) · Motion (paquete `motion`, `motion/react`) · lucide-react · TanStack Query 5 · react-router 8 (data router: `createBrowserRouter` con una ruta comodín que monta las `<Routes>` declarativas) · Zustand · Zod 4 (`zod/mini` en el arranque público) · openapi-fetch + openapi-typescript · ESLint 10 · Vitest 5 + Testing Library + MSW · `puppeteer-core` y `axe-core` (solo para los checks).
 
 ## Puesta en marcha
 
@@ -23,12 +23,19 @@ Rutas: `/` (perfil curado `all`), `/:slug` (perfil curado), cualquier otra → 4
 | Script | Qué hace |
 |---|---|
 | `npm run dev` | Vite con proxy `/api` → `VITE_PROXY_TARGET` (default `http://localhost:3300`) |
-| `npm run build` | `tsc -b` + `vite build` (chunks `react`, `motion`, `query`; objetivo < 400 KB gzip) |
+| `npm run build` | `tsc -b` + `vite build`. El arranque público es **un solo archivo JS de módulo** (≈ 148 KB gzip, tope de 155 KB en `perf:budget`) más el script clásico `profile-prefetch.js`; el panel y los menús de la barra salen en chunks aparte. Sin chunks `react`/`motion`/`query` |
 | `npm run preview` | Sirve `dist/` |
 | `npm run typecheck` | `tsc -b` |
-| `npm run lint` / `lint:fix` | ESLint 9 flat (typescript-eslint, react-hooks, react-refresh) + Prettier |
+| `npm run lint` / `lint:fix` | ESLint 10 flat (typescript-eslint, react-hooks, react-refresh) + Prettier |
+| `npm run format` | Prettier sobre `src/` |
 | `npm run test` / `test:watch` | Vitest (jsdom) |
 | `npm run api:types` | Regenera `src/shared/types/api.d.ts` desde `../backend/openapi.json` |
+| `npm run perf:budget` | Tope de JS del arranque público sobre `dist/` (≤ 155 KB gzip, un solo JS de módulo, sin `modulepreload`). Sin navegador ni base |
+| `npm run print:check` | Genera el PDF de cada perfil en A4 y Letter (es/en, dos temas), cuenta las páginas (debe ser 1) y mide el contraste. Abre páginas reales: exige `PRINT_CHECK_DISPOSABLE_DB=1` y una base **descartable** |
+| `npm run a11y:check -- <base>` | axe-core + recorrido de teclado en la vista pública y, con `A11Y_CHECK_ADMIN_EMAIL`/`_PASSWORD`, en el panel. Exige `A11Y_CHECK_DISPOSABLE_DB=1` y una base **descartable**; se corre contra la imagen de `Dockerfile` |
+| `npm run perf:check -- <base>` | Lighthouse mobile (mediana de `PERF_CHECK_RUNS`, umbral `PERF_CHECK_MIN_PERFORMANCE`; 85 en el CI). Misma exigencia que `a11y:check` |
+
+Los umbrales y el uso de los tres checks están en [`../docs/MANUAL.md`](../docs/MANUAL.md) § 5.1; el job `web-quality` del CI los corre en cada PR.
 
 ## Contrato de tipos (spec `api-contract-types`)
 
@@ -74,7 +81,7 @@ src/
 ## Layouts y secciones (spec `layout-engine`)
 
 - Registro `LAYOUTS = { classic, sidebar }`; `?layout=` sobrescribe el `layout` del perfil; desconocido → `classic`.
-- `orderSections(sections, hidden, data)`: orden de la API, luego las secciones conocidas con datos no listadas (`projects`, `presence` en el seed) al final en orden canónico; ocultas y vacías no se renderizan.
+- El **backend decide** el orden, el ocultado y el relleno de las secciones (catálogo de 9 ids, enum `SectionId`; change `unify-section-catalog`); el cliente renderiza `sections` tal cual llega, con un registro `Record<SectionId, …>` que falla al compilar si falta una.
 - `stats` se deriva de los datos (`computeStats`): años, experiencias, tecnologías únicas, certificaciones.
 
 ## Idioma (spec `frontend-localization`)
@@ -92,11 +99,16 @@ Panel de administración dentro del mismo proyecto, cargado con `React.lazy` en 
 | Ruta | Qué hace |
 |---|---|
 | `/admin/login` | Email y contraseña contra `POST /api/auth/login` |
-| `/admin` | Dashboard de visitas (`ProfileView`) por perfil, idioma y día, con rango de fechas |
-| `/admin/experiencias` | Alta, edición y borrado de experiencias, con textos ES/EN, tags y visibilidad |
+| `/admin` | Dashboard de visitas (`ProfileView`) por perfil, idioma, día y origen, con rango de fechas |
+| `/admin/portada` | Perfil base (titular, resumen, contacto, disponibilidad) e idiomas (nivel en ES/EN), con vista previa del hero |
+| `/admin/experiencias` | Alta, edición y borrado de experiencias, con textos ES/EN (también los logros), tags y visibilidad |
 | `/admin/skills` | Categorías y skills, con sus tags |
-| `/admin/perfiles` | Listado de perfiles curados con sus visitas |
-| `/admin/perfiles/:id` · `/admin/perfiles/nuevo` | Constructor: identidad, selección, diseño y publicación, con vista previa en vivo |
+| `/admin/formacion` | Educación y certificaciones |
+| `/admin/proyectos` | Proyectos destacados y enlaces sociales |
+| `/admin/perfiles` | Listado de perfiles curados con sus visitas; duplicar y archivar |
+| `/admin/perfiles/:id` | Constructor: identidad, selección, diseño y publicación, con vista previa en vivo (ES/EN) y aviso de traducciones faltantes |
+
+Los formularios con cambios sin guardar avisan antes de descartarse (guardián de navegación compartido, `useBlocker` + `beforeunload`).
 
 ### Sesión
 
@@ -120,7 +132,15 @@ Al resolver un perfil, la vista pública escribe en el documento el título, la 
 
 `robots.txt` y `sitemap.xml` los sirve el **backend**, que es quien conoce los perfiles públicos.
 
-> **Limitación conocida:** los metadatos se escriben en el cliente. Google los ve porque ejecuta JavaScript; LinkedIn, WhatsApp y Slack no, así que sus vistas previas muestran los datos genéricos de `index.html`, no los del perfil concreto. Resolverlo pide renderizado en servidor o prerender por bot; está propuesto para 1.1.
+El **head por perfil sale del servidor** (change `add-server-rendered-head`): Caddy pide `GET /api/public/profile-head?slug=&lang=` y lo inserta en el HTML inicial, así que LinkedIn, WhatsApp y Slack, que no ejecutan JavaScript, ya ven la tarjeta del perfil. Si la API falla o tarda más de 500 ms, el sitio sirve el head genérico. El cliente reutiliza las etiquetas del servidor en lugar de duplicarlas. Falta verificarlo con el Post Inspector de LinkedIn y con Slack una vez desplegado (`docs/RELEASE-1.0.0-CHECKLIST.md`).
+
+## Hoja imprimible
+
+Un perfil se imprime o se guarda como PDF en una sola hoja (A4 o Letter) con **Ctrl+P** o con el botón *Imprimir / Guardar PDF* de la barra. `PrintableSheet` se monta junto al layout de pantalla y solo se ve al imprimir; `buildPrintSheet` aplica los límites de contenido y la paleta de papel (`themes/presets/paper.ts`) es fija. No pide nada a la API ni suma una visita. `npm run print:check` lo verifica.
+
+## Accesibilidad y rendimiento
+
+El acento, el texto atenuado y el texto del botón se derivan del tema con contraste AA (`--t-accent-ink`, `--t-text-dim`), el foco es un contorno sólido de 2 px (`--t-ring`) y hay un enlace *Saltar al contenido* en el sitio y en el panel. El arranque público abre el hero primero, carga en diferido los menús de la barra, sirve Inter desde `public/fonts/` y pide el perfil desde `public/profile-prefetch.js` mientras baja el bundle. Detalle en `docs/CHANGELOG.md` (`improve-a11y-and-performance` e `improve-mobile-performance`).
 
 ## Tests
 

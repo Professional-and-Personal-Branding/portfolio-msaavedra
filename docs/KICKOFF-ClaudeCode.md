@@ -1,6 +1,8 @@
 # Kick-Off — Portafolio Administrable con Claude Code
 ### Paquete de arranque · SDD Agéntico + OpenSpec + Graphify · Manuel Saavedra · Agosto 2026
 
+> **Documento histórico del arranque (Fase 0); el estado actual está en `CLAUDE.md`.**
+
 > Este documento es el **punto de entrada** para construir el proyecto con Claude Code. Contiene: (1) los insumos que ya existen, (2) el setup de herramientas (OpenSpec + Graphify), (3) la arquitectura de agentes y el harness, (4) la estrategia iterativa de SDD, y (5) el prompt de kick-off para pegar en Claude Code. Leélo una vez, seguí el orden.
 
 ---

@@ -123,6 +123,7 @@ Este caso de uso es el corazón del producto — implementarlo con tests exhaust
 npm run start:dev        # NestJS en watch
 npm run prisma:migrate   # prisma migrate dev
 npm run prisma:generate  # prisma generate
+npm run prisma:status    # prisma migrate status
 npm run seed             # carga docs/cv-data.json
 npm run seed:verify      # compara conteos DB vs cv-data.json
 npm run admin:bootstrap  # crea/actualiza el administrador (ADMIN_EMAIL/ADMIN_PASSWORD/ADMIN_NAME, argon2id)
@@ -130,12 +131,18 @@ npm run openapi:export   # escribe backend/openapi.json (fuente de los tipos del
 npm run prisma:deploy    # aplica migraciones en producción (NUNCA prisma db push)
 # El backoffice vive en el frontend: http://localhost:5173/admin
 npm run test             # jest
+npm run test:e2e         # jest e2e contra el Postgres local (migrado y seedeado)
+npm run lint             # eslint
+npm run typecheck        # tsc --noEmit
 
 # Frontend
 npm run dev              # vite (proxy /api → backend en 3300)
 npm run build            # tsc -b + vite build
 npm run test             # vitest
 npm run api:types        # regenera src/shared/types/api.d.ts desde ../backend/openapi.json
+npm run lint             # eslint
+npm run typecheck        # tsc -b
+npm run print:check      # PDF de cada perfil en A4 y Letter: una hoja y contraste ≥ 4,5:1 (exige PRINT_CHECK_DISPOSABLE_DB=1 y una base DESCARTABLE)
 npm run perf:budget      # tope de JS del arranque público (≤ 155 KB gzip, un solo JS de módulo) sobre dist/; sin navegador ni base
 # a11y:check y perf:check abren páginas reales (cada carga registra una visita): exigen A11Y_CHECK_DISPOSABLE_DB=1
 # y una base DESCARTABLE; contra la imagen de frontend/Dockerfile (ver docs/MANUAL.md § 5.1)
@@ -167,7 +174,7 @@ npm run perf:check -- <base>   # Lighthouse mobile, mediana de PERF_CHECK_RUNS (
 - [x] `retire-accent-color` — `accentColor` retirado del contrato y la base; su color pasó a `themeOverrides.colors.accent` (archivado 2026-10-09)
 - [x] `add-printable-one-page` — hoja imprimible de una página (A4/Letter) con botón «Imprimir / Guardar PDF» y `npm run print:check` (archivado 2026-10-10)
 - [x] `localize-language-level` — el nivel de los idiomas pasa a texto bilingüe `{es,en}` en la misma fila (migración de datos no destructiva) y se edita en ES/EN desde la Portada (archivado 2026-10-10)
-- [x] `improve-a11y-and-performance` — accesibilidad AA (acento, atenuado y foco derivados del tema, salto al contenido, estructura ARIA), arranque público de 228 a 179 KB gzip y los checks `perf:budget`, `a11y:check` y `perf:check` bloqueantes en el CI (job `web-quality`) (archivado 2026-10-16; falta que el owner marque `web-quality` como required checks de `main`, P6)
+- [x] `improve-a11y-and-performance` — accesibilidad AA (acento, atenuado y foco derivados del tema, salto al contenido, estructura ARIA), arranque público de 228 a 179 KB gzip y los checks `perf:budget`, `a11y:check` y `perf:check` bloqueantes en el CI (job `web-quality`) (archivado 2026-10-16; marcar `web-quality` como required checks de `main` no es posible hoy: el plan gratuito de GitHub con repo privado responde 403 a la protección de ramas y a los rulesets, y el owner decidió mantener el repo privado, P6)
 - [x] `improve-mobile-performance` — Performance mobile ≥ 85 en el runner de GitHub: arranque en un solo chunk, perfil en dos tiempos (hero primero), menús de la barra en diferido, petición temprana del perfil (`public/profile-prefetch.js`), Inter del propio sitio y animación de entrada sin remontar; umbral de CI en 85 y tope de `perf:budget` en 155 KB. Medianas de Performance de 97 en el CI (archivado 2026-10-16)
 
 ---
@@ -198,4 +205,4 @@ Los datos son **bilingües ES/EN en un solo registro** (sin duplicar). Ver `docs
 
 ## Datos de seed
 
-`docs/cv-data.json` contiene la trayectoria consolidada (14 experiencias, skills por categoría, educación, certificaciones, **2 proyectos destacados** y **13 plantillas de perfil curado**). Cada perfil curado tiene una taxonomía de navegación (`roleType` bilingüe + `techFocus`) que el frontend usa para agrupar el menú por tipo de rol (Tech Lead, Backend, Fullstack, DevOps, Arquitecto, Liderazgo, Generalista) mostrando la tecnología destacada. El script `backend/scripts/seed.ts` lo carga en la base. El schema incluye un modelo `Project` para los proyectos destacados.
+`docs/cv-data.json` contiene la trayectoria consolidada (15 experiencias, skills por categoría, educación, certificaciones, **2 proyectos destacados** y **13 plantillas de perfil curado**; con el perfil `all` de la home son 14 perfiles). Cada perfil curado tiene una taxonomía de navegación (`roleType` bilingüe + `techFocus`) que el frontend usa para agrupar el menú por tipo de rol (Tech Lead, Backend, Fullstack, DevOps, Arquitecto, Liderazgo, Generalista) mostrando la tecnología destacada. El script `backend/scripts/seed.ts` lo carga en la base. El schema incluye un modelo `Project` para los proyectos destacados.
