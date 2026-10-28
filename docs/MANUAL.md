@@ -1488,57 +1488,11 @@ npm run seed -- --overwrite
 
 > `seed` **sobrescribe**: pisaría el trabajo del panel (portada, formación, proyectos, enlaces, experiencias y skills). Por eso, sobre una base con contenido, `npm run seed` sale con código 2 y no escribe nada: lista qué se perdería y sugiere el `pg_dump`. Solo `--overwrite` fuerza la recarga; en producción además hace falta `SEED_ALLOW_PRODUCTION=1`, definida solo para ese comando. Hacé el `pg_dump` del § 7 de [`DEPLOY.md`](DEPLOY.md) antes (caso TC-38).
 
-### TC-38 — El seed por defecto se niega sobre una base con contenido ✅
-
-**Precondición:** una base **descartable** (nunca la del owner), migrada. Crear una aparte y confirmar el destino antes de escribir:
-
-```powershell
-docker exec portfolio-postgres createdb -U portfolio portfolio_seed_guard
-cd backend
-$env:DATABASE_URL = "postgresql://portfolio:portfolio@localhost:5434/portfolio_seed_guard?schema=public"
-npm run prisma:status     # debe nombrar portfolio_seed_guard
-npm run prisma:deploy
-```
-
-En bash, `export DATABASE_URL="postgresql://portfolio:portfolio@localhost:5434/portfolio_seed_guard?schema=public"` y el mismo resto.
-
-**Pasos:**
-1. `npm run seed` con la base vacía.
-2. `npm run seed` otra vez.
-3. `npm run seed -- --overwrite` y después `npm run seed:verify`.
-4. `npm run seed -- --overwrite --file ../docs/examples/cv-data.example.json`.
-5. Con `NODE_ENV=production` (PowerShell: `$env:NODE_ENV = "production"`; bash: `NODE_ENV=production npm run seed …`): `npm run seed -- --overwrite` sin más; después `SEED_ALLOW_PRODUCTION=1 npm run seed` sin `--overwrite`; por último `SEED_ALLOW_PRODUCTION=1 npm run seed -- --overwrite`.
-
-**Resultado esperado:**
-1. Código **0**: carga la base vacía sin flags ni variables.
-2. Código **2**: «Negativa: no se recarga docs/cv-data.json en localhost:5434/portfolio_seed_guard: la base ya tiene contenido.», los conteos de las tablas con filas, un `pg_dump` sin contraseña, `npm run seed -- --overwrite` y «No se escribió nada.». Los conteos de la base no cambian.
-3. Código **0** con el aviso «--overwrite: se borra el contenido de …»; `seed:verify` termina con **0**.
-4. Código **1**: «--overwrite no se combina con --file…», sin leer el archivo ni conectarse.
-5. Los dos primeros comandos salen con **2** (el segundo dice que falta `SEED_ALLOW_PRODUCTION=1`; el tercero, con la variable sola, se niega igual) y el último con **0**, con el aviso marcado «en producción».
-
-Transcripción de la ejecución del 27 de octubre de 2026 (el resto está en `openspec/changes/protect-default-seed/verification/`):
-
-```text
-> npm run seed          (base con contenido)
-❌ Negativa: no se recarga docs/cv-data.json en localhost:5434/portfolio_seed_guard: la base ya tiene contenido.
-  - CuratedProfile: 14
-  - Theme: 5
-  - Skill: 108
-  …
-Si querés conservarlo, respaldalo antes (pg_dump pide la contraseña):
-  pg_dump "postgresql://portfolio@localhost:5434/portfolio_seed_guard" -Fc -f portfolio_seed_guard-2026-10-27.dump
-Para borrarlo y recargar desde docs/cv-data.json: npm run seed -- --overwrite
-No se escribió nada.
-exit: 2
-```
-
-Al terminar: `docker exec portfolio-postgres dropdb -U portfolio portfolio_seed_guard`.
-
 ---
 
-## 4.1 Casos de los datos de ejemplo
+## 4.1 Casos del seed
 
-Los dos casos de esta sección enseñan a cargar la base de ejemplo y comprueban que **no se puede** cargar sobre otra. Guía completa: [`DATA-POPULATION.md`](DATA-POPULATION.md) § 11.
+TC-36 y TC-37 enseñan a cargar la base de ejemplo y comprueban que **no se puede** cargar sobre otra; TC-38 comprueba que el seed por defecto no pisa una base con contenido. Guía completa: [`DATA-POPULATION.md`](DATA-POPULATION.md) § 11.
 
 ### TC-36 — Cargar los datos de ejemplo en una base descartable ✅
 
@@ -1620,6 +1574,52 @@ $ npm run seed:verify                        -> ✅ La base coincide con cv-data
 ```
 
 Sin captura: es salida de terminal. La capa 3 cubre el olvido más probable (`backend/.env` apunta a la base del owner y `DATABASE_URL` no se redefinió): esa base tiene otro `Profile`, así que el seed se niega aunque la variable esté puesta.
+
+### TC-38 — El seed por defecto se niega sobre una base con contenido ✅
+
+**Precondición:** una base **descartable** (nunca la del owner), migrada. Crear una aparte y confirmar el destino antes de escribir:
+
+```powershell
+docker exec portfolio-postgres createdb -U portfolio portfolio_seed_guard
+cd backend
+$env:DATABASE_URL = "postgresql://portfolio:portfolio@localhost:5434/portfolio_seed_guard?schema=public"
+npm run prisma:status     # debe nombrar portfolio_seed_guard
+npm run prisma:deploy
+```
+
+En bash, `export DATABASE_URL="postgresql://portfolio:portfolio@localhost:5434/portfolio_seed_guard?schema=public"` y el mismo resto.
+
+**Pasos:**
+1. `npm run seed` con la base vacía.
+2. `npm run seed` otra vez.
+3. `npm run seed -- --overwrite` y después `npm run seed:verify`.
+4. `npm run seed -- --overwrite --file ../docs/examples/cv-data.example.json`.
+5. Con `NODE_ENV=production` (PowerShell: `$env:NODE_ENV = "production"`; bash: `NODE_ENV=production npm run seed …`): `npm run seed -- --overwrite` sin más; después `SEED_ALLOW_PRODUCTION=1 npm run seed` sin `--overwrite`; por último `SEED_ALLOW_PRODUCTION=1 npm run seed -- --overwrite`.
+
+**Resultado esperado:**
+1. Código **0**: carga la base vacía sin flags ni variables.
+2. Código **2**: «Negativa: no se recarga docs/cv-data.json en localhost:5434/portfolio_seed_guard: la base ya tiene contenido.», los conteos de las tablas con filas, un `pg_dump` sin contraseña, `npm run seed -- --overwrite` y «No se escribió nada.». Los conteos de la base no cambian.
+3. Código **0** con el aviso «--overwrite: se borra el contenido de …»; `seed:verify` termina con **0**.
+4. Código **1**: «--overwrite no se combina con --file…», sin leer el archivo ni conectarse.
+5. `--overwrite` solo sale con **2** y dice que falta `SEED_ALLOW_PRODUCTION=1`; la variable sola también sale con **2**; las dos juntas salen con **0**, con el aviso marcado «en producción».
+
+Transcripción de la ejecución del 27 de octubre de 2026 (el resto está en `openspec/changes/protect-default-seed/verification/`):
+
+```text
+> npm run seed          (base con contenido)
+❌ Negativa: no se recarga docs/cv-data.json en localhost:5434/portfolio_seed_guard: la base ya tiene contenido.
+  - CuratedProfile: 14
+  - Theme: 5
+  - Skill: 108
+  …
+Si querés conservarlo, respaldalo antes (pg_dump pide la contraseña):
+  pg_dump "postgresql://portfolio@localhost:5434/portfolio_seed_guard" -Fc -f portfolio_seed_guard-2026-10-27.dump
+Para borrarlo y recargar desde docs/cv-data.json: npm run seed -- --overwrite
+No se escribió nada.
+exit: 2
+```
+
+Al terminar: `docker exec portfolio-postgres dropdb -U portfolio portfolio_seed_guard`.
 
 ---
 

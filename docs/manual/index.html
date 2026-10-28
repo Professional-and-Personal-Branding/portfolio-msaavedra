@@ -316,7 +316,7 @@
       <button class="chip" data-area="backoffice" aria-pressed="false">Backoffice</button>
       <button class="chip" data-area="datos" aria-pressed="false">Datos</button>
     </div>
-    <label class="sel" for="changesel">Change <select id="changesel"><option value="all">Todos</option><option value="add-public-frontend-theming">add-public-frontend-theming</option><option value="add-auth-and-crud">add-auth-and-crud</option><option value="add-admin-backoffice">add-admin-backoffice</option><option value="add-curated-profile-lifecycle">add-curated-profile-lifecycle</option><option value="add-profile-content-admin">add-profile-content-admin</option><option value="polish-builder-and-edge">polish-builder-and-edge</option><option value="add-printable-one-page">add-printable-one-page</option><option value="localize-language-level">localize-language-level</option><option value="improve-a11y-and-performance">improve-a11y-and-performance</option><option value="improve-mobile-performance">improve-mobile-performance</option><option value="add-learning-guide-and-example-data">add-learning-guide-and-example-data</option></select></label>
+    <label class="sel" for="changesel">Change <select id="changesel"><option value="all">Todos</option><option value="add-public-frontend-theming">add-public-frontend-theming</option><option value="add-auth-and-crud">add-auth-and-crud</option><option value="add-admin-backoffice">add-admin-backoffice</option><option value="add-curated-profile-lifecycle">add-curated-profile-lifecycle</option><option value="add-profile-content-admin">add-profile-content-admin</option><option value="polish-builder-and-edge">polish-builder-and-edge</option><option value="add-printable-one-page">add-printable-one-page</option><option value="localize-language-level">localize-language-level</option><option value="improve-a11y-and-performance">improve-a11y-and-performance</option><option value="improve-mobile-performance">improve-mobile-performance</option><option value="add-learning-guide-and-example-data">add-learning-guide-and-example-data</option><option value="protect-default-seed">protect-default-seed</option></select></label>
     <input class="search" id="q" type="search" placeholder="Buscar caso…" aria-label="Buscar caso">
     <span class="count" id="count" role="status" aria-live="polite"></span>
     <button class="iconbtn" id="theme" title="Cambiar tema">Tema</button>
@@ -374,9 +374,10 @@
     <a href="#tc28"><span class="dot ok"></span><span class="id">TC-28</span> Aviso en el constructor</a>
     <a href="#tc29"><span class="dot ok"></span><span class="id">TC-29</span> Aviso en la Portada</a>
     <a href="#tc30"><span class="dot ok"></span><span class="id">TC-30</span> Aviso en diálogos</a>
-    <h3>Datos de ejemplo</h3>
+    <h3>Seed</h3>
     <a href="#tc36"><span class="dot ok"></span><span class="id">TC-36</span> Cargar el ejemplo</a>
     <a href="#tc37"><span class="dot ok"></span><span class="id">TC-37</span> La negativa del seed</a>
+    <a href="#tc38"><span class="dot ok"></span><span class="id">TC-38</span> El seed no pisa datos</a>
     <h3>Cierre</h3>
     <a href="#defectos"><span class="dot ok"></span><span class="id">§6</span> Defectos</a>
     <a href="#noadmin"><span class="id">§7</span> El seed</a>
@@ -509,7 +510,7 @@ $env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del o
         <div class="stat"><b>44</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Los 37 casos pasan</b> (28 con captura; 7 verificados contra la API o con e2e, sin captura de la pantalla). TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Los 38 casos pasan</b> (28 con captura; 8 verificados contra la API o con e2e, sin captura de la pantalla). TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -1571,8 +1572,8 @@ Descartar                                          -> cierra, la categoría no s
 
     <!-- ───────────── Defectos ───────────── -->
     <section class="block" id="datos">
-      <h2>Casos de los datos de ejemplo</h2>
-      <p class="lede">Enseñan a cargar la base de ejemplo y comprueban que no se puede cargar sobre otra. Guía completa: <code>docs/DATA-POPULATION.md</code> § 11.</p>
+      <h2>Casos del seed</h2>
+      <p class="lede">TC-36 y TC-37 enseñan a cargar la base de ejemplo y comprueban que no se puede cargar sobre otra; TC-38 comprueba que el seed por defecto no pisa una base con contenido. Guía completa: <code>docs/DATA-POPULATION.md</code> § 11.</p>
 
       <article class="case" data-status="ok" id="tc36" data-area="datos" data-change="add-learning-guide-and-example-data">
         <div class="case-head"><span class="case-id">TC-36</span><h3>Cargar los datos de ejemplo en una base descartable</h3><span class="pill ok">pasa</span></div>
@@ -1638,6 +1639,32 @@ $ npm run seed:verify                        -&gt; ✅ La base coincide con cv-d
         <p>Sin captura: es salida de terminal. La capa 3 cubre el olvido más probable (<code>backend/.env</code> apunta a la base del owner y <code>DATABASE_URL</code> no se redefinió): esa base tiene otro <code>Profile</code>, así que el seed se niega aunque la variable esté puesta.</p>
               <fieldset class="run" data-run="tc37"><legend>Resultado de la corrida · TC-37</legend><label><input type="radio" name="r-tc37" value="pass"> pasa</label><label><input type="radio" name="r-tc37" value="fail"> falla</label><label><input type="radio" name="r-tc37" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-37"></fieldset>
 </article>
+
+      <article class="case" data-status="ok" id="tc38" data-area="datos" data-change="protect-default-seed">
+        <div class="case-head"><span class="case-id">TC-38</span><h3>El seed por defecto se niega sobre una base con contenido</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Precondición</span> · Una base <b>descartable</b> y migrada (<code>portfolio_seed_guard</code>, nunca <code>portfolio</code>). Confirmar el destino con <code>npm run prisma:status</code> antes de escribir.</p>
+        <div class="codewrap"><pre>docker exec portfolio-postgres createdb -U portfolio portfolio_seed_guard
+cd backend
+$env:DATABASE_URL = "postgresql://portfolio:portfolio@localhost:5434/portfolio_seed_guard?schema=public"
+npm run prisma:status     # debe nombrar portfolio_seed_guard
+npm run prisma:deploy</pre></div>
+        <p><span class="lbl">Pasos</span> · (1) <code>npm run seed</code> con la base vacía; (2) <code>npm run seed</code> otra vez; (3) <code>npm run seed -- --overwrite</code> y <code>npm run seed:verify</code>; (4) <code>npm run seed -- --overwrite --file ../docs/examples/cv-data.example.json</code>; (5) con <code>NODE_ENV=production</code>: <code>--overwrite</code> solo, <code>SEED_ALLOW_PRODUCTION=1</code> sola y las dos juntas.</p>
+        <p><span class="lbl">Esperado</span> · (1) código <b>0</b>; (2) código <b>2</b> con el destino sin contraseña, los conteos de las tablas con filas, un <code>pg_dump</code> sugerido y «No se escribió nada.»; (3) <b>0</b> con el aviso de lo que se borra, y <code>seed:verify</code> en <b>0</b>; (4) <b>1</b> sin leer el archivo ni conectarse; (5) <b>2</b>, <b>2</b> y <b>0</b>.</p>
+        <p><span class="lbl">Observado</span> · 27 de octubre de 2026 (el resto en <code>openspec/changes/protect-default-seed/verification/</code>):</p>
+        <div class="codewrap"><pre>&gt; npm run seed          (base con contenido)
+❌ Negativa: no se recarga docs/cv-data.json en localhost:5434/portfolio_seed_guard: la base ya tiene contenido.
+  - CuratedProfile: 14
+  - Theme: 5
+  - Skill: 108
+  …
+Si querés conservarlo, respaldalo antes (pg_dump pide la contraseña):
+  pg_dump "postgresql://portfolio@localhost:5434/portfolio_seed_guard" -Fc -f portfolio_seed_guard-2026-10-27.dump
+Para borrarlo y recargar desde docs/cv-data.json: npm run seed -- --overwrite
+No se escribió nada.
+exit: 2</pre></div>
+        <p>Sin captura: es salida de terminal. Al terminar, <code>docker exec portfolio-postgres dropdb -U portfolio portfolio_seed_guard</code>.</p>
+              <fieldset class="run" data-run="tc38"><legend>Resultado de la corrida · TC-38</legend><label><input type="radio" name="r-tc38" value="pass"> pasa</label><label><input type="radio" name="r-tc38" value="fail"> falla</label><label><input type="radio" name="r-tc38" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-38"></fieldset>
+</article>
     </section>
 
     <section class="block" id="defectos">
@@ -1676,9 +1703,12 @@ POST /api/admin/experiences       completo       -> 201  (control)</pre></div>
     <section class="block" id="noadmin">
       <h2>El seed ya no es la forma de editar</h2>
       <p class="lede">Desde <code>add-profile-content-admin</code>, todo lo que el sitio muestra se edita en el panel. El seed queda para poblar una base vacía.</p>
-      <div class="codewrap"><pre># Solo para una base vacía (o para volver al estado del CV a propósito)
-cd backend &amp;&amp; npm run seed &amp;&amp; npm run seed:verify</pre></div>
-      <div class="note danger"><b><code>seed</code> sobrescribe.</b> Sobre una base con contenido administrado desde el panel, pisa ese trabajo: portada, formación, proyectos, enlaces, experiencias y skills. Antes de correrlo en producción, hacé el <code>pg_dump</code> del § 7 de <code>DEPLOY.md</code>.</div>
+      <div class="codewrap"><pre># Base vacía: carga sin flags
+cd backend &amp;&amp; npm run seed &amp;&amp; npm run seed:verify
+
+# Base con contenido: se niega (código 2). Para volver al estado del CV a propósito:
+npm run seed -- --overwrite</pre></div>
+      <div class="note danger"><b><code>seed</code> sobrescribe.</b> Pisaría el trabajo del panel (portada, formación, proyectos, enlaces, experiencias y skills). Por eso, sobre una base con contenido, <code>npm run seed</code> sale con código 2 y no escribe nada: lista qué se perdería y sugiere el <code>pg_dump</code>. Solo <code>--overwrite</code> fuerza la recarga; en producción además hace falta <code>SEED_ALLOW_PRODUCTION=1</code>, definida solo para ese comando. Hacé el <code>pg_dump</code> del § 7 de <code>DEPLOY.md</code> antes (<a href="#tc38">TC-38</a>).</div>
       <p>Los cinco temas siguen viniendo del seed: el customizador por perfil cubre la necesidad real.</p>
     </section>
 
