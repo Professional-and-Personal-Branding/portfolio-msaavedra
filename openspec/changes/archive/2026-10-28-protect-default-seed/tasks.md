@@ -122,11 +122,11 @@
 
 ## 6. CI y cierre
 
-- [ ] 6.1 `.github/workflows/ci.yml`, job *Backend · e2e contra Postgres*, después de `npm run test:e2e` y antes de los pasos de datos de ejemplo:
+- [x] 6.1 `.github/workflows/ci.yml`, job *Backend · e2e contra Postgres*, después de `npm run test:e2e` y antes de los pasos de datos de ejemplo:
   - Paso *Seed por defecto · la negativa sobre una base con contenido*: `set +e; npm run seed; code=$?; [ "$code" -eq 2 ]`.
   - Paso *Seed por defecto · recarga con --overwrite*: `npm run seed -- --overwrite` y `npm run seed:verify`.
 
-  El job `web-quality` no cambia: siembra una base recién migrada. Verificar: el job queda verde en el PR y su log muestra la negativa con los conteos y la recarga.
+  El job `web-quality` no cambia: siembra una base recién migrada. Verificar: el job queda verde en el PR y su log muestra la negativa con los conteos y la recarga. **Hecho:** el PR apuntaba a `docs/learning-guide`, donde el CI no corre; los dos pasos quedaron en verde en la corrida 40650537863 del CI de `main` (`5e09ba1`, merge de #36).
 - [x] 6.2 Validar:
   - `npx -y @fission-ai/openspec@1.14.1 validate protect-default-seed --strict` sin errores.
   - `validate --all --strict` sin fallas nuevas respecto de `main`. Las fallas previas por requisitos de más de 500 caracteres se reportan aparte.
@@ -134,4 +134,4 @@
   - `npm test` en `backend/`.
 
   Verificar: salidas en `verification/6.2-validacion.txt`.
-- [ ] 6.3 Archivar después de `add-learning-guide-and-example-data` (Migration Plan). Verificar: `openspec/specs/data-persistence-seed/spec.md` contiene *Negativa a sobrescribir una base con contenido* y las versiones nuevas de *Seed completo desde cv-data.json* y *Seed idempotente*.
+- [x] 6.3 Archivar después de `add-learning-guide-and-example-data` (Migration Plan). Verificar: `openspec/specs/data-persistence-seed/spec.md` contiene *Negativa a sobrescribir una base con contenido* y las versiones nuevas de *Seed completo desde cv-data.json* y *Seed idempotente*.
