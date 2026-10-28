@@ -135,6 +135,9 @@ jobs:
       - run: npm run lint
       # Incluye el test de deriva de api.d.ts contra openapi.json.
       - run: npm test
+      # El manual (docs/MANUAL.md e index.html) está alineado: casos, imágenes, mensajes literales y topes de tamaño.
+      - name: Manual alineado y dentro de los topes
+        run: npm run manual:check
       # `build` corre `tsc -b` antes de `vite build`.
       - run: npm run build
       # Presupuesto de JS del arranque público (≤ 155 KB gzip en un solo JS de módulo, sin

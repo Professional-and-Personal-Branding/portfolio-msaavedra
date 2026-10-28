@@ -17,7 +17,9 @@
     "print:check": "node scripts/check-print-pages.mjs",
     "perf:budget": "node scripts/check-bundle-budget.mjs",
     "a11y:check": "node scripts/check-a11y.mjs",
-    "perf:check": "node scripts/check-lighthouse.mjs"
+    "perf:check": "node scripts/check-lighthouse.mjs",
+    "manual:capture": "node scripts/capture-manual.mjs",
+    "manual:check": "node scripts/check-manual.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
