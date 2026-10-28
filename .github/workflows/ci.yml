@@ -93,6 +93,30 @@ jobs:
       - run: npm run seed
       - run: npm run seed:verify
       - run: npm run test:e2e
+      # Datos de ejemplo (change `add-learning-guide-and-example-data`): una segunda base en el
+      # mismo Postgres de servicio, migrada y sembrada dos veces (la recarga es idempotente).
+      - name: Datos de ejemplo · base aparte, carga doble y verificación
+        env:
+          PGPASSWORD: portfolio
+          SEED_DISPOSABLE_DB: '1'
+        run: |
+          psql -h localhost -U portfolio -d postgres -c 'CREATE DATABASE portfolio_example'
+          export DATABASE_URL="postgresql://portfolio:portfolio@localhost:5432/portfolio_example?schema=public"
+          npm run prisma:deploy
+          npm run seed:example
+          npm run seed:example
+          npm run seed:example:verify
+      # La negativa: contra la base principal, que ya tiene el CV (cv-data.json), el seed de
+      # ejemplo debe salir con código 2 aunque la variable esté puesta (capa 3) y no escribir.
+      - name: Datos de ejemplo · la negativa contra una base con otros datos
+        env:
+          SEED_DISPOSABLE_DB: '1'
+        run: |
+          set +e
+          npm run seed:example
+          code=$?
+          echo "código de salida: $code"
+          [ "$code" -eq 2 ]
 
   frontend:
     name: Frontend · lint, tipos, tests y build
@@ -111,6 +135,9 @@ jobs:
       - run: npm run lint
       # Incluye el test de deriva de api.d.ts contra openapi.json.
       - run: npm test
+      # El manual (docs/MANUAL.md e index.html) está alineado: casos, imágenes, mensajes literales y topes de tamaño.
+      - name: Manual alineado y dentro de los topes
+        run: npm run manual:check
       # `build` corre `tsc -b` antes de `vite build`.
       - run: npm run build
       # Presupuesto de JS del arranque público (≤ 155 KB gzip en un solo JS de módulo, sin

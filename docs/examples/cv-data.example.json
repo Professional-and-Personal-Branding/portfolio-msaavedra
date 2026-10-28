@@ -1,0 +1,560 @@
+{
+  "profile": {
+    "fullName": "Alex Rivera Duarte",
+    "headline": {
+      "es": "Ingeniera de Software Senior · Backend, Cloud y Liderazgo técnico",
+      "en": "Senior Software Engineer · Backend, Cloud and Technical Leadership"
+    },
+    "location": "Ciudad Ejemplo, Ejemplandia",
+    "timezone": "UTC-03:00",
+    "phone": "+1 555 0142",
+    "email": "alex.rivera@example.com",
+    "yearsOfExperience": 11,
+    "socialLinks": [
+      {
+        "platform": "github",
+        "handle": "alexrivera-ejemplo",
+        "url": "https://github.example.com/alexrivera-ejemplo",
+        "label": { "es": "Código y proyectos abiertos", "en": "Code and open projects" },
+        "description": {
+          "es": "Repositorios de ejemplo con servicios, herramientas internas y prácticas de código limpio. Datos ficticios para la guía de la plataforma.",
+          "en": "Sample repositories with services, internal tools and clean-code practices. Fictional data for the platform guide."
+        },
+        "stats": { "repos": 42, "achievements": ["Pull Shark", "Starstruck"] },
+        "featured": true,
+        "visible": true
+      },
+      {
+        "platform": "linkedin",
+        "handle": "alex-rivera-ejemplo",
+        "url": "https://linkedin.example.com/in/alex-rivera-ejemplo",
+        "label": { "es": "Trayectoria profesional", "en": "Professional background" },
+        "featured": true,
+        "visible": true
+      },
+      {
+        "platform": "youtube",
+        "handle": "@alexrivera-charlas",
+        "url": "https://youtube.example.com/@alexrivera-charlas",
+        "label": { "es": "Charlas técnicas", "en": "Technical talks" },
+        "description": {
+          "es": "Grabaciones de charlas sobre arquitectura de servicios y liderazgo de equipos.",
+          "en": "Recordings of talks about service architecture and team leadership."
+        },
+        "featured": false,
+        "visible": true
+      },
+      {
+        "platform": "blog",
+        "handle": "alexrivera-blog",
+        "url": "https://blog.example.org/alexrivera",
+        "label": { "es": "Blog (oculto)", "en": "Blog (hidden)" },
+        "featured": false,
+        "visible": false
+      }
+    ],
+    "featuredRepositories": [],
+    "summary": {
+      "es": "Ingeniera de software con más de diez años construyendo servicios backend, plataformas en la nube y equipos. Perfil ficticio: sirve para aprender a poblar el contenido de la plataforma y como base de referencia del manual.",
+      "en": "Software engineer with over ten years building backend services, cloud platforms and teams. Fictional profile: it teaches how to populate the platform content and serves as the reference base of the manual."
+    },
+    "availability": {
+      "modality": { "es": "Remoto / Híbrido", "en": "Remote / Hybrid" },
+      "contractType": {
+        "es": "Relación de dependencia · Freelance",
+        "en": "Full-time employment · Freelance"
+      },
+      "startDate": { "es": "A convenir", "en": "To be agreed" }
+    },
+    "languages": [
+      {
+        "name": "Español",
+        "nameI18n": { "es": "Español", "en": "Spanish" },
+        "level": { "es": "Nativo", "en": "Native" },
+        "detail": {
+          "es": "Oral, escrito y lectura avanzados",
+          "en": "Advanced speaking, writing and reading"
+        }
+      },
+      {
+        "name": "Inglés",
+        "nameI18n": { "es": "Inglés", "en": "English" },
+        "level": { "es": "Avanzado (C1)", "en": "Advanced (C1)" },
+        "detail": {
+          "es": "Reuniones técnicas y documentación diaria con equipos internacionales",
+          "en": "Technical meetings and daily documentation with international teams"
+        }
+      },
+      {
+        "name": "Portugués",
+        "nameI18n": { "es": "Portugués", "en": "Portuguese" },
+        "level": { "es": "Intermedio", "en": "Intermediate" },
+        "detail": {
+          "es": "Lectura técnica y conversación básica",
+          "en": "Technical reading and basic conversation"
+        }
+      }
+    ]
+  },
+  "experiences": [
+    {
+      "id": "cobalto",
+      "company": "Cobalto Ejemplo",
+      "role": { "es": "Tech Lead Backend", "en": "Backend Tech Lead" },
+      "startDate": "2025-02",
+      "endDate": null,
+      "current": true,
+      "location": "Ciudad Ejemplo · Remoto",
+      "sector": ["fintech", "payments"],
+      "summary": {
+        "es": "Liderazgo técnico de un equipo de seis personas que mantiene la plataforma de pagos: microservicios en Java y Spring Boot, mensajería con Kafka y entrega continua.",
+        "en": "Technical leadership of a six-person team that maintains the payments platform: Java and Spring Boot microservices, Kafka messaging and continuous delivery."
+      },
+      "highlights": {
+        "es": [
+          "Definí los estándares de código y revisión del equipo y reduje el tiempo de ciclo de los cambios.",
+          "Rediseñé el flujo de conciliación con eventos y eliminé un cuello de botella nocturno.",
+          "Acompañé la carrera de tres desarrolladores hacia roles senior."
+        ],
+        "en": [
+          "Defined the team's code and review standards and shortened the change cycle time.",
+          "Redesigned the reconciliation flow with events and removed a nightly bottleneck.",
+          "Mentored three developers toward senior roles."
+        ]
+      },
+      "technologies": ["Java 21", "Spring Boot", "Kafka", "PostgreSQL", "Kubernetes"],
+      "tags": ["java", "spring-boot", "microservices", "leadership"]
+    },
+    {
+      "id": "atlas",
+      "company": "Atlas Demo",
+      "role": { "es": "Ingeniera Backend Senior", "en": "Senior Backend Engineer" },
+      "startDate": "2023-01",
+      "endDate": "2025-01",
+      "current": false,
+      "location": "Ciudad Ejemplo · Híbrido",
+      "sector": ["logistics"],
+      "summary": {
+        "es": "Servicios de seguimiento de envíos y facturación: API REST en Spring Boot, colas y trabajos programados.",
+        "en": "Shipment tracking and billing services: Spring Boot REST APIs, queues and scheduled jobs."
+      },
+      "highlights": {
+        "es": [
+          "Diseñé la API de seguimiento que usan los socios logísticos.",
+          "Migré la facturación a un servicio independiente sin tiempo de inactividad."
+        ],
+        "en": [
+          "Designed the tracking API used by logistics partners.",
+          "Migrated billing to a standalone service with no downtime."
+        ]
+      },
+      "technologies": ["Java 17", "Spring Boot", "RabbitMQ", "PostgreSQL"],
+      "tags": ["java", "spring-boot", "microservices"]
+    },
+    {
+      "id": "nimbus",
+      "company": "Nimbus Ejemplo",
+      "role": { "es": "Desarrolladora Fullstack", "en": "Fullstack Developer" },
+      "startDate": "2021-03",
+      "endDate": "2022-12",
+      "current": false,
+      "location": "Remoto",
+      "sector": ["saas"],
+      "summary": {
+        "es": "Producto SaaS de gestión de reservas: frontend en React y backend en Node.js con NestJS.",
+        "en": "Reservation-management SaaS product: React frontend and Node.js backend with NestJS."
+      },
+      "highlights": {
+        "es": [
+          "Construí el panel de administración con React y TypeScript.",
+          "Introduje pruebas end to end que bajaron los defectos en producción."
+        ],
+        "en": [
+          "Built the admin panel with React and TypeScript.",
+          "Introduced end-to-end tests that lowered production defects."
+        ]
+      },
+      "technologies": ["TypeScript", "React", "NestJS", "PostgreSQL"],
+      "tags": ["nodejs", "react", "fullstack"]
+    },
+    {
+      "id": "brujula",
+      "company": "Brújula Demo",
+      "role": { "es": "Ingeniera DevOps", "en": "DevOps Engineer" },
+      "startDate": "2019-06",
+      "endDate": "2021-02",
+      "current": false,
+      "location": "Ciudad Ejemplo",
+      "sector": ["consulting"],
+      "summary": {
+        "es": "Plataforma de entrega continua e infraestructura como código para diez equipos de producto.",
+        "en": "Continuous delivery platform and infrastructure as code for ten product teams."
+      },
+      "highlights": {
+        "es": [
+          "Estandaricé los pipelines con GitHub Actions y plantillas reutilizables.",
+          "Automaticé el aprovisionamiento de entornos con Terraform."
+        ],
+        "en": [
+          "Standardized pipelines with GitHub Actions and reusable templates.",
+          "Automated environment provisioning with Terraform."
+        ]
+      },
+      "technologies": ["Terraform", "Docker", "Kubernetes", "GitHub Actions"],
+      "tags": ["devops", "cloud"]
+    },
+    {
+      "id": "faro",
+      "company": "Faro Demo",
+      "role": { "es": "Ingeniera de Datos", "en": "Data Engineer" },
+      "startDate": "2017-09",
+      "endDate": "2019-05",
+      "current": false,
+      "location": "Ciudad Ejemplo",
+      "sector": ["analytics"],
+      "summary": {
+        "es": "Pipelines de datos para reportes de negocio con Python y SQL.",
+        "en": "Data pipelines for business reporting with Python and SQL."
+      },
+      "highlights": {
+        "es": ["Reduje de horas a minutos la carga diaria de los tableros."],
+        "en": ["Cut the daily dashboard load from hours to minutes."]
+      },
+      "technologies": ["Python", "SQL", "Airflow"],
+      "tags": ["data", "python"]
+    },
+    {
+      "id": "terracota",
+      "company": "Terracota Demo",
+      "role": { "es": "Desarrolladora Junior (oculta)", "en": "Junior Developer (hidden)" },
+      "startDate": "2015-01",
+      "endDate": "2017-08",
+      "current": false,
+      "location": "Ciudad Ejemplo",
+      "sector": ["agency"],
+      "summary": {
+        "es": "Primer empleo, ocultado a propósito para mostrar cómo se esconde un ítem sin borrarlo.",
+        "en": "First job, hidden on purpose to show how an item is concealed without deleting it."
+      },
+      "highlights": {
+        "es": ["Sitios web a medida para pequeños comercios."],
+        "en": ["Custom websites for small shops."]
+      },
+      "technologies": ["PHP", "JavaScript"],
+      "tags": ["fullstack"],
+      "visible": false
+    }
+  ],
+  "skillCategories": [
+    {
+      "name": { "es": "Lenguajes", "en": "Languages" },
+      "tags": ["java", "nodejs", "fullstack", "python", "data"],
+      "skills": ["Java 21", "TypeScript", "Python", "SQL", "Kotlin"]
+    },
+    {
+      "name": { "es": "Backend", "en": "Backend" },
+      "skills": [
+        { "name": "Spring Boot", "tags": ["java", "spring-boot", "microservices"] },
+        { "name": "NestJS", "tags": ["nodejs", "fullstack"] },
+        { "name": "Apache Kafka", "tags": ["microservices", "data"] },
+        { "name": "PostgreSQL", "tags": ["java", "nodejs", "data", "fullstack"] }
+      ]
+    },
+    {
+      "name": { "es": "Frontend", "en": "Frontend" },
+      "skills": ["React", "Vite", "Tailwind CSS"]
+    },
+    {
+      "name": { "es": "Cloud & DevOps", "en": "Cloud & DevOps" },
+      "skills": ["Docker", "Kubernetes", "Terraform", "GitHub Actions"]
+    }
+  ],
+  "education": [
+    {
+      "degree": {
+        "es": "Maestría en Ingeniería de Software",
+        "en": "Master's in Software Engineering"
+      },
+      "institution": "Universidad Ejemplo",
+      "startDate": "2024-03",
+      "endDate": null,
+      "inProgress": true
+    },
+    {
+      "degree": {
+        "es": "Ingeniería en Sistemas de Información",
+        "en": "Information Systems Engineering"
+      },
+      "institution": "Instituto Tecnológico de Ejemplo",
+      "startDate": "2010",
+      "endDate": "2014",
+      "inProgress": false
+    },
+    {
+      "degree": {
+        "es": "Diplomado en Gestión de Proyectos (oculto)",
+        "en": "Postgraduate Diploma in Project Management (hidden)"
+      },
+      "institution": "Academia Demo",
+      "startDate": "2016",
+      "endDate": "2016",
+      "inProgress": false,
+      "visible": false
+    }
+  ],
+  "certifications": [
+    {
+      "name": { "es": "Arquitecto de Soluciones en la Nube", "en": "Cloud Solutions Architect" },
+      "issuer": "Consorcio Cloud Ejemplo",
+      "year": "2023"
+    },
+    {
+      "name": { "es": "Liderazgo técnico para equipos de ingeniería", "en": "Technical leadership for engineering teams" },
+      "issuer": "Escuela de Líderes Demo",
+      "year": null
+    },
+    {
+      "name": { "es": "Scrum Master (oculta)", "en": "Scrum Master (hidden)" },
+      "issuer": "Fundación Ágil Demo",
+      "year": "2018",
+      "visible": false
+    }
+  ],
+  "projects": [
+    {
+      "id": "plataforma-reservas",
+      "name": "Plataforma de Reservas",
+      "role": { "es": "Arquitecta y líder técnica", "en": "Architect and technical lead" },
+      "period": "2024",
+      "summary": {
+        "es": "Plataforma de reservas multi-inquilino con Java, Spring Boot y Kafka, pensada para picos de demanda.",
+        "en": "Multi-tenant reservation platform with Java, Spring Boot and Kafka, designed for demand peaks."
+      },
+      "technologies": ["Java", "Spring Boot", "Kafka", "PostgreSQL"],
+      "tags": ["java", "microservices"],
+      "url": "https://reservas.example.com",
+      "visible": true
+    },
+    {
+      "id": "herramienta-interna",
+      "name": "Herramienta Interna de Métricas",
+      "role": { "es": "Proyecto personal", "en": "Personal project" },
+      "period": "2023",
+      "summary": {
+        "es": "Panel interno de métricas de entrega en React y NestJS. No tiene URL pública a propósito.",
+        "en": "Internal delivery-metrics dashboard in React and NestJS. It has no public URL on purpose."
+      },
+      "technologies": ["React", "NestJS"],
+      "tags": ["nodejs", "react"],
+      "url": null,
+      "visible": true
+    },
+    {
+      "id": "prototipo-oculto",
+      "name": "Prototipo en Pausa",
+      "role": { "es": "Experimento (oculto)", "en": "Experiment (hidden)" },
+      "period": "2022",
+      "summary": {
+        "es": "Prototipo descartado, oculto para mostrar cómo se esconde un proyecto.",
+        "en": "Discarded prototype, hidden to show how a project is concealed."
+      },
+      "technologies": ["Python"],
+      "tags": ["python"],
+      "url": null,
+      "visible": false
+    }
+  ],
+  "profileTemplates": [
+    {
+      "slug": "ejemplo-backend",
+      "title": { "es": "Ingeniera Backend Java", "en": "Java Backend Engineer" },
+      "headline": {
+        "es": "Ingeniera Backend Java · Spring Boot · Microservicios",
+        "en": "Java Backend Engineer · Spring Boot · Microservices"
+      },
+      "roleType": { "es": "Backend", "en": "Backend" },
+      "techFocus": "Java",
+      "description": {
+        "es": "Perfil que filtra por tags: solo muestra lo relacionado con Java y microservicios, con un acento oscuro.",
+        "en": "Profile that filters by tags: it only shows what relates to Java and microservices, with a dark accent."
+      },
+      "filterTags": ["java", "spring-boot", "microservices"],
+      "themeOverrides": { "colors": { "accent": "#1A365D" } },
+      "listed": true
+    },
+    {
+      "slug": "ejemplo-overrides",
+      "title": { "es": "Backend con ajustes manuales", "en": "Backend with manual overrides" },
+      "headline": {
+        "es": "Backend y plataforma · selección ajustada a mano",
+        "en": "Backend and platform · hand-tuned selection"
+      },
+      "roleType": { "es": "Backend", "en": "Backend" },
+      "techFocus": "Java / DevOps",
+      "description": {
+        "es": "Muestra incluir y excluir: fuerza una experiencia sin tags comunes, intenta forzar una oculta, suma un proyecto y quita una experiencia y una skill que sí coincidían.",
+        "en": "Shows include and exclude: forces an experience with no shared tags, tries to force a hidden one, adds a project and removes an experience and a skill that did match."
+      },
+      "filterTags": ["java", "microservices"],
+      "includeRefs": ["experience:brujula", "experience:terracota", "project:herramienta-interna"],
+      "excludeRefs": ["experience:atlas", "skill:Kotlin"],
+      "listed": true
+    },
+    {
+      "slug": "ejemplo-secciones",
+      "title": { "es": "Secciones y diseño", "en": "Sections and design" },
+      "headline": {
+        "es": "Perfil con secciones reordenadas, layout lateral y tema Elegant",
+        "en": "Profile with reordered sections, sidebar layout and the Elegant theme"
+      },
+      "roleType": { "es": "Generalista", "en": "Generalist" },
+      "techFocus": "Diseño",
+      "description": {
+        "es": "Reordena las nueve secciones, oculta Estadísticas y Presencia, usa el layout sidebar, el preset Elegant y overrides de tipografía y radio.",
+        "en": "Reorders the nine sections, hides Stats and Presence, uses the sidebar layout, the Elegant preset and typography and radius overrides."
+      },
+      "filterTags": [],
+      "theme": "elegant",
+      "layout": "sidebar",
+      "sectionsOrder": [
+        "hero",
+        "skills",
+        "experience",
+        "projects",
+        "education",
+        "certifications",
+        "stats",
+        "presence",
+        "contact"
+      ],
+      "sectionsHidden": ["stats", "presence"],
+      "themeOverrides": {
+        "colors": { "accent": "#8a5a00" },
+        "typography": { "fontHeading": "Georgia" },
+        "layout": { "radius": "4px" }
+      },
+      "listed": true
+    },
+    {
+      "slug": "ejemplo-protegido",
+      "title": { "es": "Perfil protegido", "en": "Protected profile" },
+      "headline": {
+        "es": "Perfil con token de acceso para una vacante concreta",
+        "en": "Profile with an access token for a specific vacancy"
+      },
+      "roleType": { "es": "Liderazgo", "en": "Leadership" },
+      "techFocus": "Gestión técnica",
+      "description": {
+        "es": "PROTECTED: sin token responde 401. No se enumera. El token de prueba figura en la guía de datos de ejemplo.",
+        "en": "PROTECTED: without a token it answers 401. It is not listed. The test token appears in the example-data guide."
+      },
+      "filterTags": ["leadership", "microservices"],
+      "visibility": "PROTECTED",
+      "accessToken": "ejemplo-token-2026",
+      "listed": false
+    },
+    {
+      "slug": "ejemplo-borrador",
+      "title": { "es": "Borrador privado", "en": "Private draft" },
+      "headline": {
+        "es": "Perfil en preparación, todavía sin traducir",
+        "en": "Profile under preparation, not yet translated"
+      },
+      "roleType": { "es": "Fullstack", "en": "Fullstack" },
+      "techFocus": "Node / React",
+      "description": {
+        "es": "PRIVATE: responde 404 al público. Le falta la descripción en inglés a propósito, para que el aviso de faltantes del constructor tenga algo que mostrar."
+      },
+      "filterTags": ["nodejs", "react", "fullstack"],
+      "visibility": "PRIVATE",
+      "listed": true
+    },
+    {
+      "slug": "ejemplo-dirigido",
+      "title": { "es": "Perfil dirigido", "en": "Targeted profile" },
+      "headline": {
+        "es": "Para una sola empresa: fuera de la home y del sitemap",
+        "en": "For a single company: off the home page and the sitemap"
+      },
+      "roleType": { "es": "Arquitecto", "en": "Architect" },
+      "techFocus": "Cloud",
+      "description": {
+        "es": "Público pero no enumerado (listed: false): solo lo abre quien conoce el link.",
+        "en": "Public but unlisted (listed: false): only people who know the link can open it."
+      },
+      "filterTags": ["cloud", "devops", "microservices"],
+      "listed": false
+    },
+    {
+      "slug": "ejemplo-archivado",
+      "title": { "es": "Perfil archivado", "en": "Archived profile" },
+      "headline": {
+        "es": "Retirado de circulación, con sus visitas conservadas",
+        "en": "Withdrawn from circulation, with its views preserved"
+      },
+      "roleType": { "es": "Backend", "en": "Backend" },
+      "techFocus": "Python / Datos",
+      "description": {
+        "es": "Archivado: su slug responde 404, pero conserva la analítica.",
+        "en": "Archived: its slug answers 404, but it keeps its analytics."
+      },
+      "filterTags": ["data", "python"],
+      "archived": true,
+      "listed": true
+    },
+    {
+      "slug": "ejemplo-renombrado",
+      "title": { "es": "Perfil renombrado", "en": "Renamed profile" },
+      "headline": {
+        "es": "Cambió de slug sin romper los links viejos",
+        "en": "Changed its slug without breaking the old links"
+      },
+      "roleType": { "es": "Fullstack", "en": "Fullstack" },
+      "techFocus": "Node / React",
+      "description": {
+        "es": "El slug anterior sigue resolviendo a este perfil gracias al alias.",
+        "en": "The previous slug still resolves to this profile thanks to the alias."
+      },
+      "filterTags": ["nodejs", "react"],
+      "slugAliases": ["ejemplo-nombre-anterior"],
+      "listed": true
+    }
+  ],
+  "exampleViews": [
+    {
+      "slug": "all",
+      "count": 48,
+      "daysBack": 21,
+      "locales": ["es", "es", "en"],
+      "referrers": [null, "https://www.linkedin.com/", "https://www.google.com/", null]
+    },
+    {
+      "slug": "ejemplo-backend",
+      "count": 26,
+      "daysBack": 14,
+      "locales": ["en", "es"],
+      "referrers": ["https://www.linkedin.com/", "https://empleos.example.com/vacantes", null]
+    },
+    {
+      "slug": "ejemplo-secciones",
+      "count": 11,
+      "daysBack": 10,
+      "locales": ["es", "en"],
+      "referrers": [null, "https://www.google.com/"]
+    },
+    {
+      "slug": "ejemplo-archivado",
+      "count": 14,
+      "daysBack": 25,
+      "locales": ["es", "en"],
+      "referrers": ["https://www.linkedin.com/", null]
+    },
+    {
+      "slug": "ejemplo-protegido",
+      "count": 6,
+      "daysBack": 6,
+      "locales": ["en"],
+      "referrers": [null, "https://empleos.example.com/vacantes"]
+    }
+  ]
+}

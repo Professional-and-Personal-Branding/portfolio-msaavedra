@@ -1,0 +1,23 @@
+# Evidencia 9.1 y 9.2 — 2026-10-27 — index.html servido en local (python -m http.server) y probado con Chrome (puppeteer-core)
+
+## Con localStorage normal
+contador inicial: 37 casos de 37 | progreso: 0 de 37 con resultado · 0 pasan · 0 fallan · 0 omitidos
+área backoffice + change add-curated-profile-lifecycle -> 4 casos de 37 | visibles: tc21,tc22,tc23,tc24 | aria-live del contador: polite
+sin filtros -> 37 casos de 37
+TC-01 pasa + TC-08 falla con nota -> 2 de 37 con resultado · 1 pasan · 1 fallan · 0 omitidos
+localStorage: manual-run-tc01="pass", manual-note-tc08="no resolvió | alias", manual-filter={"status":"all","area":"all","change":"all"}
+errores de consola de la página: ninguno (solo un 404 del favicon del servidor de prueba)
+
+## Con localStorage bloqueado (Object.defineProperty(window,'localStorage',{get(){throw}}))
+mismos resultados: filtros (4 casos), marcas (2 de 37) y Copiar resultado funcionan durante la sesión
+errores de consola: ninguno
+
+## Teclado (Tab x14): chips de estado > chips de área > selector de change > buscador > tema > índice
+Enter en el chip Backoffice -> 21 casos de 37 ; Space en "Todas las áreas" vuelve a 37
+radios de TC-01 con Space y flechas ; nota de TC-08 y base de la corrida con el teclado
+Copiar resultado con el portapapeles rechazado -> textarea de solo lectura visible, con el texto seleccionado y con el foco (ver 9.2-informe.md)
+lightbox: Enter sobre la captura abre el diálogo con el foco en Cerrar; Escape lo cierra y devuelve el foco a la imagen
+foco visible: outline solid 2px ; prefers-reduced-motion: transition-duration 0s
+
+## No probado
+El visor de artifacts (no se publicó el manual: 10.4 queda para cuando el owner lo pida).

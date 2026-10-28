@@ -28,6 +28,8 @@
     "prisma:studio": "prisma studio",
     "seed": "tsx scripts/seed.ts",
     "seed:verify": "tsx scripts/verify-seed.ts",
+    "seed:example": "tsx scripts/seed.ts --file ../docs/examples/cv-data.example.json",
+    "seed:example:verify": "tsx scripts/verify-seed.ts --file ../docs/examples/cv-data.example.json",
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
     "openapi:export": "ts-node --transpile-only -P tsconfig.json scripts/export-openapi.ts"
   },
@@ -98,7 +100,7 @@
       "<rootDir>/src",
       "<rootDir>/test"
     ],
-    "testRegex": "(src/.*\\.spec\\.ts|test/(architecture|security|dto-validation)\\.spec\\.ts)$",
+    "testRegex": "(src/.*\\.spec\\.ts|test/(architecture|security|dto-validation|seed-[a-z-]+)\\.spec\\.ts)$",
     "transform": {
       "^.+\\.ts$": "ts-jest"
     },

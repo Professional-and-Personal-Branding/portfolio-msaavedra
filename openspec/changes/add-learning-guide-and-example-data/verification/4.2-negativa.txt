@@ -1,0 +1,61 @@
+# Evidencia 4.2 (TC-37) — 2026-10-27 — base portfolio_seedguard (descartable, copia con cv-data.json)
+
+## Destino
+current_database=portfolio_seedguard
+
+## Siembra del CV real en la copia: npm run seed (sin variable ni --file)
+🎨 Creando 5 temas preset...
+⭐ Creando 13 perfiles curados...
+✅ Seed completado con éxito.
+exit=0
+
+## Conteos y Profile ANTES
+Profile=1|Experience=15|CuratedProfile=14|ProfileView=0
+
+## 1) npm run seed:example SIN SEED_DISPOSABLE_DB
+> portfolio-backend@0.1.0 seed:example
+> tsx scripts/seed.ts --file ../docs/examples/cv-data.example.json
+
+❌ Negativa: no se carga el archivo alternativo en localhost:5434/portfolio_seedguard.
+  - capa 1: falta SEED_DISPOSABLE_DB=1: confirma que la base de destino es descartable.
+Creá una base aparte (por ejemplo `portfolio_example`), aplicá las migraciones y apuntá
+`DATABASE_URL` a ella antes de correr el seed (ver docs/DATA-POPULATION.md).
+No se escribió nada.
+exit=2
+
+## 2) npm run seed:example CON SEED_DISPOSABLE_DB=1 (la capa 3 se niega: la base tiene otro perfil)
+> portfolio-backend@0.1.0 seed:example
+> tsx scripts/seed.ts --file ../docs/examples/cv-data.example.json
+
+❌ Negativa: no se carga el archivo alternativo en localhost:5434/portfolio_seedguard.
+  - capa 3: la base ya tiene el contenido de otro perfil (no está vacía ni es una recarga del mismo archivo).
+Creá una base aparte (por ejemplo `portfolio_example`), aplicá las migraciones y apuntá
+`DATABASE_URL` a ella antes de correr el seed (ver docs/DATA-POPULATION.md).
+No se escribió nada.
+exit=2
+
+## 3) npm run seed:example con SEED_DISPOSABLE_DB=1 y NODE_ENV=production
+
+> portfolio-backend@0.1.0 seed:example
+> tsx scripts/seed.ts --file ../docs/examples/cv-data.example.json
+
+❌ Negativa: no se carga el archivo alternativo en localhost:5434/portfolio_seedguard.
+  - capa 2: NODE_ENV=production: un archivo alternativo nunca se carga en producción.
+Creá una base aparte (por ejemplo `portfolio_example`), aplicá las migraciones y apuntá
+`DATABASE_URL` a ella antes de correr el seed (ver docs/DATA-POPULATION.md).
+No se escribió nada.
+exit=2
+
+## Conteos y Profile DESPUÉS
+Profile=1|Experience=15|CuratedProfile=14|ProfileView=0|t
+
+## npm run seed:verify (cv-data.json, conteos sin cambios)
+  ✅ ai-software-engineer     PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#6D28D9
+  ✅ fullstack-microsoft      PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#0078D4
+  ✅ devops-azure             PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#0078D4
+  ✅ software-architect       PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#1E293B
+  ✅ backend-payments-ror     PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#9B1C2E
+  ✅ tech-lead-dotnet         PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#5B2C87
+  ✅ generalist-polyglot      PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#0F766E
+✅ La base coincide con cv-data.json.
+exit=0

@@ -54,7 +54,8 @@ describe('petición temprana del perfil — entrega a la app', () => {
       await screen.findByRole('heading', { level: 1, name: 'Ada Ejemplo' }),
     ).toBeInTheDocument();
     expect(requests).toEqual([]);
-    expect(document.title).toBe('Temprano · Ada Ejemplo');
+    // El título lo fija un efecto después del render: con el CI cargado llega un poco más tarde.
+    await waitFor(() => expect(document.title).toBe('Temprano · Ada Ejemplo'));
     // Se toma una sola vez.
     expect(window.__portfolioEarlyProfile).toBeUndefined();
   });
