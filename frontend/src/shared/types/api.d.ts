@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 1f72941a8d54bdb49e67d3d6808b41aa9f9a21815c8116f06067be1c7c68636e
+// openapi-sha256: 9b8c8c0b09c600d2ac4779a0d6e1c7451ea63abaa0e799d7b06cf441837068ae
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -11,7 +11,7 @@ export interface paths {
         };
         /**
          * Visitas de personas agregadas por perfil, idioma, día y origen, y conteo por tipo
-         * @description El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso. El origen se normaliza al host del `referrer` guardado; las visitas desde el propio sitio cuentan como `interno`. `total` y los desgloses cuentan solo las visitas de personas (`HUMAN`); `byKind` cuenta todas las del rango, también las propias (`OWNER`) y las de bots (`BOT`).
+         * @description El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso. El origen se normaliza al host del `referrer` guardado; las visitas desde el propio sitio cuentan como `interno`. `total` y los desgloses cuentan solo las visitas de personas (`HUMAN`); `byKind` cuenta todas las del rango, también las propias (`OWNER`) y las de bots (`BOT`). `byShareLink` y `bySource` cuentan las visitas de personas atribuidas a un enlace de seguimiento o a un portal.
          */
         get: operations["AdminAnalyticsController_views"];
         put?: never;
@@ -133,6 +133,87 @@ export interface paths {
          * @description Copia la configuración con un slug derivado (`-2`, `-3`, …). El duplicado nace PRIVATE y no enumerado, sin token, sin visitas y sin archivar. El cuerpo no lleva nada.
          */
         post: operations["AdminCuratedProfileController_duplicate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/curated-profiles/{id}/share-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Enlaces de seguimiento del perfil
+         * @description Más recientes primero, con las aperturas de personas (`opens`, `lastOpenedAt`) de toda su historia.
+         */
+        get: operations["AdminShareLinkController_list"];
+        put?: never;
+        /**
+         * Crear un enlace de seguimiento
+         * @description Genera un código aleatorio de 10 caracteres. El código, el portal y el perfil no cambian después.
+         */
+        post: operations["AdminShareLinkController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/curated-profiles/{id}/share-links/{linkId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Cambiar la etiqueta de un enlace */
+        patch: operations["AdminShareLinkController_rename"];
+        trace?: never;
+    };
+    "/api/admin/curated-profiles/{id}/share-links/{linkId}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revocar un enlace
+         * @description Irreversible e idempotente: revocar uno revocado devuelve el mismo `revokedAt`. El link sigue abriendo el perfil; solo deja de atribuirse.
+         */
+        post: operations["AdminShareLinkController_revoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/curated-profiles/{id}/share-links/linkedin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enlace para «Compartir en LinkedIn»
+         * @description Devuelve el enlace `LINKEDIN_POST` activo más reciente del perfil (200) o crea uno con portal `linkedin` (201). Solo perfiles PUBLIC y no archivados.
+         */
+        post: operations["AdminShareLinkController_linkedin"];
         delete?: never;
         options?: never;
         head?: never;
@@ -602,7 +683,7 @@ export interface paths {
         };
         /**
          * Perfil curado resuelto
-         * @description Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash) con su tipo: propia si trae una sesión del panel válida, de bot según el User-Agent, o de una persona; solo estas últimas suman en `views`. Un slug anterior (renombrado) también resuelve: el cuerpo trae el slug canónico y `Content-Location` su ruta. Un perfil archivado responde 404.
+         * @description Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash) con su tipo: propia si trae una sesión del panel válida, de bot según el User-Agent, o de una persona; solo estas últimas suman en `views`. Los parámetros opcionales `via` (enlace de seguimiento) y `src` (portal) solo atribuyen la visita: no cambian la respuesta. Un slug anterior (renombrado) también resuelve: el cuerpo trae el slug canónico y `Content-Location` su ruta. Un perfil archivado responde 404.
          */
         get: operations["CuratedProfileController_findBySlug"];
         put?: never;
@@ -953,8 +1034,33 @@ export interface components {
             referrer: string;
             views: number;
         };
+        CountByShareLink: {
+            /** @example k7m2q9xw4t */
+            code: string;
+            /** @example Acme — RR. HH. */
+            label: string;
+            /** @example linkedin */
+            portal: string | null;
+            /** @description El enlace está revocado: sigue contando sus visitas pasadas */
+            revoked: boolean;
+            shareLinkId: string;
+            /**
+             * @description Slug vigente del perfil del enlace
+             * @example tech-lead-dotnet
+             */
+            slug: string;
+            views: number;
+        };
         CountBySlug: {
             slug: string;
+            views: number;
+        };
+        CountBySource: {
+            /**
+             * @description Portal normalizado (`[a-z0-9-]`, hasta 32)
+             * @example indeed
+             */
+            source: string;
             views: number;
         };
         CreateCertificationDto: {
@@ -1103,6 +1209,18 @@ export interface components {
             url?: string | null;
             /** @default true */
             visible: boolean;
+        };
+        CreateShareLinkDto: {
+            /**
+             * @description Etiqueta para reconocer el enlace en el panel (1 a 80 caracteres)
+             * @example Acme — María, RR. HH.
+             */
+            label: string;
+            /**
+             * @description Portal donde se publica (`[a-z0-9-]`, hasta 32 caracteres; se normaliza a minúsculas). Inmutable.
+             * @example linkedin
+             */
+            portal?: string;
         };
         CreateSkillCategoryDto: {
             name: components["schemas"]["LocalizedTextDto"];
@@ -1531,6 +1649,10 @@ export interface components {
             byProfile: components["schemas"]["CountBySlug"][];
             /** @description Por origen, descendente. Solo visitas de personas (`HUMAN`): su suma es `total`; solo se agrega el host */
             byReferrer: components["schemas"]["CountByReferrer"][];
+            /** @description Visitas de personas (`HUMAN`) atribuidas a un enlace de seguimiento, descendente. Las visitas sin enlace no forman una fila: la suma es menor o igual que `total` */
+            byShareLink: components["schemas"]["CountByShareLink"][];
+            /** @description Visitas de personas (`HUMAN`) con portal (el del enlace o `?src=`), descendente. Las visitas sin portal no forman una fila: la suma es menor o igual que `total` */
+            bySource: components["schemas"]["CountBySource"][];
             from: string;
             to: string;
             /** @description Solo visitas de personas (`HUMAN`) del rango */
@@ -1592,6 +1714,29 @@ export interface components {
         };
         /** @enum {string} */
         SectionId: "hero" | "stats" | "experience" | "skills" | "projects" | "education" | "certifications" | "presence" | "contact";
+        /** @enum {string} */
+        ShareLinkKind: "MANUAL" | "LINKEDIN_POST";
+        ShareLinkResponse: {
+            /**
+             * @description 10 caracteres de `0123456789abcdefghjkmnpqrstvwxyz`; va en `?via=` del link
+             * @example k7m2q9xw4t
+             */
+            code: string;
+            /** @description ISO 8601 */
+            createdAt: string;
+            id: string;
+            kind: components["schemas"]["ShareLinkKind"];
+            /** @example Acme — María, RR. HH. */
+            label: string;
+            /** @description ISO 8601 de la última apertura */
+            lastOpenedAt: string | null;
+            /** @description Aperturas de personas (`HUMAN`) en toda la historia del enlace */
+            opens: number;
+            /** @example linkedin */
+            portal: string | null;
+            /** @description ISO 8601 si está revocado (irreversible); null si está activo */
+            revokedAt: string | null;
+        };
         SkillCategoryResponse: {
             /**
              * @description Resuelto al locale.
@@ -1801,6 +1946,13 @@ export interface components {
             url?: string | null;
             /** @default true */
             visible: boolean;
+        };
+        UpdateShareLinkDto: {
+            /**
+             * @description Etiqueta nueva (1 a 80 caracteres)
+             * @example Acme — Juan
+             */
+            label: string;
         };
         UpdateSkillCategoryDto: {
             name?: components["schemas"]["LocalizedTextDto"];
@@ -2395,6 +2547,249 @@ export interface operations {
                 };
             };
             /** @description Sin slug libre hasta -50 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminShareLinkController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Id del perfil curado */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareLinkResponse"][];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminShareLinkController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Id del perfil curado */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateShareLinkDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareLinkResponse"];
+                };
+            };
+            /** @description Etiqueta o portal inválidos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminShareLinkController_rename: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Id del perfil curado */
+                id: string;
+                linkId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateShareLinkDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareLinkResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description El enlace no existe o es de otro perfil */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminShareLinkController_revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Id del perfil curado */
+                id: string;
+                linkId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareLinkResponse"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description El enlace no existe o es de otro perfil */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminShareLinkController_linkedin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Id del perfil curado */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Se reusó el enlace activo */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareLinkResponse"];
+                };
+            };
+            /** @description Se creó un enlace nuevo */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareLinkResponse"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description El perfil no es PUBLIC o está archivado */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -4037,8 +4432,12 @@ export interface operations {
                 lang?: "es" | "en";
                 /** @description Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`). */
                 locale?: "es" | "en";
+                /** @description Portal de origen (`[a-z0-9-]`, hasta 32 caracteres, se normaliza a minúsculas). Solo atribuye la visita; un valor inválido se descarta sin error. */
+                src?: string;
                 /** @description Token de acceso para perfiles PROTECTED (alternativa al header `X-Access-Token`, que tiene prioridad). */
                 token?: string;
+                /** @description Código de un enlace de seguimiento (10 caracteres). Solo atribuye la visita: la respuesta es idéntica con un código válido, revocado, inexistente o sin él, y un valor mal formado nunca da 400. */
+                via?: string;
             };
             header?: {
                 /** @description Token de acceso para perfiles PROTECTED (prioridad sobre `?token=`). */

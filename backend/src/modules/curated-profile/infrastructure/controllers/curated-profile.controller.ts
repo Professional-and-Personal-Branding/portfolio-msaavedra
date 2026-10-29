@@ -75,6 +75,7 @@ export class CuratedProfileController {
     description:
       'Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. ' +
       'Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash) con su tipo: propia si trae una sesión del panel válida, de bot según el User-Agent, o de una persona; solo estas últimas suman en `views`. ' +
+      'Los parámetros opcionales `via` (enlace de seguimiento) y `src` (portal) solo atribuyen la visita: no cambian la respuesta. ' +
       'Un slug anterior (renombrado) también resuelve: el cuerpo trae el slug canónico y `Content-Location` su ruta. Un perfil archivado responde 404.',
   })
   @ApiParam({ name: 'slug', example: 'tech-lead-dotnet' })
@@ -100,7 +101,7 @@ export class CuratedProfileController {
   })
   async findBySlug(
     @Param('slug') slug: string,
-    @Query() _query: CuratedProfileQueryDto,
+    @Query() query: CuratedProfileQueryDto,
     @RequestLocale() locale: Locale,
     @AccessToken() accessToken: string | undefined,
     @Req() req: Request,
@@ -113,6 +114,9 @@ export class CuratedProfileController {
       ipHash: hashIp(req.ip, this.analyticsSalt),
       // Solo se extrae: la validación ocurre en segundo plano y esta ruta sigue siendo anónima.
       sessionToken: extractAdminToken(req) ?? undefined,
+      // Atribución del link (change `add-share-links`): crudos, se resuelven en segundo plano.
+      via: query.via,
+      src: query.src,
     };
     const result = await this.resolveCuratedProfile.execute({
       slug,

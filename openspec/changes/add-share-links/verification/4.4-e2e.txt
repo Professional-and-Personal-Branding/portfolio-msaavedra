@@ -1,0 +1,29 @@
+# jest e2e contra portfolio_share_e2e (2026-10-29)
+suites: 1/1, tests: 26/26
+
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución enlace activo del perfil: HUMAN con su shareLinkId
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución el código se normaliza: mayúsculas y espacios alrededor atribuyen igual
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución enlace revocado: 200, mismo cuerpo, sin atribuir
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución enlace de otro perfil: 200 con el perfil pedido y sin atribuir
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución código inexistente de 10 caracteres: 200 y shareLinkId nulo
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución código malformado: 200 y shareLinkId nulo
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución código con caracteres excluidos: 200 y shareLinkId nulo
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución código vacío: 200 y shareLinkId nulo
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución ?src=Indeed: source normalizado, sin enlace y sin filas nuevas de ShareLink
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución ?src=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa inválido: source nulo
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución ?src=mi%20portal inválido: source nulo
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución ?src=-x inválido: source nulo
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución via con portal y src a la vez: gana el portal del enlace
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución enlace sin portal más src: queda el src
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución por el slug anterior (perfil renombrado): se atribuye al enlace
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución con la sesión del panel: fila OWNER con el enlace y las aperturas no cambian
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) atribución un bot por el enlace queda atribuido pero no cuenta como apertura
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) la respuesta no cambia ni reemplaza al token mismo cuerpo sin via, con via válido y con via inexistente
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) la respuesta no cambia ni reemplaza al token PROTECTED con via válido y sin token: 401 y ninguna fila
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) la respuesta no cambia ni reemplaza al token PROTECTED con token y via: 200 y atribuida
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) la respuesta no cambia ni reemplaza al token parámetros repetidos o raros nunca dan 400
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) la respuesta no cambia ni reemplaza al token con via repetido toma el primer valor
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) agregado por enlace y por portal 3 por «Acme» (linkedin), 2 con src=indeed, 1 directa y 1 BOT: desgloses exactos
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) SEO: los links con código no son páginas aparte el fragmento de head ignora via y src
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) SEO: los links con código no son páginas aparte el fragmento no registra visitas
+[ok] Enlaces de seguimiento: atribución de la visita (e2e) SEO: los links con código no son páginas aparte robots.txt no bloquea via ni src

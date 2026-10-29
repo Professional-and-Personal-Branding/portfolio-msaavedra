@@ -17,7 +17,14 @@ import {
   CURATED_PROFILE_REPOSITORY,
   CuratedProfileRepository,
 } from '../../domain/repositories/curated-profile.repository';
+import { ShareLink } from '../../domain/entities/share-link.entity';
+import {
+  SHARE_LINK_REPOSITORY,
+  ShareLinkRepository,
+} from '../../domain/repositories/share-link.repository';
 import { resolvability } from '../../domain/services/resolvability';
+import { resolveShareAttribution } from '../../domain/services/resolve-share-attribution';
+import { normalizeShareCode } from '../../domain/services/share-code';
 import { CuratedProfileOutput } from '../dto/curated-profile.output';
 import { CuratedProfileComposer } from '../services/curated-profile.composer';
 
@@ -32,6 +39,12 @@ export interface ViewContext {
    * dentro de la tarea en segundo plano y nunca se persiste ni se escribe en el log.
    */
   sessionToken?: string;
+  /**
+   * `?via=` y `?src=` tal como llegaron (D4/D6 de `add-share-links`), sin validar: se normalizan y
+   * resuelven dentro de la tarea en segundo plano y nunca cambian la respuesta.
+   */
+  via?: string;
+  src?: string;
 }
 
 export interface ResolveCuratedProfileInput {
@@ -60,6 +73,7 @@ export class ResolveCuratedProfileUseCase {
   constructor(
     @Inject(CURATED_PROFILE_REPOSITORY) private readonly curatedProfiles: CuratedProfileRepository,
     @Inject(PROFILE_VIEW_REPOSITORY) private readonly profileViews: ProfileViewRepository,
+    @Inject(SHARE_LINK_REPOSITORY) private readonly shareLinks: ShareLinkRepository,
     @Inject(BACKGROUND_TASKS) private readonly background: BackgroundTasks,
     @Inject(ADMIN_SESSION_VERIFIER) private readonly sessions: AdminSessionVerifier,
     private readonly composer: CuratedProfileComposer,
@@ -97,6 +111,12 @@ export class ResolveCuratedProfileUseCase {
   private async recordView(curatedProfileId: string, ctx: ViewContext): Promise<void> {
     try {
       const adminSession = await this.hasAdminSession(ctx.sessionToken);
+      const link = await this.findShareLink(ctx.via);
+      const { shareLinkId, source } = resolveShareAttribution({
+        curatedProfileId,
+        link,
+        src: ctx.src,
+      });
       await this.profileViews.record({
         curatedProfileId,
         locale: ctx.locale,
@@ -104,10 +124,28 @@ export class ResolveCuratedProfileUseCase {
         userAgent: ctx.userAgent,
         ipHash: ctx.ipHash,
         kind: classifyVisit({ adminSession, userAgent: ctx.userAgent }),
+        shareLinkId,
+        source,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(`No se pudo registrar la visita de ${curatedProfileId}: ${message}`);
+    }
+  }
+
+  /**
+   * Busca el enlace de un `?via=`. Un código malformado no consulta la base; un fallo de la
+   * búsqueda cuenta como «sin enlace» (la visita se registra igual) y el aviso no incluye el
+   * código ni el error original.
+   */
+  private async findShareLink(via: string | undefined): Promise<ShareLink | null> {
+    const code = normalizeShareCode(via);
+    if (code === null) return null;
+    try {
+      return await this.shareLinks.findByCode(code);
+    } catch {
+      this.logger.warn('No se pudo buscar el enlace de seguimiento; la visita se registra sin él');
+      return null;
     }
   }
 

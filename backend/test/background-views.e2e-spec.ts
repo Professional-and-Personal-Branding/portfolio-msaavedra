@@ -98,6 +98,9 @@ describe('Visitas en segundo plano (e2e)', () => {
               aggregate: real.aggregate.bind(real),
               countByReferrer: real.countByReferrer.bind(real),
               countByKind: real.countByKind.bind(real),
+              countByShareLink: real.countByShareLink.bind(real),
+              countBySource: real.countBySource.bind(real),
+              countOpensByShareLink: real.countOpensByShareLink.bind(real),
             } satisfies ProfileViewRepository;
           },
           inject: [PrismaService],

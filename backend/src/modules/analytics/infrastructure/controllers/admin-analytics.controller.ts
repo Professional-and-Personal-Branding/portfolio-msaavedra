@@ -62,6 +62,22 @@ class CountByKind {
   @ApiProperty({ enum: VIEW_KINDS, enumName: 'ViewKind' }) kind!: ViewKind;
   @ApiProperty() views!: number;
 }
+class CountByShareLink {
+  @ApiProperty() shareLinkId!: string;
+  @ApiProperty({ example: 'k7m2q9xw4t' }) code!: string;
+  @ApiProperty({ example: 'Acme — RR. HH.' }) label!: string;
+  @ApiProperty({ example: 'tech-lead-dotnet', description: 'Slug vigente del perfil del enlace' })
+  slug!: string;
+  @ApiProperty({ nullable: true, type: String, example: 'linkedin' }) portal!: string | null;
+  @ApiProperty({ description: 'El enlace está revocado: sigue contando sus visitas pasadas' })
+  revoked!: boolean;
+  @ApiProperty() views!: number;
+}
+class CountBySource {
+  @ApiProperty({ example: 'indeed', description: 'Portal normalizado (`[a-z0-9-]`, hasta 32)' })
+  source!: string;
+  @ApiProperty() views!: number;
+}
 class CountByDay {
   @ApiProperty({ example: '2026-09-07' }) day!: string;
   @ApiProperty() views!: number;
@@ -89,6 +105,18 @@ export class ProfileViewsResponse implements ProfileViewsOutput {
       'Todas las visitas del rango por tipo, con `HUMAN`, `OWNER` y `BOT` siempre presentes y en ese orden',
   })
   byKind!: CountByKind[];
+  @ApiProperty({
+    type: [CountByShareLink],
+    description:
+      'Visitas de personas (`HUMAN`) atribuidas a un enlace de seguimiento, descendente. Las visitas sin enlace no forman una fila: la suma es menor o igual que `total`',
+  })
+  byShareLink!: CountByShareLink[];
+  @ApiProperty({
+    type: [CountBySource],
+    description:
+      'Visitas de personas (`HUMAN`) con portal (el del enlace o `?src=`), descendente. Las visitas sin portal no forman una fila: la suma es menor o igual que `total`',
+  })
+  bySource!: CountBySource[];
 }
 
 @ApiTags('admin')
@@ -109,7 +137,8 @@ export class AdminAnalyticsController {
     description:
       'El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso. ' +
       'El origen se normaliza al host del `referrer` guardado; las visitas desde el propio sitio cuentan como `interno`. ' +
-      '`total` y los desgloses cuentan solo las visitas de personas (`HUMAN`); `byKind` cuenta todas las del rango, también las propias (`OWNER`) y las de bots (`BOT`).',
+      '`total` y los desgloses cuentan solo las visitas de personas (`HUMAN`); `byKind` cuenta todas las del rango, también las propias (`OWNER`) y las de bots (`BOT`). ' +
+      '`byShareLink` y `bySource` cuentan las visitas de personas atribuidas a un enlace de seguimiento o a un portal.',
   })
   @ApiOkResponse({ type: ProfileViewsResponse })
   @ApiBadRequestResponse({ type: ErrorResponseDto })

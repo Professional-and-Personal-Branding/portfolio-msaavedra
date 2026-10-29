@@ -1,0 +1,19 @@
+# jest e2e contra portfolio_share_e2e (2026-10-29)
+suites: 1/1, tests: 16/16
+
+[ok] Enlaces de seguimiento: API del panel (e2e) crear y listar crea con portal normalizado, kind MANUAL, sin revocar y con 0 aperturas
+[ok] Enlaces de seguimiento: API del panel (e2e) crear y listar dos enlaces tienen códigos distintos y el listado trae el más reciente primero
+[ok] Enlaces de seguimiento: API del panel (e2e) crear y listar etiqueta vacía, de 81 o portal inválido: 400 y no se crea nada
+[ok] Enlaces de seguimiento: API del panel (e2e) crear y listar perfil inexistente: 404
+[ok] Enlaces de seguimiento: API del panel (e2e) crear y listar sin token: 401
+[ok] Enlaces de seguimiento: API del panel (e2e) renombrar y revocar renombrar cambia solo la etiqueta
+[ok] Enlaces de seguimiento: API del panel (e2e) renombrar y revocar revocar dos veces: 200 con el mismo revokedAt
+[ok] Enlaces de seguimiento: API del panel (e2e) renombrar y revocar un enlace de otro perfil o inexistente: 404 y el enlace no cambia
+[ok] Enlaces de seguimiento: API del panel (e2e) renombrar y revocar no hay ruta para borrar un enlace
+[ok] Enlaces de seguimiento: API del panel (e2e) aperturas cuenta 3 HUMAN y no las OWNER ni las BOT; lastOpenedAt es la última HUMAN
+[ok] Enlaces de seguimiento: API del panel (e2e) Compartir en LinkedIn la primera vez 201, la segunda 200 con el mismo código; revocado, 201 con otro
+[ok] Enlaces de seguimiento: API del panel (e2e) Compartir en LinkedIn PROTECTED, PRIVATE y archivado: 409 y no se crea ningún enlace
+[ok] Enlaces de seguimiento: API del panel (e2e) Compartir en LinkedIn perfil inexistente: 404
+[ok] Enlaces de seguimiento: API del panel (e2e) ciclo de vida con el perfil borrar un perfil con dos enlaces los borra (y no deja visitas colgadas)
+[ok] Enlaces de seguimiento: API del panel (e2e) ciclo de vida con el perfil duplicar un perfil con tres enlaces: el duplicado no tiene ninguno y el original conserva los tres
+[ok] Enlaces de seguimiento: API del panel (e2e) ciclo de vida con el perfil archivar no toca los enlaces y renombrar el slug tampoco

@@ -25,6 +25,8 @@ import {
 import { CuratedProfileAccessDeniedError } from '../../domain/errors/curated-profile-access-denied.error';
 import { CuratedProfileNotFoundError } from '../../domain/errors/curated-profile-not-found.error';
 import { CuratedProfileRepository } from '../../domain/repositories/curated-profile.repository';
+import { ShareLink } from '../../domain/entities/share-link.entity';
+import { ShareLinkRepository } from '../../domain/repositories/share-link.repository';
 import { AccessToken } from '../../domain/value-objects/access-token.vo';
 import { PreviewCuratedProfileUseCase } from './admin/preview-curated-profile.use-case';
 import { ListCuratedProfilesUseCase } from './list-curated-profiles.use-case';
@@ -207,6 +209,7 @@ interface Deps {
   categories?: SkillCategory[];
   themes?: Theme[];
   record?: jest.Mock;
+  findByCode?: jest.Mock;
   isAdminSession?: jest.Mock;
 }
 
@@ -257,6 +260,18 @@ function build(deps: Deps = {}) {
     aggregate: jest.fn(),
     countByReferrer: jest.fn(),
     countByKind: jest.fn(),
+    countByShareLink: jest.fn(),
+    countBySource: jest.fn(),
+    countOpensByShareLink: jest.fn(),
+  };
+  const findByCode = deps.findByCode ?? jest.fn().mockResolvedValue(null);
+  const shareLinks: ShareLinkRepository = {
+    findByCode,
+    findById: jest.fn(),
+    listByProfile: jest.fn(),
+    create: jest.fn(),
+    save: jest.fn(),
+    findActiveLinkedIn: jest.fn(),
   };
   const isAdminSession = deps.isAdminSession ?? jest.fn().mockResolvedValue(false);
   const sessions = { isAdminSession };
@@ -279,11 +294,12 @@ function build(deps: Deps = {}) {
   const useCase = new ResolveCuratedProfileUseCase(
     curatedRepo,
     viewsRepo,
+    shareLinks,
     background,
     sessions,
     composer,
   );
-  return { useCase, record, isAdminSession, loader, composer, curatedRepo, background };
+  return { useCase, record, findByCode, isAdminSession, loader, composer, curatedRepo, background };
 }
 
 /** Captura las tareas sin ejecutarlas: permite comprobar que la respuesta no las espera. */
@@ -557,6 +573,8 @@ describe('ResolveCuratedProfileUseCase', () => {
         userAgent: 'UA',
         ipHash: 'h',
         kind: 'HUMAN',
+        shareLinkId: null,
+        source: null,
       });
       expect(withoutCtx.background.captured).toHaveLength(0);
       expect(withoutCtx.record).not.toHaveBeenCalled();
@@ -689,6 +707,117 @@ describe('ResolveCuratedProfileUseCase', () => {
       await built.background.flush();
       expect(built.isAdminSession).not.toHaveBeenCalled();
       expect(built.record).not.toHaveBeenCalled();
+    });
+
+    // ── Atribución por enlace de seguimiento (change add-share-links) ──
+    describe('atribución', () => {
+      const CODE = 'k7m2q9xw4t';
+      const link = (over: Partial<ConstructorParameters<typeof ShareLink>[0]> = {}) =>
+        new ShareLink({
+          id: 'sl1',
+          code: CODE,
+          curatedProfileId: 'cp1',
+          label: 'Acme',
+          portal: null,
+          kind: 'MANUAL',
+          createdAt: new Date('2026-10-01T00:00:00Z'),
+          revokedAt: null,
+          ...over,
+        });
+
+      /** Corre una visita con `via`/`src` y devuelve lo que recibió `record`. */
+      async function recorded(ctx: { via?: string; src?: string }, found: ShareLink | null) {
+        const built = build({ findByCode: jest.fn().mockResolvedValue(found) });
+        await resolveOk(built.useCase, { viewContext: { locale: 'es', userAgent: 'UA', ...ctx } });
+        await built.background.flush();
+        const [view] = built.record.mock.calls[0] as [
+          { shareLinkId: string | null; source: string | null },
+        ];
+        return { built, view };
+      }
+
+      it('enlace activo del perfil: guarda su id', async () => {
+        const { built, view } = await recorded({ via: CODE }, link());
+        expect(built.findByCode).toHaveBeenCalledWith(CODE);
+        expect(view).toMatchObject({ shareLinkId: 'sl1', source: null });
+      });
+
+      it('normaliza el código (mayúsculas y espacios) antes de buscar', async () => {
+        const { built } = await recorded({ via: '  K7M2Q9XW4T ' }, link());
+        expect(built.findByCode).toHaveBeenCalledWith(CODE);
+      });
+
+      it('el portal del enlace gana sobre src', async () => {
+        const { view } = await recorded({ via: CODE, src: 'indeed' }, link({ portal: 'linkedin' }));
+        expect(view).toMatchObject({ shareLinkId: 'sl1', source: 'linkedin' });
+      });
+
+      it.each([
+        ['revocado', link({ revokedAt: new Date('2026-10-02T00:00:00Z') })],
+        ['de otro perfil', link({ curatedProfileId: 'otro' })],
+        ['inexistente', null],
+      ])('enlace %s: sin atribución, src se conserva', async (_name, found) => {
+        const { view } = await recorded({ via: CODE, src: 'Indeed' }, found);
+        expect(view).toMatchObject({ shareLinkId: null, source: 'indeed' });
+      });
+
+      it.each([['no-existe'], ['k7m2q9xw4'], ['k7m2q9xw4i'], ['']])(
+        'código malformado (%j): no consulta el repositorio',
+        async (via) => {
+          const { built, view } = await recorded({ via }, link());
+          expect(built.findByCode).not.toHaveBeenCalled();
+          expect(view.shareLinkId).toBeNull();
+        },
+      );
+
+      it('src inválido se descarta', async () => {
+        const { view } = await recorded({ src: 'mi portal' }, null);
+        expect(view.source).toBeNull();
+      });
+
+      it('responde antes de buscar: con la búsqueda pendiente execute() ya devolvió lo mismo que sin via', async () => {
+        const pending = new Promise<ShareLink | null>(() => undefined);
+        const withVia = build({ findByCode: jest.fn().mockReturnValue(pending) });
+        const without = build();
+        const a = await resolveOk(withVia.useCase, {
+          viewContext: { locale: 'es', userAgent: 'UA', via: CODE },
+        });
+        const b = await resolveOk(without.useCase, {
+          viewContext: { locale: 'es', userAgent: 'UA' },
+        });
+        expect(a).toEqual(b);
+        expect(withVia.findByCode).not.toHaveBeenCalled(); // recién corre dentro de la tarea
+        void withVia.background.flush(); // queda colgada a propósito
+        await Promise.resolve();
+        expect(withVia.record).not.toHaveBeenCalled();
+      });
+
+      it('si la búsqueda falla: registra sin enlace, con src, y el aviso no lleva el código', async () => {
+        const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+        try {
+          const built = build({
+            findByCode: jest.fn().mockRejectedValue(new Error(`${CODE}: base caída`)),
+          });
+          await resolveOk(built.useCase, {
+            viewContext: { locale: 'es', userAgent: 'UA', via: CODE, src: 'indeed' },
+          });
+          await expect(built.background.flush()).resolves.toBeUndefined();
+          expect(built.record).toHaveBeenCalledWith(
+            expect.objectContaining({ shareLinkId: null, source: 'indeed' }),
+          );
+          expect(warn).toHaveBeenCalledTimes(1);
+          expect(String(warn.mock.calls[0][0])).not.toContain(CODE);
+        } finally {
+          warn.mockRestore();
+        }
+      });
+
+      it('sin viewContext no busca ningún enlace', async () => {
+        const built = build();
+        await resolveOk(built.useCase);
+        await built.background.flush();
+        expect(built.findByCode).not.toHaveBeenCalled();
+      });
     });
   });
 });
