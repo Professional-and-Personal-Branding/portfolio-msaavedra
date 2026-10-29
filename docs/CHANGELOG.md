@@ -10,6 +10,18 @@
 - **Scripts de calidad.** Sus visitas quedan como `BOT`: Puppeteer ya manda `HeadlessChrome`; `a11y:check` (sus GET con `fetch`) y `perf:check` (UA emulado de Lighthouse) llevan el token `PortfolioCheck`.
 - **Docs.** `docs/MANUAL.md` e `index.html` (TC-39, B2, R9, C8, glosario y `tc18-dashboard.jpg` regenerada), `docs/DEPLOY.md` § 7, `docs/DEPLOY-RAILWAY.md`, `docs/DATA-POPULATION.md` y `backend/README.md`.
 
+## Update — Octubre 2026 (`fix-admin-contrast`)
+
+El contraste del panel y de los estados pasa la auditoría con cualquier juego de datos. Sin cambios de dominio, de API, del OpenAPI ni de la base.
+
+- **Ítems ocultos del panel** (experiencias, formación, certificaciones, proyectos, enlaces): dejan de bajar la opacidad de la fila (daba 2,44:1 y 3,13:1). Se distinguen por la insignia «Oculta»/«Oculto» (`HiddenBadge`, compartida), un borde punteado y el fondo suave (`surface-hidden`). El texto conserva sus colores.
+- **Insignia «Actual»** de la línea de tiempo y del panel: usa el nuevo derivado `--t-success-ink` (`text-success-ink`), calculado como el acento legible a partir del verde `#00bc7d` y de las superficies del tema. En `modern-dark` y `elegant` no cambia; en `modern-light`, `minimal` y `corporate` pasa a `#00754e`, `#007a51` y `#00754e` (≥ 4,67:1; antes 2,06–2,15:1). No se guarda.
+- **Barras por día del dashboard:** la lista va dentro de una región con nombre «Visitas por día» y enfocable, que se desplaza con las flechas (antes `scrollable-region-focusable` en móvil). La sección que la contiene ya no es un landmark con el mismo nombre.
+- **`a11y:check`:** verifica el perfil base antes de abrir páginas y sale con 2 si no resuelve; la variable `A11Y_CHECK_PROFILE` queda documentada.
+- **CI:** el job `web-quality` suma la pierna `a11y-example` (siembra `seed:example` y audita `ejemplo-backend`), en paralelo con `a11y` y `lighthouse`: unos 9 minutos de runner más por corrida, sin alargar el tiempo de pared.
+- **Medido:** `a11y:check` con panel sobre el ejemplo pasó de 39 `color-contrast` + 1 `scrollable-region-focusable` a 0, y sobre `cv-data.json` sigue en 0. Tests nuevos de las filas, la insignia, la región, `--t-success-ink` y un test estático contra colores con nombre y opacidad por estado.
+- **Docs:** `docs/MANUAL.md` y `docs/manual/index.html` (TC-40; ajustes de TC-33 y TC-34) y la línea de `a11y:check` de `CLAUDE.md`.
+
 ## Update — Octubre 2026 (`fix(deploy)`)
 
 Correcciones de despliegue que salieron de la revisión integral previa al deploy en Railway.

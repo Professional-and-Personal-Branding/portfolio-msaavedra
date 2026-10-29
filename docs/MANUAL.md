@@ -843,7 +843,7 @@ Constructor, vista previa en EN, nivel sin inglés -> "Falta 1 traducción en EN
 1. Abrir `/ejemplo-backend` y, sin tocar el mouse, apretar **Tab**: lo primero que aparece es **Saltar al contenido** (*Skip to content* con `?lang=en`). Con **Enter** el foco pasa al contenido; el siguiente Tab cae en el primer control del hero, no en la barra superior.
 2. Volver a empezar y recorrer con Tab la barra (marca, menú de perfiles, diseño, tema, idioma, imprimir) y el hero. Cada control muestra un contorno **sólido de 2 px**, separado del borde, del color de acento legible del tema. Repetir con `?theme=modern-light` y `?theme=modern-dark`.
 3. En la home, abrir con **Enter** el menú de perfiles y el selector de tema (en móvil, el menú lateral): el foco entra, **Escape** cierra y el foco vuelve al botón.
-4. En `/admin`: el primer Tab es **Saltar al contenido**; con Enter, el siguiente Tab entra al contenido de la pantalla y no al menú lateral.
+4. En `/admin`: el primer Tab es **Saltar al contenido**; con Enter, el siguiente Tab entra al contenido de la pantalla y no al menú lateral. A 375 px, más adelante el Tab llega a la región «Visitas por día» (las barras): muestra el contorno de foco y las flechas la desplazan (TC-40).
 5. En `/admin/experiencias` abrir **Nueva experiencia** con Enter y cerrar con **Escape**: el foco vuelve al botón. En `/admin/portada` cambiar un campo de ES a EN con las pestañas: el campo y su etiqueta siguen al idioma.
 6. En Chrome → DevTools → *Rendering* → *Emulate CSS media feature prefers-reduced-motion: reduce*, activar el salto: el desplazamiento no es animado.
 
@@ -882,6 +882,7 @@ prefers-reduced-motion: reduce        -> scroll-behavior: auto
 | `#8a5a00` (ejemplo-secciones, `elegant`) | 2,60:1 | `#c78200` | 4,87:1 |
 | `#38bdf8` (all, `modern-dark`) | 7,85:1 | `#38bdf8` | 7,85:1 (sin cambio) |
 | `#0284c7` (preset `modern-light`) | 4,10:1 | `#0270a9` | 5,39:1 |
+| `#00bc7d` (verde de la insignia «Actual», `modern-light`) | 2,06:1 | `#00754e` (`--t-success-ink`) | 4,80:1 |
 
 Medido el 27 de octubre de 2026 en la base de ejemplo, contra el fondo de la tarjeta de cada tema.
 
@@ -913,6 +914,28 @@ El texto atenuado (`text-dim`) pasó de 3,5–4,0:1 a ≥ 4,5:1 en los cinco pre
 ![Hero en 390 px](manual/tc35-movil-hero.jpg)
 
 *El hero en 390 px, primer tiempo de la carga.*
+
+### TC-40 — Ítems ocultos e insignias legibles ✅
+
+**Precondición:** base de ejemplo **descartable** (nunca la del owner), sitio levantado como en producción y sesión iniciada en `/admin`. El ejemplo trae 5 ítems ocultos (experiencias, formación, proyectos y enlaces), una experiencia actual en `ejemplo-backend` y 105 visitas repartidas en los últimos 30 días: son los datos que ejercitan este caso.
+**Pasos:**
+1. Abrir `/admin/experiencias`, `/admin/formacion` y `/admin/proyectos`. Cada ítem oculto muestra la insignia **Oculta**/**Oculto** (texto e ícono), un borde **punteado** y un fondo suave; su título, subtítulo y etiquetas se leen igual que los de un ítem visible (no están atenuados).
+2. Abrir `/ejemplo-backend?theme=modern-light`, `?theme=minimal` y `?theme=corporate`, con `layout=classic` y `layout=sidebar`: la insignia **Actual** de la experiencia en curso se lee, en un verde más oscuro que el de `modern-dark`.
+3. Abrir `/ejemplo-backend?theme=modern-dark`: la insignia conserva el verde `#00bc7d`.
+4. A 375 px de ancho (DevTools → *Device toolbar*), abrir `/admin` y apretar **Tab** hasta llegar al gráfico de visitas por día: la región «Visitas por día» muestra el contorno de foco; con la flecha derecha se desplaza y deja ver los días del final.
+5. Opcional: `A11Y_CHECK_DISPOSABLE_DB=1 A11Y_CHECK_PROFILE=ejemplo-backend A11Y_CHECK_ADMIN_EMAIL=… A11Y_CHECK_ADMIN_PASSWORD=… npm run a11y:check -- http://localhost:8080`. Sin `A11Y_CHECK_PROFILE`, contra el ejemplo, sale con código **2** y el aviso «El perfil base «tech-lead-dotnet» no existe en esta base».
+
+**Resultado esperado:** ningún texto de las listas del panel ni de la insignia «Actual» baja de 4,5:1, con cualquier preset; un ítem oculto se distingue por la insignia, el borde y el fondo, nunca por la opacidad; las barras por día se alcanzan con el teclado. `a11y:check` con panel sale con 0 `serious` y 0 `critical` sobre el ejemplo y sobre `cv-data.json`. El verde de estado se deriva del tema y no se guarda:
+
+| Preset | Verde `#00bc7d` como texto | `--t-success-ink` | Peor caso derivado |
+|---|---|---|---|
+| modern-dark | 5,31:1 | `#00bc7d` (sin cambio) | 5,31:1 |
+| elegant | 4,91:1 | `#00bc7d` (sin cambio) | 4,91:1 |
+| modern-light | 2,06:1 | `#00754e` | 4,80:1 |
+| minimal | 2,15:1 | `#007a51` | 4,67:1 |
+| corporate | 2,07:1 | `#00754e` | 4,80:1 |
+
+**Ejecutado** (28 de octubre de 2026, contra la imagen de producción del frontend y bases descartables sembradas con `seed:example` y `seed`): `a11y:check` con panel sobre el ejemplo con `A11Y_CHECK_PROFILE=ejemplo-backend`, 50 cargas: **0** `serious`/`critical` y recorrido de teclado sin problemas (antes: 39 `color-contrast` + 1 `scrollable-region-focusable`); sobre `cv-data.json`, 72 cargas: 0. `print:check` en una hoja (20 casos, contraste mínimo 9,74:1). Detalle por página en `openspec/changes/fix-admin-contrast/verification/6.2-resumen.md`.
 
 ---
 
@@ -1691,6 +1714,8 @@ npm run build && npm run perf:budget                      # tope de JS del arran
 # Exigen A11Y_CHECK_DISPOSABLE_DB=1 y salen con 2 sin ella. Usalos SOLO contra una base descartable
 # (p. ej. `portfolio_a11y`, con migraciones, seed y un administrador de prueba), nunca contra la del owner.
 export A11Y_CHECK_DISPOSABLE_DB=1
+# Con los datos de ejemplo hay que elegir el perfil base: A11Y_CHECK_PROFILE=ejemplo-backend (el valor por
+# defecto es tech-lead-dotnet, de cv-data.json). Si el perfil no resuelve, sale con 2 sin abrir páginas.
 A11Y_CHECK_ADMIN_EMAIL=… A11Y_CHECK_ADMIN_PASSWORD=… npm run a11y:check -- http://localhost:8080 --out reports
 npm run perf:check -- http://localhost:8080 --out reports
 ```
@@ -1700,7 +1725,7 @@ Se miden contra el sitio como se sirve en producción (la imagen de `frontend/Do
 | Medida | Local, antes de un release | CI | ¿Bloquea? |
 |---|---|---|---|
 | `perf:budget` | ≤ 155 KB gzip, en **un solo** JS de módulo y sin `modulepreload` | Igual | Sí |
-| axe (`a11y:check`) | 0 `serious` y 0 `critical`; el recorrido de teclado sin fallas | Igual | Sí |
+| axe (`a11y:check`) | 0 `serious` y 0 `critical`; el recorrido de teclado sin fallas | Igual, sobre `cv-data.json` y sobre los datos de ejemplo (dos piernas, `a11y` y `a11y-example`) | Sí |
 | Lighthouse Accessibility, Best Practices y SEO (páginas públicas, mobile) | mediana de 3 ≥ 90 | mediana de 5 ≥ 90 | Sí |
 | Lighthouse Performance (páginas públicas, mobile) | mediana de 3 ≥ 90 (`PERF_CHECK_RUNS`, `PERF_CHECK_MIN_PERFORMANCE`) | mediana de 5 ≥ **85** | Sí |
 | `/admin/login` | Accessibility y Best Practices ≥ 90 (SEO exento: lleva `noindex`; Performance, informativa) | Igual | Sí |
@@ -1762,8 +1787,9 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-37 | El seed de ejemplo se niega contra una base con otros datos | ✅ | salida transcrita · código 2 en las tres capas · conteos sin cambios |
 | TC-38 | El seed por defecto se niega sobre una base con contenido | ✅ | transcripción de las salidas (códigos 0, 2, 1) contra una base descartable · tests de `seed-guard` y `seed-runner` |
 | TC-39 | Las visitas propias y de bots no suman | ✅ | app real con la cookie de sesión, Googlebot y sin User-Agent · e2e `view-kind` · tests del clasificador y del dashboard |
+| TC-40 | Ítems ocultos e insignias legibles | ✅ | `a11y:check` con panel sobre el ejemplo (0 en 50 cargas, antes 40 nodos) y sobre `cv-data.json` (0 en 72) · tests de las filas, la insignia, la región y `css-vars` · `print:check` |
 
-**Los 39 casos pasan.** TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 44 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
+**Los 40 casos pasan.** TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 44 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 

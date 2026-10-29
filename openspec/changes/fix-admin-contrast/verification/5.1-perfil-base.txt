@@ -1,0 +1,4 @@
+=== sin A11Y_CHECK_PROFILE contra la base de ejemplo (2026-10-28)
+ProfileView antes: 105 / despues: 105
+salida: 2
+El perfil base «tech-lead-dotnet» no existe en esta base: definí A11Y_CHECK_PROFILE con un slug público.

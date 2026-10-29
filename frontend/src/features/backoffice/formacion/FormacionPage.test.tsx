@@ -42,9 +42,13 @@ describe('FormacionPage', () => {
     expect(hidden).toHaveAttribute('data-visible', 'false');
     expect(within(hidden!).getByText('Oculto')).toBeInTheDocument();
     expect(hidden).toHaveTextContent('en curso');
+    expect(hidden!.className).not.toMatch(/(^|\s)opacity-/);
+    expect(hidden).toHaveClass('surface-hidden');
 
     const visible = educationItems.find((item) => item.textContent?.includes('Ingeniería'));
     expect(within(visible!).queryByText('Oculto')).not.toBeInTheDocument();
+    expect(visible).toHaveClass('surface');
+    expect(visible).not.toHaveClass('surface-hidden');
     expect(within(certifications).getByText('Scrum Master')).toBeInTheDocument();
   });
 

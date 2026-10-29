@@ -27,7 +27,7 @@ export function ExperienceTimeline({ data }: SectionProps) {
               <h3 className="text-lg font-bold md:text-xl">
                 {experience.role}
                 {experience.current && (
-                  <span className="ml-2 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-medium text-emerald-500">
+                  <span className="ml-2 inline-block rounded-full border border-success/30 bg-success/15 px-2 py-0.5 align-middle text-[11px] font-medium text-success-ink">
                     {t('experience.current')}
                   </span>
                 )}

@@ -1,0 +1,15 @@
+5.2 — CI (2026-10-28)
+Pierna a11y-example agregada a .github/workflows/ci.yml (job web-quality).
+
+Validación del workflow:
+  npx -y @action-validator/cli@0.6.0 .github/workflows/ci.yml  -> salida 0, sin mensajes
+
+Reproducción local de la pierna (no se puede correr el CI remoto):
+  - Postgres descartable en el contenedor portfolio-postgres (base portfolio_contrast_example)
+  - prisma:deploy, SEED_DISPOSABLE_DB=1 seed:example, seed:example:verify, admin:bootstrap  -> OK
+  - API NODE_ENV=production + imagen frontend/Dockerfile con Caddy (API_ORIGIN apunta a la API)
+  - A11Y_CHECK_PROFILE=ejemplo-backend npm run a11y:check -- <sitio>  -> salida 0, 50 cargas, 0 serious/critical
+  - pierna a11y equivalente sobre `seed` (cv-data.json): salida 0, 72 cargas, 0 serious/critical
+
+PENDIENTE (requiere el CI remoto, no se corrió): el PR con las tres piernas verdes, las duraciones
+reales de cada una y la prueba negativa de la tarea 5.3.

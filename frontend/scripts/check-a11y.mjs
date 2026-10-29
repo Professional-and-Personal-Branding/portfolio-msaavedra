@@ -18,10 +18,13 @@
  *   A11Y_CHECK_DISPOSABLE_DB=1  OBLIGATORIA: la API tiene que apuntar a una base descartable
  *                         (cada carga registra una visita). Sin ella sale con código 2 sin abrir páginas.
  *   CHROME_PATH           Chrome del sistema.
- *   A11Y_CHECK_PROFILE    perfil base de la matriz de presets (por defecto `tech-lead-dotnet`).
+ *   A11Y_CHECK_PROFILE    perfil base de la matriz de presets (por defecto `tech-lead-dotnet`). Con
+ *                         los datos de ejemplo hay que definirlo: `A11Y_CHECK_PROFILE=ejemplo-backend`.
  *
  * Sale con código 1 ante cualquier violación `serious` o `critical` o ante una falla del teclado;
- * `moderate` y `minor` se informan sin bloquear.
+ * `moderate` y `minor` se informan sin bloquear. Sale con 2 si falta la variable de base descartable
+ * o si el perfil base no resuelve en esta base (error de configuración, no de accesibilidad; no se
+ * abre ninguna página).
  */
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -286,6 +289,17 @@ async function keyboardWalk(page, { expectSkipLink }) {
 }
 
 // ---- Corrida -------------------------------------------------------------------------------
+
+// El perfil base tiene que existir: si no, la matriz de presets auditaría un 404 sin avisar.
+const baseProfile = await fetch(
+  `${BASE}/api/curated-profiles/${encodeURIComponent(PROFILE)}`,
+).catch(() => null);
+if (!baseProfile?.ok) {
+  console.error(
+    `El perfil base «${PROFILE}» no existe en esta base: definí A11Y_CHECK_PROFILE con un slug público.`,
+  );
+  process.exit(2);
+}
 
 const browser = await puppeteer.launch({
   executablePath: findChrome(),

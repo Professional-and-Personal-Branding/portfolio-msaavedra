@@ -1,0 +1,717 @@
+{
+  "axeVersion": "4.13.0",
+  "base": "http://localhost:8090",
+  "date": "2026-10-29T02:07:10.600Z",
+  "results": [
+    {
+      "page": "home",
+      "path": "/",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "profile",
+      "path": "/ejemplo-backend",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "profile-en-dark-sidebar",
+      "path": "/ejemplo-backend?lang=en&theme=modern-dark&layout=sidebar",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "not-found",
+      "path": "/no-existe-este-perfil",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-login",
+      "path": "/admin/login",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-dark-classic",
+      "path": "/ejemplo-backend?theme=modern-dark&layout=classic",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-dark-sidebar",
+      "path": "/ejemplo-backend?theme=modern-dark&layout=sidebar",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-light-classic",
+      "path": "/ejemplo-backend?theme=modern-light&layout=classic",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".border-emerald-500\\/30",
+              "html": "<span class=\"ml-2 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-medium text-emerald-500\">Cu",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.14 (foreground color: #00bc7d, background color: #d9f5ec, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "preset-modern-light-sidebar",
+      "path": "/ejemplo-backend?theme=modern-light&layout=sidebar",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".border-emerald-500\\/30",
+              "html": "<span class=\"ml-2 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-medium text-emerald-500\">Cu",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.14 (foreground color: #00bc7d, background color: #d9f5ec, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "preset-minimal-classic",
+      "path": "/ejemplo-backend?theme=minimal&layout=classic",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".border-emerald-500\\/30",
+              "html": "<span class=\"ml-2 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-medium text-emerald-500\">Cu",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.14 (foreground color: #00bc7d, background color: #d9f5ec, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "preset-minimal-sidebar",
+      "path": "/ejemplo-backend?theme=minimal&layout=sidebar",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".border-emerald-500\\/30",
+              "html": "<span class=\"ml-2 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-medium text-emerald-500\">Cu",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.14 (foreground color: #00bc7d, background color: #d9f5ec, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "preset-elegant-classic",
+      "path": "/ejemplo-backend?theme=elegant&layout=classic",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-elegant-sidebar",
+      "path": "/ejemplo-backend?theme=elegant&layout=sidebar",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-corporate-classic",
+      "path": "/ejemplo-backend?theme=corporate&layout=classic",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".border-emerald-500\\/30",
+              "html": "<span class=\"ml-2 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-medium text-emerald-500\">Cu",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.14 (foreground color: #00bc7d, background color: #d9f5ec, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "preset-corporate-sidebar",
+      "path": "/ejemplo-backend?theme=corporate&layout=sidebar",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".border-emerald-500\\/30",
+              "html": "<span class=\"ml-2 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-medium text-emerald-500\">Cu",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.14 (foreground color: #00bc7d, background color: #d9f5ec, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "accent-ejemplo-backend",
+      "path": "/ejemplo-backend",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-ejemplo-secciones",
+      "path": "/ejemplo-secciones",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "home",
+      "path": "/",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "profile",
+      "path": "/ejemplo-backend",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "profile-en-dark-sidebar",
+      "path": "/ejemplo-backend?lang=en&theme=modern-dark&layout=sidebar",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "not-found",
+      "path": "/no-existe-este-perfil",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-login",
+      "path": "/admin/login",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-dark-classic",
+      "path": "/ejemplo-backend?theme=modern-dark&layout=classic",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-dark-sidebar",
+      "path": "/ejemplo-backend?theme=modern-dark&layout=sidebar",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-light-classic",
+      "path": "/ejemplo-backend?theme=modern-light&layout=classic",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".border-emerald-500\\/30",
+              "html": "<span class=\"ml-2 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-medium text-emerald-500\">Cu",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.14 (foreground color: #00bc7d, background color: #d9f5ec, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "preset-modern-light-sidebar",
+      "path": "/ejemplo-backend?theme=modern-light&layout=sidebar",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".border-emerald-500\\/30",
+              "html": "<span class=\"ml-2 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-medium text-emerald-500\">Cu",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.14 (foreground color: #00bc7d, background color: #d9f5ec, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "preset-minimal-classic",
+      "path": "/ejemplo-backend?theme=minimal&layout=classic",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".border-emerald-500\\/30",
+              "html": "<span class=\"ml-2 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-medium text-emerald-500\">Cu",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.14 (foreground color: #00bc7d, background color: #d9f5ec, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "preset-minimal-sidebar",
+      "path": "/ejemplo-backend?theme=minimal&layout=sidebar",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".border-emerald-500\\/30",
+              "html": "<span class=\"ml-2 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-medium text-emerald-500\">Cu",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.14 (foreground color: #00bc7d, background color: #d9f5ec, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "preset-elegant-classic",
+      "path": "/ejemplo-backend?theme=elegant&layout=classic",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-elegant-sidebar",
+      "path": "/ejemplo-backend?theme=elegant&layout=sidebar",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-corporate-classic",
+      "path": "/ejemplo-backend?theme=corporate&layout=classic",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".border-emerald-500\\/30",
+              "html": "<span class=\"ml-2 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-medium text-emerald-500\">Cu",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.14 (foreground color: #00bc7d, background color: #d9f5ec, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "preset-corporate-sidebar",
+      "path": "/ejemplo-backend?theme=corporate&layout=sidebar",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".border-emerald-500\\/30",
+              "html": "<span class=\"ml-2 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-medium text-emerald-500\">Cu",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.14 (foreground color: #00bc7d, background color: #d9f5ec, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "accent-ejemplo-backend",
+      "path": "/ejemplo-backend",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-ejemplo-secciones",
+      "path": "/ejemplo-secciones",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin",
+      "path": "/admin",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "scrollable-region-focusable",
+          "impact": "serious",
+          "help": "Scrollable region must have keyboard access",
+          "nodes": [
+            {
+              "target": ".h-40",
+              "html": "<ol class=\"flex h-40 items-stretch gap-1 overflow-x-auto pb-1\">",
+              "summary": "Fix any of the following:\n  Element should have focusable content\n  Element should be focusable"
+            }
+          ]
+        }
+      ],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "admin-portada",
+      "path": "/admin/portada",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-experiencias",
+      "path": "/admin/experiencias",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".opacity-60 > .min-w-0.flex-1 > .mt-1.truncate.text-text-dim",
+              "html": "<p class=\"mt-1 truncate text-xs text-text-dim\">fullstack</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": ".opacity-60 > span",
+              "html": "<span class=\"text-xs text-text-dim\">orden 5</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "admin-skills",
+      "path": "/admin/skills",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-formacion",
+      "path": "/admin/formacion",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": "section[aria-label=\"Educación\"] > ul > .opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .truncate",
+              "html": "<p class=\"truncate text-sm text-text-muted\">Academia Demo · 2016 — 2016</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.13 (foreground color: #5d6779, background color: #111726, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": "section[aria-label=\"Educación\"] > ul > .opacity-60[data-visible=\"false\"] > .text-text-dim.text-xs",
+              "html": "<span class=\"text-xs text-text-dim\">orden 2</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": "section[aria-label=\"Certificaciones\"] > ul > .opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .truncate",
+              "html": "<p class=\"truncate text-sm text-text-muted\">Fundación Ágil Demo · 2018</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.13 (foreground color: #5d6779, background color: #111726, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": "section[aria-label=\"Certificaciones\"] > ul > .opacity-60[data-visible=\"false\"] > .text-text-dim.text-xs",
+              "html": "<span class=\"text-xs text-text-dim\">orden 2</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "admin-proyectos",
+      "path": "/admin/proyectos",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": "section[aria-label=\"Proyectos destacados\"] > ul > .opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .truncate.text-text-muted",
+              "html": "<p class=\"truncate text-sm text-text-muted\">Experimento (oculto) · 2022</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.13 (foreground color: #5d6779, background color: #111726, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": ".opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .mt-1:nth-child(3)",
+              "html": "<p class=\"mt-1 text-xs text-text-dim\">Sin enlace</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": ".opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .mt-1.truncate",
+              "html": "<p class=\"mt-1 truncate text-xs text-text-dim\">python</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": "section[aria-label=\"Proyectos destacados\"] > ul > .opacity-60[data-visible=\"false\"] > .text-text-dim",
+              "html": "<span class=\"text-xs text-text-dim\">orden 2</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": ".opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .font-semibold > .font-normal.text-text-dim",
+              "html": "<span class=\"text-xs font-normal text-text-dim\">blog</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": ".opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .max-w-full.hover\\:underline[rel=\"noopener noreferrer\"]",
+              "html": "<a href=\"https://blog.example.org/alexrivera\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"inline-flex max-w-full items-center gap-1 truncate text-sm text-t",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.13 (foreground color: #5d6779, background color: #111726, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": "section[aria-label=\"Enlaces sociales\"] > ul > .opacity-60[data-visible=\"false\"] > .text-text-dim",
+              "html": "<span class=\"text-xs text-text-dim\">orden 3</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "admin-perfiles",
+      "path": "/admin/perfiles",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-builder",
+      "path": "/admin/perfiles/cmvswbu6g001ducgwoqfs5ld3",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 30,
+        "problems": []
+      }
+    },
+    {
+      "page": "admin",
+      "path": "/admin",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "admin-portada",
+      "path": "/admin/portada",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-experiencias",
+      "path": "/admin/experiencias",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": ".opacity-60 > .min-w-0.flex-1 > .truncate.text-text-muted",
+              "html": "<p class=\"truncate text-sm text-text-muted\">Terracota Demo · 2015-01 — 2017-08</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.13 (foreground color: #5d6779, background color: #111726, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": ".opacity-60 > .min-w-0.flex-1 > .mt-1.truncate.text-text-dim",
+              "html": "<p class=\"mt-1 truncate text-xs text-text-dim\">fullstack</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": ".opacity-60 > span",
+              "html": "<span class=\"text-xs text-text-dim\">orden 5</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "admin-skills",
+      "path": "/admin/skills",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-formacion",
+      "path": "/admin/formacion",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": "section[aria-label=\"Educación\"] > ul > .opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .truncate",
+              "html": "<p class=\"truncate text-sm text-text-muted\">Academia Demo · 2016 — 2016</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.13 (foreground color: #5d6779, background color: #111726, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": "section[aria-label=\"Educación\"] > ul > .opacity-60[data-visible=\"false\"] > .text-text-dim.text-xs",
+              "html": "<span class=\"text-xs text-text-dim\">orden 2</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": "section[aria-label=\"Certificaciones\"] > ul > .opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .truncate",
+              "html": "<p class=\"truncate text-sm text-text-muted\">Fundación Ágil Demo · 2018</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.13 (foreground color: #5d6779, background color: #111726, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": "section[aria-label=\"Certificaciones\"] > ul > .opacity-60[data-visible=\"false\"] > .text-text-dim.text-xs",
+              "html": "<span class=\"text-xs text-text-dim\">orden 2</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "admin-proyectos",
+      "path": "/admin/proyectos",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": "section[aria-label=\"Proyectos destacados\"] > ul > .opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .truncate.text-text-muted",
+              "html": "<p class=\"truncate text-sm text-text-muted\">Experimento (oculto) · 2022</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.13 (foreground color: #5d6779, background color: #111726, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": ".opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .mt-1:nth-child(3)",
+              "html": "<p class=\"mt-1 text-xs text-text-dim\">Sin enlace</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": ".opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .mt-1.truncate",
+              "html": "<p class=\"mt-1 truncate text-xs text-text-dim\">python</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": "section[aria-label=\"Proyectos destacados\"] > ul > .opacity-60[data-visible=\"false\"] > .text-text-dim",
+              "html": "<span class=\"text-xs text-text-dim\">orden 2</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": ".opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .font-semibold > .font-normal.text-text-dim",
+              "html": "<span class=\"text-xs font-normal text-text-dim\">blog</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": ".opacity-60[data-visible=\"false\"] > .min-w-0.flex-1 > .max-w-full.hover\\:underline[rel=\"noopener noreferrer\"]",
+              "html": "<a href=\"https://blog.example.org/alexrivera\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"inline-flex max-w-full items-center gap-1 truncate text-sm text-t",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.13 (foreground color: #5d6779, background color: #111726, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "target": "section[aria-label=\"Enlaces sociales\"] > ul > .opacity-60[data-visible=\"false\"] > .text-text-dim",
+              "html": "<span class=\"text-xs text-text-dim\">orden 3</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.44 (foreground color: #4d5767, background color: #111726, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "admin-perfiles",
+      "path": "/admin/perfiles",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-builder",
+      "path": "/admin/perfiles/cmvswbu6g001ducgwoqfs5ld3",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 30,
+        "problems": []
+      }
+    }
+  ],
+  "console": [
+    {
+      "page": "not-found.mobile",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "page": "admin-login.mobile",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "page": "not-found.desktop",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "page": "admin-login.desktop",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    }
+  ]
+}

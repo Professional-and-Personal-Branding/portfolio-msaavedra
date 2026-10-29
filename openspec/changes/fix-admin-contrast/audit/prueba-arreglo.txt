@@ -1,0 +1,46 @@
+Prueba de concepto del arreglo — 2026-10-28
+Base portfolio_contrast_tmp (descartable, seed:example), API :3310, imagen de producción del frontend en :8090.
+axe-core 4.13.0, mismas etiquetas que a11y:check; se listan solo serious/critical.
+"CON-ARREGLO" = CSS inyectado en la página (ver README.md § Prueba del arreglo); el código no se tocó.
+
+login 200
+375 /admin antes: scrollable-region-focusablex1
+375 /admin CON-ARREGLO: 0 serious/critical
+375 /admin/experiencias antes: color-contrastx2
+375 /admin/experiencias CON-ARREGLO: 0 serious/critical
+375 /admin/formacion antes: color-contrastx4
+375 /admin/formacion CON-ARREGLO: 0 serious/critical
+375 /admin/proyectos antes: color-contrastx7
+375 /admin/proyectos CON-ARREGLO: 0 serious/critical
+375 /ejemplo-backend?theme=modern-light&layout=classic antes: color-contrastx1
+375 /ejemplo-backend?theme=modern-light&layout=classic CON-ARREGLO: 0 serious/critical
+375 /ejemplo-backend?theme=modern-light&layout=sidebar antes: color-contrastx1
+375 /ejemplo-backend?theme=modern-light&layout=sidebar CON-ARREGLO: 0 serious/critical
+375 /ejemplo-backend?theme=minimal&layout=classic antes: color-contrastx1
+375 /ejemplo-backend?theme=minimal&layout=classic CON-ARREGLO: 0 serious/critical
+375 /ejemplo-backend?theme=minimal&layout=sidebar antes: color-contrastx1
+375 /ejemplo-backend?theme=minimal&layout=sidebar CON-ARREGLO: 0 serious/critical
+375 /ejemplo-backend?theme=corporate&layout=classic antes: color-contrastx1
+375 /ejemplo-backend?theme=corporate&layout=classic CON-ARREGLO: 0 serious/critical
+375 /ejemplo-backend?theme=corporate&layout=sidebar antes: color-contrastx1
+375 /ejemplo-backend?theme=corporate&layout=sidebar CON-ARREGLO: 0 serious/critical
+1350 /admin antes: 0 serious/critical
+1350 /admin CON-ARREGLO: 0 serious/critical
+1350 /admin/experiencias antes: color-contrastx3
+1350 /admin/experiencias CON-ARREGLO: 0 serious/critical
+1350 /admin/formacion antes: color-contrastx4
+1350 /admin/formacion CON-ARREGLO: 0 serious/critical
+1350 /admin/proyectos antes: color-contrastx7
+1350 /admin/proyectos CON-ARREGLO: 0 serious/critical
+1350 /ejemplo-backend?theme=modern-light&layout=classic antes: color-contrastx1
+1350 /ejemplo-backend?theme=modern-light&layout=classic CON-ARREGLO: 0 serious/critical
+1350 /ejemplo-backend?theme=modern-light&layout=sidebar antes: color-contrastx1
+1350 /ejemplo-backend?theme=modern-light&layout=sidebar CON-ARREGLO: 0 serious/critical
+1350 /ejemplo-backend?theme=minimal&layout=classic antes: color-contrastx1
+1350 /ejemplo-backend?theme=minimal&layout=classic CON-ARREGLO: 0 serious/critical
+1350 /ejemplo-backend?theme=minimal&layout=sidebar antes: color-contrastx1
+1350 /ejemplo-backend?theme=minimal&layout=sidebar CON-ARREGLO: 0 serious/critical
+1350 /ejemplo-backend?theme=corporate&layout=classic antes: color-contrastx1
+1350 /ejemplo-backend?theme=corporate&layout=classic CON-ARREGLO: 0 serious/critical
+1350 /ejemplo-backend?theme=corporate&layout=sidebar antes: color-contrastx1
+1350 /ejemplo-backend?theme=corporate&layout=sidebar CON-ARREGLO: 0 serious/critical

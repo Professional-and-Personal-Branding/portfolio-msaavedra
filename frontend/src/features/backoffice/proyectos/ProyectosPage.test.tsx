@@ -30,6 +30,8 @@ describe('ProyectosPage', () => {
     const hiddenProject = within(projects).getByText('Bot de Pagos').closest('li');
     expect(hiddenProject).not.toBeNull();
     expect(within(hiddenProject as HTMLElement).getByText('Oculto')).toBeInTheDocument();
+    expect((hiddenProject as HTMLElement).className).not.toMatch(/(^|\s)opacity-/);
+    expect(hiddenProject).toHaveClass('surface-hidden');
     expect(
       within(hiddenProject as HTMLElement).getByRole('link', {
         name: 'https://github.com/acme/pagos',
@@ -42,6 +44,10 @@ describe('ProyectosPage', () => {
     expect(within(github).queryByText('Oculto')).not.toBeInTheDocument();
     const youtube = within(links).getByText('YouTube').closest('li') as HTMLElement;
     expect(within(youtube).getByText('Oculto')).toBeInTheDocument();
+    expect(youtube.className).not.toMatch(/(^|\s)opacity-/);
+    expect(youtube).toHaveClass('surface-hidden');
+    expect(github).toHaveClass('surface');
+    expect(github).not.toHaveClass('surface-hidden');
   });
 
   it('completar la URL de un proyecto envía un PATCH con la url', async () => {
