@@ -260,6 +260,14 @@ model CuratedProfileSlugAlias {
   @@index([curatedProfileId])
 }
 
+// Tipo de la visita (change classify-profile-views): solo las HUMAN suman en views y en el agregado.
+// OWNER = petición con sesión de administrador válida; BOT = sin User-Agent o con uno de la lista versionada.
+enum ViewKind {
+  HUMAN
+  OWNER
+  BOT
+}
+
 model ProfileView {
   id               String          @id @default(cuid())
   curatedProfile   CuratedProfile  @relation(fields: [curatedProfileId], references: [id], onDelete: Cascade)
@@ -269,6 +277,7 @@ model ProfileView {
   userAgent        String?
   ipHash           String?         // hash de IP por privacidad, nunca IP cruda
   viewedAt         DateTime        @default(now())
+  kind             ViewKind        @default(HUMAN) // filas previas: HUMAN; views:reclassify las recalcula
 
   @@index([curatedProfileId])
   @@index([viewedAt])
