@@ -13,6 +13,7 @@ import { profilePath } from '@/shared/lib/profile-link';
 import { PageHeader } from '../shared/PageHeader';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
 import { useAnalytics, useCuratedProfilesAdmin } from '../shared/use-admin-api';
+import type { ProfileViews } from '../shared/admin-types';
 import { DEFAULT_RANGE_DAYS, formatDay, RANGE_OPTIONS, rangeOfDays } from './ranges';
 
 /** Dashboard de visitas (spec `admin-analytics-dashboard`). Gráficos propios, sin librería. */
@@ -34,7 +35,7 @@ export function DashboardPage() {
     <>
       <PageHeader
         title="Dashboard"
-        description="Visitas registradas en las vistas públicas de los perfiles curados."
+        description="Visitas de personas en las vistas públicas de los perfiles curados. Las tuyas y las de bots se cuentan aparte, en «Por tipo»."
         actions={
           <Select value={days} onValueChange={setDays}>
             <SelectTrigger className="w-48" aria-label="Rango de fechas">
@@ -69,10 +70,14 @@ export function DashboardPage() {
           </section>
 
           {analytics.data.total === 0 ? (
-            <EmptyState
-              title="Todavía no hay visitas"
-              description="Cuando alguien abra un perfil curado en el rango elegido, aparecerá acá."
-            />
+            <>
+              <EmptyState
+                title="Todavía no hay visitas"
+                description="Cuando alguien abra un perfil curado en el rango elegido, aparecerá acá."
+              />
+              {/* Con visitas propias o de bots el desglose igual explica por qué el total es 0. */}
+              {hasAnyKind(analytics.data.byKind) && <KindTable byKind={analytics.data.byKind} />}
+            </>
           ) : (
             <>
               <section aria-labelledby="por-dia" className="surface p-card">
@@ -170,11 +175,45 @@ export function DashboardPage() {
                     ))}
                 </ol>
               </section>
+
+              <KindTable byKind={analytics.data.byKind} />
             </>
           )}
         </div>
       )}
     </>
+  );
+}
+
+/** Etiqueta de cada tipo de visita; el `Record` obliga a cubrir los tres (change classify-profile-views). */
+const KIND_LABELS: Record<ProfileViews['byKind'][number]['kind'], string> = {
+  HUMAN: 'Personas',
+  OWNER: 'Tus visitas',
+  BOT: 'Bots',
+};
+
+const hasAnyKind = (byKind: ProfileViews['byKind']): boolean => byKind.some((row) => row.views > 0);
+
+/** classify-profile-views, D8: cuántas visitas hubo de cada tipo y cuáles suman en el total. */
+function KindTable({ byKind }: { byKind: ProfileViews['byKind'] }) {
+  return (
+    <section aria-labelledby="por-tipo" className="surface p-card">
+      <h2 id="por-tipo" className="mb-1 font-semibold">
+        Por tipo
+      </h2>
+      <p className="mb-4 text-xs text-text-dim">
+        Solo las visitas de personas suman en el total y en las visitas de cada perfil. Las tuyas se
+        reconocen por la sesión del panel; los bots, por su navegador.
+      </p>
+      <ul className="flex flex-col gap-2">
+        {byKind.map((row) => (
+          <li key={row.kind} className="flex items-center gap-3">
+            <span className="min-w-0 flex-1 truncate text-sm">{KIND_LABELS[row.kind]}</span>
+            <span className="w-10 text-right text-sm font-semibold tabular-nums">{row.views}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

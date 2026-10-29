@@ -1143,7 +1143,7 @@
     },
     "/api/curated-profiles/{slug}": {
       "get": {
-        "description": "Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash). Un slug anterior (renombrado) también resuelve: el cuerpo trae el slug canónico y `Content-Location` su ruta. Un perfil archivado responde 404.",
+        "description": "Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash) con su tipo: propia si trae una sesión del panel válida, de bot según el User-Agent, o de una persona; solo estas últimas suman en `views`. Un slug anterior (renombrado) también resuelve: el cuerpo trae el slug canónico y `Content-Location` su ruta. Un perfil archivado responde 404.",
         "operationId": "CuratedProfileController_findBySlug",
         "parameters": [
           {
@@ -2324,7 +2324,7 @@
     },
     "/api/admin/analytics/views": {
       "get": {
-        "description": "El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso. El origen se normaliza al host del `referrer` guardado; las visitas desde el propio sitio cuentan como `interno`.",
+        "description": "El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso. El origen se normaliza al host del `referrer` guardado; las visitas desde el propio sitio cuentan como `interno`. `total` y los desgloses cuentan solo las visitas de personas (`HUMAN`); `byKind` cuenta todas las del rango, también las propias (`OWNER`) y las de bots (`BOT`).",
         "operationId": "AdminAnalyticsController_views",
         "parameters": [
           {
@@ -2385,7 +2385,7 @@
             "bearer": []
           }
         ],
-        "summary": "Visitas agregadas por perfil, idioma, día y origen",
+        "summary": "Visitas de personas agregadas por perfil, idioma, día y origen, y conteo por tipo",
         "tags": [
           "admin"
         ]
@@ -6027,6 +6027,33 @@
           "views"
         ]
       },
+      "ViewKind": {
+        "type": "string",
+        "enum": [
+          "HUMAN",
+          "OWNER",
+          "BOT"
+        ]
+      },
+      "CountByKind": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ViewKind"
+              }
+            ]
+          },
+          "views": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "kind",
+          "views"
+        ]
+      },
       "ProfileViewsResponse": {
         "type": "object",
         "properties": {
@@ -6037,31 +6064,42 @@
             "type": "string"
           },
           "total": {
-            "type": "number"
+            "type": "number",
+            "description": "Solo visitas de personas (`HUMAN`) del rango"
           },
           "byProfile": {
+            "description": "Solo visitas de personas (`HUMAN`)",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CountBySlug"
             }
           },
           "byLocale": {
+            "description": "Solo visitas de personas (`HUMAN`)",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CountByLocale"
             }
           },
           "byDay": {
+            "description": "Solo visitas de personas (`HUMAN`)",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CountByDay"
             }
           },
           "byReferrer": {
-            "description": "Por origen, descendente. Su suma es `total`; solo se agrega el host",
+            "description": "Por origen, descendente. Solo visitas de personas (`HUMAN`): su suma es `total`; solo se agrega el host",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CountByReferrer"
+            }
+          },
+          "byKind": {
+            "description": "Todas las visitas del rango por tipo, con `HUMAN`, `OWNER` y `BOT` siempre presentes y en ese orden",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountByKind"
             }
           }
         },
@@ -6072,7 +6110,8 @@
           "byProfile",
           "byLocale",
           "byDay",
-          "byReferrer"
+          "byReferrer",
+          "byKind"
         ]
       },
       "AdminEducationResponse": {

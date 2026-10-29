@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 90dd0f1329f3742b05e963d70a92ffa82eebf2ecdab1bfc6966d0af178c0ab53
+// openapi-sha256: 1f72941a8d54bdb49e67d3d6808b41aa9f9a21815c8116f06067be1c7c68636e
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -10,8 +10,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Visitas agregadas por perfil, idioma, día y origen
-         * @description El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso. El origen se normaliza al host del `referrer` guardado; las visitas desde el propio sitio cuentan como `interno`.
+         * Visitas de personas agregadas por perfil, idioma, día y origen, y conteo por tipo
+         * @description El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso. El origen se normaliza al host del `referrer` guardado; las visitas desde el propio sitio cuentan como `interno`. `total` y los desgloses cuentan solo las visitas de personas (`HUMAN`); `byKind` cuenta todas las del rango, también las propias (`OWNER`) y las de bots (`BOT`).
          */
         get: operations["AdminAnalyticsController_views"];
         put?: never;
@@ -602,7 +602,7 @@ export interface paths {
         };
         /**
          * Perfil curado resuelto
-         * @description Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash). Un slug anterior (renombrado) también resuelve: el cuerpo trae el slug canónico y `Content-Location` su ruta. Un perfil archivado responde 404.
+         * @description Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash) con su tipo: propia si trae una sesión del panel válida, de bot según el User-Agent, o de una persona; solo estas últimas suman en `views`. Un slug anterior (renombrado) también resuelve: el cuerpo trae el slug canónico y `Content-Location` su ruta. Un perfil archivado responde 404.
          */
         get: operations["CuratedProfileController_findBySlug"];
         put?: never;
@@ -935,6 +935,10 @@ export interface components {
         CountByDay: {
             /** @example 2026-09-07 */
             day: string;
+            views: number;
+        };
+        CountByKind: {
+            kind: components["schemas"]["ViewKind"];
             views: number;
         };
         CountByLocale: {
@@ -1517,13 +1521,19 @@ export interface components {
             yearsOfExperience: number;
         };
         ProfileViewsResponse: {
+            /** @description Solo visitas de personas (`HUMAN`) */
             byDay: components["schemas"]["CountByDay"][];
+            /** @description Todas las visitas del rango por tipo, con `HUMAN`, `OWNER` y `BOT` siempre presentes y en ese orden */
+            byKind: components["schemas"]["CountByKind"][];
+            /** @description Solo visitas de personas (`HUMAN`) */
             byLocale: components["schemas"]["CountByLocale"][];
+            /** @description Solo visitas de personas (`HUMAN`) */
             byProfile: components["schemas"]["CountBySlug"][];
-            /** @description Por origen, descendente. Su suma es `total`; solo se agrega el host */
+            /** @description Por origen, descendente. Solo visitas de personas (`HUMAN`): su suma es `total`; solo se agrega el host */
             byReferrer: components["schemas"]["CountByReferrer"][];
             from: string;
             to: string;
+            /** @description Solo visitas de personas (`HUMAN`) del rango */
             total: number;
         };
         ProjectResponse: {
@@ -1845,6 +1855,8 @@ export interface components {
             /** @default true */
             visible: boolean;
         };
+        /** @enum {string} */
+        ViewKind: "HUMAN" | "OWNER" | "BOT";
     };
     responses: never;
     parameters: never;
