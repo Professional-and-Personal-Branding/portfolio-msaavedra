@@ -27,6 +27,7 @@ export const adminHandlers: HttpHandler[] = [
   http.get(`${API}/admin/experiences`, () => HttpResponse.json(ADMIN_EXPERIENCES)),
   http.get(`${API}/admin/skill-categories`, () => HttpResponse.json(ADMIN_CATEGORIES)),
   http.get(`${API}/admin/curated-profiles`, () => HttpResponse.json([makeAdminCuratedProfile()])),
+  http.get(`${API}/admin/curated-profiles/:id/share-links`, () => HttpResponse.json([])),
   http.get(`${API}/admin/themes`, () => HttpResponse.json(ADMIN_THEMES)),
   http.get(`${API}/admin/analytics/views`, () => HttpResponse.json(ANALYTICS)),
   http.post(`${API}/admin/curated-profiles/preview`, () => HttpResponse.json(makeCuratedProfile())),

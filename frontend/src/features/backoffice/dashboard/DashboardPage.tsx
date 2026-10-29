@@ -9,6 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/components/ui/table';
 import { profilePath } from '@/shared/lib/profile-link';
 import { PageHeader } from '../shared/PageHeader';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
@@ -159,8 +167,11 @@ export function DashboardPage() {
                   Por origen
                 </h2>
                 <p className="mb-4 text-xs text-text-dim">
-                  De dónde llegó cada visita. «directo» es sin referencia (un link pegado, un
-                  correo); «interno» es navegación dentro del propio sitio.
+                  De dónde llegó cada visita según el navegador. «directo» es sin referencia (un
+                  link pegado, un correo); «interno» es navegación dentro del propio sitio. En
+                  producción casi siempre da «directo»: el sitio no reenvía el origen. Para saber
+                  qué envío trajo una visita mirá <strong>Por enlace</strong> y{' '}
+                  <strong>Por portal</strong>.
                 </p>
                 <ol className="flex flex-col gap-2">
                   {[...analytics.data.byReferrer]
@@ -175,6 +186,9 @@ export function DashboardPage() {
                     ))}
                 </ol>
               </section>
+
+              <ShareLinkTable total={analytics.data.total} rows={analytics.data.byShareLink} />
+              <SourceTable total={analytics.data.total} rows={analytics.data.bySource} />
 
               <KindTable byKind={analytics.data.byKind} />
             </>
@@ -269,5 +283,113 @@ function DayBars({ data }: { data: { day: string; views: number }[] }) {
         </li>
       ))}
     </ol>
+  );
+}
+
+/** Visitas de personas que el desglose no cubre: el total menos lo atribuido (nunca negativo). */
+const unattributed = (total: number, rows: { views: number }[]): number =>
+  Math.max(0, total - rows.reduce((sum, row) => sum + row.views, 0));
+
+/**
+ * add-share-links, D9: visitas de personas por enlace de seguimiento. Las visitas sin enlace no
+ * vienen en la lista: la última fila es el total menos lo atribuido.
+ */
+function ShareLinkTable({ total, rows }: { total: number; rows: ProfileViews['byShareLink'] }) {
+  return (
+    <section aria-labelledby="por-enlace" className="surface p-card">
+      <h2 id="por-enlace" className="mb-1 font-semibold">
+        Por enlace
+      </h2>
+      <p className="mb-4 text-xs text-text-dim">
+        Qué enlace de seguimiento abrió cada persona. Revocar un enlace no borra sus visitas
+        pasadas.
+      </p>
+      {rows.length === 0 ? (
+        <p className="text-sm text-text-muted">
+          Todavía ninguna visita llegó por un enlace de seguimiento. Creá uno en la pestaña{' '}
+          <strong>Publicación</strong> de un perfil y usá ese link al enviarlo.
+        </p>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Enlace</TableHead>
+              <TableHead>Perfil</TableHead>
+              <TableHead>Portal</TableHead>
+              <TableHead className="text-right">Visitas</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row.shareLinkId}>
+                <TableCell className="max-w-56 truncate">
+                  {row.label}
+                  {row.revoked && (
+                    <Badge variant="outline" className="ml-2 text-text-muted">
+                      revocado
+                    </Badge>
+                  )}
+                </TableCell>
+                <TableCell>{row.slug}</TableCell>
+                <TableCell>{row.portal ?? '—'}</TableCell>
+                <TableCell className="text-right font-semibold tabular-nums">{row.views}</TableCell>
+              </TableRow>
+            ))}
+            <TableRow>
+              <TableCell className="text-text-muted">Sin enlace</TableCell>
+              <TableCell />
+              <TableCell />
+              <TableCell className="text-right font-semibold tabular-nums">
+                {unattributed(total, rows)}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      )}
+    </section>
+  );
+}
+
+/** add-share-links, D9: visitas de personas por portal (el del enlace o el de `?src=`). */
+function SourceTable({ total, rows }: { total: number; rows: ProfileViews['bySource'] }) {
+  return (
+    <section aria-labelledby="por-portal" className="surface p-card">
+      <h2 id="por-portal" className="mb-1 font-semibold">
+        Por portal
+      </h2>
+      <p className="mb-4 text-xs text-text-dim">
+        El portal del enlace de seguimiento o el del link genérico (<code>?src=</code>). A
+        diferencia de <strong>Por origen</strong>, no depende del referrer, que casi nunca llega.
+      </p>
+      {rows.length === 0 ? (
+        <p className="text-sm text-text-muted">
+          Todavía ninguna visita trae un portal. Copiá un link por portal en la pestaña{' '}
+          <strong>Publicación</strong> de un perfil.
+        </p>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Portal</TableHead>
+              <TableHead className="text-right">Visitas</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row.source}>
+                <TableCell>{row.source}</TableCell>
+                <TableCell className="text-right font-semibold tabular-nums">{row.views}</TableCell>
+              </TableRow>
+            ))}
+            <TableRow>
+              <TableCell className="text-text-muted">Sin portal</TableCell>
+              <TableCell className="text-right font-semibold tabular-nums">
+                {unattributed(total, rows)}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      )}
+    </section>
   );
 }

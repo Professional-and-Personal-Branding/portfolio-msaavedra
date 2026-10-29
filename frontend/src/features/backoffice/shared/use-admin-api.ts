@@ -8,9 +8,11 @@ import type {
   AdminTheme,
   CreateCuratedProfileBody,
   CreateExperienceBody,
+  CreateShareLinkBody,
   CreateSkillBody,
   CreateSkillCategoryBody,
   ProfileViews,
+  ShareLink,
   UpdateCuratedProfileBody,
   UpdateExperienceBody,
 } from './admin-types';
@@ -27,6 +29,7 @@ export const adminKeys = {
   certifications: ['admin', 'certifications'] as const,
   projects: ['admin', 'projects'] as const,
   socialLinks: ['admin', 'social-links'] as const,
+  shareLinks: (profileId: string) => ['admin', 'share-links', profileId] as const,
   analytics: (from: string, to: string) => ['admin', 'analytics', from, to] as const,
   preview: (draftKey: string, locale: string) => ['admin', 'preview', draftKey, locale] as const,
 };
@@ -254,5 +257,75 @@ export function useAnalytics(from: string, to: string) {
     queryKey: adminKeys.analytics(from, to),
     queryFn: async (): Promise<ProfileViews> =>
       unwrap(await api.GET('/api/admin/analytics/views', { params: { query: { from, to } } })),
+  });
+}
+
+// ── Enlaces de seguimiento (add-share-links) ────────────────────────────────
+/** Enlaces del perfil con sus aperturas; `undefined` (perfil sin guardar) no llama a la API. */
+export function useShareLinks(profileId: string | undefined) {
+  return useQuery({
+    queryKey: adminKeys.shareLinks(profileId ?? ''),
+    queryFn: async (): Promise<ShareLink[]> =>
+      unwrap(
+        await api.GET('/api/admin/curated-profiles/{id}/share-links', {
+          params: { path: { id: profileId ?? '' } },
+        }),
+      ),
+    enabled: profileId !== undefined,
+  });
+}
+
+export function useCreateShareLink(profileId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: CreateShareLinkBody): Promise<ShareLink> =>
+      unwrap(
+        await api.POST('/api/admin/curated-profiles/{id}/share-links', {
+          params: { path: { id: profileId } },
+          body,
+        }),
+      ),
+    onSuccess: () => invalidate(client, adminKeys.shareLinks(profileId)),
+  });
+}
+
+export function useRenameShareLink(profileId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { linkId: string; label: string }): Promise<ShareLink> =>
+      unwrap(
+        await api.PATCH('/api/admin/curated-profiles/{id}/share-links/{linkId}', {
+          params: { path: { id: profileId, linkId: input.linkId } },
+          body: { label: input.label },
+        }),
+      ),
+    onSuccess: () => invalidate(client, adminKeys.shareLinks(profileId)),
+  });
+}
+
+export function useRevokeShareLink(profileId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (linkId: string): Promise<ShareLink> =>
+      unwrap(
+        await api.POST('/api/admin/curated-profiles/{id}/share-links/{linkId}/revoke', {
+          params: { path: { id: profileId, linkId } },
+        }),
+      ),
+    onSuccess: () => invalidate(client, adminKeys.shareLinks(profileId)),
+  });
+}
+
+/** El enlace `LINKEDIN_POST` activo del perfil (lo crea si no hay); 409 si no es público. */
+export function useLinkedInShareLink(profileId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (): Promise<ShareLink> =>
+      unwrap(
+        await api.POST('/api/admin/curated-profiles/{id}/share-links/linkedin', {
+          params: { path: { id: profileId } },
+        }),
+      ),
+    onSuccess: () => invalidate(client, adminKeys.shareLinks(profileId)),
   });
 }
