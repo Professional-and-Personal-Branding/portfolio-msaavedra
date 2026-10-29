@@ -1,0 +1,12 @@
+
+
+> portfolio-backend@0.1.0 test:e2e
+> jest --config ./test/jest-e2e.json --runInBand
+
+
+Test Suites: 14 passed, 14 total
+Tests:       244 passed, 244 total
+Snapshots:   0 total
+Time:        14.141 s, estimated 26 s
+Ran all test suites.
+

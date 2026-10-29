@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 9b8c8c0b09c600d2ac4779a0d6e1c7451ea63abaa0e799d7b06cf441837068ae
+// openapi-sha256: df2eea2d00b12556a0f4f23b1b28599538b505efb855b31ec7a02c982b40f195
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -832,11 +832,23 @@ export interface components {
             startDate: components["schemas"]["LocalizedTextDto"] | null;
         };
         AdminCertificationResponse: {
+            /** @example EJ-2023-0042 */
+            credentialId: string | null;
+            /**
+             * @description YYYY-MM o YYYY. La vigencia la deriva el cliente.
+             * @example 2029-06
+             */
+            expiresAt: string | null;
             id: string;
             /** @example CertifPro, Sunrise Florida, EEUU */
             issuer: string;
             name: components["schemas"]["LocalizedTextDto"];
             order: number;
+            /**
+             * @description URL https de la página pública de la credencial en el emisor.
+             * @example https://www.credly.com/badges/00000000-0000-0000-0000-000000000000
+             */
+            verificationUrl: string | null;
             visible: boolean;
             /** @example 2021 */
             year: string | null;
@@ -1001,6 +1013,13 @@ export interface components {
             startDate: string;
         };
         CertificationResponse: {
+            /** @example EJ-2023-0042 */
+            credentialId: string | null;
+            /**
+             * @description YYYY-MM o YYYY. La vigencia la deriva el cliente.
+             * @example 2029-06
+             */
+            expiresAt: string | null;
             id: string;
             /** @example CertifPro */
             issuer: string;
@@ -1010,6 +1029,11 @@ export interface components {
              */
             name: string;
             order: number;
+            /**
+             * @description URL https de la página pública de la credencial en el emisor.
+             * @example https://www.credly.com/badges/00000000-0000-0000-0000-000000000000
+             */
+            verificationUrl: string | null;
             /** @example 2021 */
             year: string | null;
         };
@@ -1064,11 +1088,26 @@ export interface components {
             views: number;
         };
         CreateCertificationDto: {
+            /**
+             * @description ID de la credencial en el emisor (texto plano); null para quitarlo
+             * @example EJ-2023-0042
+             */
+            credentialId?: string | null;
+            /**
+             * @description Vencimiento YYYY-MM o YYYY; null si no vence
+             * @example 2029-06
+             */
+            expiresAt?: string | null;
             /** @example CertifPro, Sunrise Florida, EEUU */
             issuer: string;
             name: components["schemas"]["LocalizedTextDto"];
             /** @default 0 */
             order: number;
+            /**
+             * @description URL https absoluta de la página pública de la credencial; null para quitarla
+             * @example https://www.credly.com/badges/00000000-0000-0000-0000-000000000000
+             */
+            verificationUrl?: string | null;
             /** @default true */
             visible: boolean;
             /**
@@ -1801,11 +1840,26 @@ export interface components {
             };
         };
         UpdateCertificationDto: {
+            /**
+             * @description ID de la credencial en el emisor (texto plano); null para quitarlo
+             * @example EJ-2023-0042
+             */
+            credentialId?: string | null;
+            /**
+             * @description Vencimiento YYYY-MM o YYYY; null si no vence
+             * @example 2029-06
+             */
+            expiresAt?: string | null;
             /** @example CertifPro, Sunrise Florida, EEUU */
             issuer?: string;
             name?: components["schemas"]["LocalizedTextDto"];
             /** @default 0 */
             order: number;
+            /**
+             * @description URL https absoluta de la página pública de la credencial; null para quitarla
+             * @example https://www.credly.com/badges/00000000-0000-0000-0000-000000000000
+             */
+            verificationUrl?: string | null;
             /** @default true */
             visible: boolean;
             /**

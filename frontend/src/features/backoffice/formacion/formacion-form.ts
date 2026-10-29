@@ -10,6 +10,19 @@ import { toLocalizedPayload } from '../shared/fields/localized';
 /** Mismas reglas que el dominio del backend (`validate-education`, `validate-certification`). */
 export const EDUCATION_DATE_REGEX = /^\d{4}(-(0[1-9]|1[0-2]))?$/;
 export const YEAR_REGEX = /^\d{4}$/;
+/** Límites de la credencial: iguales a los del dominio y el DTO (change `add-certification-verification`, D3). */
+export const VERIFICATION_URL_MAX = 2048;
+export const CREDENTIAL_ID_MAX = 100;
+
+/** URL absoluta https con dominio, como la que acepta el backend (`isHttpsUrl` + `@IsUrl`). */
+export function isHttpsUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && url.hostname.includes('.');
+  } catch {
+    return false;
+  }
+}
 
 const localized = z.object({ es: z.string(), en: z.string().optional() });
 
@@ -99,18 +112,46 @@ export function toEducationBody(values: EducationFormValues): CreateEducationBod
 }
 
 // ── Certificaciones ─────────────────────────────────────────────────────────
-export const certificationSchema = z.object({
-  name: localized.refine((v) => v.es.trim().length > 0, {
-    message: 'El nombre en español es obligatorio',
-  }),
-  issuer: z.string().trim().min(1, 'El emisor es obligatorio'),
-  year: z
-    .string()
-    .trim()
-    .refine((v) => v === '' || YEAR_REGEX.test(v), 'Usá el formato AAAA'),
-  order: z.number().int().min(0, 'El orden no puede ser negativo'),
-  visible: z.boolean(),
-});
+export const certificationSchema = z
+  .object({
+    name: localized.refine((v) => v.es.trim().length > 0, {
+      message: 'El nombre en español es obligatorio',
+    }),
+    issuer: z.string().trim().min(1, 'El emisor es obligatorio'),
+    year: z
+      .string()
+      .trim()
+      .refine((v) => v === '' || YEAR_REGEX.test(v), 'Usá el formato AAAA'),
+    // Credencial (D8): los tres son opcionales; vacío = sin valor.
+    verificationUrl: z
+      .string()
+      .trim()
+      .refine(
+        (v) => v === '' || (v.length <= VERIFICATION_URL_MAX && isHttpsUrl(v)),
+        'Usá una URL completa que empiece con https://',
+      ),
+    credentialId: z
+      .string()
+      .trim()
+      .max(CREDENTIAL_ID_MAX, 'El ID de credencial admite hasta 100 caracteres'),
+    expiresAt: z
+      .string()
+      .trim()
+      .refine((v) => v === '' || EDUCATION_DATE_REGEX.test(v), 'Usá el formato AAAA-MM o AAAA'),
+    order: z.number().int().min(0, 'El orden no puede ser negativo'),
+    visible: z.boolean(),
+  })
+  .superRefine((values, ctx) => {
+    const year = values.year.trim();
+    const expires = values.expiresAt.trim();
+    if (YEAR_REGEX.test(year) && EDUCATION_DATE_REGEX.test(expires) && expires.slice(0, 4) < year) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['expiresAt'],
+        message: 'El vencimiento no puede ser anterior al año',
+      });
+    }
+  });
 
 export type CertificationFormValues = z.infer<typeof certificationSchema>;
 
@@ -118,6 +159,9 @@ export const EMPTY_CERTIFICATION: CertificationFormValues = {
   name: { es: '', en: '' },
   issuer: '',
   year: '',
+  verificationUrl: '',
+  credentialId: '',
+  expiresAt: '',
   order: 0,
   visible: true,
 };
@@ -127,6 +171,9 @@ export function toCertificationValues(certification: AdminCertification): Certif
     name: { es: certification.name.es, en: certification.name.en ?? '' },
     issuer: certification.issuer,
     year: certification.year ?? '',
+    verificationUrl: certification.verificationUrl ?? '',
+    credentialId: certification.credentialId ?? '',
+    expiresAt: certification.expiresAt ?? '',
     order: certification.order,
     visible: certification.visible,
   };
@@ -137,6 +184,10 @@ export function toCertificationBody(values: CertificationFormValues): CreateCert
     name: toLocalizedPayload(values.name),
     issuer: values.issuer.trim(),
     year: values.year.trim() || null,
+    // Vacío → null: en el PATCH quita el valor guardado (D3).
+    verificationUrl: values.verificationUrl.trim() || null,
+    credentialId: values.credentialId.trim() || null,
+    expiresAt: values.expiresAt.trim() || null,
     order: values.order,
     visible: values.visible,
   };

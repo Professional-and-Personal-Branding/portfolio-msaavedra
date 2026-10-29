@@ -94,6 +94,9 @@ const NEW_CERT: NewCertificationProps = {
   name: { es: 'Scrum Master', en: 'Scrum Master' },
   issuer: 'UAGRM School of Engineering',
   year: '2022',
+  verificationUrl: null,
+  credentialId: null,
+  expiresAt: null,
   order: 1,
   visible: true,
 };
@@ -232,5 +235,73 @@ describe('Certification admin use cases (spec admin-content-management)', () => 
     const missing = await new DeleteCertificationUseCase(repo).execute({ id: 'v' });
     expect(missing.ok).toBe(false);
     if (!missing.ok) expect(missing.error).toBeInstanceOf(CertificationNotFoundError);
+  });
+
+  describe('credencial de la certificación', () => {
+    const CREDENTIAL = {
+      verificationUrl: 'https://example.org/credenciales/1',
+      credentialId: 'EJ-2023-0042',
+      expiresAt: '2029-06',
+    };
+
+    it('el listado y el get devuelven los tres campos crudos', async () => {
+      const withCredential = Certification.create({ ...NEW_CERT, ...CREDENTIAL, id: 'k' });
+      const repo = certificationRepo([withCredential]);
+      const list = await new ListAllCertificationsUseCase(repo).execute();
+      expect(list.value[0]).toMatchObject(CREDENTIAL);
+      const got = await new GetCertificationAdminUseCase(repo).execute({ id: 'k' });
+      expect(got.ok && got.value).toMatchObject(CREDENTIAL);
+    });
+
+    it('create y update con valores válidos los guardan', async () => {
+      const repo = certificationRepo([shownCert]);
+      const created = await new CreateCertificationUseCase(repo).execute({
+        ...NEW_CERT,
+        ...CREDENTIAL,
+      });
+      expect(created.ok && created.value).toMatchObject(CREDENTIAL);
+      const updated = await new UpdateCertificationUseCase(repo).execute({
+        id: 'v',
+        changes: { credentialId: 'OTRO-1' },
+      });
+      expect(updated.ok && updated.value.credentialId).toBe('OTRO-1');
+    });
+
+    it.each([
+      ['verificationUrl', { verificationUrl: 'http://example.org/c/1' }],
+      ['verificationUrl', { verificationUrl: 'javascript:alert(1)' }],
+      ['credentialId', { credentialId: 'x'.repeat(101) }],
+      ['expiresAt', { expiresAt: '2029-13' }],
+      ['expiresAt', { expiresAt: '2021' }],
+    ])('un valor inválido en %s devuelve ValidationError sin llamar a save', async (field, bad) => {
+      const repo = certificationRepo([shownCert]);
+      const created = await new CreateCertificationUseCase(repo).execute({ ...NEW_CERT, ...bad });
+      expect(created.ok).toBe(false);
+      if (!created.ok) expect(created.error.fields).toEqual([field]);
+      expect(repo.create).not.toHaveBeenCalled();
+
+      const updated = await new UpdateCertificationUseCase(repo).execute({
+        id: 'v',
+        changes: bad,
+      });
+      expect(updated.ok).toBe(false);
+      if (!updated.ok) expect(updated.error).toBeInstanceOf(ValidationError);
+      expect(repo.update).not.toHaveBeenCalled();
+    });
+
+    it('update con null quita el valor sin tocar los demás', async () => {
+      const repo = certificationRepo([
+        Certification.create({ ...NEW_CERT, ...CREDENTIAL, id: 'k' }),
+      ]);
+      const result = await new UpdateCertificationUseCase(repo).execute({
+        id: 'k',
+        changes: { verificationUrl: null },
+      });
+      expect(result.ok && result.value).toMatchObject({
+        verificationUrl: null,
+        credentialId: 'EJ-2023-0042',
+        expiresAt: '2029-06',
+      });
+    });
   });
 });

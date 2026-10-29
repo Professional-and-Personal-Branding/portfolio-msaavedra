@@ -239,9 +239,18 @@ const MANIFEST = [
       ['click', 'aria/Nueva certificación[role="button"]'],
       ['esperarTexto', 'Emisor'],
       ['type', '#certification-year', '20x'],
+      ['type', '#certification-verification-url', 'http://example.org/credenciales/1'],
       ['click', 'aria/Guardar[role="button"]'],
       ['esperar', 600],
     ],
+  },
+  // TC-42 (change `add-certification-verification`): la sección pública con «Ver credencial»
+  // (primera certificación del ejemplo) y «Vencida» (segunda). Sin escrituras.
+  {
+    id: 'tc42-credencial',
+    ruta: `/${L}`,
+    pasos: [['verSeccion', '#certifications'], ['esperar', 700]],
+    recorte: { fullPage: false },
   },
   { id: 'tc27-proyectos', ruta: '/admin/proyectos', sesion: true, esperar: 'Plataforma de Reservas' },
   {
@@ -460,6 +469,11 @@ async function runStep(page, step) {
     await page.evaluate(() => {
       document.querySelector('#enlaces-seguimiento')?.scrollIntoView({ block: 'start' });
     });
+  } else if (kind === 'verSeccion') {
+    // Desplaza hasta la sección indicada (selector CSS) para que entre en la captura.
+    await page.evaluate((selector) => {
+      document.querySelector(selector)?.scrollIntoView({ block: 'center' });
+    }, a);
   } else if (kind === 'verTexto') {
     // Desplaza hasta el primer elemento que contiene el texto (para que entre en la captura).
     await page.evaluate((text) => {

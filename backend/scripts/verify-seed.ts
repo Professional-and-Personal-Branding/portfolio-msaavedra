@@ -11,6 +11,7 @@
  */
 import { PrismaClient } from '@prisma/client';
 import { SECTION_IDS } from '../src/modules/curated-profile/domain/services/resolve-sections';
+import { certificationCredentialDiffs } from './lib/certification-diff';
 import { THEME_PRESETS } from './lib/seed-defaults';
 import { DEFAULT_SEED_FILE, parseSeedArgs, readSeedFile } from './lib/seed-runner';
 import {
@@ -170,6 +171,18 @@ async function main(): Promise<number> {
       );
       if (!bilingual) failures++;
     }
+
+    // Enlace, ID y vencimiento de cada certificación, por orden (add-certification-verification, D9).
+    const certRows = await prisma.certification.findMany({
+      orderBy: { order: 'asc' },
+      select: { verificationUrl: true, credentialId: true, expiresAt: true },
+    });
+    const credentialDiffs = certificationCredentialDiffs(data.certifications, certRows);
+    if (credentialDiffs.length > 0) failures++;
+    console.log(
+      `  ${credentialDiffs.length === 0 ? '✅' : '❌'} Certification.verificationUrl/credentialId/expiresAt`,
+    );
+    for (const d of credentialDiffs) console.log(`       ↳ ${d}`);
 
     // El nivel de cada idioma es texto bilingüe y debe coincidir con la fuente (localize-language-level, D5).
     const dbLanguages = await prisma.language.findMany();

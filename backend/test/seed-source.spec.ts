@@ -74,6 +74,51 @@ describe('parseSeedSource', () => {
     ).toContain('profileTemplates[0].sectionsHidden[0]');
   });
 
+  describe('credencial de las certificaciones (add-certification-verification, D9)', () => {
+    const cert = (d: Mutable): Mutable => (d['certifications'] as Mutable[])[0];
+
+    it('acepta la credencial completa, los campos en null y la ausencia de los tres', () => {
+      const d = cvData();
+      Object.assign(cert(d), {
+        year: '2021',
+        verificationUrl: 'https://example.org/c/1',
+        credentialId: 'EJ-1',
+        expiresAt: '2029-06',
+      });
+      expect(parseSeedSource(d).ok).toBe(true);
+      Object.assign(cert(d), { verificationUrl: null, credentialId: null, expiresAt: null });
+      expect(parseSeedSource(d).ok).toBe(true);
+    });
+
+    it.each([
+      ['http://example.org/c/1', 'verificationUrl'],
+      ['javascript:alert(1)', 'verificationUrl'],
+      ['/c/1', 'verificationUrl'],
+    ])('rechaza la URL %p nombrando el campo', (value, field) => {
+      expect(errorPaths((d) => Object.assign(cert(d), { [field]: value }))).toEqual([
+        `certifications[0].${field}`,
+      ]);
+    });
+
+    it('rechaza un ID de 101 caracteres, un vencimiento mal formado y uno anterior al año', () => {
+      expect(errorPaths((d) => Object.assign(cert(d), { credentialId: 'x'.repeat(101) }))).toEqual([
+        'certifications[0].credentialId',
+      ]);
+      expect(errorPaths((d) => Object.assign(cert(d), { expiresAt: '06/2029' }))).toEqual([
+        'certifications[0].expiresAt',
+      ]);
+      expect(
+        errorPaths((d) => Object.assign(cert(d), { year: '2023', expiresAt: '2022-12' })),
+      ).toEqual(['certifications[0].expiresAt']);
+    });
+
+    it('rechaza un valor que no es texto', () => {
+      expect(errorPaths((d) => Object.assign(cert(d), { credentialId: 42 }))).toEqual([
+        'certifications[0].credentialId',
+      ]);
+    });
+  });
+
   it('rechaza slugs que no son kebab-case y slugs repetidos', () => {
     const paths = errorPaths((d) => {
       templates(d)[0]['slug'] = 'Con Espacios';

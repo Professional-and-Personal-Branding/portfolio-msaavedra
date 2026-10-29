@@ -6,6 +6,12 @@ export interface CertificationProps {
   readonly issuer: string;
   /** YYYY; null si no se conoce. */
   readonly year: string | null;
+  /** Página pública de verificación en el emisor: URL https absoluta o null. */
+  readonly verificationUrl: string | null;
+  /** Identificador de la credencial en el emisor (texto plano) o null. */
+  readonly credentialId: string | null;
+  /** Vencimiento `YYYY-MM` o `YYYY`; null si no vence o no se conoce. */
+  readonly expiresAt: string | null;
   readonly order: number;
   readonly visible: boolean;
 }
@@ -41,6 +47,15 @@ export class Certification {
   }
   get year(): string | null {
     return this.props.year;
+  }
+  get verificationUrl(): string | null {
+    return this.props.verificationUrl;
+  }
+  get credentialId(): string | null {
+    return this.props.credentialId;
+  }
+  get expiresAt(): string | null {
+    return this.props.expiresAt;
   }
   get order(): number {
     return this.props.order;

@@ -1,0 +1,90 @@
+TC-42 en la app real: imagen de frontend/Dockerfile (Caddy, puerto 8095) -> API local (3341) -> base descartable portfolio_cert_example (ejemplo). Chrome no headless (puppeteer-core); la sesion del panel se inicio por fetch con credenciales aleatorias de admin:bootstrap; Chrome de pruebas en en-US, navigator.language fijado a es-ES para los pasos en español.
+Nota: la base de ejemplo ya trae el enlace, el ID y el vencimiento; en los pasos 1 y 3 el valor se reemplaza (Ctrl+A y escribir).
+Login por fetch: 200
+
+== Paso 1: enlace http:// ==
+Valores iniciales: url=https://example.org/credenciales/arquitecto-nube-2023 id=EJ-2023-0042 vence=2029-06
+Tipo e inputmode del campo: url/url
+Mensajes del diálogo: ["Usá una URL completa que empiece con https://"]
+aria-invalid=true aria-describedby=certification-verification-url-error
+
+== Paso 2: https:// ==
+ID=EJ-2023-0042 Vence=2029-06
+   PATCH /api/admin/certifications/cmvu5jevd000xuc3oxxj0q1fb -> 200
+Mensajes del diálogo: [] (diálogo abierto: false)
+
+== Paso 3: Vence 12/2025 y luego 2025-12 ==
+Mensajes del diálogo: ["Usá el formato AAAA-MM o AAAA"]
+   PATCH /api/admin/certifications/cmvu5jevf000yuc3oyy2h5r92 -> 200
+Mensajes del diálogo: [] (diálogo abierto: false)
+
+== Paso 4: / en ventana privada ==
+[
+ {
+  "texto": "Arquitecto de Soluciones en la NubeConsorcio Cloud Ejemplo · 2023ID: EJ-2023-0042 · Válida hasta jun 2029Ver credencial: Arquitecto de Soluciones en la Nube",
+  "enlaces": [
+   {
+    "texto": "Ver credencial: Arquitecto de Soluciones en la Nube",
+    "href": "https://example.org/credenciales/arquitecto-nube-2023",
+    "target": "_blank",
+    "rel": "noopener noreferrer"
+   }
+  ]
+ },
+ {
+  "texto": "Liderazgo técnico para equipos de ingenieríaEscuela de Líderes DemoVencida",
+  "enlaces": []
+ }
+]
+
+== Paso 5: clic en Ver credencial (pestaña nueva) ==
+Se abrió: https://example.org/credenciales/arquitecto-nube-2023
+
+== Paso 6: /?lang=en ==
+[
+ {
+  "texto": "Cloud Solutions ArchitectConsorcio Cloud Ejemplo · 2023ID: EJ-2023-0042 · Valid until Jun 2029View credential: Cloud Solutions Architect",
+  "enlaces": [
+   {
+    "texto": "View credential: Cloud Solutions Architect",
+    "href": "https://example.org/credenciales/arquitecto-nube-2023",
+    "target": "_blank",
+    "rel": "noopener noreferrer"
+   }
+  ]
+ },
+ {
+  "texto": "Technical leadership for engineering teamsEscuela de Líderes DemoExpired",
+  "enlaces": []
+ }
+]
+
+== Paso 7: hoja imprimible (PDF desde Chrome) ==
+Páginas del PDF: 1
+Enlaces (URI) del PDF que mencionan example.org: ["https://example.org/credenciales/arquitecto-nube-2023"]
+Bloque de certificaciones impreso: CertificacionesArquitecto de Soluciones en la Nube (Consorcio Cloud Ejemplo, 2023) Ver credencial · Liderazgo técnico para equipos de ingeniería (Escuela de Líderes Demo, vencida)
+La URL aparece impresa en el bloque: false
+
+== Paso 8: borrar el enlace y recargar ==
+   PATCH /api/admin/certifications/cmvu5jevd000xuc3oxxj0q1fb -> 200
+Mensajes del diálogo: [] (diálogo abierto: false)
+[
+ {
+  "texto": "Arquitecto de Soluciones en la NubeConsorcio Cloud Ejemplo · 2023ID: EJ-2023-0042 · Válida hasta jun 2029",
+  "enlaces": []
+ },
+ {
+  "texto": "Liderazgo técnico para equipos de ingenieríaEscuela de Líderes DemoVencida",
+  "enlaces": []
+ }
+]
+
+Consola (errores y avisos de todas las páginas): sin entradas
+
+Por la API (sesion por cookie, a traves del proxy Caddy 8095):
+{"verificationUrl":"http://example.org/c/1"} -> 400
+{"verificationUrl":"https://example.org/c/1"} -> 200
+GET /api/certifications[0] -> {"id":"cmvu5jevd000xuc3oxxj0q1fb","name":"Arquitecto de Soluciones en la Nube","issuer":"Consorcio Cloud Ejemplo","year":"2023","verificationUrl":"https://example.org/c/1","credentialId":"EJ-2023-0042","expiresAt":"2029-06","order":0}
+campo expired presente: False
+{"verificationUrl":null} -> 200
+GET tras null -> verificationUrl=True

@@ -1,0 +1,6 @@
+print:check (PRINT_CHECK_DISPOSABLE_DB=1) contra la imagen de frontend/Dockerfile.
+1) Base de ejemplo descartable (portfolio_cert_example, con la credencial vigente con enlace y la vencida): http://localhost:8095
+   20 casos (5 perfiles), 0 con problemas. Contraste minimo: 9.74:1. Todas las combinaciones (A4 y Letter, es/en, perfil y dark+sidebar): 1 pagina.
+2) Base descartable sembrada con docs/cv-data.json (portfolio_cert_cv): http://localhost:8096
+   56 casos (14 perfiles), 0 con problemas. Contraste minimo: 9.74:1. Todas en 1 pagina.
+Enlace en el PDF de / (ver 8.2-tc42.txt paso 7): 1 pagina y /URI https://example.org/credenciales/arquitecto-nube-2023; la URL no esta impresa.

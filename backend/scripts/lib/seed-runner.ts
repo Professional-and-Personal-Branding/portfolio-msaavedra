@@ -302,6 +302,11 @@ async function writeSeed(
         name: c.name,
         issuer: c.issuer,
         year: c.year,
+        // Ausentes → no se escriben (la columna queda en NULL): con cv-data.json las llamadas
+        // son idénticas a las de antes del change `add-certification-verification`.
+        ...(c.verificationUrl ? { verificationUrl: c.verificationUrl } : {}),
+        ...(c.credentialId ? { credentialId: c.credentialId } : {}),
+        ...(c.expiresAt ? { expiresAt: c.expiresAt } : {}),
         order: i,
         ...(c.visible === undefined ? {} : { visible: c.visible }),
       },

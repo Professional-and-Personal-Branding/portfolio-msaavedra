@@ -206,6 +206,35 @@ export function CertificationForm({
             onChange={(value) => set('order', value)}
           />
         </div>
+        <TextField
+          id="certification-verification-url"
+          label="Enlace de verificación"
+          type="url"
+          inputMode="url"
+          placeholder="https://www.credly.com/badges/…"
+          hint="La página pública de la credencial en el emisor, por ejemplo Credly o Accredible"
+          value={values.verificationUrl}
+          error={errors.verificationUrl}
+          onChange={(value) => set('verificationUrl', value)}
+        />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <TextField
+            id="certification-credential-id"
+            label="ID de credencial"
+            value={values.credentialId}
+            error={errors.credentialId}
+            onChange={(value) => set('credentialId', value)}
+          />
+          <TextField
+            id="certification-expires"
+            label="Vence"
+            placeholder="AAAA-MM"
+            hint="AAAA-MM o AAAA; dejalo vacío si no vence"
+            value={values.expiresAt}
+            error={errors.expiresAt}
+            onChange={(value) => set('expiresAt', value)}
+          />
+        </div>
         <SwitchField
           id="certification-visible"
           label="Visible en el sitio"
@@ -244,10 +273,10 @@ function FormDialog({
   );
 }
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ message, id }: { message?: string; id?: string }) {
   if (!message) return null;
   return (
-    <p role="alert" className="text-xs text-destructive">
+    <p id={id} role="alert" className="text-xs text-destructive">
       {message}
     </p>
   );
@@ -263,6 +292,8 @@ function TextField({
   placeholder,
   hint,
   error,
+  type,
+  inputMode,
 }: {
   id: string;
   label: string;
@@ -273,7 +304,11 @@ function TextField({
   placeholder?: string;
   hint?: string;
   error?: string;
+  type?: 'text' | 'url';
+  inputMode?: 'url';
 }) {
+  // El mensaje o la ayuda se asocian al campo para que el lector de pantalla los anuncie.
+  const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
   return (
     <div className="flex flex-col gap-1.5">
       <Label htmlFor={id}>
@@ -285,11 +320,18 @@ function TextField({
         value={value}
         disabled={disabled}
         placeholder={placeholder}
+        type={type}
+        inputMode={inputMode}
         aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy}
         onChange={(event) => onChange(event.target.value)}
       />
-      {hint && !error && <p className="text-xs text-text-dim">{hint}</p>}
-      <FieldError message={error} />
+      {hint && !error && (
+        <p id={`${id}-hint`} className="text-xs text-text-dim">
+          {hint}
+        </p>
+      )}
+      <FieldError id={`${id}-error`} message={error} />
     </div>
   );
 }

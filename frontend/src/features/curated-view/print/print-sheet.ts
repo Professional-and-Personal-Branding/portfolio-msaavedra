@@ -1,5 +1,6 @@
 import { DEFAULT_LOCALE, type Locale } from '@/shared/i18n/locale';
 import { translate, type MessageKey } from '@/shared/i18n/messages';
+import { certificationValidity } from '@/shared/lib/certification-validity';
 import { formatPeriod } from '@/shared/lib/format';
 import { metaFromProfile } from '@/shared/lib/document-meta';
 import type { CuratedProfile } from '@/shared/types/portfolio';
@@ -79,7 +80,16 @@ export type PrintBlock =
       kind: 'education';
       items: { degree: string; institution: string; period: string; inProgress: boolean }[];
     })
-  | (BlockBase & { kind: 'certifications'; items: string[] });
+  | (BlockBase & {
+      kind: 'certifications';
+      items: {
+        /** "Nombre (emisor, año, vencida)": la marca solo si la credencial ya venció. */
+        text: string;
+        /** "Ver credencial" con el destino clicable en el PDF; la URL no se imprime. */
+        credential: PrintLink | null;
+        expired: boolean;
+      }[];
+    });
 
 export interface PrintSheetModel {
   locale: Locale;
@@ -120,13 +130,14 @@ export function buildPrintSheet(
   data: CuratedProfile,
   locale: Locale,
   origin: string,
+  now: Date = new Date(),
 ): PrintSheetModel {
   const t = (key: MessageKey) => translate(locale, key);
   const sections = data.sections as SectionId[];
 
   const blocks: PrintBlock[] = [];
   for (const section of sections) {
-    const block = buildBlock(section, data, locale, t);
+    const block = buildBlock(section, data, locale, t, now);
     if (block) blocks.push(block);
   }
 
@@ -193,6 +204,7 @@ function buildBlock(
   data: CuratedProfile,
   locale: Locale,
   t: (key: MessageKey) => string,
+  now: Date,
 ): PrintBlock | null {
   switch (section) {
     case 'hero': {
@@ -302,8 +314,17 @@ function buildBlock(
         section,
         label: t('print.block.certifications'),
         items: shown.map((c) => {
-          const detail = [c.issuer, c.year].filter(Boolean).join(', ');
-          return detail ? `${c.name} (${detail})` : c.name;
+          const expired = certificationValidity(c.expiresAt, now) === 'expired';
+          const detail = [c.issuer, c.year, expired ? t('print.certification.expired') : null]
+            .filter(Boolean)
+            .join(', ');
+          return {
+            text: detail ? `${c.name} (${detail})` : c.name,
+            credential: c.verificationUrl
+              ? { text: t('certification.verify'), href: c.verificationUrl }
+              : null,
+            expired,
+          };
         }),
         ...omitted('certifications', all.length - shown.length, locale),
       };

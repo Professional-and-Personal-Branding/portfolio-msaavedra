@@ -143,7 +143,7 @@ Es tu información profesional **una sola vez**: nombre, titular, resumen, conta
 
 - **En el ejemplo:** Alex Rivera Duarte y su contenido: 6 experiencias (una oculta), 4 categorías con 16 skills, 3 formaciones, 3 certificaciones, 3 proyectos y 4 enlaces.
 - **Dónde se edita:** B3 (Portada (con Idiomas)), B4 (Experiencias), B5 (Skills), B6 (Formación), B7 (Proyectos y enlaces)
-- **Casos que lo verifican:** TC-01, TC-25, TC-26, TC-27
+- **Casos que lo verifican:** TC-01, TC-25, TC-26, TC-27, TC-42
 
 ### C2 — Perfil curado
 
@@ -280,14 +280,14 @@ Nueve tareas reales, con los pasos por pantalla, lo que tiene que pasar, los err
 1. **Portada**: editá el titular, el resumen, el contacto y la disponibilidad (pestañas ES/EN) y **Guardar portada**.
 2. **Experiencias**: **Nueva experiencia** o el lápiz de una existente. Los **Tags** deciden en qué perfiles entra; apagá **Visible en el portafolio** para ocultarla sin borrarla.
 3. **Skills**: categorías y skills, con sus **Tags**.
-4. **Formación** (educación y certificaciones) y **Proyectos y enlaces**: lo mismo, con **Visible** para ocultar.
+4. **Formación** (educación y certificaciones) y **Proyectos y enlaces**: lo mismo, con **Visible** para ocultar. En cada certificación podés cargar el **Enlace de verificación** (solo `https://`), el **ID de credencial** y cuándo **Vence**: el sitio muestra «Ver credencial» y, si ya venció, «Vencida» (TC-42).
 5. Recargá `/`: los cambios se ven al instante, sin correr el seed.
 
 **Resultado esperado:** El cambio aparece en la home y en cada perfil curado que lo incluya. Lo oculto sigue en el panel con la marca *Oculto*.
 
 **Errores típicos:** Mensajes en línea como `La empresa es obligatoria` o `Usá el formato AAAA-MM o AAAA`; ver cada pantalla. **No corras `npm run seed`** sobre una base con contenido editado: lo pisa.
 
-**Casos:** TC-19, TC-20, TC-25, TC-26, TC-27
+**Casos:** TC-19, TC-20, TC-25, TC-26, TC-27, TC-42
 
 ### R7 — Traducir y revisar faltantes
 
@@ -482,6 +482,9 @@ Ruta: `/admin/formacion`. Dos listas, **Educación** y **Certificaciones**, con 
 | Certificación · Nombre | ES/EN | Sí (ES) | Español obligatorio | `Arquitecto de Soluciones en la Nube` |
 | Certificación · Emisor | texto | Sí | No vacío | `Consorcio Cloud Ejemplo` |
 | Certificación · Año | AAAA | No | Cuatro dígitos | `2023` (vacío en *Liderazgo técnico…*) |
+| Certificación · Enlace de verificación | URL | No | Solo `https://`, hasta 2048 caracteres; vacío la quita | `https://example.org/credenciales/arquitecto-nube-2023` |
+| Certificación · ID de credencial | texto | No | Hasta 100 caracteres | `EJ-2023-0042` |
+| Certificación · Vence | AAAA-MM o AAAA | No | No anterior al año de la certificación; vacío si no vence | `2029-06` |
 | Orden / Visible en el sitio | entero / interruptor | No | Orden mayor o igual a 0 | `0` · activado |
 
 | Mensaje | Cuándo |
@@ -489,19 +492,22 @@ Ruta: `/admin/formacion`. Dos listas, **Educación** y **Certificaciones**, con 
 | El título en español es obligatorio | Formación sin título en español. |
 | La institución es obligatoria | Institución vacía. |
 | La fecha de inicio es obligatoria | Inicio vacío. |
-| Usá el formato AAAA-MM o AAAA | Fecha de inicio o fin con otro formato. |
+| Usá el formato AAAA-MM o AAAA | Fecha de inicio, de fin o vencimiento con otro formato. |
 | Una formación en curso no lleva fecha de fin | En curso con fecha de fin. |
 | La fecha de fin no puede ser anterior al inicio | Fin anterior al inicio. |
 | El nombre en español es obligatorio | Certificación sin nombre en español. |
 | El emisor es obligatorio | Emisor vacío. |
 | Usá el formato AAAA | Año de una certificación con otro formato (por ejemplo `20x`). |
+| Usá una URL completa que empiece con https:// | Enlace de verificación con `http://`, sin protocolo, sin dominio o de más de 2048 caracteres. |
+| El ID de credencial admite hasta 100 caracteres | ID de credencial más largo. |
+| El vencimiento no puede ser anterior al año | **Vence** en un año anterior al **Año** de la certificación. |
 | El orden no puede ser negativo | Orden menor que 0. |
 
-**Acciones y avisos:** Borrar pide confirmación. Los ocultos siguen en el panel con la marca *Oculto*.
+**Acciones y avisos:** Borrar pide confirmación. Los ocultos siguen en el panel con la marca *Oculto*. El sitio no consulta al emisor ni comprueba que el enlace funcione: abrilo después de cargarlo (TC-42).
 
 ![Formación en el panel](manual/tc26-formacion.jpg)
 
-![Certificación con el error de año](manual/bo-formacion-certificacion.jpg)
+![Certificación con los campos de credencial y el error de enlace](manual/bo-formacion-certificacion.jpg)
 
 ### B7 — Proyectos y enlaces
 
@@ -1530,6 +1536,45 @@ GET /api/admin/education                   -> incluye la oculta, con visible y o
 
 ![Formación en el panel](manual/tc26-formacion.jpg)
 
+### TC-42 — Verificar una certificación desde el sitio ✅
+
+**Precondición:** base de ejemplo, **descartable** (nunca `portfolio`: cada carga pública registra una visita), con la API y el frontend levantados (de preferencia la imagen de `frontend/Dockerfile`) y la sesión del panel iniciada en `/admin`.
+
+**Pasos:**
+1. `/admin/formacion` → **Certificaciones** → editar *Arquitecto de Soluciones en la Nube*. En **Enlace de verificación** reemplazá el texto por `http://example.org/credenciales/arquitecto-nube-2023` y pulsá **Guardar**.
+2. Cambiá el enlace a `https://example.org/credenciales/arquitecto-nube-2023`. Comprobá que **ID de credencial** dice `EJ-2023-0042` y **Vence** `2029-06`, y guardá.
+3. En **Vence** de *Liderazgo técnico para equipos de ingeniería* escribí `12/2025` y guardá; corregilo a `2025-12` y guardá.
+4. En una **ventana privada**, abrí `/` y bajá a **Certificaciones**.
+5. Pulsá **Ver credencial** en *Arquitecto de Soluciones en la Nube*.
+6. Abrí `/?lang=en` y mirá la misma sección.
+7. Volvé a `/` y pulsá **Imprimir / Guardar PDF** → **Guardar como PDF**. En el PDF, hacé clic en **Ver credencial**.
+8. En el panel, borrá el texto de **Enlace de verificación** de esa certificación, guardá y recargá `/` en la ventana privada.
+
+**Resultado esperado:**
+1. El campo muestra «Usá una URL completa que empiece con https://» y no se guarda nada.
+2. Se guarda; la lista no cambia.
+3. Primero «Usá el formato AAAA-MM o AAAA»; con `2025-12`, se guarda.
+4. *Arquitecto de Soluciones en la Nube* muestra `ID: EJ-2023-0042`, «Válida hasta» con junio de 2029 y el enlace **Ver credencial**. *Liderazgo técnico…* muestra **Vencida** y no tiene enlace. La certificación oculta no aparece.
+5. Se abre una pestaña nueva en `https://example.org/credenciales/arquitecto-nube-2023`. El enlace tiene `rel="noopener noreferrer"`.
+6. Las etiquetas dicen **View credential**, **Valid until** y **Expired**; la URL es la misma.
+7. La hoja ocupa una página. En el bloque de certificaciones se lee «Ver credencial» junto a la primera y «vencida» en el paréntesis de la segunda; la URL de la credencial no está impresa. El clic en el PDF abre la URL.
+8. La tarjeta vuelve a mostrar solo nombre, emisor, año, ID y vigencia, sin enlace.
+
+**Errores típicos:** el enlace se rechaza por empezar con `http://` (solo se aceptan enlaces `https://`) o por faltarle el protocolo (`example.org/…`). «Vencida» depende de la fecha de tu equipo: el sitio no consulta al emisor, que es quien dice si la credencial sigue vigente. Para sacar una certificación vencida del sitio, desmarcá **Visible en el sitio**. El sitio no comprueba que el enlace funcione: abrilo después de cargarlo.
+
+**Por la API** (con la cookie de sesión de § 0):
+
+```text
+PATCH /api/admin/certifications/:id {"verificationUrl":"http://example.org/c/1"}  -> 400
+PATCH /api/admin/certifications/:id {"verificationUrl":"https://example.org/c/1"} -> 200
+GET   /api/certifications                     -> verificationUrl, credentialId, expiresAt (sin campo expired)
+PATCH /api/admin/certifications/:id {"verificationUrl":null}                      -> 200, enlace en null
+```
+
+**Ejecutado** (29 de octubre de 2026, imagen de `frontend/Dockerfile` en `localhost:8095`, API local y la base descartable `portfolio_cert_example`, sembrada con el ejemplo; Chrome no headless con un contexto sin sesión para el sitio y la sesión del panel iniciada por `fetch('/api/auth/login')`, sin escribir la contraseña en un navegador; evidencia en `openspec/changes/add-certification-verification/verification/`): los pasos 1 a 8 dieron lo esperado. El enlace leído del DOM: `target="_blank"`, `rel="noopener noreferrer"` y nombre accesible «Ver credencial: Arquitecto de Soluciones en la Nube»; el PDF tiene 1 página y un enlace `/URI` a la URL del ejemplo; la consola, sin errores ni violaciones de CSP. `print:check` dio 1 página en las 20 combinaciones del ejemplo y en las 56 del CV.
+
+![Sección de certificaciones con Ver credencial y Vencida](manual/tc42-credencial.jpg)
+
 ### TC-27 — Proyectos y enlaces sociales ✅
 
 **Pasos:** `/admin/proyectos`.
@@ -1800,7 +1845,7 @@ El umbral de Performance es 85 en CI porque el runner de GitHub es el equipo de 
 
 ## 6. Suite de regresión manual
 
-Antes de cada release, recorrer en este orden. Último caso ejecutado: **29 de octubre de 2026** (TC-41); antes, el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 45 capturas con `manual:capture`. TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
+Antes de cada release, recorrer en este orden. Último caso ejecutado: **29 de octubre de 2026** (TC-42 y TC-41); antes, el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 46 capturas con `manual:capture`. TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
 
 Los casos del backoffice están automatizados en [`manual/suite-backoffice.ps1`](manual/suite-backoffice.ps1): ejecuta TC-12 a TC-20 contra la API, imprime el resultado real junto al esperado y borra todos los datos de prueba que crea, pase o falle.
 
@@ -1851,8 +1896,9 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-39 | Las visitas propias y de bots no suman | ✅ | app real con la cookie de sesión, Googlebot y sin User-Agent · e2e `view-kind` · tests del clasificador y del dashboard |
 | TC-40 | Ítems ocultos e insignias legibles | ✅ | `a11y:check` con panel sobre el ejemplo (0 en 50 cargas, antes 40 nodos) y sobre `cv-data.json` (0 en 72) · tests de las filas, la insignia, la región y `css-vars` · `print:check` |
 | TC-41 | Compartir un perfil con un enlace de seguimiento | ✅ | app real con la imagen de producción y Chrome no headless · e2e `share-links` y `share-links-admin` · tests de la petición temprana, del panel y del dashboard |
+| TC-42 | Verificar una certificación desde el sitio | ✅ | app real con la imagen de producción y Chrome no headless · API (400 con `http://`, 200, `null`) · PDF de una página con el enlace · `print:check` (ejemplo y CV) · tests de la sección, la hoja y el panel |
 
-**Los 41 casos pasan.** TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 45 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
+**Los 42 casos pasan.** TC-42 (change `add-certification-verification`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc42-credencial` nueva y la del diálogo de certificación regenerada con `manual:capture`. TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 46 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
@@ -1991,3 +2037,5 @@ Cada término enlaza el concepto, el recorrido o el caso donde se usa.
 | **enlace de seguimiento** | Un link con un código propio (`?via=<código>`) para un destinatario o un portal, con etiqueta y revocación; cuenta las aperturas de personas sin depender del referrer. | C8 (Analítica), B12 (Constructor · Publicación), TC-41 |
 | **portal** | El sitio donde se publica un link (`linkedin`, `indeed`…): el del enlace de seguimiento o el de `?src=<portal>`, normalizado a minúsculas, números y guiones. | C8 (Analítica), B2 (Dashboard), TC-41 |
 | **apertura** | Una visita de una persona atribuida a un enlace de seguimiento; las tuyas y las de bots no cuentan. | B12 (Constructor · Publicación), TC-41 |
+| **credencial** | Lo que acredita una certificación en el emisor: el enlace de verificación, el ID y el vencimiento, los tres opcionales. | B6 (Formación), TC-42 |
+| **enlace de verificación** | La página pública de la credencial en el emisor (Credly, Accredible…); solo `https://`. El sitio lo muestra como «Ver credencial» y no comprueba que funcione. | B6 (Formación), TC-42 |

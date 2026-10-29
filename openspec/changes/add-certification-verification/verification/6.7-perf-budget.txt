@@ -1,0 +1,10 @@
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-BuzrF5vV.js | módulo | 148.5 |
+| /profile-prefetch.js | clásico | 1.2 |
+| **Total** | | **149.7** |
+
+Presupuesto: 155 KB.
+
+
+Antes (1.1): index 147.9 KB + prefetch 1.2 = 149.1 KB. Despues: 148.5 + 1.2 = 149.7 KB (+0.6 KB). Sigue un solo JS de modulo y <= 155 KB.

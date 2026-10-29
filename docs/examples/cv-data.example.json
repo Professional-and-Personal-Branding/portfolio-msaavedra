@@ -306,12 +306,16 @@
     {
       "name": { "es": "Arquitecto de Soluciones en la Nube", "en": "Cloud Solutions Architect" },
       "issuer": "Consorcio Cloud Ejemplo",
-      "year": "2023"
+      "year": "2023",
+      "verificationUrl": "https://example.org/credenciales/arquitecto-nube-2023",
+      "credentialId": "EJ-2023-0042",
+      "expiresAt": "2029-06"
     },
     {
       "name": { "es": "Liderazgo técnico para equipos de ingeniería", "en": "Technical leadership for engineering teams" },
       "issuer": "Escuela de Líderes Demo",
-      "year": null
+      "year": null,
+      "expiresAt": "2025-12"
     },
     {
       "name": { "es": "Scrum Master (oculta)", "en": "Scrum Master (hidden)" },

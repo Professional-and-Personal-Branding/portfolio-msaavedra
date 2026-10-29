@@ -192,7 +192,22 @@ function BlockBody({ block }: { block: PrintBlock }) {
         </ul>
       );
     case 'certifications':
-      return <p className="line-clamp-2">{block.items.join(' · ')}</p>;
+      return (
+        <p className="line-clamp-3">
+          {block.items.map((item, index) => (
+            <Fragment key={index}>
+              {index > 0 && <span aria-hidden> · </span>}
+              {item.text}
+              {item.credential && (
+                <>
+                  {' '}
+                  <LinkOrText link={item.credential} />
+                </>
+              )}
+            </Fragment>
+          ))}
+        </p>
+      );
   }
 }
 

@@ -1,0 +1,6 @@
+Punto de partida (main fb21a46 + diseno 1ddaa2c), 2026-10-29
+Confirmado: Certification sin columnas de credencial; CertificationOutput {id,name,issuer,year,order}; bloque certifications de print-sheet.ts es string[] con line-clamp-2; Projects.tsx importa ArrowUpRight (a verificar en 6.4).
+backend npm test: 91 suites, 855 tests verdes
+backend test:e2e (base descartable portfolio_cert_e2e, migrada y sembrada con cv-data.json): 13 suites, 230 tests verdes
+frontend npm test: 61 archivos, 918 tests verdes
+frontend perf:budget: index-CW4-bvtC.js 147.9 KB gzip + profile-prefetch.js 1.2 = 149.1 KB (tope 155)

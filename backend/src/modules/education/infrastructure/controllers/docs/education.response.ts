@@ -24,5 +24,21 @@ export class CertificationResponse implements CertificationOutput {
   name!: string;
   @ApiProperty({ example: 'CertifPro' }) issuer!: string;
   @ApiProperty({ nullable: true, type: String, example: '2021' }) year!: string | null;
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description: 'URL https de la página pública de la credencial en el emisor.',
+    example: 'https://www.credly.com/badges/00000000-0000-0000-0000-000000000000',
+  })
+  verificationUrl!: string | null;
+  @ApiProperty({ nullable: true, type: String, example: 'EJ-2023-0042' })
+  credentialId!: string | null;
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description: 'YYYY-MM o YYYY. La vigencia la deriva el cliente.',
+    example: '2029-06',
+  })
+  expiresAt!: string | null;
   @ApiProperty() order!: number;
 }
