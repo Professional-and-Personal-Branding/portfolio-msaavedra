@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { fontStack, readableOn, tokensToCssVars } from './css-vars';
+import { AA_TEXT, contrastRatio, mix, parseHex, toHex } from './contrast';
+import { fontStack, readableOn, SUCCESS, tokensToCssVars } from './css-vars';
+import { THEME_PRESETS } from './presets';
 import { DEFAULT_TOKENS, mergeTokens } from './tokens';
 
 describe('tokensToCssVars', () => {
@@ -57,5 +59,45 @@ describe('readableOn', () => {
     expect(readableOn('#1d4ed8')).toBe('#ffffff');
     expect(readableOn('#18181b')).toBe('#ffffff');
     expect(readableOn('no-es-color')).toBe('#ffffff');
+  });
+});
+
+describe('--t-success-ink (fix-admin-contrast, D2)', () => {
+  const tintOn = (base: string) => toHex(mix(parseHex(base)!, parseHex(SUCCESS)!, 0.15));
+
+  for (const preset of THEME_PRESETS) {
+    it(`${preset.slug}: mide >= 4,5:1 contra los tres fondos y los dos tintes de la insignia`, () => {
+      const { colors } = preset.tokens;
+      const ink = tokensToCssVars(preset.tokens)['--t-success-ink'];
+      for (const surface of [
+        colors.bg,
+        colors.bgSoft,
+        colors.card,
+        tintOn(colors.bg),
+        tintOn(colors.card),
+      ]) {
+        expect(contrastRatio(ink, surface)).toBeGreaterThanOrEqual(AA_TEXT);
+      }
+    });
+  }
+
+  it('en los presets oscuros es el verde base; en los claros, un verde más oscuro del mismo tono', () => {
+    const inkOf = (slug: string) =>
+      tokensToCssVars(THEME_PRESETS.find((p) => p.slug === slug)!.tokens)['--t-success-ink'];
+    expect(inkOf('modern-dark')).toBe('#00bc7d');
+    expect(inkOf('elegant')).toBe('#00bc7d');
+    expect(inkOf('modern-light')).toBe('#00754e');
+    expect(inkOf('minimal')).toBe('#007a51');
+    expect(inkOf('corporate')).toBe('#00754e');
+  });
+
+  it('responde a los overrides: con una tarjeta más oscura sobre modern-light se recalcula y cumple', () => {
+    const light = THEME_PRESETS.find((p) => p.slug === 'modern-light')!.tokens;
+    const tokens = mergeTokens(light, { colors: { card: '#94a3b8' } });
+    const ink = tokensToCssVars(tokens)['--t-success-ink'];
+    expect(ink).not.toBe(tokensToCssVars(light)['--t-success-ink']);
+    for (const surface of [tokens.colors.bg, tokens.colors.bgSoft, tokens.colors.card]) {
+      expect(contrastRatio(ink, surface)).toBeGreaterThanOrEqual(AA_TEXT);
+    }
   });
 });

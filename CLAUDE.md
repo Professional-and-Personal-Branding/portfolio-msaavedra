@@ -153,6 +153,7 @@ npm run manual:capture -- <base>   # regenera las capturas de docs/manual desde 
 npm run manual:check             # sin navegador ni base: MANUAL.md e index.html alineados (casos, imágenes, mensajes literales, topes de tamaño); corre en el CI
 # y una base DESCARTABLE; contra la imagen de frontend/Dockerfile (ver docs/MANUAL.md § 5.1)
 npm run a11y:check -- <base>   # axe-core + recorrido de teclado (con A11Y_CHECK_ADMIN_EMAIL/_PASSWORD, también el panel)
+# A11Y_CHECK_PROFILE=<slug> elige el perfil base de la matriz de presets (por defecto tech-lead-dotnet; con el ejemplo, ejemplo-backend); si no resuelve, sale con 2 sin abrir páginas
 npm run perf:check -- <base>   # Lighthouse mobile, mediana de PERF_CHECK_RUNS (3) y umbral PERF_CHECK_MIN_PERFORMANCE (90)
 ```
 

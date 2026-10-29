@@ -88,12 +88,11 @@ export function DashboardPage() {
             </>
           ) : (
             <>
-              <section aria-labelledby="por-dia" className="surface p-card">
-                <h2 id="por-dia" className="mb-4 font-semibold">
-                  Visitas por día
-                </h2>
+              {/* Sin `aria-labelledby`: la región enfocable de las barras lleva el nombre (landmark-unique). */}
+              <div className="surface p-card">
+                <h2 className="mb-4 font-semibold">Visitas por día</h2>
                 <DayBars data={analytics.data.byDay} />
-              </section>
+              </div>
 
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <section aria-labelledby="por-perfil" className="surface p-card">
@@ -262,27 +261,31 @@ function barPercent(views: number, max: number): number {
 function DayBars({ data }: { data: { day: string; views: number }[] }) {
   const max = Math.max(1, ...data.map((d) => d.views));
   return (
-    <ol className="flex h-40 items-stretch gap-1 overflow-x-auto pb-1">
-      {data.map((row) => (
-        <li
-          key={row.day}
-          className="flex h-full min-w-4 flex-1 flex-col items-center gap-1"
-          title={`${formatDay(row.day)}: ${row.views}`}
-        >
-          <span className="text-[10px] text-text-dim tabular-nums">{row.views}</span>
-          {/* El alto de la barra es un % de este contenedor (definido por flex-1). */}
-          <div className="relative min-h-0 w-full flex-1" data-testid="day-bar-track">
-            <div
-              role="img"
-              aria-label={`${formatDay(row.day)}: ${row.views} visitas`}
-              className="absolute inset-x-0 bottom-0 rounded-t-sm bg-brand-gradient"
-              style={{ height: `${barPercent(row.views, max)}%` }}
-            />
-          </div>
-          <span className="text-[10px] whitespace-nowrap text-text-dim">{formatDay(row.day)}</span>
-        </li>
-      ))}
-    </ol>
+    <div role="region" aria-label="Visitas por día" tabIndex={0} className="overflow-x-auto pb-1">
+      <ol className="flex h-40 items-stretch gap-1">
+        {data.map((row) => (
+          <li
+            key={row.day}
+            className="flex h-full min-w-4 flex-1 flex-col items-center gap-1"
+            title={`${formatDay(row.day)}: ${row.views}`}
+          >
+            <span className="text-[10px] text-text-dim tabular-nums">{row.views}</span>
+            {/* El alto de la barra es un % de este contenedor (definido por flex-1). */}
+            <div className="relative min-h-0 w-full flex-1" data-testid="day-bar-track">
+              <div
+                role="img"
+                aria-label={`${formatDay(row.day)}: ${row.views} visitas`}
+                className="absolute inset-x-0 bottom-0 rounded-t-sm bg-brand-gradient"
+                style={{ height: `${barPercent(row.views, max)}%` }}
+              />
+            </div>
+            <span className="text-[10px] whitespace-nowrap text-text-dim">
+              {formatDay(row.day)}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }
 

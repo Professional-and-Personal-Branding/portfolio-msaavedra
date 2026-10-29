@@ -250,6 +250,17 @@ describe('DashboardPage', () => {
 
     expect(await screen.findByRole('region', { name: 'Totales' })).toBeInTheDocument();
   });
+
+  it('las barras por día van en una región con nombre y enfocable (se desplazan en móvil)', async () => {
+    server.use(...adminHandlers);
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    const scrollable = await screen.findByRole('region', { name: 'Visitas por día' });
+    expect(scrollable).toHaveAttribute('tabindex', '0');
+    expect(scrollable).toHaveClass('overflow-x-auto');
+    const items = within(scrollable).getAllByRole('listitem');
+    expect(items.length).toBe(ANALYTICS.byDay.length);
+  });
 });
 
 // add-share-links: tablas Por enlace y Por portal (D9), con «Sin enlace» y «Sin portal» como resto.

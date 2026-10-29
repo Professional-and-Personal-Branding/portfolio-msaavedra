@@ -1,0 +1,677 @@
+== npm run lint
+
+> portfolio-frontend@0.1.0 lint
+> eslint .
+
+== npm run typecheck
+
+> portfolio-frontend@0.1.0 typecheck
+> tsc -b
+
+== npm test
+
+> portfolio-frontend@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.0 D:/projects/portfolio-msaavedra/wt-contrast/frontend
+
+ ❯ src/features/curated-view/CuratedProfileView.staged.test.tsx (6 tests | 1 failed) 3481ms
+   ❯ CuratedProfileView — render en dos tiempos (6)
+     × cambiar el idioma con el perfil revelado no produce ningún render con solo el hero 2040ms
+ ❯ src/features/curated-view/CuratedProfilePage.test.tsx (10 tests | 1 failed) 4682ms
+   ❯ CuratedProfilePage (7)
+     × renderiza el perfil curado con sus secciones y pide la API con ?locale= 1317ms
+ ❯ src/features/backoffice/curated-profiles/ProfileBuilderPage.test.tsx (38 tests | 1 failed) 31385ms
+   ❯ ProfileBuilderPage (9)
+     × cambiar tags vuelve a previsualizar, y varios cambios seguidos hacen una sola petición 1171ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/curated-view/CuratedProfilePage.test.tsx > CuratedProfilePage > renderiza el perfil curado con sus secciones y pide la API con ?locale=
+TestingLibraryElementError: Unable to find role="heading" and name "Ada Ejemplo"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="min-h-screen bg-bg font-sans text-text print:min-h-0 print:bg-transparent dark"
+      data-mode="dark"
+      data-theme="default"
+      style="--t-bg: #0a0e1a; --t-bg-soft: #111827; --t-card: #161d2e; --t-border: #252d42; --t-text: #e8edf5; --t-text-muted: #94a3b8; --t-accent: #38bdf8; --t-accent2: #818cf8; --t-accent-foreground: #0a0e1a; --t-accent-ink: #38bdf8; --t-success-ink: #00bc7d; --t-accent2-ink: #818cf8; --t-text-dim: #7a879a; --t-ring: #38bdf8; --t-radius: 16px; --t-max-width: 1080px; --t-space: 1rem; --t-density: 1; --t-scale: 1; --t-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; --t-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; --t-glass: 1; --t-motion: 1; color-scheme: dark;"
+    >
+      <a
+        class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-theme-sm focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-foreground print:hidden"
+        href="#contenido"
+      >
+        Saltar al contenido
+      </a>
+      <div
+        class="relative flex min-h-screen flex-col print:hidden"
+      >
+        <div
+          aria-hidden="true"
+          class="pointer-events-none fixed inset-0 bg-glow"
+        />
+        <div
+          class="relative z-10 flex flex-1 flex-col"
+        >
+          <header
+            class="sticky top-0 z-40 border-b border-border glass print:hidden"
+          >
+            <div
+              class="mx-auto flex w-full max-w-(--t-max-width) items-center gap-2 px-4 py-3 md:px-6"
+            >
+              <a
+                class="truncate font-heading text-sm font-bold tracking-tight md:text-base"
+                data-discover="true"
+                href="/"
+              >
+                Portafolio
+              </a>
+              <div
+                class="ml-auto flex items-center gap-2"
+              >
+                <div
+                  aria-label="Diseño"
+                  class="hidden items-center gap-1 sm:flex"
+                  role="group"
+                >
+                  <button
+                    aria-label="Clásico"
+                    aria-pressed="true"
+                    class="inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 bg-primary text-primary-foreground hover:bg-primary/90 size-8"
+                    data-size="icon-sm"
+                    data-slot="button"
+                    data-variant="default"
+                    title="Clásico"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-layout-template"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        height="7"
+                        rx="1"
+                        width="18"
+                        x="3"
+                        y="3"
+                      />
+                      <rect
+                        height="7"
+                        rx="1"
+                        width="9"
+                        x="3"
+                        y="14"
+                      />
+                      <rect
+                        height="7"
+                        rx="1"
+                        width="5"
+                        x="16"
+                        y="14"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    aria-label="Lateral"
+                    aria-pressed="false"
+                    class="inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50 size-8"
+                    data-size="icon-sm"
+                    data-slot="button"
+                    data-variant="outline"
+                    title="Lateral"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-panel-left lucide-sidebar"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-li...
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="min-h-screen bg-bg font-sans text-text print:min-h-0 print:bg-transparent dark"
+      data-mode="dark"
+      data-theme="default"
+      style="--t-bg: #0a0e1a; --t-bg-soft: #111827; --t-card: #161d2e; --t-border: #252d42; --t-text: #e8edf5; --t-text-muted: #94a3b8; --t-accent: #38bdf8; --t-accent2: #818cf8; --t-accent-foreground: #0a0e1a; --t-accent-ink: #38bdf8; --t-success-ink: #00bc7d; --t-accent2-ink: #818cf8; --t-text-dim: #7a879a; --t-ring: #38bdf8; --t-radius: 16px; --t-max-width: 1080px; --t-space: 1rem; --t-density: 1; --t-scale: 1; --t-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; --t-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; --t-glass: 1; --t-motion: 1; color-scheme: dark;"
+    >
+      <a
+        class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-theme-sm focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-foreground print:hidden"
+        href="#contenido"
+      >
+        Saltar al contenido
+      </a>
+      <div
+        class="relative flex min-h-screen flex-col print:hidden"
+      >
+        <div
+          aria-hidden="true"
+          class="pointer-events-none fixed inset-0 bg-glow"
+        />
+        <div
+          class="relative z-10 flex flex-1 flex-col"
+        >
+          <header
+            class="sticky top-0 z-40 border-b border-border glass print:hidden"
+          >
+            <div
+              class="mx-auto flex w-full max-w-(--t-max-width) items-center gap-2 px-4 py-3 md:px-6"
+            >
+              <a
+                class="truncate font-heading text-sm font-bold tracking-tight md:text-base"
+                data-discover="true"
+                href="/"
+              >
+                Portafolio
+              </a>
+              <div
+                class="ml-auto flex items-center gap-2"
+              >
+                <div
+                  aria-label="Diseño"
+                  class="hidden items-center gap-1 sm:flex"
+                  role="group"
+                >
+                  <button
+                    aria-label="Clásico"
+                    aria-pressed="true"
+                    class="inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 bg-primary text-primary-foreground hover:bg-primary/90 size-8"
+                    data-size="icon-sm"
+                    data-slot="button"
+                    data-variant="default"
+                    title="Clásico"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-layout-template"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        height="7"
+                        rx="1"
+                        width="18"
+                        x="3"
+                        y="3"
+                      />
+                      <rect
+                        height="7"
+                        rx="1"
+                        width="9"
+                        x="3"
+                        y="14"
+                      />
+                      <rect
+                        height="7"
+                        rx="1"
+                        width="5"
+                        x="16"
+                        y="14"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    aria-label="Lateral"
+                    aria-pressed="false"
+                    class="inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50 size-8"
+                    data-size="icon-sm"
+                    data-slot="button"
+                    data-variant="outline"
+                    title="Lateral"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-panel-left lucide-sidebar"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-li...
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/features/curated-view/CuratedProfilePage.test.tsx:85:20
+     83|
+     84|     expect(
+     85|       await screen.findByRole('heading', { level: 1, name: 'Ada Ejempl…
+       |                    ^
+     86|     ).toBeInTheDocument();
+     87|     // El hero llega primero; el resto de las secciones se revelan en …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/features/curated-view/CuratedProfileView.staged.test.tsx > CuratedProfileView — render en dos tiempos > cambiar el idioma con el perfil revelado no produce ningún render con solo el hero
+AssertionError: expected null not to be null
+
+Ignored nodes: comments, script, style
+<html
+  lang="es"
+>
+  <head>
+    <title>
+      Manuel Saavedra · Portafolio profesional
+    </title>
+  </head>
+  <body>
+    <div>
+      <a
+        data-discover="true"
+        href="/demo?lang=en"
+      >
+        a inglés
+      </a>
+      <div
+        class="min-h-screen bg-bg font-sans text-text print:min-h-0 print:bg-transparent dark"
+        data-mode="dark"
+        data-theme="default"
+        style="--t-bg: #0a0e1a; --t-bg-soft: #111827; --t-card: #161d2e; --t-border: #252d42; --t-text: #e8edf5; --t-text-muted: #94a3b8; --t-accent: #38bdf8; --t-accent2: #818cf8; --t-accent-foreground: #0a0e1a; --t-accent-ink: #38bdf8; --t-success-ink: #00bc7d; --t-accent2-ink: #818cf8; --t-text-dim: #7a879a; --t-ring: #38bdf8; --t-radius: 16px; --t-max-width: 1080px; --t-space: 1rem; --t-density: 1; --t-scale: 1; --t-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; --t-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; --t-glass: 1; --t-motion: 1; color-scheme: dark;"
+      >
+        <a
+          class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-theme-sm focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-foreground print:hidden"
+          href="#contenido"
+        >
+          Saltar al contenido
+        </a>
+        <div
+          class="relative flex min-h-screen flex-col print:hidden"
+        >
+          <div
+            aria-hidden="true"
+            class="pointer-events-none fixed inset-0 bg-glow"
+          />
+          <div
+            class="relative z-10 flex flex-1 flex-col"
+          >
+            <header
+              class="sticky top-0 z-40 border-b border-border glass print:hidden"
+            >
+              <div
+                class="mx-auto flex w-full max-w-(--t-max-width) items-center gap-2 px-4 py-3 md:px-6"
+              >
+                <a
+                  class="truncate font-heading text-sm font-bold tracking-tight md:text-base"
+                  data-discover="true"
+                  href="/?lang=es"
+                >
+                  Portafolio
+                </a>
+                <div
+                  class="ml-auto flex items-center gap-2"
+                >
+                  <div
+                    aria-label="Diseño"
+                    class="hidden items-center gap-1 sm:flex"
+                    role="group"
+                  >
+                    <button
+                      aria-label="Clásico"
+                      aria-pressed="true"
+                      class="inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 bg-primary text-primary-foreground hover:bg-primary/90 size-8"
+                      data-size="icon-sm"
+                      data-slot="button"
+                      data-variant="default"
+                      title="Clásico"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="lucide lucide-layout-template"
+                        fill="none"
+                        height="24"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <rect
+                          height="7"
+                          rx="1"
+                          width="18"
+                          x="3"
+                          y="3"
+                        />
+                        <rect
+                          height="7"
+                          rx="1"
+                          width="9"
+                          x="3"
+                          y="14"
+                        />
+                        <rect
+                          height="7"
+                          rx="1"
+                          width="5"
+                          x="16"
+                          y="14"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      aria-label="Lateral"
+                      aria-pressed="false"
+                      class="inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50 size-8"
+                      data-size="icon-sm"
+                      data-slot="button"
+                      d...
+ ❯ src/features/curated-view/CuratedProfileView.staged.test.tsx:82:73
+     80|       { route: '/demo?lang=es' },
+     81|     );
+     82|     await waitFor(() => expect(container.querySelector('#contact')).no…
+       |                                                                         ^
+     83|     const before = commits.length;
+     84|
+ ❯ runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/features/backoffice/curated-profiles/ProfileBuilderPage.test.tsx > ProfileBuilderPage > cambiar tags vuelve a previsualizar, y varios cambios seguidos hacen una sola petición
+TestingLibraryElementError: Unable to find an element by: [data-testid="preview-counts"]
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="min-h-screen bg-bg font-sans text-text print:min-h-0 print:bg-transparent dark"
+      data-mode="dark"
+      data-theme="modern-dark"
+      style="--t-bg: #0a0e1a; --t-bg-soft: #111827; --t-card: #161d2e; --t-border: #252d42; --t-text: #e8edf5; --t-text-muted: #94a3b8; --t-accent: #38bdf8; --t-accent2: #818cf8; --t-accent-foreground: #0a0e1a; --t-accent-ink: #38bdf8; --t-success-ink: #00bc7d; --t-accent2-ink: #818cf8; --t-text-dim: #7a879a; --t-ring: #38bdf8; --t-radius: 16px; --t-max-width: 1080px; --t-space: 1rem; --t-density: 1; --t-scale: 1; --t-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; --t-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; --t-glass: 1; --t-motion: 1; color-scheme: dark;"
+    >
+      <div
+        class="flex min-h-screen flex-col"
+      >
+        <a
+          class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-theme-sm focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-foreground print:hidden"
+          href="#contenido"
+        >
+          Saltar al contenido
+        </a>
+        <header
+          class="sticky top-0 z-40 border-b border-border glass"
+        >
+          <div
+            class="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3"
+          >
+            <button
+              aria-expanded="false"
+              aria-haspopup="dialog"
+              aria-label="Abrir menú"
+              class="inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50 size-8 xl:hidden"
+              data-size="icon-sm"
+              data-slot="sheet-trigger"
+              data-state="closed"
+              data-variant="outline"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-menu"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4 5h16"
+                />
+                <path
+                  d="M4 12h16"
+                />
+                <path
+                  d="M4 19h16"
+                />
+              </svg>
+            </button>
+            <a
+              class="font-heading text-sm font-bold tracking-tight"
+              data-discover="true"
+              href="/admin"
+            >
+              Backoffice
+            </a>
+            <nav
+              aria-label="Secciones"
+              class="ml-4 hidden min-w-0 items-center gap-1 overflow-x-auto xl:flex"
+            >
+              <a
+                class="flex items-center gap-2 rounded-theme-sm px-3 py-2 text-sm font-medium transition-colors text-text-muted hover:bg-bg-soft hover:text-text"
+                data-discover="true"
+                href="/admin"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-layout-dashboard size-4"
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect
+                    height="9"
+                    rx="1"
+                    width="7"
+                    x="3"
+                    y="3"
+                  />
+                  <rect
+                    height="5"
+                    rx="1"
+                    width="7"
+                    x="14"
+                    y="3"
+                  />
+                  <rect
+                    height="9"
+                    rx="1"
+                    width="7"
+                    x="14"
+                    y="12"
+                  />
+                  <rect
+                    height="5"
+                    rx="1"
+                    width="7"
+                    x="3"
+                    y="16"
+                  />
+                </svg>
+                Dashboard
+              </a>
+              <a
+                class="flex items-center gap-2 rounded-theme-sm px-3 py-2 text-sm font-medium transition-colors text-text-muted hover:bg-bg-soft hover:text...
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="min-h-screen bg-bg font-sans text-text print:min-h-0 print:bg-transparent dark"
+      data-mode="dark"
+      data-theme="modern-dark"
+      style="--t-bg: #0a0e1a; --t-bg-soft: #111827; --t-card: #161d2e; --t-border: #252d42; --t-text: #e8edf5; --t-text-muted: #94a3b8; --t-accent: #38bdf8; --t-accent2: #818cf8; --t-accent-foreground: #0a0e1a; --t-accent-ink: #38bdf8; --t-success-ink: #00bc7d; --t-accent2-ink: #818cf8; --t-text-dim: #7a879a; --t-ring: #38bdf8; --t-radius: 16px; --t-max-width: 1080px; --t-space: 1rem; --t-density: 1; --t-scale: 1; --t-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; --t-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; --t-glass: 1; --t-motion: 1; color-scheme: dark;"
+    >
+      <div
+        class="flex min-h-screen flex-col"
+      >
+        <a
+          class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-theme-sm focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-foreground print:hidden"
+          href="#contenido"
+        >
+          Saltar al contenido
+        </a>
+        <header
+          class="sticky top-0 z-40 border-b border-border glass"
+        >
+          <div
+            class="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3"
+          >
+            <button
+              aria-expanded="false"
+              aria-haspopup="dialog"
+              aria-label="Abrir menú"
+              class="inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50 size-8 xl:hidden"
+              data-size="icon-sm"
+              data-slot="sheet-trigger"
+              data-state="closed"
+              data-variant="outline"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-menu"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4 5h16"
+                />
+                <path
+                  d="M4 12h16"
+                />
+                <path
+                  d="M4 19h16"
+                />
+              </svg>
+            </button>
+            <a
+              class="font-heading text-sm font-bold tracking-tight"
+              data-discover="true"
+              href="/admin"
+            >
+              Backoffice
+            </a>
+            <nav
+              aria-label="Secciones"
+              class="ml-4 hidden min-w-0 items-center gap-1 overflow-x-auto xl:flex"
+            >
+              <a
+                class="flex items-center gap-2 rounded-theme-sm px-3 py-2 text-sm font-medium transition-colors text-text-muted hover:bg-bg-soft hover:text-text"
+                data-discover="true"
+                href="/admin"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-layout-dashboard size-4"
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect
+                    height="9"
+                    rx="1"
+                    width="7"
+                    x="3"
+                    y="3"
+                  />
+                  <rect
+                    height="5"
+                    rx="1"
+                    width="7"
+                    x="14"
+                    y="3"
+                  />
+                  <rect
+                    height="9"
+                    rx="1"
+                    width="7"
+                    x="14"
+                    y="12"
+                  />
+                  <rect
+                    height="5"
+                    rx="1"
+                    width="7"
+                    x="3"
+                    y="16"
+                  />
+                </svg>
+                Dashboard
+              </a>
+              <a
+                class="flex items-center gap-2 rounded-theme-sm px-3 py-2 text-sm font-medium transition-colors text-text-muted hover:bg-bg-soft hover:text...
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ openBuilder src/features/backoffice/curated-profiles/ProfileBuilderPage.test.tsx:25:16
+     23| const openBuilder = async (route = '/admin/perfiles/cp-1') => {
+     24|   renderWithProviders(<AppRouter />, { route });
+     25|   await screen.findByTestId('preview-counts');
+       |                ^
+     26| };
+     27|
+ ❯ src/features/backoffice/curated-profiles/ProfileBuilderPage.test.tsx:55:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  3 failed | 55 passed (58)
+      Tests  3 failed | 637 passed (640)
+   Start at  22:43:58
+   Duration  54.29s (environment 53%, tests 19%, import 13%, setup 13%, transform 2%)
+
+Environment  jsdom was created 58 times · 366.46s total, 53% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+== npm test (2ª corrida, completa)
+
+> portfolio-frontend@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.0 D:/projects/portfolio-msaavedra/wt-contrast/frontend
+
+
+ Test Files  58 passed (58)
+      Tests  640 passed (640)
+   Start at  22:45:35
+   Duration  34.59s (tests 54%, environment 27%, import 11%, setup 5%, transform 3%)
+
+Environment  jsdom was created 58 times · 65.94s total, 27% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
