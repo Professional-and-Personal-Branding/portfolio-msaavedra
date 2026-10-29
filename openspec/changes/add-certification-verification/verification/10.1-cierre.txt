@@ -1,0 +1,64 @@
+== backend lint
+> portfolio-backend@0.1.0 lint
+> eslint "{src,test,scripts}/**/*.ts"
+
+== backend typecheck
+> tsc --noEmit -p tsconfig.json
+
+== backend test
+
+Test Suites: 94 passed, 94 total
+Tests:       909 passed, 909 total
+Ran all test suites.
+== backend build
+exit=0
+== openapi:export + diff
+OpenAPI exportado a openapi.json: 43 rutas, 69 schemas
+git diff openapi.json exit=0
+== prisma migrate diff (migraciones vs schema, shadow=portfolio_cert_check)
+
+Database `portfolio_cert_shadow` does not exist
+
+exit=1
+== seed:verify sobre la base e2e
+❌ 1 verificación(es) fallida(s).
+== backend test:e2e
+Test Suites: 14 passed, 14 total
+Tests:       244 passed, 244 total
+Ran all test suites.
+
+== frontend lint
+> eslint .
+
+== frontend typecheck
+
+== frontend test
+
+ ❯ src/features/curated-view/CuratedProfileView.staged.test.tsx (6 tests | 1 failed) 8652ms
+ ❯ src/features/curated-view/CuratedProfilePage.test.tsx (15 tests | 1 failed) 11273ms
+ ❯ src/features/backoffice/curated-profiles/ShareLinks.test.tsx (15 tests | 1 failed) 19679ms
+ ❯ src/features/backoffice/curated-profiles/ProfileBuilderPage.test.tsx (38 tests | 1 failed) 42016ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/features/curated-view/CuratedProfilePage.test.tsx > CuratedProfilePage > renderiza el perfil curado con sus secciones y pide la API con ?locale=
+ FAIL  src/features/curated-view/CuratedProfileView.staged.test.tsx > CuratedProfileView — render en dos tiempos > cambiar el idioma con el perfil revelado no produce ningún render con solo el hero
+ FAIL  src/features/backoffice/curated-profiles/ProfileBuilderPage.test.tsx > ProfileBuilderPage > cambiar tags vuelve a previsualizar, y varios cambios seguidos hacen una sola petición
+ FAIL  src/features/backoffice/curated-profiles/ShareLinks.test.tsx > Enlaces de seguimiento — pestaña Publicación > crea un enlace, aparece con 0 aperturas y copia la URL absoluta con ?via=
+ Test Files  4 failed | 60 passed (64)
+      Tests  4 failed | 956 passed (960)
+   Duration  67.47s (environment 48%, tests 27%, import 12%, setup 10%, transform 2%)
+== frontend build
+✓ built in 4.23s
+== perf:budget
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-Dv4ot09Y.js | módulo | 148.5 |
+| /profile-prefetch.js | clásico | 1.2 |
+| **Total** | | **149.7** |
+
+Presupuesto: 155 KB.
+
+== manual:check
+manual:check ok: 42 casos alineados, 46 imágenes (3.38 MB), index.html 238 KB, 172 ids.
+
+Nota: en el cierre, 4 tests de frontend (CuratedProfilePage, CuratedProfileView.staged, ProfileBuilderPage, ShareLinks) vencieron por tiempo con la API, Chrome y los contenedores de la verificacion aun levantados; solos pasan (108/108) y, ya bajados los procesos, la suite completa dio 64 archivos, 960 tests verdes. El seed:verify sobre la base e2e informa ProfileView (147 de los e2e): es esperable, el CI lo corre antes de los e2e.
+Prisma migrate diff con shadow DB descartable portfolio_cert_shadow: No difference detected (exit 0).

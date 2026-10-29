@@ -80,6 +80,6 @@
 
 ## 10. Cierre
 
-- [ ] 10.1 `backend/`: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`; `frontend/`: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run perf:budget`, `npm run manual:check`. Verificar: todo verde; salida en `verification/10.1-cierre.txt`.
-- [ ] 10.2 `npx -y @fission-ai/openspec@1.14.1 validate add-certification-verification --strict` y `validate --all --strict`, sin «Archive would refuse». Verificar: salida en `verification/10.2-validacion.txt`.
-- [ ] 10.3 Comprobar que la base `portfolio` del owner no cambió (`prisma migrate status` contra ella sin la migración nueva aplicada). Verificar: nota en `verification/10.3-base-del-owner.txt`.
+- [x] 10.1 `backend/`: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`; `frontend/`: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run perf:budget`, `npm run manual:check`. Verificar: todo verde; salida en `verification/10.1-cierre.txt`.
+- [x] 10.2 `npx -y @fission-ai/openspec@1.14.1 validate add-certification-verification --strict` y `validate --all --strict`, sin «Archive would refuse». Verificar: salida en `verification/10.2-validacion.txt`.
+- [x] 10.3 Comprobar que la base `portfolio` del owner no cambió (`prisma migrate status` contra ella sin la migración nueva aplicada). Verificar: nota en `verification/10.3-base-del-owner.txt`.

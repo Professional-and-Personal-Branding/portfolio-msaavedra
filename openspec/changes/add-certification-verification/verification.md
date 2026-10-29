@@ -1,21 +1,21 @@
 # Verificación — add-certification-verification
 
-> Plan de verificación. Se completa al implementar: cada fila de la tabla pasa a «Resultado» con su evidencia en `verification/`, como en `add-share-links`. Todas las escrituras van contra bases descartables (`portfolio_cert_check` y la de e2e); la base `portfolio` del owner no se toca.
+> Verificación completada el 2026-10-29, con su evidencia en `verification/`, como en `add-share-links`. Todas las escrituras fueron contra bases descartables (`portfolio_cert_e2e`, `portfolio_cert_check`, `portfolio_cert_example`, `portfolio_cert_cv` y `portfolio_cert_shadow`); la base `portfolio` del owner no se tocó.
 
 ## Resultado por tarea
 
-| Tarea | Qué se comprueba | Evidencia |
-|---|---|---|
-| 1.1 Punto de partida | Suites verdes y tamaño del arranque antes de tocar nada | `verification/1.1-punto-de-partida.txt` |
-| 2.1–2.4 Dominio | `isHttpsUrl` y las reglas nuevas de `validateCertification` | specs en `domain/` |
-| 3.1–3.2 Esquema y migración | Solo `ADD COLUMN`; sin deriva entre schema y migración | `verification/3.1-migracion.sql` |
-| 4.1–4.4 API | Los tres campos en la API pública, la vista curada y el panel; 400 con http, `javascript:`, relativa, ID largo y vencimiento anterior al año; `null` quita | `verification/4.4-e2e.txt` |
-| 5.1–5.4 Seed y ejemplo | Seed por defecto idéntico; URL insegura en el archivo → código 1 sin borrar; `seed:example:verify` compara los campos | `verification/5.4-seed.txt` |
-| 6.1–6.7 Contrato y vista pública | `api.d.ts` sin deriva; «Ver credencial» con `rel="noopener noreferrer"`; vigencia con fecha fija; hoja con el enlace; `perf:budget` ≤ 155 KB | `verification/6.7-perf-budget.txt` |
-| 7.1–7.3 Panel | Los cuatro mensajes literales; `null` al vaciar; aviso de cambios sin guardar | tests de `formacion/` |
-| 8.1–8.4 App real | TC-42, `print:check` con el ejemplo y con el CV, `a11y:check` | `verification/8.2-tc42.txt`, `8.3-print-check.txt`, `8.4-a11y.txt` |
-| 9.1–9.5 Docs | TC-42, B6, glosario, § 12.6, capturas, `manual:check` | diff |
-| 10.1–10.3 Cierre | Todo verde, validación estricta, base del owner intacta | `verification/10.1-cierre.txt`, `10.2-validacion.txt`, `10.3-base-del-owner.txt` |
+| Tarea | Qué se comprueba | Resultado | Evidencia |
+|---|---|---|---|
+| 1.1 Punto de partida | Suites verdes y tamaño del arranque antes de tocar nada | Backend 855 tests y 230 e2e, frontend 918, arranque 149,1 KB | `verification/1.1-punto-de-partida.txt` |
+| 2.1–2.4 Dominio | `isHttpsUrl` y las reglas nuevas de `validateCertification` | OK | specs en `domain/` |
+| 3.1–3.2 Esquema y migración | Solo `ADD COLUMN`; sin deriva entre schema y migración | OK: tres `ADD COLUMN`, `migrate diff` sin diferencias | `verification/3.1-migracion.sql` |
+| 4.1–4.4 API | Los tres campos en la API pública, la vista curada y el panel; 400 con http, `javascript:`, relativa, ID largo y vencimiento anterior al año; `null` quita | OK: 14 e2e nuevos, 244 en total | `verification/4.4-e2e.txt` |
+| 5.1–5.4 Seed y ejemplo | Seed por defecto idéntico; URL insegura en el archivo → código 1 sin borrar; `seed:example:verify` compara los campos | OK: código 1 con URL `http`, `verify` nombra el campo | `verification/5.4-seed.txt` |
+| 6.1–6.7 Contrato y vista pública | `api.d.ts` sin deriva; «Ver credencial» con `rel="noopener noreferrer"`; vigencia con fecha fija; hoja con el enlace; `perf:budget` ≤ 155 KB | OK: arranque 149,7 KB (+0,6) | `verification/6.7-perf-budget.txt` |
+| 7.1–7.3 Panel | Los cuatro mensajes literales; `null` al vaciar; aviso de cambios sin guardar | OK | tests de `formacion/` |
+| 8.1–8.4 App real | TC-42, `print:check` con el ejemplo y con el CV, `a11y:check` | OK: TC-42 completo; `print:check` 20 y 56 casos en una página; `a11y:check` 0 violaciones en 50 cargas | `verification/8.2-tc42.txt`, `8.3-print-check.txt`, `8.4-a11y.txt` |
+| 9.1–9.5 Docs | TC-42, B6, glosario, § 12.6, capturas, `manual:check` | 9.1 a 9.4 OK (42 casos, 46 capturas); 9.5 queda para el archivado | diff |
+| 10.1–10.3 Cierre | Todo verde, validación estricta, base del owner intacta | OK (ver desvíos sobre la suite de frontend bajo carga) | `verification/10.1-cierre.txt`, `10.2-validacion.txt`, `10.3-base-del-owner.txt` |
 
 ## TC-42 — Verificar una certificación desde el sitio
 
@@ -66,4 +66,14 @@ PATCH /api/admin/certifications/:id {"verificationUrl":null}                    
 
 ## Desvíos y pendientes
 
-Se completan al ejecutar. Pendiente para el owner desde ya: aplicar la migración a `portfolio` con `npm run prisma:migrate` cuando actualice, y cargar los enlaces reales de sus certificaciones desde `/admin/formacion` (ítem 0.3 de la Fase 1.0.x).
+- **Bases.** Para la app real se usaron dos: `portfolio_cert_example` (ejemplo: TC-42, `print:check` y `a11y:check`) y `portfolio_cert_cv` (CV: `print:check`); `portfolio_cert_check` quedó para generar la migración. API en 3341 y 3342 y la imagen de `frontend/Dockerfile` en 8095 y 8096.
+- **TC-42, pasos 1 y 3.** La base de ejemplo ya trae el enlace, el ID y el vencimiento, así que el valor se reemplaza (el manual dice «reemplazá el texto») en lugar de escribirse sobre un campo vacío.
+- **Seed por defecto.** `seed-runner.ts` escribe los tres campos solo si la fuente los trae, para que las llamadas con `cv-data.json` sigan idénticas a la instantánea del test de retrocompatibilidad; en la base el resultado es el mismo (columnas en NULL).
+- **Panel.** `isHttpsUrl` del panel exige además un dominio con punto, para no aceptar `https://localhost`, que el `@IsUrl` del backend rechaza. `TextField` asocia ayuda y error con `aria-describedby` en todos los campos del diálogo, no solo en los nuevos.
+- **`a11y:check`** no abre el diálogo de certificación: los campos nuevos se cubren con tests y con el recorrido de TC-42.
+- **Suite de frontend bajo carga.** Con la API, Chrome y los contenedores levantados, 4 tests de tiempo (`CuratedProfilePage`, `CuratedProfileView.staged`, `ProfileBuilderPage`, `ShareLinks`) vencieron; solos pasan (108) y, con todo bajado, la suite completa dio 960 verdes.
+- **`seed:verify` sobre la base de e2e** informa `ProfileView` por las visitas de los e2e: es esperable; el CI lo corre antes de ellos.
+- **10.3.** La base `portfolio` no se consultó: ningún comando corrió contra ella (ver la nota).
+- **9.5** (línea del roadmap en `CLAUDE.md`) queda para el archivado.
+
+Pendiente para el owner desde ya: aplicar la migración a `portfolio` con `npm run prisma:migrate` cuando actualice, y cargar los enlaces reales de sus certificaciones desde `/admin/formacion` (ítem 0.3 de la Fase 1.0.x).
