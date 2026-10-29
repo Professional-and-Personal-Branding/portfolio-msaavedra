@@ -232,6 +232,7 @@ model CuratedProfile {
   // Analítica
   views          Int        @default(0)
   profileViews   ProfileView[]
+  shareLinks     ShareLink[]
 
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
@@ -278,9 +279,40 @@ model ProfileView {
   ipHash           String?         // hash de IP por privacidad, nunca IP cruda
   viewedAt         DateTime        @default(now())
   kind             ViewKind        @default(HUMAN) // filas previas: HUMAN; views:reclassify las recalcula
+  // Atribución (change add-share-links): el enlace de seguimiento activo y del mismo perfil que
+  // trajo `?via=`, y el portal efectivo (el del enlace o `?src=` normalizado). Filas previas: nulos.
+  shareLink        ShareLink?      @relation(fields: [shareLinkId], references: [id], onDelete: SetNull)
+  shareLinkId      String?
+  source           String?
 
   @@index([curatedProfileId])
   @@index([viewedAt])
+  @@index([shareLinkId])
+  @@index([source])
+}
+
+// Tipo de enlace de seguimiento: MANUAL lo crea el owner; LINKEDIN_POST es el que reusa el botón
+// «Compartir en LinkedIn».
+enum ShareLinkKind {
+  MANUAL
+  LINKEDIN_POST
+}
+
+/// Enlace de seguimiento por destinatario o portal (`?via=<code>`). El código, el portal, el tipo y el
+/// perfil no cambian; la etiqueta sí. Revocar es irreversible y solo deja de atribuir.
+model ShareLink {
+  id               String         @id @default(cuid())
+  code             String         @unique // 10 símbolos base32 de Crockford en minúsculas
+  curatedProfile   CuratedProfile @relation(fields: [curatedProfileId], references: [id], onDelete: Cascade)
+  curatedProfileId String
+  label            String         // escrita por el owner; 1 a 80 caracteres
+  portal           String?        // normalizado como `src`
+  kind             ShareLinkKind  @default(MANUAL)
+  createdAt        DateTime       @default(now())
+  revokedAt        DateTime?
+  profileViews     ProfileView[]
+
+  @@index([curatedProfileId])
 }
 
 // ─────────────────────────────────────────────────────────────
