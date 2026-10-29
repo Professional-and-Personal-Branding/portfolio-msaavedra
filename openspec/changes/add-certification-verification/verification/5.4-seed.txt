@@ -1,0 +1,31 @@
+Base: portfolio_cert_example (descartable, mismo contenedor 5434)
+== seed:example sobre la base vacia ==
+👁️  Creando 14 visitas de ejemplo para ejemplo-archivado...
+👁️  Creando 6 visitas de ejemplo para ejemplo-protegido...
+✅ Seed completado con éxito.
+== seed:example:verify ==
+  ✅ Certification            esperado=3  actual=3
+  ✅ Certification.verificationUrl/credentialId/expiresAt
+✅ La base coincide con D:\projects\portfolio-msaavedra\wt-cert\docs\examples\cv-data.example.json.
+exit=0
+== se cambia a mano el credentialId sembrado ==
+UPDATE 1
+  ✅ Certification            esperado=3  actual=3
+  ❌ Certification.verificationUrl/credentialId/expiresAt
+       ↳ certifications[0] «Arquitecto de Soluciones en la Nube» credentialId: esperado="EJ-2023-0042" actual="CAMBIADO"
+❌ 1 verificación(es) fallida(s).
+exit=1
+== se vuelve a sembrar (recarga del mismo perfil) ==
+✅ Seed completado con éxito.
+  ✅ Certification            esperado=3  actual=3
+  ✅ Certification.verificationUrl/credentialId/expiresAt
+✅ La base coincide con D:\projects\portfolio-msaavedra\wt-cert\docs\examples\cv-data.example.json.
+exit=0
+== fuente con URL http en certifications[0]: codigo 1 y la base queda intacta ==
+❌ La fuente del seed no cumple el formato:
+  - certifications[0].verificationUrl: verificationUrl debe ser una URL https de hasta 2048 caracteres
+No se escribió nada.
+exit=1
+certificaciones en la base tras la negativa:
+     3
+

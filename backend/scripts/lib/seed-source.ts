@@ -8,6 +8,10 @@
  */
 import { fail, ok, Result } from '../../src/shared/domain/result';
 import { SECTION_IDS } from '../../src/modules/curated-profile/domain/services/resolve-sections';
+import {
+  validateCertification,
+  YEAR_REGEX,
+} from '../../src/modules/education/domain/services/validate-certification';
 import { THEME_PRESETS } from './seed-defaults';
 
 // ── Tipos de la fuente ───────────────────────────────────────────
@@ -87,6 +91,11 @@ export interface SeedCertification {
   name: LocalizedText;
   issuer: string;
   year: string | null;
+  /** URL https de la página pública de la credencial; ausente → null. */
+  verificationUrl?: string | null;
+  credentialId?: string | null;
+  /** `YYYY-MM` o `YYYY`; ausente → null. */
+  expiresAt?: string | null;
   visible?: boolean;
 }
 
@@ -404,6 +413,44 @@ function checkUniqueIds(c: Checker, items: unknown[], path: string): void {
   });
 }
 
+const CREDENTIAL_FIELDS = ['verificationUrl', 'credentialId', 'expiresAt'] as const;
+
+/**
+ * Los tres campos opcionales de la credencial (`add-certification-verification`, D9): ausente o
+ * `null` → sin valor; si no, las MISMAS reglas del dominio (`validateCertification`: https, largos,
+ * formato del vencimiento y año coherente). El archivo no pasa por el DTO, así que sin esto un
+ * `javascript:` podría cargarse. El error nombra el campo antes de borrar nada.
+ */
+function checkCertificationCredential(c: Checker, r: Rec, at: string): void {
+  const values: Record<(typeof CREDENTIAL_FIELDS)[number], string | null> = {
+    verificationUrl: null,
+    credentialId: null,
+    expiresAt: null,
+  };
+  for (const field of CREDENTIAL_FIELDS) {
+    const v = r[field];
+    if (v === undefined || v === null) continue;
+    if (typeof v !== 'string') {
+      c.add(`${at}.${field}`, 'debe ser un texto o null');
+      return;
+    }
+    values[field] = v;
+  }
+  const year = typeof r['year'] === 'string' && YEAR_REGEX.test(r['year']) ? r['year'] : null;
+  const checked = validateCertification({
+    name: { es: 'x' },
+    issuer: 'x',
+    year,
+    ...values,
+    order: 0,
+    visible: true,
+  });
+  if (!checked.ok) {
+    const field = checked.error.fields[0] ?? 'credencial';
+    c.add(`${at}.${field}`, checked.error.message);
+  }
+}
+
 function checkContent(c: Checker, raw: Rec): void {
   const experiences = c.list(raw['experiences'], 'experiences');
   experiences?.forEach((e, i) => {
@@ -459,6 +506,7 @@ function checkContent(c: Checker, raw: Rec): void {
     c.text(r['name'], `${at}.name`);
     c.str(r['issuer'], `${at}.issuer`);
     c.strOrNull(r['year'], `${at}.year`);
+    checkCertificationCredential(c, r, at);
     c.bool(r['visible'], `${at}.visible`, true);
   });
 

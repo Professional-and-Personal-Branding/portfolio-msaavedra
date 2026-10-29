@@ -90,6 +90,29 @@ describe('executeSeed · seed por defecto (sin --file)', () => {
     );
   });
 
+  it('escribe la credencial de la certificación solo cuando la fuente la trae', async () => {
+    const data = cvData();
+    const certs = data['certifications'] as Mutable[];
+    Object.assign(certs[0], {
+      verificationUrl: 'https://example.org/c/1',
+      credentialId: 'EJ-1',
+      expiresAt: '2029-06',
+    });
+    const { prisma, calls } = fakePrisma();
+    expect(await executeSeed(prisma, data, { guarded: false, env: {}, ...quiet })).toBe(0);
+    const created = calls
+      .filter((c) => c.model === 'certification' && c.method === 'create')
+      .map((c) => (c.args as { data: Mutable }).data);
+    expect(created[0]).toMatchObject({
+      verificationUrl: 'https://example.org/c/1',
+      credentialId: 'EJ-1',
+      expiresAt: '2029-06',
+    });
+    expect(created[1]).not.toHaveProperty('verificationUrl');
+    expect(created[1]).not.toHaveProperty('credentialId');
+    expect(created[1]).not.toHaveProperty('expiresAt');
+  });
+
   it('con la base vacía solo cuenta antes de escribir y no exige SEED_DISPOSABLE_DB', async () => {
     const { prisma, calls } = fakePrisma();
     await executeSeed(prisma, cvData(), { guarded: false, env: {}, ...quiet });

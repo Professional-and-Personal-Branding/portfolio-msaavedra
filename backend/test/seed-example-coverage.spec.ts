@@ -38,9 +38,23 @@ describe('el ejemplo es ficticio', () => {
     const urls = [
       ...ex.projects.flatMap((p) => (p.url ? [p.url] : [])),
       ...(ex.profile.socialLinks ?? []).map((l) => l.url),
+      ...ex.certifications.flatMap((c) => (c.verificationUrl ? [c.verificationUrl] : [])),
     ];
     expect(urls.length).toBeGreaterThan(0);
     for (const url of urls) expect(isReserved(url)).toBe(true);
+  });
+
+  it('muestra una credencial vigente con enlace e ID y una vencida sin enlace (D9)', () => {
+    const valid = ex.certifications.filter((c) => c.verificationUrl);
+    expect(valid).toHaveLength(1);
+    expect(valid[0]).toMatchObject({
+      verificationUrl: 'https://example.org/credenciales/arquitecto-nube-2023',
+      credentialId: 'EJ-2023-0042',
+      expiresAt: '2029-06',
+    });
+    const expired = ex.certifications.filter((c) => c.expiresAt === '2025-12');
+    expect(expired).toHaveLength(1);
+    expect(expired[0].verificationUrl ?? null).toBeNull();
   });
 
   it('solo los referrer de las visitas imitan orígenes reales', () => {
