@@ -21,6 +21,9 @@ export function toAdminCertificationOutput(c: Certification): AdminCertification
     name: c.name,
     issuer: c.issuer,
     year: c.year,
+    verificationUrl: c.verificationUrl,
+    credentialId: c.credentialId,
+    expiresAt: c.expiresAt,
     order: c.order,
     visible: c.visible,
   };

@@ -41,6 +41,9 @@ export function toCertificationEntity(r: CertificationRecord): Certification {
     name: toLocalizedText(r.name, 'Certification.name'),
     issuer: r.issuer,
     year: r.year,
+    verificationUrl: r.verificationUrl,
+    credentialId: r.credentialId,
+    expiresAt: r.expiresAt,
     order: r.order,
     visible: r.visible,
   });
@@ -54,6 +57,9 @@ export function toCertificationData(
     name: props.name,
     issuer: props.issuer,
     year: props.year,
+    verificationUrl: props.verificationUrl,
+    credentialId: props.credentialId,
+    expiresAt: props.expiresAt,
     order: props.order,
     visible: props.visible,
   };

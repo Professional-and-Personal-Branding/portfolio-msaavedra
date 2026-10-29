@@ -21,6 +21,9 @@ export function toCertificationOutput(c: Certification, locale: Locale): Certifi
     name: resolveLocale(c.name, locale),
     issuer: c.issuer,
     year: c.year,
+    verificationUrl: c.verificationUrl,
+    credentialId: c.credentialId,
+    expiresAt: c.expiresAt,
     order: c.order,
   };
 }

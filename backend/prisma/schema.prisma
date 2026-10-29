@@ -117,6 +117,9 @@ model Certification {
   name      Json     // LocalizedText { es, en }
   issuer    String                      // no traducible
   year      String?
+  verificationUrl String?                 // https absoluta, <= 2048; no traducible
+  credentialId    String?                 // texto plano, <= 100; no traducible
+  expiresAt       String?                 // AAAA-MM o AAAA; no traducible
   order     Int      @default(0)
   visible   Boolean  @default(true)
 

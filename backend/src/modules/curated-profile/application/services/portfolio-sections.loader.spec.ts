@@ -26,6 +26,9 @@ describe('PortfolioSectionsLoader', () => {
       name: { es: 'x' },
       issuer: 'I',
       year: null,
+      verificationUrl: null,
+      credentialId: null,
+      expiresAt: null,
       order: 0,
       visible: false,
     });

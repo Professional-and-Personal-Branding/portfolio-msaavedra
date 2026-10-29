@@ -151,11 +151,11 @@ Si más adelante se quiere un chequeo periódico de enlaces rotos, encaja en `ad
 
 ## Open Questions
 
-Ninguna bloqueante. Una no bloqueante, con lo implementado en D5 como respuesta por defecto:
+Ninguna bloqueante. Una no bloqueante, ya **resuelta el 2026-10-29** con la opción A (lo implementado en D5):
 
 - **P1 — ¿Cómo se ven las certificaciones vencidas en el sitio público?**
   - A) Se muestran con la marca «Vencida» y el enlace (D5).
   - B) Se muestran sin marca.
   - C) Se ocultan solas al vencer.
 
-  **Recomiendo A**: es honesto con el lector, no depende de la fecha en que se abre el link para decidir qué se ve, y el owner puede ocultar una a mano con **Visible en el sitio**. **[no bloqueante]**
+  **Resuelta el 2026-10-29: opción A** (marca «Vencida», la que D5 ya implementa). Recomendación original: es honesto con el lector, no depende de la fecha en que se abre el link para decidir qué se ve, y el owner puede ocultar una a mano con **Visible en el sitio**. **[no bloqueante]**

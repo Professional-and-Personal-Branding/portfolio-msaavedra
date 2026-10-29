@@ -17,6 +17,9 @@ export interface AdminCertificationOutput {
   name: LocalizedText | string;
   issuer: string;
   year: string | null;
+  verificationUrl: string | null;
+  credentialId: string | null;
+  expiresAt: string | null;
   order: number;
   visible: boolean;
 }
