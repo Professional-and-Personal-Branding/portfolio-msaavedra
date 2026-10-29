@@ -15,6 +15,7 @@ import { APP_CONFIG, AppConfig } from '../../../../config/configuration';
 import { adminValidationPipe } from '../../../../shared/infrastructure/http/admin-validation.pipe';
 import { toHttpException } from '../../../../shared/infrastructure/http/domain-error.mapper';
 import { ErrorResponseDto } from '../../../../shared/infrastructure/http/error-response.dto';
+import { VIEW_KINDS, ViewKind } from '../../domain/view-kind';
 import { JwtAuthGuard } from '../../../auth/infrastructure/security/jwt-auth.guard';
 import {
   AggregateProfileViewsUseCase,
@@ -57,6 +58,10 @@ class CountByReferrer {
   referrer!: string;
   @ApiProperty() views!: number;
 }
+class CountByKind {
+  @ApiProperty({ enum: VIEW_KINDS, enumName: 'ViewKind' }) kind!: ViewKind;
+  @ApiProperty() views!: number;
+}
 class CountByDay {
   @ApiProperty({ example: '2026-09-07' }) day!: string;
   @ApiProperty() views!: number;
@@ -65,15 +70,25 @@ class CountByDay {
 export class ProfileViewsResponse implements ProfileViewsOutput {
   @ApiProperty() from!: string;
   @ApiProperty() to!: string;
-  @ApiProperty() total!: number;
-  @ApiProperty({ type: [CountBySlug] }) byProfile!: CountBySlug[];
-  @ApiProperty({ type: [CountByLocale] }) byLocale!: CountByLocale[];
-  @ApiProperty({ type: [CountByDay] }) byDay!: CountByDay[];
+  @ApiProperty({ description: 'Solo visitas de personas (`HUMAN`) del rango' }) total!: number;
+  @ApiProperty({ type: [CountBySlug], description: 'Solo visitas de personas (`HUMAN`)' })
+  byProfile!: CountBySlug[];
+  @ApiProperty({ type: [CountByLocale], description: 'Solo visitas de personas (`HUMAN`)' })
+  byLocale!: CountByLocale[];
+  @ApiProperty({ type: [CountByDay], description: 'Solo visitas de personas (`HUMAN`)' })
+  byDay!: CountByDay[];
   @ApiProperty({
     type: [CountByReferrer],
-    description: 'Por origen, descendente. Su suma es `total`; solo se agrega el host',
+    description:
+      'Por origen, descendente. Solo visitas de personas (`HUMAN`): su suma es `total`; solo se agrega el host',
   })
   byReferrer!: CountByReferrer[];
+  @ApiProperty({
+    type: [CountByKind],
+    description:
+      'Todas las visitas del rango por tipo, con `HUMAN`, `OWNER` y `BOT` siempre presentes y en ese orden',
+  })
+  byKind!: CountByKind[];
 }
 
 @ApiTags('admin')
@@ -90,10 +105,11 @@ export class AdminAnalyticsController {
 
   @Get('views')
   @ApiOperation({
-    summary: 'Visitas agregadas por perfil, idioma, día y origen',
+    summary: 'Visitas de personas agregadas por perfil, idioma, día y origen, y conteo por tipo',
     description:
       'El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso. ' +
-      'El origen se normaliza al host del `referrer` guardado; las visitas desde el propio sitio cuentan como `interno`.',
+      'El origen se normaliza al host del `referrer` guardado; las visitas desde el propio sitio cuentan como `interno`. ' +
+      '`total` y los desgloses cuentan solo las visitas de personas (`HUMAN`); `byKind` cuenta todas las del rango, también las propias (`OWNER`) y las de bots (`BOT`).',
   })
   @ApiOkResponse({ type: ProfileViewsResponse })
   @ApiBadRequestResponse({ type: ErrorResponseDto })

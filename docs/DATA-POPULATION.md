@@ -513,4 +513,4 @@ Visitas sintéticas para que el dashboard tenga datos. Sin esta clave, el seed n
 | `locales` | lista de texto | Sí | `["es","en"]` | Reparto por idioma (`locales[i % n]`) | Solo en el seed |
 | `referrers` | lista de texto o `null` | Sí | `[null,"https://www.linkedin.com/"]` | Tabla *Por origen* (`null` = directo) | Solo en el seed |
 
-Cada visita lleva `userAgent: "example-seed"` e `ipHash: null`, y el contador `views` del perfil queda igual a su total.
+Cada visita lleva `userAgent: "example-seed"` e `ipHash: null`, y el contador `views` del perfil queda igual a su total. El seed no clasifica: todas quedan con `kind: HUMAN` (el valor por defecto), así que el dashboard del ejemplo muestra 105 visitas de *Personas*. Las visitas que sumen después los scripts de calidad (`HeadlessChrome`, `PortfolioCheck`) quedan como `BOT` y no cambian ese total; el contador `views` de cada perfil cuenta solo las de personas.

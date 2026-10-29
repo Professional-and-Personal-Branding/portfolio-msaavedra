@@ -1,0 +1,40 @@
+{
+ "total": 119,
+ "byKind": [
+  {
+   "kind": "HUMAN",
+   "views": 119
+  },
+  {
+   "kind": "OWNER",
+   "views": 1
+  },
+  {
+   "kind": "BOT",
+   "views": 83
+  }
+ ],
+ "byReferrer": [
+  {
+   "referrer": "directo",
+   "views": 60
+  },
+  {
+   "referrer": "linkedin.com",
+   "views": 28
+  },
+  {
+   "referrer": "google.com",
+   "views": 17
+  },
+  {
+   "referrer": "empleos.example.com",
+   "views": 12
+  },
+  {
+   "referrer": "interno",
+   "views": 2
+  }
+ ]
+}
+byProfile(top): [{'slug': 'all', 'views': 52}, {'slug': 'ejemplo-backend', 'views': 30}, {'slug': 'ejemplo-archivado', 'views': 14}]

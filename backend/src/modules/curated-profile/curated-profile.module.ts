@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CLOCK, systemClock } from '../../shared/domain/clock';
 import { AnalyticsModule } from '../analytics/analytics.module';
+import { AuthModule } from '../auth/auth.module';
 import { EducationModule } from '../education/education.module';
 import { ExperienceModule } from '../experience/experience.module';
 import { ProfileModule } from '../profile/profile.module';
@@ -47,6 +48,7 @@ import { PrismaCuratedProfileRepository } from './infrastructure/persistence/pri
     SkillModule,
     ThemeModule,
     AnalyticsModule,
+    AuthModule,
     EducationModule,
     ProjectModule,
     SocialLinkModule,

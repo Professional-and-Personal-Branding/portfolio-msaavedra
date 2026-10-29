@@ -363,6 +363,7 @@
     <a href="#tc16"><span class="dot ok"></span><span class="id">TC-16</span> Publicar</a>
     <a href="#tc17"><span class="dot part"></span><span class="id">TC-17</span> Preview</a>
     <a href="#tc18"><span class="dot ok"></span><span class="id">TC-18</span> Analítica</a>
+    <a href="#tc39"><span class="dot ok"></span><span class="id">TC-39</span> Visitas propias y de bots</a>
     <a href="#tc19"><span class="dot ok"></span><span class="id">TC-19</span> Experiencias</a>
     <a href="#tc20"><span class="dot ok"></span><span class="id">TC-20</span> Skills</a>
     <a href="#tc21"><span class="dot part"></span><span class="id">TC-21</span> Duplicar</a>
@@ -501,17 +502,17 @@ $env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del o
     <!-- ───────────── Resumen ───────────── -->
     <section id="resumen" class="block">
       <h2>Resumen de la última ejecución</h2>
-      <p class="lede">Último caso ejecutado el 27 de octubre de 2026 (TC-36 y TC-37). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias): suite <code>suite-backoffice.ps1</code>, recorridos y casos de lectura por API, <code>print:check</code> y las 44 capturas con <code>manual:capture</code>. TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real.</p>
+      <p class="lede">Último caso ejecutado el 28 de octubre de 2026 (TC-39); antes, el 27 de octubre (TC-36 y TC-37). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias): suite <code>suite-backoffice.ps1</code>, recorridos y casos de lectura por API, <code>print:check</code> y las 44 capturas con <code>manual:capture</code>. TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real.</p>
 
       <div class="stats">
-        <div class="stat"><b>37</b><span>casos</span></div>
-        <div class="stat ok"><b>30</b><span>pasan</span></div>
+        <div class="stat"><b>40</b><span>casos</span></div>
+        <div class="stat ok"><b>32</b><span>pasan</span></div>
         <div class="stat part"><b>7</b><span>parciales</span></div>
         <div class="stat"><b>2</b><span>defectos corregidos</span></div>
         <div class="stat"><b>44</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Los 39 casos pasan</b> (28 con captura; 8 verificados contra la API o con e2e, sin captura de la pantalla). TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-40 (ítems ocultos e insignias legibles), con <code>fix-admin-contrast</code>, el 28 de octubre contra la imagen de producción del frontend y bases descartables; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Los 40 casos pasan</b> (28 con captura; 9 verificados contra la API o con e2e, sin captura de la pantalla). TC-39 (las visitas propias y de bots no suman), con <code>classify-profile-views</code>, se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por <code>POST /api/auth/login</code>; el Dashboard con <b>Por tipo</b> es la captura de TC-18. TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-40 (ítems ocultos e insignias legibles), con <code>fix-admin-contrast</code>, el 28 de octubre contra la imagen de producción del frontend y bases descartables; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -607,10 +608,10 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 
       <article class="concept" id="c8">
         <h3>Analítica</h3>
-        <p>Cada carga de una ruta pública registra una <b>visita</b> (<code>ProfileView</code>): perfil, idioma, origen y fecha; la IP solo como HMAC. Las vistas previas del panel no cuentan. El dashboard resume por día, perfil, idioma y origen, y los perfiles archivados conservan su historial.</p>
+        <p>Cada carga de una ruta pública registra una <b>visita</b> (<code>ProfileView</code>): perfil, idioma, origen, fecha y <b>tipo</b>; la IP solo como HMAC. Las vistas previas del panel no cuentan. Cada visita se guarda con su tipo: <i>Personas</i>, <i>Tus visitas</i> (la petición trae la sesión del panel) y <i>Bots</i> (sin navegador reconocible: Googlebot, <code>HeadlessChrome</code>, <code>curl</code>…). <b>Solo las de personas suman</b> en el total y en las visitas de cada perfil; las otras se cuentan aparte, en <b>Por tipo</b>. Si abrís tu sitio sin la sesión del panel, cuenta como una persona más. El dashboard resume por día, perfil, idioma, origen y tipo, y los perfiles archivados conservan su historial.</p>
         <p><span class="lbl">En el ejemplo</span> · 105 visitas sintéticas en 5 perfiles (<code>all</code>, <code>ejemplo-backend</code>, <code>ejemplo-secciones</code>, <code>ejemplo-archivado</code>, <code>ejemplo-protegido</code>), con orígenes directo, LinkedIn, buscador y un dominio de <code>example.com</code>.</p>
         <p><span class="lbl">Dónde se edita</span> · <a href="#b2">B2 · Dashboard</a></p>
-        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc18">TC-18</a></p>
+        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a></p>
       </article>
 
     </section>
@@ -730,10 +731,11 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
           <li>Mirá los totales (<b>Visitas en el rango</b>, <b>Perfiles vistos</b>, <b>Idiomas</b>) y <b>Visitas por día</b>.</li>
           <li>En <b>Por perfil</b> abrí el constructor o la vista pública con los enlaces de cada fila; el perfil archivado lleva la marca <code>archivado</code>.</li>
           <li><b>Por origen</b> muestra de dónde llegó cada visita: <code>directo</code>, <code>linkedin.com</code>, <code>google.com</code>…</li>
+          <li><b>Por tipo</b> separa <i>Personas</i>, <i>Tus visitas</i> y <i>Bots</i>: solo las de personas suman en el total.</li>
         </ol>
         <p><span class="lbl">Resultado esperado</span> · Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos, 2 idiomas, y los orígenes directo, linkedin.com, google.com y empleos.example.com.</p>
-        <p><span class="lbl">Errores típicos</span> · Las visitas de hoy cuentan (defecto D-01 corregido). La vista previa del panel y la carga de otra persona de <code>/admin</code> no suman visitas.</p>
-        <p><span class="lbl">Casos</span> · <a href="#tc18">TC-18</a></p>
+        <p><span class="lbl">Errores típicos</span> · Las visitas de hoy cuentan (defecto D-01 corregido). La vista previa del panel y la carga de otra persona de <code>/admin</code> no suman visitas. Tus propias visitas (con la sesión del panel) y las de bots tampoco suman en el total: están en <b>Por tipo</b>.</p>
+        <p><span class="lbl">Casos</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a></p>
       </article>
 
     </section>
@@ -767,7 +769,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 
       <article class="screen" id="b2">
         <h3>Dashboard</h3>
-        <p><span class="lbl">Ruta</span> · <code>/admin</code>. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales, <b>Visitas por día</b>, <b>Por perfil</b> (con enlaces al constructor y a la vista pública y la marca <code>archivado</code>), <b>Por idioma</b> y <b>Por origen</b>.</p>
+        <p><span class="lbl">Ruta</span> · <code>/admin</code>. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales (de <b>personas</b>), <b>Visitas por día</b>, <b>Por perfil</b> (con enlaces al constructor y a la vista pública y la marca <code>archivado</code>), <b>Por idioma</b>, <b>Por origen</b> y <b>Por tipo</b> (<i>Personas</i>, <i>Tus visitas</i> y <i>Bots</i>, con la aclaración de que solo las de personas suman).</p>
 <div class="tablewrap"><table>
 <thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
 <tbody>
@@ -780,9 +782,9 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 <tr><td class="msg">Todavía no hay visitas</td><td>No hay visitas en el rango elegido; el texto de apoyo es «Cuando alguien abra un perfil curado en el rango elegido, aparecerá acá.»</td></tr>
 </tbody>
 </table></div>
-        <p><span class="lbl">Acciones y avisos</span> · Solo lectura. Las visitas se registran en la ruta pública, no en la vista previa del panel.</p>
-        <p>Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos y 2 idiomas.</p>
-        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="800" height="705" alt="Dashboard de analítica"></figure>
+        <p><span class="lbl">Acciones y avisos</span> · Solo lectura. Las visitas se registran en la ruta pública, no en la vista previa del panel. Si el rango solo tiene visitas propias o de bots, el estado vacío convive con la tabla <b>Por tipo</b>; con los tres tipos en cero, aparece solo el estado vacío.</p>
+        <p>Con el ejemplo y 30 días: 105 visitas de personas, 5 perfiles vistos y 2 idiomas.</p>
+        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="800" height="824" alt="Dashboard de analítica"></figure>
       </article>
 
       <article class="screen" id="b3">
@@ -1434,9 +1436,26 @@ tras un preview del panel              -> 4   ✅ el preview no cuenta como visi
 GET analytics/views?from=hoy&amp;to=hoy    -> total=0   ❌ antes del arreglo de D-01
 GET analytics/views?from=hoy&amp;to=hoy    -> total=4   ✅ después</pre></div>
         <div class="note"><b>Fallaba el rango, no el registro.</b> El contador del perfil y el registro de <code>ProfileView</code> siempre funcionaron. <code>to</code> era exclusivo y el dashboard pide <code>[hoy-29, hoy]</code>, así que las visitas de hoy no aparecían. Corregido: ver <a href="#defectos">D-01</a>.</div>
-        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="800" height="705" alt="Dashboard de analítica"><figcaption>105 visitas en 30 días, 5 perfiles y 2 idiomas, sobre la base de ejemplo (el archivado conserva las suyas). Las cuatro tablas: por día, por perfil, por idioma y por origen.</figcaption></figure>
-        <p>De cada visita se guarda el perfil, el idioma, la fecha y la IP <b>solo como HMAC</b> con <code>ANALYTICS_SALT</code>. No hay cookies de seguimiento, y si el registro falla la respuesta al visitante no se altera.</p>
+        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="800" height="824" alt="Dashboard de analítica"><figcaption>105 visitas en 30 días, 5 perfiles y 2 idiomas, sobre la base de ejemplo (el archivado conserva las suyas). Las cinco tablas: por día, por perfil, por idioma, por origen y por tipo.</figcaption></figure>
+        <p>De cada visita se guarda el perfil, el idioma, la fecha y la IP <b>solo como HMAC</b> con <code>ANALYTICS_SALT</code>. No hay cookies de seguimiento: la cookie de sesión del panel solo se lee para reconocer tus visitas y no se guarda. Si el registro falla, la respuesta al visitante no se altera.</p>
               <fieldset class="run" data-run="tc18"><legend>Resultado de la corrida · TC-18</legend><label><input type="radio" name="r-tc18" value="pass"> pasa</label><label><input type="radio" name="r-tc18" value="fail"> falla</label><label><input type="radio" name="r-tc18" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-18"></fieldset>
+</article>
+
+      <article class="case" data-status="ok" id="tc39" data-area="backoffice" data-change="classify-profile-views">
+        <div class="case-head"><span class="case-id">TC-39</span><h3>Las visitas propias y de bots no suman</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Precondición</span> · Base de ejemplo, <b>descartable</b> (nunca <code>portfolio</code>: cada carga pública registra una visita), con la API y el frontend levantados y la sesión del panel iniciada en <code>/admin</code>. Para el paso 3, <code>$API</code> es la URL de la API.</p>
+        <p><span class="lbl">Pasos</span> · (1) Anotá el <b>Dashboard</b> (30 días): el total de <i>Personas</i> y las visitas de <code>ejemplo-backend</code> en <code>/admin/perfiles</code>; (2) con la sesión del panel iniciada, abrí <code>/ejemplo-backend</code> (o pedí el perfil con la cookie de sesión); (3) desde la terminal, sin sesión: <code>curl -s -o /dev/null -H "User-Agent: Mozilla/5.0 (compatible; Googlebot/2.1)" $API/api/curated-profiles/ejemplo-backend</code> y otra vez con <code>-H "User-Agent:"</code> (sin User-Agent); (4) en una <b>ventana privada</b>, abrí <code>/ejemplo-backend</code>; (5) recargá el Dashboard y <code>/admin/perfiles</code>.</p>
+        <p><span class="lbl">Esperado</span> · (1) En la base de ejemplo: <i>Personas</i> 105 (el total) y <code>ejemplo-backend</code> con 26 visitas; (2) la visita queda como <i>Tus visitas</i>: el total y las visitas del perfil <b>no cambian</b>; (3) dos visitas de <i>Bots</i>: tampoco suman; (4) esa visita sí suma: el total pasa a 106 y <code>ejemplo-backend</code> a 27; (5) <b>Por tipo</b> muestra <i>Personas</i>, <i>Tus visitas</i> y <i>Bots</i> en ese orden, y la columna de visitas de cada perfil coincide con las de personas de <b>Por perfil</b>.</p>
+        <p><span class="lbl">Errores típicos</span> · Si abrís tu sitio sin la sesión del panel (otro dispositivo, una ventana privada, una sesión vencida), la visita cuenta como una persona más. Un bot que se hace pasar por un navegador común también cuenta como persona: se reconoce por su User-Agent, no por su comportamiento. Las visitas de los scripts de calidad (<code>print:check</code>, <code>a11y:check</code>, <code>perf:check</code>, <code>manual:capture</code>) quedan como <i>Bots</i>.</p>
+        <p><span class="lbl">Observado</span> · 28 de octubre de 2026, base de ejemplo descartable, API local; la sesión se inició por <code>POST /api/auth/login</code> y se reusó su cookie, sin escribir la contraseña en un navegador (evidencia en <code>openspec/changes/classify-profile-views/verification/</code>):</p>
+        <div class="codewrap"><pre>base de ejemplo (antes)              -&gt; Personas 105 · Tus visitas 0
+perfil con la cookie de sesión (x2)  -&gt; filas OWNER, views del perfil igual
+Googlebot y sin User-Agent           -&gt; filas BOT, views igual
+navegador sin sesión (ejemplo-backend)-&gt; fila HUMAN, views 26 -&gt; 27
+GET analytics/views                  -&gt; total 106 · byKind HUMAN 106, OWNER 2, BOT (las 2 del paso 3)
+views de cada perfil                 -&gt; igual a sus filas HUMAN</pre></div>
+        <p>Sin captura propia: el Dashboard con la tabla <b>Por tipo</b> es la de <a href="#tc18">TC-18</a>. Los e2e <code>view-kind.e2e-spec.ts</code> cubren la cookie, el <code>Authorization: Bearer</code>, la cookie vencida o forjada, Googlebot, HeadlessChrome y la ausencia de User-Agent.</p>
+              <fieldset class="run" data-run="tc39"><legend>Resultado de la corrida · TC-39</legend><label><input type="radio" name="r-tc39" value="pass"> pasa</label><label><input type="radio" name="r-tc39" value="fail"> falla</label><label><input type="radio" name="r-tc39" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-39"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc19" data-area="backoffice" data-change="add-admin-backoffice">
@@ -1868,7 +1887,8 @@ echo "$SITIO/acme-tech-lead"</pre></div>
         <div class="g"><dt id="g-alias-de-slug">alias de slug</dt><dd>El slug anterior de un perfil renombrado, que sigue resolviendo al perfil. <span class="refs"><a href="#r4">R4 · Renombrar el slug sin romper los links</a>, <a href="#tc24">TC-24</a></span></dd></div>
         <div class="g"><dt id="g-localizedtext"><code>LocalizedText</code></dt><dd>Un texto bilingüe <code>{ "es": "…", "en": "…" }</code> en un solo registro. <span class="refs"><a href="#c7">C7 · Idiomas</a>, <a href="#b3">B3 · Portada (con Idiomas)</a></span></dd></div>
         <div class="g"><dt id="g-faltante-de-traducci-n">faltante de traducción</dt><dd>Un campo bilingüe sin contenido en el idioma pedido; es solo un aviso. <span class="refs"><a href="#c7">C7 · Idiomas</a>, <a href="#r7">R7 · Traducir y revisar faltantes</a>, <a href="#tc32">TC-32</a></span></dd></div>
-        <div class="g"><dt id="g-profileview"><code>ProfileView</code></dt><dd>El registro de una visita pública (perfil, idioma, origen, fecha, IP como HMAC). <span class="refs"><a href="#c8">C8 · Analítica</a>, <a href="#b2">B2 · Dashboard</a>, <a href="#tc18">TC-18</a></span></dd></div>
+        <div class="g"><dt id="g-profileview"><code>ProfileView</code></dt><dd>El registro de una visita pública (perfil, idioma, origen, fecha, tipo, IP como HMAC). <span class="refs"><a href="#c8">C8 · Analítica</a>, <a href="#b2">B2 · Dashboard</a>, <a href="#tc18">TC-18</a></span></dd></div>
+        <div class="g"><dt id="g-tipo-de-visita">tipo de visita</dt><dd>Si la visita fue de una persona, tuya (con la sesión del panel) o de un bot; solo las de personas suman en el total y en <code>views</code>. <span class="refs"><a href="#c8">C8 · Analítica</a>, <a href="#b2">B2 · Dashboard</a>, <a href="#tc39">TC-39</a></span></dd></div>
       </dl>
     </section>
 </main>

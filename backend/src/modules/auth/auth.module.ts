@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { APP_CONFIG, AppConfig } from '../../config/configuration';
+import { ADMIN_SESSION_VERIFIER } from '../../shared/application/admin-session-verifier';
 import { GetCurrentAdminUseCase } from './application/use-cases/get-current-admin.use-case';
 import { LoginUseCase } from './application/use-cases/login.use-case';
 import { PASSWORD_HASHER } from './domain/ports/password-hasher.port';
@@ -11,6 +12,7 @@ import { ADMIN_USER_REPOSITORY } from './domain/repositories/admin-user.reposito
 import { AuthController } from './infrastructure/controllers/auth.controller';
 import { PrismaAdminUserRepository } from './infrastructure/persistence/prisma-admin-user.repository';
 import { Argon2PasswordHasher } from './infrastructure/security/argon2-password-hasher';
+import { JwtAdminSessionVerifier } from './infrastructure/security/jwt-admin-session-verifier';
 import { JwtAuthGuard } from './infrastructure/security/jwt-auth.guard';
 import { JwtTokenSigner } from './infrastructure/security/jwt-token-signer';
 import { JwtStrategy } from './infrastructure/security/jwt.strategy';
@@ -43,9 +45,10 @@ import { LoginRateLimitGuard } from './infrastructure/security/login-rate-limit.
     LoginUseCase,
     GetCurrentAdminUseCase,
     JwtStrategy,
+    { provide: ADMIN_SESSION_VERIFIER, useClass: JwtAdminSessionVerifier },
     LoginRateLimitGuard,
     JwtAuthGuard,
   ],
-  exports: [JwtAuthGuard, PASSWORD_HASHER, ADMIN_USER_REPOSITORY],
+  exports: [JwtAuthGuard, PASSWORD_HASHER, ADMIN_USER_REPOSITORY, ADMIN_SESSION_VERIFIER],
 })
 export class AuthModule {}

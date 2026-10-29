@@ -7,6 +7,7 @@ describe('AggregateProfileViewsUseCase', () => {
   const repo: ProfileViewRepository = {
     record: jest.fn(),
     aggregate: jest.fn().mockResolvedValue({ ...EMPTY, total: 3 }),
+    countByKind: jest.fn().mockResolvedValue([]),
     countByReferrer: jest.fn().mockResolvedValue([
       { referrer: 'https://www.linkedin.com/feed/', views: 2 },
       { referrer: null, views: 1 },
@@ -47,5 +48,50 @@ describe('AggregateProfileViewsUseCase', () => {
     ]);
     const sum = result.value.byReferrer.reduce((acc, r) => acc + r.views, 0);
     expect(sum).toBe(result.value.total);
+  });
+
+  describe('byKind', () => {
+    const withKinds = (rows: { kind: 'HUMAN' | 'OWNER' | 'BOT'; views: number }[]) =>
+      ({
+        ...repo,
+        aggregate: jest.fn().mockResolvedValue({ ...EMPTY }),
+        countByKind: jest.fn().mockResolvedValue(rows),
+      }) satisfies ProfileViewRepository;
+
+    it('rango vacío: los tres tipos en cero y en orden fijo', async () => {
+      const result = await new AggregateProfileViewsUseCase(withKinds([])).execute({});
+      if (!result.ok) throw new Error('debía agregar');
+      expect(result.value.byKind).toEqual([
+        { kind: 'HUMAN', views: 0 },
+        { kind: 'OWNER', views: 0 },
+        { kind: 'BOT', views: 0 },
+      ]);
+    });
+
+    it('solo BOT: el total sigue siendo el de personas y byKind trae el BOT', async () => {
+      const result = await new AggregateProfileViewsUseCase(
+        withKinds([{ kind: 'BOT', views: 4 }]),
+      ).execute({});
+      if (!result.ok) throw new Error('debía agregar');
+      expect(result.value.total).toBe(0);
+      expect(result.value.byKind).toEqual([
+        { kind: 'HUMAN', views: 0 },
+        { kind: 'OWNER', views: 0 },
+        { kind: 'BOT', views: 4 },
+      ]);
+    });
+
+    it('el orden es fijo aunque el repositorio devuelva otro', async () => {
+      const result = await new AggregateProfileViewsUseCase(
+        withKinds([
+          { kind: 'BOT', views: 1 },
+          { kind: 'OWNER', views: 3 },
+          { kind: 'HUMAN', views: 12 },
+        ]),
+      ).execute({});
+      if (!result.ok) throw new Error('debía agregar');
+      expect(result.value.byKind.map((k) => k.kind)).toEqual(['HUMAN', 'OWNER', 'BOT']);
+      expect(result.value.byKind.map((k) => k.views)).toEqual([12, 3, 1]);
+    });
   });
 });

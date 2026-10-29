@@ -1,0 +1,45 @@
+== validate classify-profile-views --strict
+Change 'classify-profile-views' is valid
+exit=0
+== validate --all --strict
+- Validating...
+✓ spec/admin-analytics-dashboard
+✓ spec/admin-authentication
+✓ spec/admin-backoffice-shell
+✓ spec/admin-content-management
+✓ spec/admin-curated-profile-crud
+✓ spec/admin-curated-profile-preview
+✓ spec/admin-experience-crud
+✓ spec/admin-skill-crud
+✓ spec/admin-theme-catalog
+✓ spec/api-contract-types
+✓ spec/api-health
+✓ spec/api-observability
+✓ spec/api-platform
+✓ spec/api-rate-limiting
+✓ spec/api-security-headers
+✓ change/classify-profile-views
+✓ spec/content-localization
+✓ spec/curated-profile-builder
+✓ spec/curated-profile-resolution
+✓ spec/data-persistence-seed
+✓ spec/example-seed-data
+✓ spec/frontend-localization
+✓ spec/layout-engine
+✓ spec/platform-manual
+✓ spec/printable-curated-profile
+✓ spec/profile-view-analytics
+✓ spec/public-curated-profile-api
+✓ spec/public-experience-api
+✓ spec/public-portfolio-frontend
+✓ spec/public-portfolio-sections-api
+✓ spec/public-profile-api
+✓ spec/public-seo
+✓ spec/runtime-theming
+✓ spec/site-security-policy
+✓ spec/theme-customizer
+✓ spec/theme-resolution
+✓ spec/web-accessibility
+✓ spec/web-performance
+Totals: 38 passed, 0 failed (38 items)
+exit=0

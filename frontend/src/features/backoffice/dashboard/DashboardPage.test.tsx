@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { AppRouter } from '@/app/router';
@@ -124,6 +124,89 @@ describe('DashboardPage', () => {
     expect(screen.queryByRole('region', { name: 'Por perfil' })).not.toBeInTheDocument();
     // Tampoco una tabla de orígenes con ceros.
     expect(screen.queryByRole('region', { name: 'Por origen' })).not.toBeInTheDocument();
+    // Ni una tabla por tipo con los tres en cero.
+    expect(screen.queryByRole('region', { name: 'Por tipo' })).not.toBeInTheDocument();
+  });
+
+  // classify-profile-views, D8.
+  describe('tabla por tipo', () => {
+    it('lista Personas, Tus visitas y Bots, en ese orden y con la línea explicativa', async () => {
+      server.use(...adminHandlers);
+
+      renderWithProviders(<AppRouter />, { route: '/admin' });
+
+      const byKind = await screen.findByRole('region', { name: 'Por tipo' });
+      const rows = within(byKind)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent);
+      expect(rows).toEqual(['Personas12', 'Tus visitas3', 'Bots5']);
+      expect(
+        within(byKind).getByText(/Solo las visitas de personas suman en el total/),
+      ).toBeInTheDocument();
+    });
+
+    it('solo visitas propias o de bots: estado vacío y, debajo, la tabla por tipo', async () => {
+      server.use(
+        http.get(`${API}/admin/analytics/views`, () =>
+          HttpResponse.json({
+            ...EMPTY_ANALYTICS,
+            byKind: [
+              { kind: 'HUMAN', views: 0 },
+              { kind: 'OWNER', views: 3 },
+              { kind: 'BOT', views: 2 },
+            ],
+          }),
+        ),
+        ...adminHandlers,
+      );
+
+      renderWithProviders(<AppRouter />, { route: '/admin' });
+
+      expect(await screen.findByText('Todavía no hay visitas')).toBeInTheDocument();
+      expect(screen.queryByRole('region', { name: 'Por perfil' })).not.toBeInTheDocument();
+      const byKind = await screen.findByRole('region', { name: 'Por tipo' });
+      expect(
+        within(byKind)
+          .getAllByRole('listitem')
+          .map((item) => item.textContent),
+      ).toEqual(['Personas0', 'Tus visitas3', 'Bots2']);
+    });
+
+    it('el rango se aplica: la petición con el rango nuevo recalcula la tabla por tipo', async () => {
+      const requests: string[] = [];
+      server.use(
+        http.get(`${API}/admin/analytics/views`, ({ request }) => {
+          requests.push(request.url);
+          const sevenDays = requests.length > 1;
+          return HttpResponse.json({
+            ...ANALYTICS,
+            byKind: [
+              { kind: 'HUMAN', views: sevenDays ? 4 : 12 },
+              { kind: 'OWNER', views: sevenDays ? 1 : 3 },
+              { kind: 'BOT', views: sevenDays ? 0 : 5 },
+            ],
+          });
+        }),
+        ...adminHandlers,
+      );
+      const user = userEvent.setup();
+
+      renderWithProviders(<AppRouter />, { route: '/admin' });
+      await screen.findByRole('region', { name: 'Por tipo' });
+
+      await user.click(screen.getByRole('combobox', { name: 'Rango de fechas' }));
+      await user.click(await screen.findByRole('option', { name: 'Últimos 7 días' }));
+
+      await waitFor(() => {
+        const byKind = screen.getByRole('region', { name: 'Por tipo' });
+        expect(
+          within(byKind)
+            .getAllByRole('listitem')
+            .map((item) => item.textContent),
+        ).toEqual(['Personas4', 'Tus visitas1', 'Bots0']);
+      });
+      expect(requests.length).toBeGreaterThan(1);
+    });
   });
 
   it('la tabla por origen lista los orígenes de mayor a menor', async () => {

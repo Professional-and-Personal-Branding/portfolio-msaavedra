@@ -61,7 +61,12 @@ describe('Visitas en segundo plano (e2e)', () => {
       const views = await prisma.curatedProfile.aggregate({ _sum: { views: true } });
 
       await expect(
-        repo.record({ curatedProfileId: 'no-existe-bg', locale: 'es', userAgent: MARK }),
+        repo.record({
+          curatedProfileId: 'no-existe-bg',
+          locale: 'es',
+          userAgent: MARK,
+          kind: 'HUMAN',
+        }),
       ).rejects.toBeDefined();
 
       expect(await prisma.profileView.count()).toBe(total);
@@ -92,6 +97,7 @@ describe('Visitas en segundo plano (e2e)', () => {
               },
               aggregate: real.aggregate.bind(real),
               countByReferrer: real.countByReferrer.bind(real),
+              countByKind: real.countByKind.bind(real),
             } satisfies ProfileViewRepository;
           },
           inject: [PrismaService],

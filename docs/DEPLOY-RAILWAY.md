@@ -234,6 +234,8 @@ curl.exe -sI -H 'Origin: https://otro-sitio.com' $API/api/profile | Select-Strin
 
 - [ ] Pegar dos perfiles públicos distintos en el [Post Inspector de LinkedIn](https://www.linkedin.com/post-inspector/) y en un canal de Slack. Las tarjetas tienen que mostrar **títulos distintos** y la imagen (tarea 5.4 de `add-server-rendered-head`). Si salen genéricas, ver *Si algo falla*.
 
+Al primer deploy no hay visitas que reclasificar. Cuando suba la versión de la lista de bots, hacé el `pg_dump` de arriba y corré `railway run npm run views:reclassify` (simulación, no escribe) y, si el informe cierra, `railway run npm run views:reclassify -- --apply` (`docs/DEPLOY.md` § 7).
+
 ---
 
 ## 9. Backup fuera de Railway y prueba de restauración (§ 7)

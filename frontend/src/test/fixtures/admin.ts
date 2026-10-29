@@ -177,6 +177,11 @@ export const ANALYTICS: ProfileViews = {
     { referrer: 'directo', views: 7 },
     { referrer: 'linkedin.com', views: 5 },
   ],
+  byKind: [
+    { kind: 'HUMAN', views: 12 },
+    { kind: 'OWNER', views: 3 },
+    { kind: 'BOT', views: 5 },
+  ],
 };
 
 export const EMPTY_ANALYTICS: ProfileViews = {
@@ -187,6 +192,11 @@ export const EMPTY_ANALYTICS: ProfileViews = {
   byLocale: [],
   byDay: [],
   byReferrer: [],
+  byKind: [
+    { kind: 'HUMAN', views: 0 },
+    { kind: 'OWNER', views: 0 },
+    { kind: 'BOT', views: 0 },
+  ],
 };
 
 // add-profile-content-admin: formación (educación y certificaciones).

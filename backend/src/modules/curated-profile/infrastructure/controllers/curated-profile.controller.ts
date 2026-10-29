@@ -15,6 +15,7 @@ import { Locale } from '../../../../shared/domain/i18n';
 import { toHttpException } from '../../../../shared/infrastructure/http/domain-error.mapper';
 import { ErrorResponseDto } from '../../../../shared/infrastructure/http/error-response.dto';
 import { hashIp } from '../../../../shared/infrastructure/http/ip-hash';
+import { extractAdminToken } from '../../../auth/infrastructure/security/extract-admin-token';
 import { LocaleQueryDto } from '../../../../shared/infrastructure/http/locale-query.dto';
 import { RequestLocale } from '../../../../shared/infrastructure/http/request-locale.decorator';
 import {
@@ -73,7 +74,7 @@ export class CuratedProfileController {
     summary: 'Perfil curado resuelto',
     description:
       'Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. ' +
-      'Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash). ' +
+      'Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash) con su tipo: propia si trae una sesión del panel válida, de bot según el User-Agent, o de una persona; solo estas últimas suman en `views`. ' +
       'Un slug anterior (renombrado) también resuelve: el cuerpo trae el slug canónico y `Content-Location` su ruta. Un perfil archivado responde 404.',
   })
   @ApiParam({ name: 'slug', example: 'tech-lead-dotnet' })
@@ -110,6 +111,8 @@ export class CuratedProfileController {
       referrer: firstHeader(req.headers.referer),
       userAgent: firstHeader(req.headers['user-agent']),
       ipHash: hashIp(req.ip, this.analyticsSalt),
+      // Solo se extrae: la validación ocurre en segundo plano y esta ruta sigue siendo anónima.
+      sessionToken: extractAdminToken(req) ?? undefined,
     };
     const result = await this.resolveCuratedProfile.execute({
       slug,

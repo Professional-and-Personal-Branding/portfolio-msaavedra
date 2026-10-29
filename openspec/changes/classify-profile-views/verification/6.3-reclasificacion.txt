@@ -1,0 +1,168 @@
+
+== 1. prisma migrate status (antes de la migración nueva)
+
+Datasource "db": PostgreSQL database "portfolio_views_check", schema "public" at "localhost:5434"
+Following migration have not yet been applied:
+20261029021458_classify_profile_views
+
+
+== 2. Estado previo (base en la versión de main + 5 filas insertadas por SQL)
+        slug        | views | filas 
+--------------------+-------+-------
+ all                |    48 |    48
+ ejemplo-archivado  |    14 |    14
+ ejemplo-backend    |    31 |    31
+ ejemplo-borrador   |     0 |     0
+ ejemplo-dirigido   |     0 |     0
+ ejemplo-overrides  |     0 |     0
+ ejemplo-protegido  |     6 |     6
+ ejemplo-renombrado |     0 |     0
+ ejemplo-secciones  |    11 |    11
+(9 rows)
+
+
+ filas_total 
+-------------
+         110
+(1 row)
+
+
+== 3. prisma migrate deploy (migración nueva desde esta rama)
+
+migrations/
+  └─ 20261029021458_classify_profile_views/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+
+
+Datasource "db": PostgreSQL database "portfolio_views_check", schema "public" at "localhost:5434"
+Database schema is up to date!
+
+
+== 4. Filas y views tras la migración (todas HUMAN, nada cambió)
+ kind  | count 
+-------+-------
+ HUMAN |   110
+(1 row)
+
+
+        slug        | views | filas 
+--------------------+-------+-------
+ all                |    48 |    48
+ ejemplo-archivado  |    14 |    14
+ ejemplo-backend    |    31 |    31
+ ejemplo-borrador   |     0 |     0
+ ejemplo-dirigido   |     0 |     0
+ ejemplo-overrides  |     0 |     0
+ ejemplo-protegido  |     6 |     6
+ ejemplo-renombrado |     0 |     0
+ ejemplo-secciones  |    11 |    11
+(9 rows)
+
+
+== 5. views:reclassify SIN --apply (simulación)
+
+> portfolio-backend@0.1.0 views:reclassify
+> tsx scripts/reclassify-views.ts
+
+views:reclassify — lista de bots v1
+Destino: localhost:5434/portfolio_views_check
+Modo: simulación (no escribe; usá --apply para aplicar)
+
+Visitas: 110
+Antes:   HUMAN 110 · OWNER 0 · BOT 0
+Después: HUMAN 106 · OWNER 0 · BOT 4
+Cambian de kind: HUMAN → BOT 4 · BOT → HUMAN 0
+Visitas de cada perfil (views), actual → nuevo:
+  ejemplo-backend: 31 → 27 (-4)
+
+Antes de aplicar en una base con datos que importen, respaldala (sin contraseña en la línea de comandos):
+  pg_dump "postgresql://portfolio@localhost:5434/portfolio_views_check" -Fc -f portfolio_views_check-2026-10-28.dump
+
+ kind  | count 
+-------+-------
+ HUMAN |   110
+(1 row)
+
+
+      slug       | views 
+-----------------+-------
+ ejemplo-backend |    31
+(1 row)
+
+
+== 6. views:reclassify --apply
+
+> portfolio-backend@0.1.0 views:reclassify
+> tsx scripts/reclassify-views.ts --apply
+
+views:reclassify — lista de bots v1
+Destino: localhost:5434/portfolio_views_check
+Modo: APLICAR
+
+Visitas: 110
+Antes:   HUMAN 110 · OWNER 0 · BOT 0
+Después: HUMAN 106 · OWNER 0 · BOT 4
+Cambian de kind: HUMAN → BOT 4 · BOT → HUMAN 0
+Visitas de cada perfil (views), actual → nuevo:
+  ejemplo-backend: 31 → 27 (-4)
+
+Antes de aplicar en una base con datos que importen, respaldala (sin contraseña en la línea de comandos):
+  pg_dump "postgresql://portfolio@localhost:5434/portfolio_views_check" -Fc -f portfolio_views_check-2026-10-28.dump
+
+✅ Reclasificación aplicada.
+
+ kind  | count 
+-------+-------
+ HUMAN |   106
+ BOT   |     4
+(2 rows)
+
+
+        slug        | views | filas_human 
+--------------------+-------+-------------
+ all                |    48 |          48
+ ejemplo-archivado  |    14 |          14
+ ejemplo-backend    |    27 |          27
+ ejemplo-borrador   |     0 |           0
+ ejemplo-dirigido   |     0 |           0
+ ejemplo-overrides  |     0 |           0
+ ejemplo-protegido  |     6 |           6
+ ejemplo-renombrado |     0 |           0
+ ejemplo-secciones  |    11 |          11
+(9 rows)
+
+
+ kind  | count 
+-------+-------
+ HUMAN |   105
+(1 row)
+
+
+== 7. views:reclassify --apply otra vez (idempotente)
+
+> portfolio-backend@0.1.0 views:reclassify
+> tsx scripts/reclassify-views.ts --apply
+
+views:reclassify — lista de bots v1
+Destino: localhost:5434/portfolio_views_check
+Modo: APLICAR
+
+Visitas: 110
+Antes:   HUMAN 106 · OWNER 0 · BOT 4
+Después: HUMAN 106 · OWNER 0 · BOT 4
+Cambian de kind: HUMAN → BOT 0 · BOT → HUMAN 0
+Visitas de cada perfil (views): sin diferencias.
+
+Sin cambios: la base ya está reclasificada.
+
+
+== 8. argumento desconocido
+
+> portfolio-backend@0.1.0 views:reclassify
+> tsx scripts/reclassify-views.ts --aplicar
+
+❌ Argumento desconocido: --aplicar. Uso: npm run views:reclassify [-- --apply]
+
+exit=1

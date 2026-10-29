@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { ProfileViewRepository } from '../../../analytics/domain/repositories/profile-view.repository';
 import { Certification } from '../../../education/domain/entities/certification.entity';
 import { Education } from '../../../education/domain/entities/education.entity';
@@ -206,6 +207,7 @@ interface Deps {
   categories?: SkillCategory[];
   themes?: Theme[];
   record?: jest.Mock;
+  isAdminSession?: jest.Mock;
 }
 
 function build(deps: Deps = {}) {
@@ -254,7 +256,10 @@ function build(deps: Deps = {}) {
     record,
     aggregate: jest.fn(),
     countByReferrer: jest.fn(),
+    countByKind: jest.fn(),
   };
+  const isAdminSession = deps.isAdminSession ?? jest.fn().mockResolvedValue(false);
+  const sessions = { isAdminSession };
   const loader = {
     load: jest.fn().mockResolvedValue({
       education: EDUCATION,
@@ -271,8 +276,14 @@ function build(deps: Deps = {}) {
     loader,
   );
   const background = new FakeBackgroundTasks();
-  const useCase = new ResolveCuratedProfileUseCase(curatedRepo, viewsRepo, background, composer);
-  return { useCase, record, loader, composer, curatedRepo, background };
+  const useCase = new ResolveCuratedProfileUseCase(
+    curatedRepo,
+    viewsRepo,
+    background,
+    sessions,
+    composer,
+  );
+  return { useCase, record, isAdminSession, loader, composer, curatedRepo, background };
 }
 
 /** Captura las tareas sin ejecutarlas: permite comprobar que la respuesta no las espera. */
@@ -545,6 +556,7 @@ describe('ResolveCuratedProfileUseCase', () => {
         referrer: 'https://x',
         userAgent: 'UA',
         ipHash: 'h',
+        kind: 'HUMAN',
       });
       expect(withoutCtx.background.captured).toHaveLength(0);
       expect(withoutCtx.record).not.toHaveBeenCalled();
@@ -580,6 +592,103 @@ describe('ResolveCuratedProfileUseCase', () => {
       expect(out.slug).toBe('java-senior');
       await expect(failing.background.flush()).resolves.toBeUndefined();
       expect(failing.record).toHaveBeenCalled();
+    });
+
+    // ── Clasificación de la visita (change classify-profile-views) ──
+    const BROWSER_UA =
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    const BOT_UA = 'Mozilla/5.0 AppleWebKit/537.36 HeadlessChrome/120.0.0.0 Safari/537.36';
+
+    /** `kind` de la primera visita que recibió el repositorio. */
+    const firstKind = (record: jest.Mock): string =>
+      (record.mock.calls as [{ kind: string }][])[0][0].kind;
+
+    async function recordedKind(
+      viewContext: { userAgent?: string; sessionToken?: string },
+      deps: Deps = {},
+    ) {
+      const built = build(deps);
+      await resolveOk(built.useCase, { viewContext: { locale: 'es', ...viewContext } });
+      await built.background.flush();
+      return { built, kind: firstKind(built.record) };
+    }
+
+    it('sin token: UA de navegador es HUMAN y UA de bot o ausente es BOT', async () => {
+      expect((await recordedKind({ userAgent: BROWSER_UA })).kind).toBe('HUMAN');
+      expect((await recordedKind({ userAgent: BOT_UA })).kind).toBe('BOT');
+      expect((await recordedKind({})).kind).toBe('BOT');
+    });
+
+    it('sin token no se llama al verificador', async () => {
+      const { built } = await recordedKind({ userAgent: BROWSER_UA });
+      expect(built.isAdminSession).not.toHaveBeenCalled();
+    });
+
+    it('token válido: OWNER aunque el UA sea de bot, y el token no llega al repositorio', async () => {
+      const { built, kind } = await recordedKind(
+        { userAgent: BOT_UA, sessionToken: 'jwt-secreto' },
+        { isAdminSession: jest.fn().mockResolvedValue(true) },
+      );
+      expect(kind).toBe('OWNER');
+      expect(built.isAdminSession).toHaveBeenCalledWith('jwt-secreto');
+      expect(JSON.stringify(built.record.mock.calls)).not.toContain('jwt-secreto');
+    });
+
+    it('token que el verificador rechaza: se clasifica por UA', async () => {
+      const { kind } = await recordedKind(
+        { userAgent: BROWSER_UA, sessionToken: 'vencido' },
+        { isAdminSession: jest.fn().mockResolvedValue(false) },
+      );
+      expect(kind).toBe('HUMAN');
+    });
+
+    it('responde antes de validar la sesión: el verificador pendiente no demora a execute()', async () => {
+      let release: (value: boolean) => void = () => undefined;
+      const pending = new Promise<boolean>((resolve) => {
+        release = resolve;
+      });
+      const withToken = build({ isAdminSession: jest.fn().mockReturnValue(pending) });
+      const withoutToken = build();
+      const a = await resolveOk(withToken.useCase, {
+        viewContext: { locale: 'es', userAgent: BROWSER_UA, sessionToken: 't' },
+      });
+      const b = await resolveOk(withoutToken.useCase, {
+        viewContext: { locale: 'es', userAgent: BROWSER_UA },
+      });
+      expect(a).toEqual(b);
+      expect(withToken.isAdminSession).not.toHaveBeenCalled(); // recién corre dentro de la tarea
+      const flushing = withToken.background.flush();
+      await Promise.resolve();
+      expect(withToken.record).not.toHaveBeenCalled(); // sigue esperando al verificador
+      release(true);
+      await flushing;
+      expect(firstKind(withToken.record)).toBe('OWNER');
+    });
+
+    it('si el verificador falla: clasifica sin sesión, avisa sin el token y no rechaza', async () => {
+      const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+      try {
+        const built = build({
+          isAdminSession: jest.fn().mockRejectedValue(new Error('jwt-secreto: base caída')),
+        });
+        await resolveOk(built.useCase, {
+          viewContext: { locale: 'es', userAgent: BROWSER_UA, sessionToken: 'jwt-secreto' },
+        });
+        await expect(built.background.flush()).resolves.toBeUndefined();
+        expect(firstKind(built.record)).toBe('HUMAN');
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(String(warn.mock.calls[0][0])).not.toContain('jwt-secreto');
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('sin viewContext no se llama ni al verificador ni a record', async () => {
+      const built = build();
+      await resolveOk(built.useCase);
+      await built.background.flush();
+      expect(built.isAdminSession).not.toHaveBeenCalled();
+      expect(built.record).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,0 +1,117 @@
+10.1 cierre — 2026-10-28T22:58:07  (DATABASE_URL del e2e: portfolio_views_e2e; descartable)
+== backend/
+Datasource "db": PostgreSQL database "portfolio_views_e2e", schema "public" at "localhost:5434"
+Database schema is up to date!
+== prisma:generate
+
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Error: 
+EPERM: operation not permitted, rename 'D:\projects\portfolio-msaavedra\wt-views\backend\node_modules\.prisma\client\query_engine-windows.dll.node.tmp17768' -> 'D:\projects\portfolio-msaavedra\wt-views\backend\node_modules\.prisma\client\query_engine-windows.dll.node'
+
+
+exit=1
+== lint
+
+> portfolio-backend@0.1.0 lint
+> eslint "{src,test,scripts}/**/*.ts"
+
+exit=0
+== typecheck
+
+> portfolio-backend@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+exit=0
+== test
+> jest
+
+
+Test Suites: 86 passed, 86 total
+Tests:       769 passed, 769 total
+Snapshots:   0 total
+Time:        9.978 s, estimated 16 s
+Ran all test suites.
+exit=0
+== build
+
+> portfolio-backend@0.1.0 build
+> nest build
+
+exit=0
+== openapi:export + git diff --exit-code openapi.json
+
+> portfolio-backend@0.1.0 openapi:export
+> ts-node --transpile-only -P tsconfig.json scripts/export-openapi.ts
+
+OpenAPI exportado a openapi.json: 39 rutas, 63 schemas
+diff-exit=0
+exit=0
+== test:e2e
+> jest --config ./test/jest-e2e.json --runInBand
+
+
+Test Suites: 11 passed, 11 total
+Tests:       188 passed, 188 total
+Snapshots:   0 total
+Time:        11.482 s, estimated 16 s
+Ran all test suites.
+exit=0
+== prisma:generate (repetido tras bajar la API de prueba que tenía el .dll abierto)
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+exit=0
+== frontend/
+== npm run lint
+> portfolio-frontend@0.1.0 lint
+> eslint .
+exit=0
+== npm run typecheck
+> portfolio-frontend@0.1.0 typecheck
+> tsc -b
+exit=0
+== npm test
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+ Test Files  3 failed | 53 passed (56)
+      Tests  3 failed | 629 passed (632)
+   Start at  23:00:13
+   Duration  47.67s (environment 54%, tests 19%, import 13%, setup 12%, transform 2%)
+Environment  jsdom was created 56 times · 318.42s total, 54% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+exit=1
+== npm run build
+dist/assets/ProfileMenu-8TvO0m2p.js           3.89 kB │ gzip:   1.68 kB
+dist/assets/sheet-CD3sL6CR.js                 7.02 kB │ gzip:   2.48 kB
+dist/assets/entrance-animation-BL9GNgPt.js    8.31 kB │ gzip:   3.28 kB
+dist/assets/dropdown-menu-OLS6AZih.js        16.13 kB │ gzip:   5.23 kB
+dist/assets/dist-Bs3T7j3Q.js                 67.65 kB │ gzip:  23.77 kB
+dist/assets/BackofficeApp-BSSDwW2w.js       229.56 kB │ gzip:  61.51 kB
+dist/assets/index-6TQb1gCI.js               478.11 kB │ gzip: 149.51 kB
+✓ built in 3.70s
+exit=0
+== npm run perf:budget
+> node scripts/check-bundle-budget.mjs
+# Presupuesto de JS del arranque público
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-6TQb1gCI.js | módulo | 147.8 |
+| /profile-prefetch.js | clásico | 1.0 |
+| **Total** | | **148.9** |
+Presupuesto: 155 KB.
+exit=0
+== npm run manual:check
+> portfolio-frontend@0.1.0 manual:check
+> node scripts/check-manual.mjs
+manual:check ok: 39 casos alineados, 44 imágenes (3.19 MB), index.html 214 KB, 161 ids.
+exit=0
+
+== npm test (frontend) — nota
+La primera corrida de esta tanda dio 3 fallas de 632 (sin detalle conservado) mientras se bajaban procesos de prueba y corría el resto de la tanda en paralelo (carga de CPU). Se repitió 3 veces sin nada más en marcha:
+  corrida 1: Test Files 56 passed (56) · Tests 632 passed (632)
+  corrida 2: Test Files 56 passed (56) · Tests 632 passed (632)
+  corrida 3: Test Files 56 passed (56) · Tests 632 passed (632)
+Se reporta como posible falta de robustez bajo carga, ajena a este change (los tests del dashboard pasan en las tres).

@@ -30,6 +30,7 @@ npm run prisma:migrate      # prisma migrate dev --name init (migración version
 npm run seed                # carga docs/cv-data.json solo sobre una base vacía; con contenido se niega (código 2). --overwrite fuerza la recarga (borra el contenido, incluidas las visitas)
 npm run seed:verify         # compara conteos DB vs cv-data.json
 npm run admin:bootstrap     # crea/actualiza el administrador desde ADMIN_EMAIL / ADMIN_PASSWORD / ADMIN_NAME
+npm run views:reclassify    # reclasifica las visitas (HUMAN/OWNER/BOT) y recalcula views; simulación por defecto, -- --apply escribe
 ```
 
 ```bash
@@ -108,6 +109,7 @@ Reglas: cuerpos validados con `class-validator`; campos desconocidos → 400; `P
 | `npm run prisma:deploy` | `prisma migrate deploy`: aplica migraciones en producción. **Nunca usar `db push`** |
 | `npm run seed` / `seed:verify` | Cargar / verificar datos. El seed carga solo sobre una base vacía y se niega (código 2) si hay contenido; `-- --overwrite` borra y recarga (incluidas las visitas), y no toca `AdminUser` |
 | `npm run admin:bootstrap` | Crear/actualizar el administrador (hash argon2id, upsert por email) |
+| `npm run views:reclassify` | Recalcula el `kind` de las visitas con `classifyUserAgent` (las `OWNER` no se tocan) y `views` de cada perfil como la cantidad de sus visitas `HUMAN`. Sin `--apply` solo informa; con `-- --apply` escribe en una transacción. Idempotente; correrlo después de cada cambio de versión de la lista de bots |
 | `npm run openapi:export` | Escribe `backend/openapi.json` (mismo documento que `/api/docs-json`) sin levantar servidor ni conectar a la base; el frontend genera sus tipos desde él (`npm run api:types`). Se versiona: correrlo cuando cambie el contrato |
 
 ## Producción (Fase 6)
