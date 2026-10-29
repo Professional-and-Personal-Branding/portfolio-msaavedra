@@ -1,0 +1,13 @@
+        slug        | views_perfil | filas_human | filas_owner | filas_bot 
+--------------------+--------------+-------------+-------------+-----------
+ all                |           52 |          52 |           1 |        11
+ ejemplo-archivado  |           14 |          14 |           0 |         0
+ ejemplo-backend    |           30 |          30 |           0 |        68
+ ejemplo-borrador   |            0 |           0 |           0 |         0
+ ejemplo-dirigido   |            0 |           0 |           0 |         0
+ ejemplo-overrides  |            2 |           2 |           0 |         0
+ ejemplo-protegido  |            6 |           6 |           0 |         0
+ ejemplo-renombrado |            2 |           2 |           0 |         0
+ ejemplo-secciones  |           13 |          13 |           0 |         4
+(9 rows)
+

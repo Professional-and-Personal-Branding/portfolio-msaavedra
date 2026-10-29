@@ -1,0 +1,14 @@
+10.3 — La base `portfolio` del owner no se tocó (2026-10-28)
+
+- Ninguna migración, backfill, seed ni visita se aplicó a `portfolio` (localhost:5434). Todo lo que escribe corrió con DATABASE_URL fijada a `portfolio_views_e2e` (e2e, unitarios que usan base) o `portfolio_views_check` (migración, reclasificación, app real y capturas) y se confirmó con `prisma migrate status` / un SELECT antes de cada tanda.
+- Comprobación de solo lectura al cerrar: en `portfolio`, `_prisma_migrations` no tiene `classify_profile_views` y `ProfileView` no tiene la columna `kind`.
+- La base `portfolio` sigue sin la migración nueva: la aplica el owner (`npm run prisma:migrate` en desarrollo; `prisma:deploy` en producción).
+
+Instrucciones para el owner (Migration Plan, paso 3 de design.md), cuando quiera reclasificar su base local:
+
+  1. Aplicar la migración: `npm run prisma:migrate` desde `backend/` (no cambia ningún número: las filas previas quedan HUMAN).
+  2. Simulación, sin escribir: `npm run views:reclassify`. Revisar el informe: cuántas filas pasan a BOT y el `views` actual -> nuevo de cada perfil.
+  3. Respaldo: el `pg_dump` sin contraseña que sugiere el propio informe.
+  4. Si el informe cierra: `npm run views:reclassify -- --apply`. Es idempotente: una segunda corrida no informa cambios.
+
+Sus visitas propias anteriores al change no se pueden recuperar (no se guardó la sesión): quedan HUMAN.

@@ -1,0 +1,29 @@
+8.1 — UA real de cada script de calidad y kind con el que quedó la visita (change classify-profile-views, D10)
+Bases descartables: portfolio_views_check (print:check) y portfolio_views_e2e (a11y:check y perf:check con la siembra por defecto, como el CI).
+
+== print:check (ejemplo-backend; Puppeteer headless: true) — base portfolio_views_check
+ kind |                                                       user_agent                                                        | count 
+------+-------------------------------------------------------------------------------------------------------------------------+-------
+ BOT  | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36 |    76
+(1 row)
+
+
+== a11y:check y perf:check (siembra por defecto, como el CI) — base portfolio_views_e2e
+ kind  |                                                            user_agent                                                             | count 
+-------+-----------------------------------------------------------------------------------------------------------------------------------+-------
+ HUMAN | Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36 |     3
+ HUMAN | node                                                                                                                              |    14
+ BOT   | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36           |    58
+(3 rows)
+
+
+Hallazgo y corrección (D10, rama «si alguno no coincide»):
+- Lighthouse (perf:check) mandó el UA móvil sin `Chrome-Lighthouse` ni ninguna otra marca (3 filas HUMAN): su versión fija ya no agrega el token.
+- Las peticiones `fetch` de Node de a11y:check (14 GET de perfiles) mandaron el UA `node` (14 filas HUMAN).
+- print:check (Puppeteer, `HeadlessChrome`) ya quedaba BOT sin tocarlo.
+Corrección: `PortfolioCheck` (ya en la lista v1) en `frontend/scripts/lib/web-quality.mjs`; a11y:check lo manda como User-Agent de sus GET y perf:check lo agrega al UA emulado con `--emulated-user-agent`.
+Repetición tras la corrección (misma base): perf:check -> 3 filas BOT con `... Mobile Safari/537.36 PortfolioCheck`; a11y:check -> 14 filas BOT con UA `PortfolioCheck`; todas BOT, ninguna nueva HUMAN. (Las 2 filas HUMAN del UA móvil sin token de la salida de arriba son de la corrida anterior, anterior a la corrección.)
+
+Notas:
+- a11y:check sin sesión de administrador (no se audita el panel), así que no produjo filas OWNER.
+- a11y:check contra los datos de EJEMPLO (perfil ejemplo-backend) da 12 nodos de color-contrast serious (`.border-emerald-500/30`); con la siembra por defecto, como el CI, da 0. No tiene relación con este change (no toca el sitio público); queda como pendiente aparte.

@@ -1,0 +1,7 @@
+total 106 byKind [{'kind': 'HUMAN', 'views': 106}, {'kind': 'OWNER', 'views': 2}, {'kind': 'BOT', 'views': 2}]
+      slug       | views_perfil | human | owner | bot 
+-----------------+--------------+-------+-------+-----
+ all             |           48 |    48 |     2 |   1
+ ejemplo-backend |           27 |    27 |     0 |   1
+(2 rows)
+
