@@ -30,6 +30,7 @@ import {
   chromeFlags,
   findChrome,
   parseArgs,
+  QUALITY_CHECK_UA_TOKEN,
   requireDisposableDb,
   writeReport,
 } from './lib/web-quality.mjs';
@@ -79,7 +80,10 @@ function ratio(a, b) {
 }
 
 async function getJson(path) {
-  const response = await fetch(`${BASE}${path}`);
+  // Cada GET de un perfil registra una visita: el token la marca como BOT (classify-profile-views, D10).
+  const response = await fetch(`${BASE}${path}`, {
+    headers: { 'User-Agent': QUALITY_CHECK_UA_TOKEN },
+  });
   if (!response.ok) throw new Error(`GET ${path} respondió ${response.status}`);
   return response.json();
 }

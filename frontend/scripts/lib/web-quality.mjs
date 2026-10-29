@@ -5,6 +5,17 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+/**
+ * Token que identifica las visitas de estos scripts como `BOT` (change `classify-profile-views`,
+ * D10): está en la lista de `classifyUserAgent`. Puppeteer ya manda `HeadlessChrome`; las
+ * peticiones de Node (`fetch` manda `node`) y Lighthouse (que ya no agrega `Chrome-Lighthouse`)
+ * lo llevan a mano para no sumar como personas en `views`.
+ */
+export const QUALITY_CHECK_UA_TOKEN = 'PortfolioCheck';
+
+/** UA móvil de Lighthouse (Moto G Power) con el token de los scripts de calidad. */
+export const LIGHTHOUSE_MOBILE_USER_AGENT = `Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36 ${QUALITY_CHECK_UA_TOKEN}`;
+
 /** Chrome del sistema: `puppeteer-core` y Lighthouse no descargan navegador. */
 export function findChrome() {
   const candidates = [

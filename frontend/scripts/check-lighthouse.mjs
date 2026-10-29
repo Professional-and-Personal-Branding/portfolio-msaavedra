@@ -30,6 +30,7 @@ import { join } from 'node:path';
 import {
   chromeFlags,
   findChrome,
+  LIGHTHOUSE_MOBILE_USER_AGENT,
   median,
   parseArgs,
   requireDisposableDb,
@@ -82,6 +83,8 @@ function runLighthouse(page, run) {
     '--output=html',
     `--output-path=${target}`,
     `--chrome-flags=${chromeFlags().join(' ')}`,
+    // La visita queda como BOT y no suma en `views` (classify-profile-views, D10).
+    `--emulated-user-agent=${LIGHTHOUSE_MOBILE_USER_AGENT}`,
     `--only-categories=${CATEGORIES.join(',')}`,
   ];
   // `shell: true` hace falta para `npx` en Windows; con shell, `&` de la URL y los espacios de las
