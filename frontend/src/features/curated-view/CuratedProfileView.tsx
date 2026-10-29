@@ -31,7 +31,12 @@ interface CuratedProfileViewProps {
 export function CuratedProfileView({ slug }: CuratedProfileViewProps) {
   const [url, setUrl] = useUrlState();
   const { locale } = useLocale();
-  const state = useCuratedProfile(slug, { locale, token: url.token });
+  const state = useCuratedProfile(slug, {
+    locale,
+    token: url.token,
+    via: url.via,
+    src: url.src,
+  });
   const data = state.status === 'success' ? state.data : null;
 
   const layoutName = resolveLayoutName(url.layout ?? data?.layout);

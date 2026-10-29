@@ -7,7 +7,8 @@
  * si la clave coincide con la de su consulta; si no, ignora esta respuesta y pide la suya.
  *
  * Replica a propósito la lógica de la app: slug de `useParams` (`/` = `all`, `/:slug` de un
- * segmento), idioma de `useLocale` (`?lang=` > `navigator.language`) y token de `readUrlState`.
+ * segmento), idioma de `useLocale` (`?lang=` > `navigator.language`), token de `readUrlState` y
+ * la atribución del link (`?via=` y `?src=`, change `add-share-links`), que va en la URL y en la clave.
  * `early-profile.spec.ts` ejecuta este archivo sobre una matriz de URLs y la compara con la app.
  * No va en /admin ni en rutas de más de un segmento. Cualquier excepción: no pide nada.
  */
@@ -27,17 +28,26 @@
           ? 'en'
           : 'es';
     var token = params.get('token') || null;
+    var via = params.get('via') || null;
+    var src = params.get('src') || null;
 
     /** @type {Record<string, string>} */
     var headers = {};
     if (token) headers['X-Access-Token'] = token;
-    var url = '/api/curated-profiles/' + encodeURIComponent(slug) + '?locale=' + locale;
+    // Mismo orden que la app: locale, via, src (sin nulos). Sin validar: lo decide el servidor.
+    var url =
+      '/api/curated-profiles/' +
+      encodeURIComponent(slug) +
+      '?locale=' +
+      locale +
+      (via ? '&via=' + encodeURIComponent(via) : '') +
+      (src ? '&src=' + encodeURIComponent(src) : '');
     var response = window.fetch(url, { credentials: 'include', headers: headers });
     // Sin esto, un fallo de red dejaría un rechazo sin manejar si la app no llega a tomarla.
     response.catch(function () {});
 
     window.__portfolioEarlyProfile = {
-      key: JSON.stringify([slug, locale, token]),
+      key: JSON.stringify([slug, locale, token, via, src]),
       response: response,
     };
   } catch {

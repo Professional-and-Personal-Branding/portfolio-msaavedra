@@ -17,19 +17,27 @@ export type CuratedProfileState =
 interface Options {
   locale: Locale;
   token: string | null;
+  /** Código del enlace de seguimiento de `?via=`, tal como está en la URL (sin validar). */
+  via?: string | null;
+  /** Portal de `?src=`, tal como está en la URL (sin validar). */
+  src?: string | null;
 }
 
 export async function fetchCuratedProfile(
   slug: string,
   locale: Locale,
   token: string | null,
+  via: string | null = null,
+  src: string | null = null,
 ): Promise<CuratedProfile> {
-  const early = takeEarlyProfile(slug, locale, token);
+  const early = takeEarlyProfile(slug, locale, token, via, src);
   return unwrap(
     await api.GET('/api/curated-profiles/{slug}', {
       params: {
         path: { slug },
-        query: { locale },
+        // Orden fijo `locale`, `via`, `src` (sin nulos): es el mismo que arma `public/profile-prefetch.js`.
+        // La validación del formato es del servidor; acá viaja tal cual está en la URL.
+        query: { locale, ...(via ? { via } : {}), ...(src ? { src } : {}) },
         ...(token ? { header: { 'X-Access-Token': token } } : {}),
       },
       // La respuesta de la petición temprana reemplaza al `fetch`; el parseo y los errores son los de siempre.
@@ -43,10 +51,13 @@ export async function fetchCuratedProfiles(locale: Locale): Promise<CuratedProfi
 }
 
 /** Estado de vista del perfil curado (decisión D7). */
-export function useCuratedProfile(slug: string, { locale, token }: Options): CuratedProfileState {
+export function useCuratedProfile(
+  slug: string,
+  { locale, token, via = null, src = null }: Options,
+): CuratedProfileState {
   const query = useQuery({
-    queryKey: ['curated-profile', slug, locale, token],
-    queryFn: () => fetchCuratedProfile(slug, locale, token),
+    queryKey: ['curated-profile', slug, locale, token, via, src],
+    queryFn: () => fetchCuratedProfile(slug, locale, token, via, src),
     // Al cambiar idioma/token del mismo perfil se conserva lo anterior mientras llega lo nuevo.
     placeholderData: (previous, previousQuery) =>
       previousQuery?.queryKey[1] === slug ? previous : undefined,

@@ -24,6 +24,23 @@ describe('groupProfilesByRoleType', () => {
 });
 
 describe('ProfileMenuList', () => {
+  it('desde un link con código de seguimiento conserva lang pero no lleva via ni src', () => {
+    render(
+      <MemoryRouter initialEntries={['/?via=k7m2q9xw4t&src=indeed&lang=en']}>
+        <ProfileMenuList profiles={makeCuratedProfileList()} activeSlug="all" />
+      </MemoryRouter>,
+    );
+
+    const links = within(screen.getByRole('navigation', { name: 'Profiles' })).getAllByRole('link');
+    expect(links).toHaveLength(14);
+    for (const link of links) {
+      const href = link.getAttribute('href') ?? '';
+      expect(href).toContain('lang=en');
+      expect(href).not.toContain('via');
+      expect(href).not.toContain('src');
+    }
+  });
+
   it('muestra los grupos, el techFocus y resalta el activo', () => {
     render(
       <MemoryRouter initialEntries={['/perfil-3?lang=en&theme=elegant&token=x']}>

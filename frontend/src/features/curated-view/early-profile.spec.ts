@@ -31,7 +31,23 @@ const PATHS = [
   '/admin/login',
   '/a/b',
 ];
-const SEARCHES = ['', '?lang=en', '?lang=es', '?lang=fr', '?lang=', '?token=abc', '?token='];
+const SEARCHES = [
+  '',
+  '?lang=en',
+  '?lang=es',
+  '?lang=fr',
+  '?lang=',
+  '?token=abc',
+  '?token=',
+  // Atribución del link (change `add-share-links`): código, portal y sus casos raros.
+  '?via=k7m2q9xw4t',
+  '?via=',
+  '?src=linkedin',
+  '?src=LinkedIn',
+  '?via=a%20b',
+  '?via=x&via=y',
+  '?lang=en&token=abc&via=k7m2q9xw4t&src=indeed',
+];
 const LANGUAGES = ['en-US', 'EN', 'es-BO', ''];
 
 /** Lo que la app pide para (ruta, búsqueda, idioma): el slug de su router o nada. */
@@ -106,7 +122,9 @@ describe('public/profile-prefetch.js — paridad con la app', () => {
         const state = readUrlState(new URLSearchParams(window.location.search));
         const locale = state.lang ?? detectLocale(window.navigator.language);
         const early = window.__portfolioEarlyProfile;
-        expect(early?.key).toBe(earlyProfileKey(appSlug, locale, state.token));
+        expect(early?.key).toBe(
+          earlyProfileKey(appSlug, locale, state.token, state.via, state.src),
+        );
 
         // La petición del script es la que armaría la app: misma ruta, query y cabecera.
         expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -117,7 +135,7 @@ describe('public/profile-prefetch.js — paridad con la app', () => {
         fetchMock.mockImplementation(() =>
           Promise.resolve(Response.json(makeCuratedProfile({ slug: appSlug }))),
         );
-        await fetchCuratedProfile(appSlug, locale, state.token);
+        await fetchCuratedProfile(appSlug, locale, state.token, state.via, state.src);
         const appRequest = fetchMock.mock.calls[0]?.[0] as Request;
         const appUrl = new URL(appRequest.url);
         expect(String(scriptUrl)).toBe(`${appUrl.pathname}${appUrl.search}`);

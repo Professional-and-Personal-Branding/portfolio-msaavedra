@@ -13,9 +13,19 @@ declare global {
   }
 }
 
-/** Misma clave que arma el script: `JSON.stringify([slug, locale, token])`. */
-export function earlyProfileKey(slug: string, locale: Locale, token: string | null): string {
-  return JSON.stringify([slug, locale, token]);
+/**
+ * Misma clave que arma el script: `JSON.stringify([slug, locale, token, via, src])`. `via` y `src`
+ * (atribución del link, D5 de `add-share-links`) tienen que estar en los dos lados: si faltaran en
+ * uno, la app reusaría una respuesta sin atribución o pediría otra vez (una visita doble).
+ */
+export function earlyProfileKey(
+  slug: string,
+  locale: Locale,
+  token: string | null,
+  via: string | null = null,
+  src: string | null = null,
+): string {
+  return JSON.stringify([slug, locale, token, via, src]);
 }
 
 /**
@@ -28,10 +38,13 @@ export function takeEarlyProfile(
   slug: string,
   locale: Locale,
   token: string | null,
+  via: string | null = null,
+  src: string | null = null,
 ): Promise<Response> | undefined {
   const early = globalThis.window?.__portfolioEarlyProfile;
   if (!early) return undefined;
   delete window.__portfolioEarlyProfile;
-  if (API_BASE_URL !== '' || early.key !== earlyProfileKey(slug, locale, token)) return undefined;
+  if (API_BASE_URL !== '' || early.key !== earlyProfileKey(slug, locale, token, via, src))
+    return undefined;
   return early.response;
 }

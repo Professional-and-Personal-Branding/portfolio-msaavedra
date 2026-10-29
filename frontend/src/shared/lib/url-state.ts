@@ -4,13 +4,16 @@ import { isLocale, type Locale } from '@/shared/i18n/locale';
 
 /**
  * Estado compartible en la URL (decisión D6): idioma, preset de tema, layout y
- * token de acceso. Nada se persiste en `localStorage`.
+ * token de acceso, más la atribución del link (`via`: código de un enlace de seguimiento,
+ * `src`: portal; change `add-share-links`). Nada se persiste en `localStorage`.
  */
 export interface UrlState {
   lang: Locale | null;
   theme: string | null;
   layout: string | null;
   token: string | null;
+  via: string | null;
+  src: string | null;
 }
 
 export const URL_KEYS = [
@@ -18,6 +21,8 @@ export const URL_KEYS = [
   'theme',
   'layout',
   'token',
+  'via',
+  'src',
 ] as const satisfies readonly (keyof UrlState)[];
 
 export function readUrlState(params: URLSearchParams): UrlState {
@@ -27,6 +32,8 @@ export function readUrlState(params: URLSearchParams): UrlState {
     theme: emptyToNull(params.get('theme')),
     layout: emptyToNull(params.get('layout')),
     token: emptyToNull(params.get('token')),
+    via: emptyToNull(params.get('via')),
+    src: emptyToNull(params.get('src')),
   };
 }
 
