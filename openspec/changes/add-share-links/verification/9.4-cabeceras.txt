@@ -1,0 +1,31 @@
+# 9.4 Cabeceras y HTML inicial (imagen de frontend/Dockerfile en :8093), 2026-10-29
+
+$ curl -sI http://localhost:8093/profile-prefetch.js
+HTTP/1.1 200 OK
+Cache-Control: no-cache
+Content-Type: text/javascript; charset=utf-8
+Referrer-Policy: no-referrer
+X-Content-Type-Options: nosniff
+
+$ curl -s "http://localhost:8093/tech-lead-dotnet?via=<código>&src=indeed" | grep canonical / og:url / robots / via
+<link rel="canonical" href="http://localhost:5173/tech-lead-dotnet" />
+<meta name="robots" content="index, follow" />
+<meta property="og:url" content="http://localhost:5173/tech-lead-dotnet" />
+
+Contienen 'via' o '<código>' en el HTML inicial: 0 líneas
+
+Head (entre <head> y </head>) idéntico con y sin código:
+638b369044f6
+638b369044f6
+
+$ curl -s http://localhost:8093/robots.txt
+User-agent: *
+Allow: /
+Disallow: /admin
+
+Sitemap: http://localhost:5173/sitemap.xml
+
+robots.txt contiene via/src: 0
+sitemap.xml: 0 URLs con query de 14 (el '?' que cuenta un grep ingenuo es el prólogo <?xml?>)
+
+DOM tras hidratar: ver 9.2-visitas.txt (canonical y og:url sin query en cada carga).

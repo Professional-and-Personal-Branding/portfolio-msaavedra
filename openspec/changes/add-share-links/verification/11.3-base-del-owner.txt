@@ -1,0 +1,12 @@
+# 11.3 La base del owner no cambió (2026-10-29)
+
+$ npx prisma migrate status   (DATABASE_URL = base `portfolio`, solo lectura)
+Datasource "db": PostgreSQL database "portfolio", schema "public" at "localhost:5434"
+6 migrations found in prisma/migrations
+Following migration have not yet been applied:
+20261029082012_add_share_links
+To apply migrations in development run prisma migrate dev.
+To apply migrations in production run prisma migrate deploy.
+
+$ psql ... SELECT to_regclass(...)
+tabla ShareLink: no existe|columnas nuevas de ProfileView: 0

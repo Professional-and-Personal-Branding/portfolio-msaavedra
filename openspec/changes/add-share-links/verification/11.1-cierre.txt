@@ -1,0 +1,65 @@
+# 11.1 Cierre (2026-10-29), rama feat/share-links
+Bases: e2e contra portfolio_share_e2e (migrada y sembrada); ninguna contra portfolio.
+
+## backend/
+$ npm run prisma:generate
+exit 1 (EPERM al renombrar query_engine: la API de la verificación en app real tenía la DLL abierta; repetido sin procesos: ver abajo)
+
+$ npm run lint
+exit 0
+
+$ npm run typecheck
+exit 0
+
+$ npm test
+Test Suites: 91 passed, 91 total
+Tests:       855 passed, 855 total
+exit 0
+
+$ npm run build
+exit 0
+
+$ npm run openapi:export
+exit 0
+
+git diff --exit-code -- openapi.json: exit 0
+$ npm run test:e2e
+Test Suites: 13 passed, 13 total
+Tests:       230 passed, 230 total
+exit 0
+
+$ npm run prisma:generate   (repetido con los procesos ya detenidos)
+exit 0 (Generated Prisma Client v6.19.3)
+
+## frontend/
+$ npm run lint
+exit 0
+
+$ npm run typecheck
+exit 0
+
+$ npm test
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  2 failed | 57 passed (59)
+      Tests  2 failed | 905 passed (907)
+exit 1
+
+$ npm run build
+exit 0
+
+$ npm run perf:budget
+# Presupuesto de JS del arranque público
+| **Total** | | **149.1** |
+Presupuesto: 155 KB.
+exit 0
+
+$ npm run manual:check
+> portfolio-frontend@0.1.0 manual:check
+manual:check ok: 40 casos alineados, 45 imágenes (3.32 MB), index.html 226 KB, 167 ids.
+exit 0
+
+Nota: en la corrida de arriba 2 tests de la vista pública fallaron por tiempo (findByRole con el timeout por defecto) mientras corrían otros procesos pesados; repetido 3 veces sin carga: 59 archivos / 907 tests en verde cada vez.
+
+## Controles de calidad sobre la base de ejemplo descartable (imagen de producción)
+print:check -> 20 casos (5 perfiles), 0 con problemas. Contraste mínimo: 9.74:1
+a11y:check (con panel) -> el constructor y el dashboard sin violaciones; las serious que quedan son las del panel que ya existían (color-contrast en experiencias, formación y proyectos; scrollable-region-focusable de las barras del dashboard en móvil), ajenas a este change.
