@@ -438,6 +438,9 @@ Las skills no tienen `visible`. Una referencia `skill:<nombre>` exige un nombre 
 | `name` | LocalizedText | Sí | `"Arquitecto de Soluciones en la Nube"` | Certificaciones | Formación → Certificaciones → Nombre |
 | `issuer` | texto | Sí | `"Consorcio Cloud Ejemplo"` | Certificaciones | Emisor |
 | `year` | `AAAA` o `null` | Sí | `null` | Certificaciones (sin año, no se muestra) | Año |
+| `verificationUrl` | URL `https://` o `null` | No (`null`) | `"https://example.org/credenciales/arquitecto-nube-2023"` | Certificaciones: enlace «Ver credencial» (y en el PDF) | Enlace de verificación |
+| `credentialId` | texto (hasta 100) o `null` | No (`null`) | `"EJ-2023-0042"` | Certificaciones: «ID: …» | ID de credencial |
+| `expiresAt` | `AAAA-MM`, `AAAA` o `null` | No (`null`) | `"2029-06"` | Certificaciones: «Válida hasta …» o «Vencida» según la fecha del lector | Vence |
 | `visible` | booleano | No (`true`) | `false` | Oculta: solo en el panel | Visible en el sitio |
 
 ### 12.7 `projects[]`

@@ -373,6 +373,7 @@
     <a href="#tc24"><span class="dot part"></span><span class="id">TC-24</span> Renombrar</a>
     <a href="#tc25"><span class="dot ok"></span><span class="id">TC-25</span> Portada</a>
     <a href="#tc26"><span class="dot ok"></span><span class="id">TC-26</span> Formación</a>
+    <a href="#tc42"><span class="dot ok"></span><span class="id">TC-42</span> Credencial verificable</a>
     <a href="#tc27"><span class="dot ok"></span><span class="id">TC-27</span> Proyectos</a>
     <a href="#tc28"><span class="dot ok"></span><span class="id">TC-28</span> Aviso en el constructor</a>
     <a href="#tc29"><span class="dot ok"></span><span class="id">TC-29</span> Aviso en la Portada</a>
@@ -503,17 +504,17 @@ $env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del o
     <!-- ───────────── Resumen ───────────── -->
     <section id="resumen" class="block">
       <h2>Resumen de la última ejecución</h2>
-      <p class="lede">Último caso ejecutado el 29 de octubre de 2026 (TC-41); antes, el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias): suite <code>suite-backoffice.ps1</code>, recorridos y casos de lectura por API, <code>print:check</code> y las 45 capturas con <code>manual:capture</code>. TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real.</p>
+      <p class="lede">Último caso ejecutado el 29 de octubre de 2026 (TC-42 y TC-41); antes, el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias): suite <code>suite-backoffice.ps1</code>, recorridos y casos de lectura por API, <code>print:check</code> y las 46 capturas con <code>manual:capture</code>. TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real.</p>
 
       <div class="stats">
-        <div class="stat"><b>41</b><span>casos</span></div>
-        <div class="stat ok"><b>34</b><span>pasan</span></div>
+        <div class="stat"><b>42</b><span>casos</span></div>
+        <div class="stat ok"><b>35</b><span>pasan</span></div>
         <div class="stat part"><b>7</b><span>parciales</span></div>
         <div class="stat"><b>2</b><span>defectos corregidos</span></div>
-        <div class="stat"><b>45</b><span>capturas</span></div>
+        <div class="stat"><b>46</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Los 41 casos pasan</b> (29 con captura; 10 verificados contra la API o con e2e, sin captura de la pantalla). TC-41 (compartir un perfil con un enlace de seguimiento), con <code>add-share-links</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable); el Dashboard con <b>Por enlace</b> y <b>Por portal</b> es la captura de TC-18, regenerada con <code>manual:capture</code>. TC-39 (las visitas propias y de bots no suman), con <code>classify-profile-views</code>, se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por <code>POST /api/auth/login</code>; el Dashboard con <b>Por tipo</b> es la captura de TC-18. TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-40 (ítems ocultos e insignias legibles), con <code>fix-admin-contrast</code>, el 28 de octubre contra la imagen de producción del frontend y bases descartables; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Los 42 casos pasan</b> (30 con captura; 10 verificados contra la API o con e2e, sin captura de la pantalla). TC-42 (verificar una certificación desde el sitio), con <code>add-certification-verification</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable), con la captura <code>tc42-credencial</code> nueva y la del diálogo de certificación regenerada con <code>manual:capture</code>. TC-41 (compartir un perfil con un enlace de seguimiento), con <code>add-share-links</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable); el Dashboard con <b>Por enlace</b> y <b>Por portal</b> es la captura de TC-18, regenerada con <code>manual:capture</code>. TC-39 (las visitas propias y de bots no suman), con <code>classify-profile-views</code>, se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por <code>POST /api/auth/login</code>; el Dashboard con <b>Por tipo</b> es la captura de TC-18. TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-40 (ítems ocultos e insignias legibles), con <code>fix-admin-contrast</code>, el 28 de octubre contra la imagen de producción del frontend y bases descartables; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -556,7 +557,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         <p>Es tu información profesional <b>una sola vez</b>: nombre, titular, resumen, contacto, disponibilidad e idiomas (el perfil base), más las listas de experiencias, skills, formación, certificaciones, proyectos y enlaces. Todo lo que se publica sale de acá: un perfil curado nunca guarda copias, solo decide qué mostrar.</p>
         <p><span class="lbl">En el ejemplo</span> · Alex Rivera Duarte y su contenido: 6 experiencias (una oculta), 4 categorías con 16 skills, 3 formaciones, 3 certificaciones, 3 proyectos y 4 enlaces.</p>
         <p><span class="lbl">Dónde se edita</span> · <a href="#b3">B3 · Portada (con Idiomas)</a>, <a href="#b4">B4 · Experiencias</a>, <a href="#b5">B5 · Skills</a>, <a href="#b6">B6 · Formación</a>, <a href="#b7">B7 · Proyectos y enlaces</a></p>
-        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc01">TC-01</a>, <a href="#tc25">TC-25</a>, <a href="#tc26">TC-26</a>, <a href="#tc27">TC-27</a></p>
+        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc01">TC-01</a>, <a href="#tc25">TC-25</a>, <a href="#tc26">TC-26</a>, <a href="#tc27">TC-27</a>, <a href="#tc42">TC-42</a></p>
       </article>
 
       <article class="concept" id="c2">
@@ -693,12 +694,12 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
           <li><b>Portada</b>: editá el titular, el resumen, el contacto y la disponibilidad (pestañas ES/EN) y <b>Guardar portada</b>.</li>
           <li><b>Experiencias</b>: <b>Nueva experiencia</b> o el lápiz de una existente. Los <b>Tags</b> deciden en qué perfiles entra; apagá <b>Visible en el portafolio</b> para ocultarla sin borrarla.</li>
           <li><b>Skills</b>: categorías y skills, con sus <b>Tags</b>.</li>
-          <li><b>Formación</b> (educación y certificaciones) y <b>Proyectos y enlaces</b>: lo mismo, con <b>Visible</b> para ocultar.</li>
+          <li><b>Formación</b> (educación y certificaciones) y <b>Proyectos y enlaces</b>: lo mismo, con <b>Visible</b> para ocultar. En cada certificación podés cargar el <b>Enlace de verificación</b> (solo <code>https://</code>), el <b>ID de credencial</b> y cuándo <b>Vence</b>: el sitio muestra «Ver credencial» y, si ya venció, «Vencida» (TC-42).</li>
           <li>Recargá <code>/</code>: los cambios se ven al instante, sin correr el seed.</li>
         </ol>
         <p><span class="lbl">Resultado esperado</span> · El cambio aparece en la home y en cada perfil curado que lo incluya. Lo oculto sigue en el panel con la marca *Oculto*.</p>
         <p><span class="lbl">Errores típicos</span> · Mensajes en línea como <code>La empresa es obligatoria</code> o <code>Usá el formato AAAA-MM o AAAA</code>; ver cada pantalla. <b>No corras <code>npm run seed</code></b> sobre una base con contenido editado: lo pisa.</p>
-        <p><span class="lbl">Casos</span> · <a href="#tc19">TC-19</a>, <a href="#tc20">TC-20</a>, <a href="#tc25">TC-25</a>, <a href="#tc26">TC-26</a>, <a href="#tc27">TC-27</a></p>
+        <p><span class="lbl">Casos</span> · <a href="#tc19">TC-19</a>, <a href="#tc20">TC-20</a>, <a href="#tc25">TC-25</a>, <a href="#tc26">TC-26</a>, <a href="#tc27">TC-27</a>, <a href="#tc42">TC-42</a></p>
       </article>
 
       <article class="tour" id="r7">
@@ -896,6 +897,9 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 <tr><td>Certificación · Nombre</td><td>ES/EN</td><td>Sí (ES)</td><td>Español obligatorio</td><td><code>Arquitecto de Soluciones en la Nube</code></td></tr>
 <tr><td>Certificación · Emisor</td><td>texto</td><td>Sí</td><td>No vacío</td><td><code>Consorcio Cloud Ejemplo</code></td></tr>
 <tr><td>Certificación · Año</td><td>AAAA</td><td>No</td><td>Cuatro dígitos</td><td><code>2023</code> (vacío en *Liderazgo técnico…*)</td></tr>
+<tr><td>Certificación · Enlace de verificación</td><td>URL</td><td>No</td><td>Solo <code>https://</code>, hasta 2048 caracteres; vacío la quita</td><td><code>https://example.org/credenciales/arquitecto-nube-2023</code></td></tr>
+<tr><td>Certificación · ID de credencial</td><td>texto</td><td>No</td><td>Hasta 100 caracteres</td><td><code>EJ-2023-0042</code></td></tr>
+<tr><td>Certificación · Vence</td><td>AAAA-MM o AAAA</td><td>No</td><td>No anterior al año de la certificación; vacío si no vence</td><td><code>2029-06</code></td></tr>
 <tr><td>Orden / Visible en el sitio</td><td>entero / interruptor</td><td>No</td><td>Orden mayor o igual a 0</td><td><code>0</code> · activado</td></tr>
 </tbody>
 </table></div>
@@ -905,18 +909,21 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 <tr><td class="msg">El título en español es obligatorio</td><td>Formación sin título en español.</td></tr>
 <tr><td class="msg">La institución es obligatoria</td><td>Institución vacía.</td></tr>
 <tr><td class="msg">La fecha de inicio es obligatoria</td><td>Inicio vacío.</td></tr>
-<tr><td class="msg">Usá el formato AAAA-MM o AAAA</td><td>Fecha de inicio o fin con otro formato.</td></tr>
+<tr><td class="msg">Usá el formato AAAA-MM o AAAA</td><td>Fecha de inicio, de fin o vencimiento con otro formato.</td></tr>
 <tr><td class="msg">Una formación en curso no lleva fecha de fin</td><td>En curso con fecha de fin.</td></tr>
 <tr><td class="msg">La fecha de fin no puede ser anterior al inicio</td><td>Fin anterior al inicio.</td></tr>
 <tr><td class="msg">El nombre en español es obligatorio</td><td>Certificación sin nombre en español.</td></tr>
 <tr><td class="msg">El emisor es obligatorio</td><td>Emisor vacío.</td></tr>
 <tr><td class="msg">Usá el formato AAAA</td><td>Año de una certificación con otro formato (por ejemplo <code>20x</code>).</td></tr>
+<tr><td class="msg">Usá una URL completa que empiece con https://</td><td>Enlace de verificación con <code>http://</code>, sin protocolo, sin dominio o de más de 2048 caracteres.</td></tr>
+<tr><td class="msg">El ID de credencial admite hasta 100 caracteres</td><td>ID de credencial más largo.</td></tr>
+<tr><td class="msg">El vencimiento no puede ser anterior al año</td><td><b>Vence</b> en un año anterior al <b>Año</b> de la certificación.</td></tr>
 <tr><td class="msg">El orden no puede ser negativo</td><td>Orden menor que 0.</td></tr>
 </tbody>
 </table></div>
-        <p><span class="lbl">Acciones y avisos</span> · Borrar pide confirmación. Los ocultos siguen en el panel con la marca *Oculto*.</p>
+        <p><span class="lbl">Acciones y avisos</span> · Borrar pide confirmación. Los ocultos siguen en el panel con la marca *Oculto*. El sitio no consulta al emisor ni comprueba que el enlace funcione: abrilo después de cargarlo (TC-42).</p>
         <figure class="shot" id="img-tc26-formacion"><img src="tc26-formacion.jpg" width="800" height="500" alt="Formación en el panel"></figure>
-        <figure class="shot" id="img-bo-formacion-certificacion"><img src="bo-formacion-certificacion.jpg" width="800" height="500" alt="Certificación con el error de año"></figure>
+        <figure class="shot" id="img-bo-formacion-certificacion"><img src="bo-formacion-certificacion.jpg" width="800" height="500" alt="Certificación con los campos de credencial y el error de enlace"></figure>
       </article>
 
       <article class="screen" id="b7">
@@ -1600,6 +1607,21 @@ GET /api/admin/education    -> incluye las ocultas, con visible y order</pre></d
               <fieldset class="run" data-run="tc26"><legend>Resultado de la corrida · TC-26</legend><label><input type="radio" name="r-tc26" value="pass"> pasa</label><label><input type="radio" name="r-tc26" value="fail"> falla</label><label><input type="radio" name="r-tc26" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-26"></fieldset>
 </article>
 
+      <article class="case" data-status="ok" id="tc42" data-area="backoffice" data-change="add-certification-verification">
+        <div class="case-head"><span class="case-id">TC-42</span><h3>Verificar una certificación desde el sitio</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Precondición</span> · Base de ejemplo, <b>descartable</b> (nunca <code>portfolio</code>: cada carga pública registra una visita), con la API y el frontend levantados (de preferencia la imagen de <code>frontend/Dockerfile</code>) y la sesión del panel iniciada en <code>/admin</code>.</p>
+        <p><span class="lbl">Pasos</span> · (1) <code>/admin/formacion</code> → <b>Certificaciones</b> → editar <i>Arquitecto de Soluciones en la Nube</i>. En <b>Enlace de verificación</b> reemplazá el texto por <code>http://example.org/credenciales/arquitecto-nube-2023</code> y pulsá <b>Guardar</b>; (2) cambiá el enlace a <code>https://example.org/credenciales/arquitecto-nube-2023</code>, comprobá que <b>ID de credencial</b> dice <code>EJ-2023-0042</code> y <b>Vence</b> <code>2029-06</code>, y guardá; (3) en <b>Vence</b> de <i>Liderazgo técnico para equipos de ingeniería</i> escribí <code>12/2025</code> y guardá; corregilo a <code>2025-12</code> y guardá; (4) en una <b>ventana privada</b>, abrí <code>/</code> y bajá a <b>Certificaciones</b>; (5) pulsá <b>Ver credencial</b> en <i>Arquitecto de Soluciones en la Nube</i>; (6) abrí <code>/?lang=en</code> y mirá la misma sección; (7) volvé a <code>/</code> y pulsá <b>Imprimir / Guardar PDF</b> → <b>Guardar como PDF</b>; en el PDF, hacé clic en <b>Ver credencial</b>; (8) en el panel, borrá el texto de <b>Enlace de verificación</b> de esa certificación, guardá y recargá <code>/</code> en la ventana privada.</p>
+        <p><span class="lbl">Esperado</span> · (1) El campo muestra «Usá una URL completa que empiece con https://» y no se guarda nada; (2) se guarda y la lista no cambia; (3) primero «Usá el formato AAAA-MM o AAAA»; con <code>2025-12</code>, se guarda; (4) <i>Arquitecto de Soluciones en la Nube</i> muestra <code>ID: EJ-2023-0042</code>, «Válida hasta» con junio de 2029 y el enlace <b>Ver credencial</b>; <i>Liderazgo técnico…</i> muestra <b>Vencida</b> y no tiene enlace; la certificación oculta no aparece; (5) se abre una pestaña nueva en <code>https://example.org/credenciales/arquitecto-nube-2023</code> y el enlace tiene <code>rel="noopener noreferrer"</code>; (6) las etiquetas dicen <b>View credential</b>, <b>Valid until</b> y <b>Expired</b>, con la misma URL; (7) la hoja ocupa una página, con «Ver credencial» junto a la primera certificación y «vencida» en el paréntesis de la segunda; la URL no está impresa y el clic en el PDF abre la URL; (8) la tarjeta vuelve a mostrar solo nombre, emisor, año, ID y vigencia, sin enlace.</p>
+        <p><span class="lbl">Errores típicos</span> · El enlace se rechaza por empezar con <code>http://</code> (solo se aceptan enlaces <code>https://</code>) o por faltarle el protocolo (<code>example.org/…</code>). «Vencida» depende de la fecha de tu equipo: el sitio no consulta al emisor, que es quien dice si la credencial sigue vigente. Para sacar una certificación vencida del sitio, desmarcá <b>Visible en el sitio</b>. El sitio no comprueba que el enlace funcione: abrilo después de cargarlo.</p>
+        <p><span class="lbl">Observado</span> · 29 de octubre de 2026, imagen de <code>frontend/Dockerfile</code> en <code>localhost:8095</code>, API local y la base descartable <code>portfolio_cert_example</code>, sembrada con el ejemplo; Chrome no headless con un contexto sin sesión para el sitio y la sesión del panel iniciada por <code>fetch('/api/auth/login')</code>, sin escribir la contraseña en un navegador; evidencia en <code>openspec/changes/add-certification-verification/verification/</code>. Los pasos 1 a 8 dieron lo esperado; el enlace leído del DOM: <code>target="_blank"</code>, <code>rel="noopener noreferrer"</code> y nombre accesible «Ver credencial: Arquitecto de Soluciones en la Nube»; el PDF tiene 1 página y un enlace <code>/URI</code> a la URL del ejemplo; la consola, sin errores ni violaciones de CSP. <code>print:check</code> dio 1 página en las 20 combinaciones del ejemplo y en las 56 del CV.</p>
+        <div class="codewrap"><pre>PATCH /api/admin/certifications/:id {"verificationUrl":"http://example.org/c/1"}  -&gt; 400
+PATCH /api/admin/certifications/:id {"verificationUrl":"https://example.org/c/1"} -&gt; 200
+GET   /api/certifications                     -&gt; verificationUrl, credentialId, expiresAt (sin campo expired)
+PATCH /api/admin/certifications/:id {"verificationUrl":null}                      -&gt; 200, enlace en null</pre></div>
+        <figure class="shot" id="img-tc42-credencial"><img src="tc42-credencial.jpg" width="800" height="500" alt="Sección de certificaciones con Ver credencial y Vencida"><figcaption>La sección pública: «Ver credencial» en la primera certificación y «Vencida» en la segunda.</figcaption></figure>
+              <fieldset class="run" data-run="tc42"><legend>Resultado de la corrida · TC-42</legend><label><input type="radio" name="r-tc42" value="pass"> pasa</label><label><input type="radio" name="r-tc42" value="fail"> falla</label><label><input type="radio" name="r-tc42" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-42"></fieldset>
+</article>
+
       <article class="case" data-status="ok" id="tc27" data-area="backoffice" data-change="add-profile-content-admin">
         <div class="case-head"><span class="case-id">TC-27</span><h3>Proyectos y enlaces sociales</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Pasos</span> · <code>/admin/proyectos</code>. Un proyecto con tags que coincidan con los <code>filterTags</code> de un perfil curado aparece en él con su url; «Sin enlace» marca los que todavía no la tienen. Los enlaces sociales llevan <code>stats</code> como JSON: un objeto, nunca un array.</p>
@@ -1928,6 +1950,8 @@ echo "$SITIO/acme-tech-lead"</pre></div>
         <div class="g"><dt id="g-tipo-de-visita">tipo de visita</dt><dd>Si la visita fue de una persona, tuya (con la sesión del panel) o de un bot; solo las de personas suman en el total y en <code>views</code>. <span class="refs"><a href="#c8">C8 · Analítica</a>, <a href="#b2">B2 · Dashboard</a>, <a href="#tc39">TC-39</a></span></dd></div>
         <div class="g"><dt id="g-enlace-de-seguimiento">enlace de seguimiento</dt><dd>Un link con un código propio (<code>?via=&lt;código&gt;</code>) para un destinatario o un portal, con etiqueta y revocación; cuenta las aperturas de personas sin depender del referrer. <span class="refs"><a href="#c8">C8 · Analítica</a>, <a href="#b12">B12 · Constructor · Publicación</a>, <a href="#tc41">TC-41</a></span></dd></div>
         <div class="g"><dt id="g-portal">portal</dt><dd>El sitio donde se publica un link (<code>linkedin</code>, <code>indeed</code>…): el del enlace de seguimiento o el de <code>?src=&lt;portal&gt;</code>, normalizado a minúsculas, números y guiones. <span class="refs"><a href="#c8">C8 · Analítica</a>, <a href="#b2">B2 · Dashboard</a>, <a href="#tc41">TC-41</a></span></dd></div>
+        <div class="g"><dt id="g-credencial">credencial</dt><dd>Lo que acredita una certificación en el emisor: el enlace de verificación, el ID y el vencimiento, los tres opcionales. <span class="refs"><a href="#b6">B6 · Formación</a>, <a href="#tc42">TC-42</a></span></dd></div>
+        <div class="g"><dt id="g-enlace-de-verificacion">enlace de verificación</dt><dd>La página pública de la credencial en el emisor (Credly, Accredible…); solo <code>https://</code>. El sitio lo muestra como «Ver credencial» y no comprueba que funcione. <span class="refs"><a href="#b6">B6 · Formación</a>, <a href="#tc42">TC-42</a></span></dd></div>
         <div class="g"><dt id="g-apertura">apertura</dt><dd>Una visita de una persona atribuida a un enlace de seguimiento; las tuyas y las de bots no cuentan. <span class="refs"><a href="#b12">B12 · Constructor · Publicación</a>, <a href="#tc41">TC-41</a></span></dd></div>
       </dl>
     </section>

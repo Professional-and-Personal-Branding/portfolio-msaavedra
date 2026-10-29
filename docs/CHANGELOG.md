@@ -1,5 +1,17 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (`add-certification-verification`)
+
+Cada certificación puede llevar el enlace a su credencial, su ID y su vencimiento.
+
+- **Campos.** `Certification.verificationUrl` (URL absoluta solo `https`, hasta 2048), `credentialId` (hasta 100) y `expiresAt` (`AAAA-MM` o `AAAA`), los tres opcionales y sin traducir. Migración `add_certification_credential` solo aditiva (tres `ADD COLUMN`, sin backfill).
+- **Validación en tres capas.** Dominio (`isHttpsUrl`, `validateCertification`), DTO (`@IsUrl` https, `@MaxLength`, `@Matches`) y panel (Zod). `http://`, `javascript:` y las relativas dan 400; un vencimiento anterior al año también.
+- **API.** `GET /api/certifications`, la vista curada y el preview devuelven los tres campos (nulos si no hay); el backend no calcula si venció.
+- **Sitio y PDF.** «Ver credencial» (`target=_blank`, `rel=noopener noreferrer`), ID, «Válida hasta» y «Vencida» (derivada en el cliente con la fecha del navegador); en la hoja imprimible, «Ver credencial» clicable sin imprimir la URL y «vencida» en el paréntesis. `print:check` sigue dando una página.
+- **Panel.** El diálogo de certificación suma Enlace de verificación, ID de credencial y Vence.
+- **Seed.** El formato acepta los tres campos con las reglas del dominio y los valida antes de escribir; `seed:verify` los compara. `docs/cv-data.json` no cambia (los enlaces reales los carga el owner); el ejemplo suma una credencial vigente con enlace e ID y otra vencida.
+- **Docs.** `docs/MANUAL.md` e `index.html` (TC-42, B6, R6, glosario; `tc42-credencial.jpg` nueva y `bo-formacion-certificacion.jpg` regenerada), `docs/DATA-POPULATION.md` § 12.6.
+
 ## Update — Octubre 2026 (`add-share-links`)
 
 Cada visita humana se puede atribuir al destinatario o al portal que recibió el link, sin depender del referrer (que en producción nunca llega).
