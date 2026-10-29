@@ -139,7 +139,7 @@ function CreateShareLinkForm({ profileId }: { profileId: string }) {
   };
 
   return (
-    <form onSubmit={submit} className="flex flex-wrap items-end gap-2" aria-label="Crear enlace">
+    <form onSubmit={submit} className="flex flex-wrap items-end gap-2" aria-label="Nuevo enlace de seguimiento">
       <div className="flex min-w-48 flex-1 flex-col gap-1.5">
         <Label htmlFor="share-link-label">Etiqueta</Label>
         <Input
