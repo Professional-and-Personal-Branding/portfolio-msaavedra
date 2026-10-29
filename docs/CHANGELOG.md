@@ -1,5 +1,16 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (`add-share-links`)
+
+Cada visita humana se puede atribuir al destinatario o al portal que recibió el link, sin depender del referrer (que en producción nunca llega).
+
+- **Enlaces de seguimiento.** Tabla `ShareLink`: código aleatorio de 10 caracteres (base32 de Crockford en minúsculas, único), etiqueta de 1 a 80 caracteres, portal opcional y tipo `MANUAL` o `LINKEDIN_POST`. El código, el portal y el perfil no cambian; la etiqueta sí. Revocar es irreversible, idempotente y solo deja de atribuir: el link sigue abriendo. Se borran con su perfil y el duplicado no los copia.
+- **Atribución.** `GET /api/curated-profiles/:slug` acepta `?via=` y `?src=` (nunca da 400; el primer valor si se repiten). `ProfileView.shareLinkId` (`SET NULL`) y `ProfileView.source`, resueltos en la tarea en segundo plano: un código revocado, inexistente, mal formado o de otro perfil no atribuye; el portal del enlace gana sobre `src`; la respuesta es idéntica con o sin `via` y un perfil `PROTECTED` sigue exigiendo el token. Migración `add_share_links` (sin `UPDATE` ni `DROP`).
+- **API del panel.** `GET/POST /api/admin/curated-profiles/:id/share-links`, `PATCH .../:linkId`, `POST .../:linkId/revoke` y `POST .../linkedin` (reusa el enlace `LINKEDIN_POST` activo; 409 si el perfil no es `PUBLIC` o está archivado). Cada enlace trae `opens` y `lastOpenedAt` (solo `HUMAN`). El agregado de visitas suma `byShareLink` y `bySource`.
+- **Cliente.** La SPA y `public/profile-prefetch.js` mandan `via` y `src` a la API con la misma clave `[slug, locale, token, via, src]`: una carga con `?via=` sigue siendo una petición y una visita. El menú de la home no arrastra `via` ni `src`. `canonical` y `og:url` siguen sin query y `robots.txt` no bloquea `?via=`.
+- **Panel.** Pestaña Publicación: enlaces de seguimiento (crear, renombrar, copiar, revocar con confirmación), link genérico por portal (`?src=`) y «Compartir en LinkedIn». Dashboard: tablas **Por enlace** y **Por portal**, y la aclaración de que **Por origen** casi siempre da `directo`. Todo el código vive en el chunk del admin: el arranque público sigue bajo 155 KB.
+- **Docs.** `docs/MANUAL.md` e `index.html` (TC-41, B2, B12, R9, C8, glosario; `tc41-enlaces.jpg` y `tc18-dashboard.jpg` regeneradas con `manual:capture`, que crea el enlace de ejemplo por la API del panel), `CLAUDE.md`, `backend/README.md` y `docs/PROPUESTA-FEATURES.md`.
+
 ## Update — Octubre 2026 (`classify-profile-views`)
 
 `views` y el dashboard cuentan solo las visitas de personas; cada visita se guarda con su tipo.

@@ -363,6 +363,7 @@
     <a href="#tc17"><span class="dot part"></span><span class="id">TC-17</span> Preview</a>
     <a href="#tc18"><span class="dot ok"></span><span class="id">TC-18</span> Analítica</a>
     <a href="#tc39"><span class="dot ok"></span><span class="id">TC-39</span> Visitas propias y de bots</a>
+    <a href="#tc41"><span class="dot ok"></span><span class="id">TC-41</span> Enlaces de seguimiento</a>
     <a href="#tc19"><span class="dot ok"></span><span class="id">TC-19</span> Experiencias</a>
     <a href="#tc20"><span class="dot ok"></span><span class="id">TC-20</span> Skills</a>
     <a href="#tc21"><span class="dot part"></span><span class="id">TC-21</span> Duplicar</a>
@@ -501,17 +502,17 @@ $env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del o
     <!-- ───────────── Resumen ───────────── -->
     <section id="resumen" class="block">
       <h2>Resumen de la última ejecución</h2>
-      <p class="lede">Último caso ejecutado el 28 de octubre de 2026 (TC-39); antes, el 27 de octubre (TC-36 y TC-37). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias): suite <code>suite-backoffice.ps1</code>, recorridos y casos de lectura por API, <code>print:check</code> y las 44 capturas con <code>manual:capture</code>. TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real.</p>
+      <p class="lede">Último caso ejecutado el 29 de octubre de 2026 (TC-41); antes, el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias): suite <code>suite-backoffice.ps1</code>, recorridos y casos de lectura por API, <code>print:check</code> y las 45 capturas con <code>manual:capture</code>. TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real.</p>
 
       <div class="stats">
-        <div class="stat"><b>39</b><span>casos</span></div>
-        <div class="stat ok"><b>32</b><span>pasan</span></div>
+        <div class="stat"><b>40</b><span>casos</span></div>
+        <div class="stat ok"><b>33</b><span>pasan</span></div>
         <div class="stat part"><b>7</b><span>parciales</span></div>
         <div class="stat"><b>2</b><span>defectos corregidos</span></div>
-        <div class="stat"><b>44</b><span>capturas</span></div>
+        <div class="stat"><b>45</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Los 39 casos pasan</b> (28 con captura; 9 verificados contra la API o con e2e, sin captura de la pantalla). TC-39 (las visitas propias y de bots no suman), con <code>classify-profile-views</code>, se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por <code>POST /api/auth/login</code>; el Dashboard con <b>Por tipo</b> es la captura de TC-18. TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Los 40 casos pasan</b> (29 con captura; 9 verificados contra la API o con e2e, sin captura de la pantalla). TC-41 (compartir un perfil con un enlace de seguimiento), con <code>add-share-links</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable); el Dashboard con <b>Por enlace</b> y <b>Por portal</b> es la captura de TC-18, regenerada con <code>manual:capture</code>. TC-39 (las visitas propias y de bots no suman), con <code>classify-profile-views</code>, se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por <code>POST /api/auth/login</code>; el Dashboard con <b>Por tipo</b> es la captura de TC-18. TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -607,10 +608,11 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 
       <article class="concept" id="c8">
         <h3>Analítica</h3>
-        <p>Cada carga de una ruta pública registra una <b>visita</b> (<code>ProfileView</code>): perfil, idioma, origen, fecha y <b>tipo</b>; la IP solo como HMAC. Las vistas previas del panel no cuentan. Cada visita se guarda con su tipo: <i>Personas</i>, <i>Tus visitas</i> (la petición trae la sesión del panel) y <i>Bots</i> (sin navegador reconocible: Googlebot, <code>HeadlessChrome</code>, <code>curl</code>…). <b>Solo las de personas suman</b> en el total y en las visitas de cada perfil; las otras se cuentan aparte, en <b>Por tipo</b>. Si abrís tu sitio sin la sesión del panel, cuenta como una persona más. El dashboard resume por día, perfil, idioma, origen y tipo, y los perfiles archivados conservan su historial.</p>
-        <p><span class="lbl">En el ejemplo</span> · 105 visitas sintéticas en 5 perfiles (<code>all</code>, <code>ejemplo-backend</code>, <code>ejemplo-secciones</code>, <code>ejemplo-archivado</code>, <code>ejemplo-protegido</code>), con orígenes directo, LinkedIn, buscador y un dominio de <code>example.com</code>.</p>
-        <p><span class="lbl">Dónde se edita</span> · <a href="#b2">B2 · Dashboard</a></p>
-        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a></p>
+        <p>Cada carga de una ruta pública registra una <b>visita</b> (<code>ProfileView</code>): perfil, idioma, origen, fecha y <b>tipo</b>; la IP solo como HMAC. Las vistas previas del panel no cuentan. Cada visita se guarda con su tipo: <i>Personas</i>, <i>Tus visitas</i> (la petición trae la sesión del panel) y <i>Bots</i> (sin navegador reconocible: Googlebot, <code>HeadlessChrome</code>, <code>curl</code>…). <b>Solo las de personas suman</b> en el total y en las visitas de cada perfil; las otras se cuentan aparte, en <b>Por tipo</b>. Si abrís tu sitio sin la sesión del panel, cuenta como una persona más. El dashboard resume por día, perfil, idioma, origen, enlace, portal y tipo, y los perfiles archivados conservan su historial.</p>
+        <p><b>El origen casi nunca llega.</b> El sitio no reenvía de dónde vino la persona (<code>Referrer-Policy: no-referrer</code>) y LinkedIn, Gmail o el chat tampoco lo mandan, así que en producción <b>Por origen</b> da casi siempre <code>directo</code>. Lo que sí viaja es el link: un <b>enlace de seguimiento</b> (<code>?via=&lt;código&gt;</code>, uno por destinatario o portal, con etiqueta y revocación) o un <b>portal</b> genérico (<code>?src=&lt;portal&gt;</code>). Cada <b>apertura</b> de una persona se cuenta en el enlace y en el portal, y se ve en <b>Por enlace</b> y <b>Por portal</b>. Un enlace revocado deja de atribuir, pero el link sigue abriendo el perfil.</p>
+        <p><span class="lbl">En el ejemplo</span> · 105 visitas sintéticas en 5 perfiles (<code>all</code>, <code>ejemplo-backend</code>, <code>ejemplo-secciones</code>, <code>ejemplo-archivado</code>, <code>ejemplo-protegido</code>), con orígenes directo, LinkedIn, buscador y un dominio de <code>example.com</code>. Ninguna trae enlace ni portal: las tablas <b>Por enlace</b> y <b>Por portal</b> arrancan con su estado vacío.</p>
+        <p><span class="lbl">Dónde se edita</span> · <a href="#b2">B2 · Dashboard</a>; los enlaces se crean en <a href="#b12">B12 · Constructor · Publicación</a></p>
+        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a>, <a href="#tc41">TC-41</a></p>
       </article>
 
     </section>
@@ -729,12 +731,14 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
           <li><b>Dashboard</b> → elegí el <b>rango</b> (7, 30, 90 días o un año).</li>
           <li>Mirá los totales (<b>Visitas en el rango</b>, <b>Perfiles vistos</b>, <b>Idiomas</b>) y <b>Visitas por día</b>.</li>
           <li>En <b>Por perfil</b> abrí el constructor o la vista pública con los enlaces de cada fila; el perfil archivado lleva la marca <code>archivado</code>.</li>
-          <li><b>Por origen</b> muestra de dónde llegó cada visita: <code>directo</code>, <code>linkedin.com</code>, <code>google.com</code>…</li>
+          <li><b>Por origen</b> muestra de dónde llegó cada visita según el navegador: <code>directo</code>, <code>linkedin.com</code>, <code>google.com</code>… En producción casi siempre da <code>directo</code>, porque el sitio no reenvía el origen.</li>
+          <li><b>Por enlace</b> muestra qué enlace de seguimiento abrió cada persona (con el perfil, el portal y la marca <code>revocado</code>) y, al final, <b>Sin enlace</b>: las visitas que no llegaron por ninguno.</li>
+          <li><b>Por portal</b> muestra el portal del enlace o del link genérico (<code>?src=</code>) y, al final, <b>Sin portal</b>. No depende del referrer.</li>
           <li><b>Por tipo</b> separa <i>Personas</i>, <i>Tus visitas</i> y <i>Bots</i>: solo las de personas suman en el total.</li>
         </ol>
-        <p><span class="lbl">Resultado esperado</span> · Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos, 2 idiomas, y los orígenes directo, linkedin.com, google.com y empleos.example.com.</p>
-        <p><span class="lbl">Errores típicos</span> · Las visitas de hoy cuentan (defecto D-01 corregido). La vista previa del panel y la carga de otra persona de <code>/admin</code> no suman visitas. Tus propias visitas (con la sesión del panel) y las de bots tampoco suman en el total: están en <b>Por tipo</b>.</p>
-        <p><span class="lbl">Casos</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a></p>
+        <p><span class="lbl">Resultado esperado</span> · Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos, 2 idiomas, y los orígenes directo, linkedin.com, google.com y empleos.example.com. <b>Por enlace</b> y <b>Por portal</b> quedan con su estado vacío hasta que se envíe un link con código.</p>
+        <p><span class="lbl">Errores típicos</span> · Las visitas de hoy cuentan (defecto D-01 corregido). La vista previa del panel y la carga de otra persona de <code>/admin</code> no suman visitas. Tus propias visitas (con la sesión del panel) y las de bots tampoco suman en el total: están en <b>Por tipo</b>. Si <b>Por origen</b> dice <code>directo</code> para todo, es lo esperado: mirá <b>Por enlace</b> y <b>Por portal</b>.</p>
+        <p><span class="lbl">Casos</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a>, <a href="#tc41">TC-41</a></p>
       </article>
 
     </section>
@@ -768,7 +772,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 
       <article class="screen" id="b2">
         <h3>Dashboard</h3>
-        <p><span class="lbl">Ruta</span> · <code>/admin</code>. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales (de <b>personas</b>), <b>Visitas por día</b>, <b>Por perfil</b> (con enlaces al constructor y a la vista pública y la marca <code>archivado</code>), <b>Por idioma</b>, <b>Por origen</b> y <b>Por tipo</b> (<i>Personas</i>, <i>Tus visitas</i> y <i>Bots</i>, con la aclaración de que solo las de personas suman).</p>
+        <p><span class="lbl">Ruta</span> · <code>/admin</code>. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales (de <b>personas</b>), <b>Visitas por día</b>, <b>Por perfil</b> (con enlaces al constructor y a la vista pública y la marca <code>archivado</code>), <b>Por idioma</b>, <b>Por origen</b> (con la aclaración de que casi siempre da <code>directo</code>), <b>Por enlace</b> (etiqueta, perfil, portal, marca <code>revocado</code> y visitas, más una fila final <b>Sin enlace</b>), <b>Por portal</b> (con una fila final <b>Sin portal</b>) y <b>Por tipo</b> (<i>Personas</i>, <i>Tus visitas</i> y <i>Bots</i>, con la aclaración de que solo las de personas suman).</p>
 <div class="tablewrap"><table>
 <thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
 <tbody>
@@ -781,9 +785,9 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 <tr><td class="msg">Todavía no hay visitas</td><td>No hay visitas en el rango elegido; el texto de apoyo es «Cuando alguien abra un perfil curado en el rango elegido, aparecerá acá.»</td></tr>
 </tbody>
 </table></div>
-        <p><span class="lbl">Acciones y avisos</span> · Solo lectura. Las visitas se registran en la ruta pública, no en la vista previa del panel. Si el rango solo tiene visitas propias o de bots, el estado vacío convive con la tabla <b>Por tipo</b>; con los tres tipos en cero, aparece solo el estado vacío.</p>
+        <p><span class="lbl">Acciones y avisos</span> · Solo lectura. Las visitas se registran en la ruta pública, no en la vista previa del panel. Si el rango solo tiene visitas propias o de bots, el estado vacío convive con la tabla <b>Por tipo</b>; con los tres tipos en cero, aparece solo el estado vacío. <b>Por enlace</b> y <b>Por portal</b> cuentan solo visitas de personas; sin ninguna atribuida muestran un texto que manda a la pestaña <b>Publicación</b> en lugar de una tabla de ceros.</p>
         <p>Con el ejemplo y 30 días: 105 visitas de personas, 5 perfiles vistos y 2 idiomas.</p>
-        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="800" height="824" alt="Dashboard de analítica"></figure>
+        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="800" height="1039" alt="Dashboard de analítica"></figure>
       </article>
 
       <article class="screen" id="b3">
@@ -1054,7 +1058,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 
       <article class="screen" id="b12">
         <h3>Constructor · Publicación</h3>
-        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles/:id</code>. Los tres ejes: <b>Visibilidad</b>, <b>Enumerar en la home y el sitemap</b> y <b>Archivado</b>, más el <b>Link público</b> (copiar y abrir) y el aviso de faltantes de traducción.</p>
+        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles/:id</code>. Los tres ejes: <b>Visibilidad</b>, <b>Enumerar en la home y el sitemap</b> y <b>Archivado</b>, más el <b>Link público</b> (copiar y abrir), <b>Compartir en LinkedIn</b>, los <b>Enlaces de seguimiento</b> y el aviso de faltantes de traducción.</p>
 <div class="tablewrap"><table>
 <thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
 <tbody>
@@ -1063,12 +1067,22 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 <tr><td>Enumerar en la home y el sitemap</td><td>interruptor</td><td>No (activado)</td><td>No cambia el acceso: un no enumerado abre por su link</td><td>Apagado en <code>ejemplo-dirigido</code></td></tr>
 <tr><td>Archivado</td><td>botón</td><td>—</td><td>Archivar pide confirmar; Desarchivar es directo</td><td><code>ejemplo-archivado</code></td></tr>
 <tr><td>Link público</td><td>solo lectura</td><td>—</td><td>Copiar y Abrir; avisa si no resuelve</td><td><code>/ejemplo-borrador</code></td></tr>
+<tr><td>Compartir en LinkedIn</td><td>botón</td><td>—</td><td>Solo un perfil guardado, público y no archivado; abre la página de compartir de LinkedIn con el link y su código</td><td><code>ejemplo-backend</code></td></tr>
+<tr><td>Etiqueta (enlace nuevo)</td><td>texto</td><td>Sí</td><td>De 1 a 80 caracteres; se puede cambiar después</td><td><code>Cobalto — Laura, RR. HH.</code></td></tr>
+<tr><td>Portal (enlace nuevo)</td><td>texto con sugerencias</td><td>No</td><td>Letras, números y guiones, hasta 32 caracteres; no se cambia después</td><td><code>linkedin</code></td></tr>
+<tr><td>Link genérico por portal</td><td>selector y botón</td><td>—</td><td>Copia <code>/{slug}?src=&lt;portal&gt;</code> sin crear ningún enlace</td><td><code>indeed</code></td></tr>
 </tbody>
 </table></div>
 <div class="tablewrap"><table>
 <thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
 <tbody>
 <tr><td class="msg">Un perfil protegido necesita un token de acceso</td><td>Visibilidad Protegido sin token.</td></tr>
+<tr><td class="msg">Guardá el perfil primero para crear enlaces de seguimiento.</td><td>Perfil nuevo, sin guardar: todavía no hay enlaces.</td></tr>
+<tr><td class="msg">Los links no resuelven: un perfil privado responde 404.</td><td>Aviso sobre los enlaces de un perfil privado.</td></tr>
+<tr><td class="msg">Los links no resuelven: el perfil está archivado y responde 404.</td><td>Aviso sobre los enlaces de un perfil archivado.</td></tr>
+<tr><td class="msg">El perfil es protegido: el link incluiría el token y publicarlo en LinkedIn lo expondría.</td><td>Motivo por el que <b>Compartir en LinkedIn</b> está deshabilitado en un perfil protegido.</td></tr>
+<tr><td class="msg">Revocar enlace de seguimiento</td><td>Título del diálogo de <b>Revocar</b>.</td></tr>
+<tr><td class="msg">El link sigue abriendo el perfil, pero sus visitas dejan de atribuirse a este enlace. Sus aperturas pasadas se conservan. La revocación no se deshace.</td><td>Texto del diálogo de <b>Revocar</b>.</td></tr>
 <tr><td class="msg">Este link no resuelve: un perfil privado responde 404. Usalo para borradores.</td><td>Aviso bajo el link de un perfil privado.</td></tr>
 <tr><td class="msg">Este link no resuelve: el perfil está archivado y responde 404.</td><td>Aviso bajo el link de un perfil archivado.</td></tr>
 <tr><td class="msg">Archivar perfil curado</td><td>Título del diálogo de <b>Archivar</b>.</td></tr>
@@ -1076,7 +1090,9 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 </tbody>
 </table></div>
         <p><span class="lbl">Acciones y avisos</span> · <b>Archivar</b> → confirmar. <b>Desarchivar</b> vuelve al estado anterior. El aviso de faltantes (<code>Falta 1 traducción en EN</code>) vive acá, bajo el link.</p>
+        <p><b>Enlaces de seguimiento</b> (solo con el perfil guardado; usan siempre lo guardado, no el borrador): cada fila muestra la etiqueta (se renombra en el lugar), el portal, las <b>aperturas</b> de personas, la última apertura y el estado. <b>Copiar link</b> pone en el portapapeles la URL absoluta con <code>?via=&lt;código&gt;</code> (con <code>token</code> antes si el perfil es protegido). <b>Revocar</b> pide confirmar y no se deshace: el link sigue abriendo, pero deja de atribuirse. Las tuyas y las de bots no cuentan como aperturas. <b>Compartir en LinkedIn</b> reusa un enlace propio mientras esté activo y solo abre la página de compartir: no publica nada.</p>
         <figure class="shot" id="img-tc16-publicacion"><img src="tc16-publicacion.jpg" width="800" height="500" alt="Constructor, pestaña Publicación"></figure>
+        <figure class="shot" id="img-tc41-enlaces"><img src="tc41-enlaces.jpg" width="800" height="500" alt="Enlaces de seguimiento en Publicación"></figure>
         <figure class="shot" id="img-tc22-archivado"><img src="tc22-archivado.jpg" width="800" height="500" alt="Publicación de un perfil archivado"></figure>
         <figure class="shot" id="img-tc23-dirigido"><img src="tc23-dirigido.jpg" width="800" height="500" alt="Publicación de un perfil no enumerado"></figure>
       </article>
@@ -1418,7 +1434,7 @@ tras un preview del panel              -> 4   ✅ el preview no cuenta como visi
 GET analytics/views?from=hoy&amp;to=hoy    -> total=0   ❌ antes del arreglo de D-01
 GET analytics/views?from=hoy&amp;to=hoy    -> total=4   ✅ después</pre></div>
         <div class="note"><b>Fallaba el rango, no el registro.</b> El contador del perfil y el registro de <code>ProfileView</code> siempre funcionaron. <code>to</code> era exclusivo y el dashboard pide <code>[hoy-29, hoy]</code>, así que las visitas de hoy no aparecían. Corregido: ver <a href="#defectos">D-01</a>.</div>
-        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="800" height="824" alt="Dashboard de analítica"><figcaption>105 visitas en 30 días, 5 perfiles y 2 idiomas, sobre la base de ejemplo (el archivado conserva las suyas). Las cinco tablas: por día, por perfil, por idioma, por origen y por tipo.</figcaption></figure>
+        <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="800" height="1039" alt="Dashboard de analítica"><figcaption>105 visitas en 30 días, 5 perfiles y 2 idiomas, sobre la base de ejemplo (el archivado conserva las suyas). Las siete tablas: por día, por perfil, por idioma, por origen, por enlace, por portal y por tipo (las dos nuevas, con su estado vacío: el ejemplo no trae enlaces).</figcaption></figure>
         <p>De cada visita se guarda el perfil, el idioma, la fecha y la IP <b>solo como HMAC</b> con <code>ANALYTICS_SALT</code>. No hay cookies de seguimiento: la cookie de sesión del panel solo se lee para reconocer tus visitas y no se guarda. Si el registro falla, la respuesta al visitante no se altera.</p>
               <fieldset class="run" data-run="tc18"><legend>Resultado de la corrida · TC-18</legend><label><input type="radio" name="r-tc18" value="pass"> pasa</label><label><input type="radio" name="r-tc18" value="fail"> falla</label><label><input type="radio" name="r-tc18" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-18"></fieldset>
 </article>
@@ -1438,6 +1454,27 @@ GET analytics/views                  -&gt; total 106 · byKind HUMAN 106, OWNER 
 views de cada perfil                 -&gt; igual a sus filas HUMAN</pre></div>
         <p>Sin captura propia: el Dashboard con la tabla <b>Por tipo</b> es la de <a href="#tc18">TC-18</a>. Los e2e <code>view-kind.e2e-spec.ts</code> cubren la cookie, el <code>Authorization: Bearer</code>, la cookie vencida o forjada, Googlebot, HeadlessChrome y la ausencia de User-Agent.</p>
               <fieldset class="run" data-run="tc39"><legend>Resultado de la corrida · TC-39</legend><label><input type="radio" name="r-tc39" value="pass"> pasa</label><label><input type="radio" name="r-tc39" value="fail"> falla</label><label><input type="radio" name="r-tc39" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-39"></fieldset>
+</article>
+
+      <article class="case" data-status="ok" id="tc41" data-area="backoffice" data-change="add-share-links">
+        <div class="case-head"><span class="case-id">TC-41</span><h3>Compartir un perfil con un enlace de seguimiento</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Precondición</span> · Base de ejemplo, <b>descartable</b> (nunca <code>portfolio</code>: cada carga pública registra una visita), con la API y el frontend levantados (de preferencia la imagen de <code>frontend/Dockerfile</code>), la sesión del panel iniciada en <code>/admin</code> y un perfil <code>Público</code> guardado (<code>ejemplo-backend</code>).</p>
+        <p><span class="lbl">Pasos</span> · (1) <code>/admin/perfiles</code> → <code>ejemplo-backend</code> → pestaña <b>Publicación</b>. En <b>Enlaces de seguimiento</b>, escribí la etiqueta <code>Cobalto — Laura, RR. HH.</code>, el portal <code>linkedin</code> y <b>Crear enlace</b>; (2) en la fila nueva pulsá <b>Copiar link</b>: el portapapeles queda con <code>https://&lt;tu-sitio&gt;/ejemplo-backend?via=&lt;código&gt;</code> (10 caracteres); (3) en una <b>ventana privada</b> (sin la sesión del panel), pegá el link y abrilo, y recargá la pestaña <b>Publicación</b>: el enlace muestra <b>1 apertura</b>; (4) abrí también <code>/ejemplo-backend?src=indeed</code> en la ventana privada; en <b>Publicación</b>, <b>Link genérico por portal</b> → <code>indeed</code> → <b>Copiar link por portal</b> da esa misma URL sin crear ningún enlace; (5) <code>/admin</code> → <b>Por enlace</b> y <b>Por portal</b>; (6) vuelta a <b>Publicación</b> → <b>Revocar</b> en la fila → confirmá; (7) abrí otra vez el link con el código revocado en la ventana privada; (8) con el perfil <code>Público</code>, <b>Compartir en LinkedIn</b>.</p>
+        <p><span class="lbl">Esperado</span> · (1) El enlace aparece con 0 aperturas, el portal <code>linkedin</code> y el estado <code>Activo</code>; (2) la URL lleva <code>via=</code> y, en un perfil protegido, <code>token=</code> antes; (3) 1 apertura: las tuyas (con la sesión del panel) y las de bots no cuentan; (4) <code>?src=indeed</code> suma al portal <code>indeed</code> sin tocar ningún enlace; la URL copiada es <code>…/ejemplo-backend?src=indeed</code>; (5) <b>Por enlace</b>: <code>Cobalto — Laura, RR. HH.</code> con 1 y <b>Sin enlace</b> con el resto; <b>Por portal</b>: <code>linkedin</code> 1 e <code>indeed</code> 1; (6) la revocación no se deshace; para otro envío se crea un enlace nuevo; (7) el link no deja de funcionar: revocar deja de atribuir, no corta el acceso (para cortarlo, <code>Privado</code>, <code>Protegido</code> o archivar); (8) la pestaña pide <code>https://www.linkedin.com/sharing/share-offsite/?url=…</code> con el <code>?via=</code> de un enlace <code>LINKEDIN_POST</code> que se reusa mientras esté activo.</p>
+        <p><span class="lbl">Errores típicos</span> · <b>Por origen</b> sigue diciendo <code>directo</code>: el sitio no reenvía el origen (ver <a href="#c8">C8</a>); la atribución viaja en el link, no en el referrer. Si el destinatario reenvía el link, esas visitas también se atribuyen a su enlace. Un código copiado a medias o de otro perfil no atribuye y no da error. En un perfil protegido, un <code>via</code> válido <b>no</b> reemplaza al token. <b>Compartir en LinkedIn</b> está deshabilitado en un perfil protegido, privado, archivado o sin guardar.</p>
+        <p><span class="lbl">Observado</span> · 29 de octubre de 2026, imagen de <code>frontend/Dockerfile</code> en <code>localhost:8093</code>, API local y la base descartable <code>portfolio_share_check</code>, sembrada con el CV; Chrome no headless con un contexto sin sesión para las visitas y la sesión del panel iniciada por <code>fetch('/api/auth/login')</code>, sin escribir la contraseña en un navegador (evidencia en <code>openspec/changes/add-share-links/verification/</code>):</p>
+        <div class="codewrap"><pre>Crear desde Publicación          -&gt; código de 10 caracteres, portal linkedin, 0 aperturas
+?via=&lt;código&gt;                    -&gt; 1 petición del perfil (con via) · +1 ProfileView · shareLinkId del enlace · source linkedin
+?src=indeed                      -&gt; 1 petición del perfil (con src) · +1 ProfileView · shareLinkId nulo · source indeed
+?via=&lt;código&gt;&amp;src=indeed&amp;lang=en -&gt; 1 petición del perfil · +1 ProfileView · shareLinkId del enlace · source linkedin (gana el portal del enlace)
+Revocar (diálogo)                -&gt; revokedAt fijado · aperturas 2
+?via=&lt;código revocado&gt;           -&gt; perfil igual · +1 ProfileView sin enlace ni portal · aperturas siguen en 2
+Compartir en LinkedIn (x2)       -&gt; share-offsite?url=…?via=&lt;código LINKEDIN_POST&gt; · el segundo clic reusa el mismo enlace
+GET /profile-prefetch.js         -&gt; Cache-Control: no-cache
+HTML de /&lt;slug&gt;?via=…            -&gt; canonical y og:url sin query · mismo head que sin código</pre></div>
+        <figure class="shot" id="img-tc41-enlaces-caso"><img src="tc41-enlaces.jpg" width="800" height="500" alt="Enlaces de seguimiento en Publicación"></figure>
+        <p>Capturada sobre la base de ejemplo con <code>manual:capture</code>, que crea ese enlace por la API del panel. El Dashboard con <b>Por enlace</b> y <b>Por portal</b> es la captura de <a href="#tc18">TC-18</a>. Los e2e <code>share-links.e2e-spec.ts</code> y <code>share-links-admin.e2e-spec.ts</code> cubren el código activo, revocado, de otro perfil, inexistente y mal formado, <code>?src=</code>, el perfil protegido, el slug anterior, el agregado y el ciclo de vida.</p>
+              <fieldset class="run" data-run="tc41"><legend>Resultado de la corrida · TC-41</legend><label><input type="radio" name="r-tc41" value="pass"> pasa</label><label><input type="radio" name="r-tc41" value="fail"> falla</label><label><input type="radio" name="r-tc41" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-41"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc19" data-area="backoffice" data-change="add-admin-backoffice">
@@ -1871,6 +1908,9 @@ echo "$SITIO/acme-tech-lead"</pre></div>
         <div class="g"><dt id="g-faltante-de-traducci-n">faltante de traducción</dt><dd>Un campo bilingüe sin contenido en el idioma pedido; es solo un aviso. <span class="refs"><a href="#c7">C7 · Idiomas</a>, <a href="#r7">R7 · Traducir y revisar faltantes</a>, <a href="#tc32">TC-32</a></span></dd></div>
         <div class="g"><dt id="g-profileview"><code>ProfileView</code></dt><dd>El registro de una visita pública (perfil, idioma, origen, fecha, tipo, IP como HMAC). <span class="refs"><a href="#c8">C8 · Analítica</a>, <a href="#b2">B2 · Dashboard</a>, <a href="#tc18">TC-18</a></span></dd></div>
         <div class="g"><dt id="g-tipo-de-visita">tipo de visita</dt><dd>Si la visita fue de una persona, tuya (con la sesión del panel) o de un bot; solo las de personas suman en el total y en <code>views</code>. <span class="refs"><a href="#c8">C8 · Analítica</a>, <a href="#b2">B2 · Dashboard</a>, <a href="#tc39">TC-39</a></span></dd></div>
+        <div class="g"><dt id="g-enlace-de-seguimiento">enlace de seguimiento</dt><dd>Un link con un código propio (<code>?via=&lt;código&gt;</code>) para un destinatario o un portal, con etiqueta y revocación; cuenta las aperturas de personas sin depender del referrer. <span class="refs"><a href="#c8">C8 · Analítica</a>, <a href="#b12">B12 · Constructor · Publicación</a>, <a href="#tc41">TC-41</a></span></dd></div>
+        <div class="g"><dt id="g-portal">portal</dt><dd>El sitio donde se publica un link (<code>linkedin</code>, <code>indeed</code>…): el del enlace de seguimiento o el de <code>?src=&lt;portal&gt;</code>, normalizado a minúsculas, números y guiones. <span class="refs"><a href="#c8">C8 · Analítica</a>, <a href="#b2">B2 · Dashboard</a>, <a href="#tc41">TC-41</a></span></dd></div>
+        <div class="g"><dt id="g-apertura">apertura</dt><dd>Una visita de una persona atribuida a un enlace de seguimiento; las tuyas y las de bots no cuentan. <span class="refs"><a href="#b12">B12 · Constructor · Publicación</a>, <a href="#tc41">TC-41</a></span></dd></div>
       </dl>
     </section>
 </main>
