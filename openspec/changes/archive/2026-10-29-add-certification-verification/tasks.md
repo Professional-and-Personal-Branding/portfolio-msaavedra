@@ -76,10 +76,10 @@
 - [x] 9.2 `docs/manual/index.html` alineado con `MANUAL.md` (caso, índice lateral, `td.msg` con los mensajes nuevos, imágenes). Verificar: `npm run manual:check` verde.
 - [x] 9.3 `docs/DATA-POPULATION.md` § 12.6: filas de `verificationUrl`, `credentialId` y `expiresAt` con las seis columnas (tipo, obligatorio/defecto, ejemplo del archivo, dónde se ve, panel). Verificar: el escenario *Campo documentado* de `example-seed-data` (cada clave del ejemplo tiene fila).
 - [x] 9.4 `docs/CHANGELOG.md` (entrada del change) y `docs/PROPUESTA-FEATURES.md` § 6.2 (fila marcada como hecha, con el nombre de los requisitos ADDED en `admin-content-management`). Verificar: revisión del diff.
-- [ ] 9.5 Al archivar, `CLAUDE.md` § Roadmap suma la línea: `- [x] \`add-certification-verification\` — cada certificación puede llevar \`verificationUrl\` (solo https), \`credentialId\` y \`expiresAt\` (\`AAAA-MM\` o \`AAAA\`); «Ver credencial» en la sección y en el PDF, «Vencida» derivada en el cliente, sin llamadas al emisor; migración aditiva y seed retrocompatible (archivado AAAA-MM-DD)`. Verificar: revisión del diff del archivado.
+- [x] 9.5 Al archivar, `CLAUDE.md` § Roadmap suma la línea: `- [x] \`add-certification-verification\` — cada certificación puede llevar \`verificationUrl\` (solo https), \`credentialId\` y \`expiresAt\` (\`AAAA-MM\` o \`AAAA\`); «Ver credencial» en la sección y en el PDF, «Vencida» derivada en el cliente, sin llamadas al emisor; migración aditiva y seed retrocompatible (archivado AAAA-MM-DD)`. Verificar: revisión del diff del archivado.
 
 ## 10. Cierre
 
 - [x] 10.1 `backend/`: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`; `frontend/`: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run perf:budget`, `npm run manual:check`. Verificar: todo verde; salida en `verification/10.1-cierre.txt`.
 - [x] 10.2 `npx -y @fission-ai/openspec@1.14.1 validate add-certification-verification --strict` y `validate --all --strict`, sin «Archive would refuse». Verificar: salida en `verification/10.2-validacion.txt`.
-- [x] 10.3 Comprobar que la base `portfolio` del owner no cambió (`prisma migrate status` contra ella sin la migración nueva aplicada). Verificar: nota en `verification/10.3-base-del-owner.txt`.
+- [x] 10.3 Comprobar que la base `portfolio` del owner no cambió (`prisma migrate status` contra ella sin la migración nueva aplicada). Verificar: nota en `verification/10.3-base-del-owner.txt`. La consulta a la base del owner la hizo la sesión principal al aplicar la migración el 2026-10-29.
