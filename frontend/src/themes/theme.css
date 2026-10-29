@@ -38,6 +38,8 @@
   --color-text-dim: var(--t-text-dim);
   --color-brand: var(--t-accent);
   --color-brand-ink: var(--t-accent-ink);
+  --color-success: #00bc7d;
+  --color-success-ink: var(--t-success-ink);
   --color-brand-2: var(--t-accent2);
   --color-brand-2-ink: var(--t-accent2-ink);
   --color-brand-foreground: var(--t-accent-foreground);
@@ -88,6 +90,7 @@
   --t-accent-foreground: #0a0e1a;
   --t-accent-ink: #38bdf8;
   --t-accent2-ink: #818cf8;
+  --t-success-ink: #00bc7d;
   --t-text-dim: #7a879a;
   --t-ring: #38bdf8;
   --t-radius: 16px;
@@ -139,6 +142,11 @@
 
 @utility surface {
   @apply rounded-theme border border-border bg-card;
+}
+
+/* Fila de una lista del panel con el ítem oculto: sin opacidad, el texto conserva su contraste. */
+@utility surface-hidden {
+  @apply rounded-theme border border-dashed border-border bg-bg-soft;
 }
 
 @utility text-gradient {

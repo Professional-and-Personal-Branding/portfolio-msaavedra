@@ -1,0 +1,497 @@
+{
+  "axeVersion": "4.13.0",
+  "base": "http://localhost:8092",
+  "date": "2026-10-29T02:39:57.206Z",
+  "results": [
+    {
+      "page": "home",
+      "path": "/",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "profile",
+      "path": "/tech-lead-dotnet",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "profile-en-dark-sidebar",
+      "path": "/tech-lead-dotnet?lang=en&theme=modern-dark&layout=sidebar",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "not-found",
+      "path": "/no-existe-este-perfil",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-login",
+      "path": "/admin/login",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-dark-classic",
+      "path": "/tech-lead-dotnet?theme=modern-dark&layout=classic",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-dark-sidebar",
+      "path": "/tech-lead-dotnet?theme=modern-dark&layout=sidebar",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-light-classic",
+      "path": "/tech-lead-dotnet?theme=modern-light&layout=classic",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-light-sidebar",
+      "path": "/tech-lead-dotnet?theme=modern-light&layout=sidebar",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-minimal-classic",
+      "path": "/tech-lead-dotnet?theme=minimal&layout=classic",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-minimal-sidebar",
+      "path": "/tech-lead-dotnet?theme=minimal&layout=sidebar",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-elegant-classic",
+      "path": "/tech-lead-dotnet?theme=elegant&layout=classic",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-elegant-sidebar",
+      "path": "/tech-lead-dotnet?theme=elegant&layout=sidebar",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-corporate-classic",
+      "path": "/tech-lead-dotnet?theme=corporate&layout=classic",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-corporate-sidebar",
+      "path": "/tech-lead-dotnet?theme=corporate&layout=sidebar",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-java-senior-backend",
+      "path": "/java-senior-backend",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-fullstack-nest-react",
+      "path": "/fullstack-nest-react",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-devops-platform",
+      "path": "/devops-platform",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-dotnet-backend",
+      "path": "/dotnet-backend",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-it-leadership",
+      "path": "/it-leadership",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-integration-architect",
+      "path": "/integration-architect",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-ai-software-engineer",
+      "path": "/ai-software-engineer",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-fullstack-microsoft",
+      "path": "/fullstack-microsoft",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-devops-azure",
+      "path": "/devops-azure",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-software-architect",
+      "path": "/software-architect",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-backend-payments-ror",
+      "path": "/backend-payments-ror",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-tech-lead-dotnet",
+      "path": "/tech-lead-dotnet",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-generalist-polyglot",
+      "path": "/generalist-polyglot",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "home",
+      "path": "/",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "profile",
+      "path": "/tech-lead-dotnet",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "profile-en-dark-sidebar",
+      "path": "/tech-lead-dotnet?lang=en&theme=modern-dark&layout=sidebar",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "not-found",
+      "path": "/no-existe-este-perfil",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-login",
+      "path": "/admin/login",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-dark-classic",
+      "path": "/tech-lead-dotnet?theme=modern-dark&layout=classic",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-dark-sidebar",
+      "path": "/tech-lead-dotnet?theme=modern-dark&layout=sidebar",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-light-classic",
+      "path": "/tech-lead-dotnet?theme=modern-light&layout=classic",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-light-sidebar",
+      "path": "/tech-lead-dotnet?theme=modern-light&layout=sidebar",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-minimal-classic",
+      "path": "/tech-lead-dotnet?theme=minimal&layout=classic",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-minimal-sidebar",
+      "path": "/tech-lead-dotnet?theme=minimal&layout=sidebar",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-elegant-classic",
+      "path": "/tech-lead-dotnet?theme=elegant&layout=classic",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-elegant-sidebar",
+      "path": "/tech-lead-dotnet?theme=elegant&layout=sidebar",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-corporate-classic",
+      "path": "/tech-lead-dotnet?theme=corporate&layout=classic",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-corporate-sidebar",
+      "path": "/tech-lead-dotnet?theme=corporate&layout=sidebar",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-java-senior-backend",
+      "path": "/java-senior-backend",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-fullstack-nest-react",
+      "path": "/fullstack-nest-react",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-devops-platform",
+      "path": "/devops-platform",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-dotnet-backend",
+      "path": "/dotnet-backend",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-it-leadership",
+      "path": "/it-leadership",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-integration-architect",
+      "path": "/integration-architect",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-ai-software-engineer",
+      "path": "/ai-software-engineer",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-fullstack-microsoft",
+      "path": "/fullstack-microsoft",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-devops-azure",
+      "path": "/devops-azure",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-software-architect",
+      "path": "/software-architect",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-backend-payments-ror",
+      "path": "/backend-payments-ror",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-tech-lead-dotnet",
+      "path": "/tech-lead-dotnet",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-generalist-polyglot",
+      "path": "/generalist-polyglot",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin",
+      "path": "/admin",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 30,
+        "problems": []
+      }
+    },
+    {
+      "page": "admin-portada",
+      "path": "/admin/portada",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-experiencias",
+      "path": "/admin/experiencias",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-skills",
+      "path": "/admin/skills",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-formacion",
+      "path": "/admin/formacion",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-proyectos",
+      "path": "/admin/proyectos",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-perfiles",
+      "path": "/admin/perfiles",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-builder",
+      "path": "/admin/perfiles/cmvsx6gok004jucywsdgl9kuz",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "admin",
+      "path": "/admin",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 30,
+        "problems": []
+      }
+    },
+    {
+      "page": "admin-portada",
+      "path": "/admin/portada",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-experiencias",
+      "path": "/admin/experiencias",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-skills",
+      "path": "/admin/skills",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-formacion",
+      "path": "/admin/formacion",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-proyectos",
+      "path": "/admin/proyectos",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-perfiles",
+      "path": "/admin/perfiles",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-builder",
+      "path": "/admin/perfiles/cmvsx6gok004jucywsdgl9kuz",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 30,
+        "problems": []
+      }
+    }
+  ],
+  "console": [
+    {
+      "page": "not-found.mobile",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "page": "admin-login.mobile",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "page": "not-found.desktop",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "page": "admin-login.desktop",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+
+> portfolio-frontend@0.1.0 manual:check
+> node scripts/check-manual.mjs
+
+manual:check ok: 39 casos alineados, 44 imágenes (3.18 MB), index.html 212 KB, 160 ids.

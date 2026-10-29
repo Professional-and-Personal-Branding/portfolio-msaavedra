@@ -173,8 +173,12 @@ jobs:
     timeout-minutes: 30
     strategy:
       fail-fast: false
+      # `a11y` audita docs/cv-data.json (los perfiles reales del owner); `a11y-example`, los datos
+      # de ejemplo, que sí traen ítems ocultos, una experiencia actual y visitas por día
+      # (fix-admin-contrast, D5). Corren en paralelo, cada una con su propio Postgres: unos 9 min
+      # de runner más por corrida y ningún minuto de tiempo de pared.
       matrix:
-        check: [a11y, lighthouse]
+        check: [a11y, a11y-example, lighthouse]
     services:
       postgres:
         image: postgres:16-alpine
@@ -219,8 +223,13 @@ jobs:
           npm ci
           npm run prisma:generate
           npm run prisma:deploy
-          npm run seed
-          npm run seed:verify
+          if [ "${{ matrix.check }}" = "a11y-example" ]; then
+            SEED_DISPOSABLE_DB=1 npm run seed:example
+            npm run seed:example:verify
+          else
+            npm run seed
+            npm run seed:verify
+          fi
           npm run admin:bootstrap
       # La API arranca como en Railway: `NODE_ENV=production` exige secretos fuertes y una
       # `FRONTEND_URL` https (el valor no se usa: el sitio y la API comparten origen vía Caddy).
@@ -273,9 +282,10 @@ jobs:
         working-directory: frontend
         run: npm ci
       - name: Accesibilidad · axe y teclado
-        if: matrix.check == 'a11y'
+        if: startsWith(matrix.check, 'a11y')
         working-directory: frontend
         env:
+          A11Y_CHECK_PROFILE: ${{ matrix.check == 'a11y-example' && 'ejemplo-backend' || 'tech-lead-dotnet' }}
           A11Y_CHECK_ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
           A11Y_CHECK_ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
         run: npm run a11y:check -- http://localhost:8080 --out reports

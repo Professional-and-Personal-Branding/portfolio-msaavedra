@@ -1,9 +1,10 @@
-import { EyeOff, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import type { AdminExperience, CreateExperienceBody } from '../shared/admin-types';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { HiddenBadge } from '../shared/HiddenBadge';
 import { PageHeader } from '../shared/PageHeader';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
 import {
@@ -83,24 +84,17 @@ export function ExperiencesPage() {
             <li
               key={experience.id}
               data-visible={experience.visible}
-              className={`surface flex flex-wrap items-center gap-3 px-4 py-3 ${
-                experience.visible ? '' : 'opacity-60'
-              }`}
+              className={`${experience.visible ? 'surface' : 'surface-hidden'} flex flex-wrap items-center gap-3 px-4 py-3`}
             >
               <div className="min-w-0 flex-1">
                 <p className="flex flex-wrap items-center gap-2 font-semibold">
                   {experience.role.es}
                   {experience.current && (
-                    <Badge variant="outline" className="text-emerald-500">
+                    <Badge variant="outline" className="text-success-ink">
                       Actual
                     </Badge>
                   )}
-                  {!experience.visible && (
-                    <Badge variant="secondary" className="gap-1">
-                      <EyeOff className="size-3" aria-hidden />
-                      Oculta
-                    </Badge>
-                  )}
+                  {!experience.visible && <HiddenBadge feminine />}
                 </p>
                 <p className="truncate text-sm text-text-muted">
                   {experience.company} · {experience.startDate.slice(0, 7)} —{' '}
