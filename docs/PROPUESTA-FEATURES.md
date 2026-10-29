@@ -1,6 +1,12 @@
 # Propuesta de nuevas features y mejoras para el Portafolio Administrable (después de 1.1), revisada
 
-> Autor: agente `arquitecto`. Fecha: 2026-10-28. Estado: **espera la decisión del owner (Human Gate)**. No creé ningún change de OpenSpec. Los nombres de la § 6 son propuestas y se crean recién con tu OK.
+> Autor: agente `arquitecto`. Fecha: 2026-10-28. Estado: **aprobada en lo bloqueante** (ver «Decisiones tomadas» abajo); las preguntas no bloqueantes de la § 9 siguen abiertas. No creé ningún change de OpenSpec. Los nombres de la § 6 son propuestas y se crean recién al abrir cada uno.
+>
+> **Decisiones tomadas por el owner (2026-10-28):**
+> - **P18, estado del deploy:** todavía no desplegado. La Fase 1.0.x (deploy, backups con restauración probada, curaduría de datos, uso de Railway) va primero.
+> - **P1, orden de arranque:** opción A, 1.0.x y después la Fase 1.2 sin IA.
+> - **P2, atribución de visitas:** opción C, los dos: `ShareLink` (`?via=`) por destinatario y `?src=<portal>` para portales genéricos, ambos reenviados por el cliente a la API.
+> - **P19, semántica de `views`:** opción A, `views` cuenta solo las visitas humanas de terceros; todas las filas se guardan con su `kind`.
 > Esta versión incorpora las 33 objeciones de los críticos de viabilidad y de encaje. En el repo confirmé cuatro de ellas: `frontend/Caddyfile:112` (`Referrer-Policy no-referrer`), `backend/src/config/configuration.ts:60` (SameSite por defecto `'lax'`), `docs/ROADMAP-1.1.md:38` (el veto a `registro-de-envios`) y la corrida de a11y del 2026-10-28. No edité nada del repo.
 
 ---
@@ -386,6 +392,14 @@ La escritura de caché cuesta 1,25x y el Batch tiene un 50 % de descuento.
 ---
 
 ## 9. Decisiones para el owner
+
+**Resueltas el 2026-10-28:**
+- **1. Orden:** A. Primero la Fase 1.0.x (deploy, backups, datos) y después 1.2 sin IA.
+- **2. Atribución:** C, los dos. `ShareLink` (`?via=`) para destinatarios y `?src=<portal>` para los enlaces genéricos por portal. `add-share-links` cubre ambos: `src` es un `ShareLink` implícito por portal, sin gestión, y entra en la misma clave de la app y del prefetch.
+- **18. Estado del deploy:** todavía no está hecho; la Fase 1.0.x va antes que cualquier change.
+- **19. Semántica de `views`:** A. `views` cuenta solo visitas humanas de terceros; todas las filas se guardan con su `kind`.
+
+Siguen abiertas las demás; las bloqueantes para 1.3 y 2.0 (3, 4, 6, 12) se responden al abrir esas fases.
 
 1. **Orden de arranque.**
    - A) 1.0.x y después 1.2 sin IA.
