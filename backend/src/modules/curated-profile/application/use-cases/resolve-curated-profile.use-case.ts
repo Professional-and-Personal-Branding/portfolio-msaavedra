@@ -1,11 +1,16 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Locale } from '../../../../shared/domain/i18n';
+import {
+  ADMIN_SESSION_VERIFIER,
+  AdminSessionVerifier,
+} from '../../../../shared/application/admin-session-verifier';
 import { BACKGROUND_TASKS, BackgroundTasks } from '../../../../shared/application/background-tasks';
 import { fail, ok, Result } from '../../../../shared/domain/result';
 import {
   PROFILE_VIEW_REPOSITORY,
   ProfileViewRepository,
 } from '../../../analytics/domain/repositories/profile-view.repository';
+import { classifyVisit } from '../../../analytics/domain/services/classify-visit';
 import { CuratedProfileAccessDeniedError } from '../../domain/errors/curated-profile-access-denied.error';
 import { CuratedProfileNotFoundError } from '../../domain/errors/curated-profile-not-found.error';
 import {
@@ -22,6 +27,11 @@ export interface ViewContext {
   referrer?: string;
   userAgent?: string;
   ipHash?: string;
+  /**
+   * Token de sesión del panel tal como llegó (cookie o Bearer), sin validar. Se verifica
+   * dentro de la tarea en segundo plano y nunca se persiste ni se escribe en el log.
+   */
+  sessionToken?: string;
 }
 
 export interface ResolveCuratedProfileInput {
@@ -51,6 +61,7 @@ export class ResolveCuratedProfileUseCase {
     @Inject(CURATED_PROFILE_REPOSITORY) private readonly curatedProfiles: CuratedProfileRepository,
     @Inject(PROFILE_VIEW_REPOSITORY) private readonly profileViews: ProfileViewRepository,
     @Inject(BACKGROUND_TASKS) private readonly background: BackgroundTasks,
+    @Inject(ADMIN_SESSION_VERIFIER) private readonly sessions: AdminSessionVerifier,
     private readonly composer: CuratedProfileComposer,
   ) {}
 
@@ -85,16 +96,33 @@ export class ResolveCuratedProfileUseCase {
 
   private async recordView(curatedProfileId: string, ctx: ViewContext): Promise<void> {
     try {
+      const adminSession = await this.hasAdminSession(ctx.sessionToken);
       await this.profileViews.record({
         curatedProfileId,
         locale: ctx.locale,
         referrer: ctx.referrer,
         userAgent: ctx.userAgent,
         ipHash: ctx.ipHash,
+        kind: classifyVisit({ adminSession, userAgent: ctx.userAgent }),
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(`No se pudo registrar la visita de ${curatedProfileId}: ${message}`);
+    }
+  }
+
+  /**
+   * Una sesión ausente, vencida o un verificador que falla cuentan como «sin sesión»:
+   * la visita se clasifica por User-Agent. El aviso no incluye el token ni el error
+   * original (podría citarlo).
+   */
+  private async hasAdminSession(token: string | undefined): Promise<boolean> {
+    if (!token) return false;
+    try {
+      return await this.sessions.isAdminSession(token);
+    } catch {
+      this.logger.warn('No se pudo validar la sesión de la visita; se clasifica sin sesión');
+      return false;
     }
   }
 }

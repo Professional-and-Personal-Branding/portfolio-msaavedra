@@ -20,6 +20,14 @@ import { setupSwagger, shouldPublishDocs } from '../src/swagger';
 
 export const FRONTEND_URL = 'http://localhost:5173';
 
+/**
+ * User-Agent de un navegador real. Sin `User-Agent` la visita pública se clasifica `BOT` y no
+ * suma en `views` (change `classify-profile-views`): los e2e que cuentan visitas de personas
+ * lo mandan.
+ */
+export const BROWSER_UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
 // Los e2e hacen muchos logins seguidos: sin esto, el límite de la Fase 6 los
 // cortaría. El suite de hardening baja estos valores a propósito.
 process.env.THROTTLE_LIMIT ??= '10000';

@@ -8,6 +8,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { PrismaService } from '../src/shared/infrastructure/persistence/prisma.service';
 import {
+  BROWSER_UA,
   createE2eAdmin,
   createTestApp,
   deleteE2eAdmin,
@@ -120,9 +121,9 @@ describe('Ciclo de vida de perfiles curados (e2e)', () => {
     it('archivado: 404 sin distinguirse, idempotente, conserva visitas y no registra nuevas', async () => {
       const slug = `${PREFIX}-arch`;
       const id = await create(slug);
-      const antes = await get(`/api/curated-profiles/${slug}`);
+      const antes = await get(`/api/curated-profiles/${slug}`).set('User-Agent', BROWSER_UA);
       expect(antes.status).toBe(200);
-      await get(`/api/curated-profiles/${slug}`);
+      await get(`/api/curated-profiles/${slug}`).set('User-Agent', BROWSER_UA);
       await settleBackgroundTasks(app);
       const visitas = await prisma.profileView.count({ where: { curatedProfileId: id } });
       expect(visitas).toBe(2);

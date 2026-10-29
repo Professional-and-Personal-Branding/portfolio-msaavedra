@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../shared/infrastructure/persistence/prisma.service';
 import {
   DateRange,
+  KindCount,
   NewProfileView,
   ProfileViewAggregate,
   ProfileViewRepository,
@@ -27,17 +28,26 @@ export class PrismaProfileViewRepository implements ProfileViewRepository {
           referrer: view.referrer ?? null,
           userAgent: view.userAgent ?? null,
           ipHash: view.ipHash ?? null,
+          kind: view.kind,
         },
       }),
-      this.prisma.curatedProfile.update({
-        where: { id: view.curatedProfileId },
-        data: { views: { increment: 1 } },
-      }),
+      // Solo las visitas de personas suman en `views`; una OWNER o BOT es una sola escritura.
+      ...(view.kind === 'HUMAN'
+        ? [
+            this.prisma.curatedProfile.update({
+              where: { id: view.curatedProfileId },
+              data: { views: { increment: 1 } },
+            }),
+          ]
+        : []),
     ]);
   }
 
   async aggregate(range: DateRange): Promise<ProfileViewAggregate> {
-    const where: Prisma.ProfileViewWhereInput = { viewedAt: { gte: range.from, lte: range.to } };
+    const where: Prisma.ProfileViewWhereInput = {
+      viewedAt: { gte: range.from, lte: range.to },
+      kind: 'HUMAN',
+    };
 
     const [total, byProfileRaw, byLocaleRaw, byDayRaw] = await Promise.all([
       this.prisma.profileView.count({ where }),
@@ -53,6 +63,7 @@ export class PrismaProfileViewRepository implements ProfileViewRepository {
         SELECT date_trunc('day', "viewedAt") AS day, COUNT(*)::int AS views
         FROM "ProfileView"
         WHERE "viewedAt" >= ${range.from} AND "viewedAt" <= ${range.to}
+          AND "kind" = 'HUMAN'
         GROUP BY 1
         ORDER BY 1 ASC`,
     ]);
@@ -87,9 +98,18 @@ export class PrismaProfileViewRepository implements ProfileViewRepository {
   async countByReferrer(range: DateRange): Promise<ReferrerCount[]> {
     const rows = await this.prisma.profileView.groupBy({
       by: ['referrer'],
-      where: { viewedAt: { gte: range.from, lte: range.to } },
+      where: { viewedAt: { gte: range.from, lte: range.to }, kind: 'HUMAN' },
       _count: { _all: true },
     });
     return rows.map((r) => ({ referrer: r.referrer, views: r._count._all }));
+  }
+
+  async countByKind(range: DateRange): Promise<KindCount[]> {
+    const rows = await this.prisma.profileView.groupBy({
+      by: ['kind'],
+      where: { viewedAt: { gte: range.from, lte: range.to } },
+      _count: { _all: true },
+    });
+    return rows.map((r) => ({ kind: r.kind, views: r._count._all }));
   }
 }

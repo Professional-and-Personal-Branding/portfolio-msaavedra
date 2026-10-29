@@ -1,0 +1,41 @@
+== record (create + increment en $transaction)
+22:    await this.prisma.$transaction([
+34:        data: { views: { increment: 1 } },
+== cookieParser en main.ts
+5:import cookieParser from 'cookie-parser';
+32:  app.use(cookieParser());
+== credentials include
+35:    var response = window.fetch(url, { credentials: 'include', headers: headers });
+== e2e que piden el perfil publico y cuentan views/agregado
+backend/test/admin.e2e-spec.ts:313:          'views',
+backend/test/admin.e2e-spec.ts:330:        expect(created.body).toMatchObject({ slug: 'qa-lead-e2e', visibility: 'PUBLIC', views: 0 });
+backend/test/admin.e2e-spec.ts:484:        const res = await adminPost('/api/admin/curated-profiles/preview').send({
+backend/test/admin.e2e-spec.ts:495:    it('cada 200 público registra un ProfileView con hash de IP e incrementa views', async () => {
+backend/test/admin.e2e-spec.ts:501:      const res = await get('/api/curated-profiles/all?locale=en').set('User-Agent', 'TestUA');
+backend/test/admin.e2e-spec.ts:521:      expect(after.views).toBe(profile.views + 1);
+backend/test/admin.e2e-spec.ts:546:    it('GET /api/admin/analytics/views agrega por perfil, idioma y día; valida rango', async () => {
+backend/test/admin.e2e-spec.ts:550:      const res = await adminGet('/api/admin/analytics/views');
+backend/test/admin.e2e-spec.ts:553:      const all = (res.body.byProfile as { slug: string; views: number }[]).find(
+backend/test/admin.e2e-spec.ts:556:      expect(all?.views).toBeGreaterThanOrEqual(3);
+backend/test/admin.e2e-spec.ts:559:      expect((res.body.byDay as { day: string; views: number }[]).length).toBeGreaterThan(0);
+backend/test/admin.e2e-spec.ts:564:      expect((await adminGet('/api/admin/analytics/views?from=ayer')).status).toBe(400);
+backend/test/admin.e2e-spec.ts:565:      expect((await get('/api/admin/analytics/views')).status).toBe(401);
+backend/test/admin.e2e-spec.ts:572:      const antes = (await adminGet(`/api/admin/analytics/views?from=${hoy}&to=${hoy}`)).body
+backend/test/admin.e2e-spec.ts:578:      const res = await adminGet(`/api/admin/analytics/views?from=${hoy}&to=${hoy}`);
+backend/test/background-views.e2e-spec.ts:41:          .get('/api/curated-profiles/all')
+backend/test/background-views.e2e-spec.ts:42:          .set('User-Agent', MARK)
+backend/test/background-views.e2e-spec.ts:48:      expect(after.views).toBeGreaterThanOrEqual(all.views + 3);
+backend/test/background-views.e2e-spec.ts:53:      await request(app.getHttpServer()).get('/api/curated-profiles/no-existe-bg').expect(404);
+backend/test/background-views.e2e-spec.ts:58:    it('todo o nada: un perfil inexistente rechaza y no deja ProfileView ni cambia views', async () => {
+backend/test/background-views.e2e-spec.ts:61:      const views = await prisma.curatedProfile.aggregate({ _sum: { views: true } });
+backend/test/background-views.e2e-spec.ts:68:      expect((await prisma.curatedProfile.aggregate({ _sum: { views: true } }))._sum.views).toBe(
+backend/test/background-views.e2e-spec.ts:69:        views._sum.views,
+backend/test/background-views.e2e-spec.ts:109:        .get('/api/curated-profiles/all')
+backend/test/background-views.e2e-spec.ts:110:        .set('User-Agent', `${MARK}-close`)
+backend/test/curated-profile-lifecycle.e2e-spec.ts:75:      await prisma.curatedProfile.update({ where: { id }, data: { views: 40 } });
+backend/test/curated-profile-lifecycle.e2e-spec.ts:84:        views: 0,
+backend/test/curated-profile-lifecycle.e2e-spec.ts:100:        views: 40,
+backend/test/curated-profile-lifecycle.e2e-spec.ts:150:      const analytics = await adminGet(`/api/admin/analytics/views?from=${hoy}&to=${hoy}`);
+backend/test/curated-profile-lifecycle.e2e-spec.ts:151:      const fila = (analytics.body.byProfile as { slug: string; views: number }[]).find(
+backend/test/curated-profile-lifecycle.e2e-spec.ts:154:      expect(fila?.views).toBe(visitas);
+== Baseline: npm test 81 suites/660 tests OK; test:e2e 10 suites/174 tests OK (base portfolio_views_e2e)

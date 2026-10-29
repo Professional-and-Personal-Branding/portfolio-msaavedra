@@ -8,6 +8,7 @@ import * as path from 'path';
 import request from 'supertest';
 import { PrismaService } from '../src/shared/infrastructure/persistence/prisma.service';
 import {
+  BROWSER_UA,
   cleanupE2eLeftovers,
   createE2eAdmin,
   createTestApp,
@@ -544,8 +545,8 @@ describe('Backoffice (e2e)', () => {
     });
 
     it('GET /api/admin/analytics/views agrega por perfil, idioma y día; valida rango', async () => {
-      await get('/api/curated-profiles/all?locale=es');
-      await get('/api/curated-profiles/all?locale=es');
+      await get('/api/curated-profiles/all?locale=es').set('User-Agent', BROWSER_UA);
+      await get('/api/curated-profiles/all?locale=es').set('User-Agent', BROWSER_UA);
       await settleBackgroundTasks(app);
       const res = await adminGet('/api/admin/analytics/views');
       expect(res.status).toBe(200);
@@ -572,7 +573,7 @@ describe('Backoffice (e2e)', () => {
       const antes = (await adminGet(`/api/admin/analytics/views?from=${hoy}&to=${hoy}`)).body
         .total as number;
 
-      await get('/api/curated-profiles/all?locale=es');
+      await get('/api/curated-profiles/all?locale=es').set('User-Agent', BROWSER_UA);
       await settleBackgroundTasks(app);
 
       const res = await adminGet(`/api/admin/analytics/views?from=${hoy}&to=${hoy}`);

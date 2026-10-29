@@ -5,7 +5,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { APP_CONFIG, AppConfig } from '../../../../config/configuration';
 import { AdminOutput } from '../../application/dto/auth.output';
 import { GetCurrentAdminUseCase } from '../../application/use-cases/get-current-admin.use-case';
-import { extractJwtFromSessionCookie } from './session-cookie';
+import { adminTokenExtractors } from './extract-admin-token';
 
 export interface JwtPayload {
   sub: string;
@@ -28,10 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     private readonly getCurrentAdmin: GetCurrentAdminUseCase,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        ExtractJwt.fromAuthHeaderAsBearerToken(),
-        extractJwtFromSessionCookie,
-      ]),
+      jwtFromRequest: ExtractJwt.fromExtractors(adminTokenExtractors),
       ignoreExpiration: false,
       secretOrKey: config.getOrThrow<AppConfig>(APP_CONFIG).jwt.secret,
       algorithms: ['HS256'],

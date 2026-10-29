@@ -3,10 +3,12 @@ import { ValidationError } from '../../../../shared/domain/errors';
 import { fail, ok, Result } from '../../../../shared/domain/result';
 import {
   PROFILE_VIEW_REPOSITORY,
+  KindCount,
   ProfileViewAggregate,
   ProfileViewRepository,
 } from '../../domain/repositories/profile-view.repository';
 import { aggregateByReferrer } from '../../domain/services/normalize-referrer';
+import { VIEW_KINDS } from '../../domain/view-kind';
 
 export const DEFAULT_RANGE_DAYS = 30;
 
@@ -24,6 +26,8 @@ export interface ProfileViewsOutput extends ProfileViewAggregate {
   to: string;
   /** Por origen normalizado (D5), descendente. Su suma es `total`. */
   byReferrer: { referrer: string; views: number }[];
+  /** Todas las filas del rango por tipo: siempre HUMAN, OWNER y BOT, en ese orden (D7). */
+  byKind: KindCount[];
 }
 
 /**
@@ -43,15 +47,20 @@ export class AggregateProfileViewsUseCase {
     if (from > to) {
       return fail(new ValidationError('from no puede ser posterior a to', ['from', 'to']));
     }
-    const [aggregate, referrers] = await Promise.all([
+    const [aggregate, referrers, kinds] = await Promise.all([
       this.views.aggregate({ from, to }),
       this.views.countByReferrer({ from, to }),
+      this.views.countByKind({ from, to }),
     ]);
     return ok({
       from: from.toISOString(),
       to: to.toISOString(),
       ...aggregate,
       byReferrer: aggregateByReferrer(referrers, input.siteUrl ?? null),
+      byKind: VIEW_KINDS.map((kind) => ({
+        kind,
+        views: kinds.find((row) => row.kind === kind)?.views ?? 0,
+      })),
     });
   }
 }
