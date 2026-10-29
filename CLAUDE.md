@@ -185,6 +185,9 @@ npm run perf:check -- <base>   # Lighthouse mobile, mediana de PERF_CHECK_RUNS (
 - [x] `improve-mobile-performance` — Performance mobile ≥ 85 en el runner de GitHub: arranque en un solo chunk, perfil en dos tiempos (hero primero), menús de la barra en diferido, petición temprana del perfil (`public/profile-prefetch.js`), Inter del propio sitio y animación de entrada sin remontar; umbral de CI en 85 y tope de `perf:budget` en 155 KB. Medianas de Performance de 97 en el CI (archivado 2026-10-16)
 - [x] `add-learning-guide-and-example-data` — datos de ejemplo ficticios (`docs/examples/cv-data.example.json`), seed con formato extendido y `--file` con negativa en tres capas (`SEED_DISPOSABLE_DB=1`, `NODE_ENV` distinto de `production`, base vacía o con el mismo perfil), guía campo por campo (`docs/DATA-POPULATION.md` § 11 y 12) y manual renovado con `manual:capture` y `manual:check` en el CI (archivado 2026-10-28)
 - [x] `protect-default-seed` — `npm run seed` se niega (código 2) sobre una base con contenido salvo `--overwrite`; en producción además `SEED_ALLOW_PRODUCTION=1`, solo para el comando. Sugiere un `pg_dump` sin contraseña y el `preDeployCommand` sigue sin sembrar (archivado 2026-10-28)
+- [x] `classify-profile-views` — cada visita se guarda con su `kind` (HUMAN/OWNER/BOT), `views` suma solo las humanas y `npm run views:reclassify` recalcula las históricas (archivado 2026-10-29)
+- [x] `fix-admin-contrast` — ítems ocultos e insignias del panel con contraste AA, token `--t-success-ink` y pierna `a11y-example` del CI (archivado 2026-10-29)
+- [x] `add-share-links` — enlaces de seguimiento `?via=` y portal `?src=`, API de admin, «Compartir en LinkedIn» y tablas «Por enlace» y «Por portal» (archivado 2026-10-29)
 
 ---
 
