@@ -1,0 +1,14 @@
+
+> portfolio-frontend@0.1.0 perf:budget
+> node scripts/check-bundle-budget.mjs
+
+# Presupuesto de JS del arranque público
+
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-CEyZHCCd.js | módulo | 147.8 |
+| /profile-prefetch.js | clásico | 1.0 |
+| **Total** | | **148.9** |
+
+Presupuesto: 155 KB.
+

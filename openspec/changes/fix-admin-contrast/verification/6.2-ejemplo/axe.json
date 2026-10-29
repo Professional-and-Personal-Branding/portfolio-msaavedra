@@ -1,0 +1,365 @@
+{
+  "axeVersion": "4.13.0",
+  "base": "http://localhost:8091",
+  "date": "2026-10-29T02:33:30.194Z",
+  "results": [
+    {
+      "page": "home",
+      "path": "/",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "profile",
+      "path": "/ejemplo-backend",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "profile-en-dark-sidebar",
+      "path": "/ejemplo-backend?lang=en&theme=modern-dark&layout=sidebar",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "not-found",
+      "path": "/no-existe-este-perfil",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-login",
+      "path": "/admin/login",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-dark-classic",
+      "path": "/ejemplo-backend?theme=modern-dark&layout=classic",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-dark-sidebar",
+      "path": "/ejemplo-backend?theme=modern-dark&layout=sidebar",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-light-classic",
+      "path": "/ejemplo-backend?theme=modern-light&layout=classic",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-light-sidebar",
+      "path": "/ejemplo-backend?theme=modern-light&layout=sidebar",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-minimal-classic",
+      "path": "/ejemplo-backend?theme=minimal&layout=classic",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-minimal-sidebar",
+      "path": "/ejemplo-backend?theme=minimal&layout=sidebar",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-elegant-classic",
+      "path": "/ejemplo-backend?theme=elegant&layout=classic",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-elegant-sidebar",
+      "path": "/ejemplo-backend?theme=elegant&layout=sidebar",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-corporate-classic",
+      "path": "/ejemplo-backend?theme=corporate&layout=classic",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "preset-corporate-sidebar",
+      "path": "/ejemplo-backend?theme=corporate&layout=sidebar",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-ejemplo-backend",
+      "path": "/ejemplo-backend",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "accent-ejemplo-secciones",
+      "path": "/ejemplo-secciones",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "home",
+      "path": "/",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "profile",
+      "path": "/ejemplo-backend",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "profile-en-dark-sidebar",
+      "path": "/ejemplo-backend?lang=en&theme=modern-dark&layout=sidebar",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "not-found",
+      "path": "/no-existe-este-perfil",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-login",
+      "path": "/admin/login",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-dark-classic",
+      "path": "/ejemplo-backend?theme=modern-dark&layout=classic",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-dark-sidebar",
+      "path": "/ejemplo-backend?theme=modern-dark&layout=sidebar",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-light-classic",
+      "path": "/ejemplo-backend?theme=modern-light&layout=classic",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-modern-light-sidebar",
+      "path": "/ejemplo-backend?theme=modern-light&layout=sidebar",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-minimal-classic",
+      "path": "/ejemplo-backend?theme=minimal&layout=classic",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-minimal-sidebar",
+      "path": "/ejemplo-backend?theme=minimal&layout=sidebar",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-elegant-classic",
+      "path": "/ejemplo-backend?theme=elegant&layout=classic",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-elegant-sidebar",
+      "path": "/ejemplo-backend?theme=elegant&layout=sidebar",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-corporate-classic",
+      "path": "/ejemplo-backend?theme=corporate&layout=classic",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "preset-corporate-sidebar",
+      "path": "/ejemplo-backend?theme=corporate&layout=sidebar",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-ejemplo-backend",
+      "path": "/ejemplo-backend",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "accent-ejemplo-secciones",
+      "path": "/ejemplo-secciones",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin",
+      "path": "/admin",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "admin-portada",
+      "path": "/admin/portada",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-experiencias",
+      "path": "/admin/experiencias",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-skills",
+      "path": "/admin/skills",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-formacion",
+      "path": "/admin/formacion",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-proyectos",
+      "path": "/admin/proyectos",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-perfiles",
+      "path": "/admin/perfiles",
+      "viewport": "mobile",
+      "violations": []
+    },
+    {
+      "page": "admin-builder",
+      "path": "/admin/perfiles/cmvsx6e35001ducx4ndz42m09",
+      "viewport": "mobile",
+      "violations": [],
+      "keyboard": {
+        "focusables": 30,
+        "problems": []
+      }
+    },
+    {
+      "page": "admin",
+      "path": "/admin",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 29,
+        "problems": []
+      }
+    },
+    {
+      "page": "admin-portada",
+      "path": "/admin/portada",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-experiencias",
+      "path": "/admin/experiencias",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-skills",
+      "path": "/admin/skills",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-formacion",
+      "path": "/admin/formacion",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-proyectos",
+      "path": "/admin/proyectos",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-perfiles",
+      "path": "/admin/perfiles",
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "page": "admin-builder",
+      "path": "/admin/perfiles/cmvsx6e35001ducx4ndz42m09",
+      "viewport": "desktop",
+      "violations": [],
+      "keyboard": {
+        "focusables": 30,
+        "problems": []
+      }
+    }
+  ],
+  "console": [
+    {
+      "page": "not-found.mobile",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "page": "admin-login.mobile",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "page": "not-found.desktop",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "page": "admin-login.desktop",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    }
+  ]
+}
