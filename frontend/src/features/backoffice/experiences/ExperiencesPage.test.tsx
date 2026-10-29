@@ -28,6 +28,12 @@ describe('ExperiencesPage', () => {
     const hidden = items.find((item) => item.textContent?.includes('Initech'));
     expect(hidden).toHaveAttribute('data-visible', 'false');
     expect(within(hidden!).getByText('Oculta')).toBeInTheDocument();
+    // fix-admin-contrast, D1: sin opacidad; borde punteado y fondo suave.
+    expect(hidden!.className).not.toMatch(/(^|\s)opacity-/);
+    expect(hidden).toHaveClass('surface-hidden');
+    const visible = items.find((item) => item.textContent?.includes('Acme Corp'));
+    expect(visible).toHaveClass('surface');
+    expect(visible).not.toHaveClass('surface-hidden');
   });
 
   it('crea una experiencia enviando los textos bilingües', async () => {

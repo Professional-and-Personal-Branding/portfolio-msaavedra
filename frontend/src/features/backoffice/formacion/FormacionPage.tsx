@@ -1,6 +1,5 @@
-import { EyeOff, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
-import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import type {
   AdminCertification,
@@ -9,6 +8,7 @@ import type {
   CreateEducationBody,
 } from '../shared/admin-types';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { HiddenBadge } from '../shared/HiddenBadge';
 import { PageHeader } from '../shared/PageHeader';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
 import { notifyError, notifySuccess } from '../shared/use-admin-api';
@@ -267,17 +267,12 @@ function Row({
   return (
     <li
       data-visible={visible}
-      className={`surface flex flex-wrap items-center gap-3 px-4 py-3 ${visible ? '' : 'opacity-60'}`}
+      className={`${visible ? 'surface' : 'surface-hidden'} flex flex-wrap items-center gap-3 px-4 py-3`}
     >
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-2 font-semibold">
           {title}
-          {!visible && (
-            <Badge variant="secondary" className="gap-1">
-              <EyeOff className="size-3" aria-hidden />
-              Oculto
-            </Badge>
-          )}
+          {!visible && <HiddenBadge />}
         </p>
         <p className="truncate text-sm text-text-muted">{subtitle}</p>
       </div>

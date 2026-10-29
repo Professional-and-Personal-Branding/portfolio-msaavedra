@@ -28,7 +28,7 @@ export function Hero({ data, variant = 'default' }: SectionProps) {
       <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-3.5 py-1.5 text-xs font-medium text-brand-ink">
         <span
           aria-hidden
-          className="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px] shadow-emerald-500"
+          className="size-1.5 rounded-full bg-success shadow-[0_0_8px] shadow-success"
         />
         {t('hero.available')} · {profile.availability.startDate}
       </span>

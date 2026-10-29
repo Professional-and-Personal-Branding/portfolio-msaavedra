@@ -1,4 +1,4 @@
-import { ExternalLink, EyeOff, Pencil, Plus, Star, Trash2 } from 'lucide-react';
+import { ExternalLink, Pencil, Plus, Star, Trash2 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
@@ -9,6 +9,7 @@ import type {
   CreateSocialLinkBody,
 } from '../shared/admin-types';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { HiddenBadge } from '../shared/HiddenBadge';
 import { PageHeader } from '../shared/PageHeader';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
 import { notifyError, notifySuccess } from '../shared/use-admin-api';
@@ -105,9 +106,7 @@ function ProjectsSection() {
             <li
               key={project.id}
               data-visible={project.visible}
-              className={`surface flex flex-wrap items-center gap-3 px-4 py-3 ${
-                project.visible ? '' : 'opacity-60'
-              }`}
+              className={`${project.visible ? 'surface' : 'surface-hidden'} flex flex-wrap items-center gap-3 px-4 py-3`}
             >
               <div className="min-w-0 flex-1">
                 <p className="flex flex-wrap items-center gap-2 font-semibold">
@@ -234,9 +233,7 @@ function SocialLinksSection() {
             <li
               key={link.id}
               data-visible={link.visible}
-              className={`surface flex flex-wrap items-center gap-3 px-4 py-3 ${
-                link.visible ? '' : 'opacity-60'
-              }`}
+              className={`${link.visible ? 'surface' : 'surface-hidden'} flex flex-wrap items-center gap-3 px-4 py-3`}
             >
               <div className="min-w-0 flex-1">
                 <p className="flex flex-wrap items-center gap-2 font-semibold">
@@ -327,14 +324,5 @@ function Section({
       </header>
       {children}
     </section>
-  );
-}
-
-function HiddenBadge() {
-  return (
-    <Badge variant="secondary" className="gap-1">
-      <EyeOff className="size-3" aria-hidden />
-      Oculto
-    </Badge>
   );
 }

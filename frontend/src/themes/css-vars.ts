@@ -27,6 +27,9 @@ const SERIF_FAMILIES = new Set([
   'times new roman',
 ]);
 
+/** Verde base de los estados positivos («Actual»); el derivado legible sale de `--t-success-ink`. */
+export const SUCCESS = '#00bc7d';
+
 export interface ThemeCssVars {
   '--t-bg': string;
   '--t-bg-soft': string;
@@ -39,6 +42,8 @@ export interface ThemeCssVars {
   '--t-accent-foreground': string;
   /** Acento legible como texto (≥ 4,5:1): derivado, no se guarda (spec `web-accessibility`). */
   '--t-accent-ink': string;
+  /** Verde de estado como texto (≥ 4,5:1): derivado como el acento, no se guarda. */
+  '--t-success-ink': string;
   /** El segundo acento como texto (títulos de categoría de skills), con el mismo criterio. */
   '--t-accent2-ink': string;
   /** Texto atenuado con contraste AA garantizado. */
@@ -72,6 +77,7 @@ export function tokensToCssVars(tokens: ThemeTokens): ThemeCssVars {
     '--t-accent2': colors.accent2,
     '--t-accent-foreground': readableOn(colors.accent),
     '--t-accent-ink': ink,
+    '--t-success-ink': accentInk(SUCCESS, inkSurfaces(tokens, SUCCESS, 0.15), tokens.mode),
     '--t-accent2-ink': accentInk(
       colors.accent2,
       [colors.bg, colors.bgSoft, colors.card],
@@ -92,16 +98,21 @@ export function tokensToCssVars(tokens: ThemeTokens): ThemeCssVars {
 }
 
 /**
- * Superficies sobre las que el acento tiene que leerse como texto: los tres fondos del tema y
- * el tinte del badge (`bg-brand/10`) sobre el fondo y sobre la tarjeta.
+ * Superficies sobre las que un color tiene que leerse como texto: los tres fondos del tema y el
+ * tinte de su insignia sobre el fondo y sobre la tarjeta. El acento usa `bg-brand/10`; el verde
+ * de estado, `bg-success/15` (`amount` es la fracción del color en la mezcla).
  */
-function inkSurfaces({ colors }: ThemeTokens): string[] {
+function inkSurfaces(
+  { colors }: ThemeTokens,
+  tint: string = colors.accent,
+  amount = 0.1,
+): string[] {
   const surfaces = [colors.bg, colors.bgSoft, colors.card];
-  const accent = parseHex(colors.accent);
-  if (!accent) return surfaces;
+  const color = parseHex(tint);
+  if (!color) return surfaces;
   for (const base of [colors.bg, colors.card]) {
     const rgb = parseHex(base);
-    if (rgb) surfaces.push(toHex(mix(rgb, accent, 0.1)));
+    if (rgb) surfaces.push(toHex(mix(rgb, color, amount)));
   }
   return surfaces;
 }
