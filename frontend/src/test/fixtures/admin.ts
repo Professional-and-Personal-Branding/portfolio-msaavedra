@@ -182,6 +182,30 @@ export const ANALYTICS: ProfileViews = {
     { kind: 'OWNER', views: 3 },
     { kind: 'BOT', views: 5 },
   ],
+  byShareLink: [
+    {
+      shareLinkId: 'sl-acme',
+      code: 'k7m2q9xw4t',
+      label: 'Acme — RR. HH.',
+      slug: 'acme-backend',
+      portal: 'linkedin',
+      revoked: false,
+      views: 4,
+    },
+    {
+      shareLinkId: 'sl-globex',
+      code: 'n3p5r7s9v1',
+      label: 'Globex',
+      slug: 'all',
+      portal: null,
+      revoked: true,
+      views: 2,
+    },
+  ],
+  bySource: [
+    { source: 'linkedin', views: 5 },
+    { source: 'indeed', views: 3 },
+  ],
 };
 
 export const EMPTY_ANALYTICS: ProfileViews = {
@@ -197,6 +221,8 @@ export const EMPTY_ANALYTICS: ProfileViews = {
     { kind: 'OWNER', views: 0 },
     { kind: 'BOT', views: 0 },
   ],
+  byShareLink: [],
+  bySource: [],
 };
 
 // add-profile-content-admin: formación (educación y certificaciones).

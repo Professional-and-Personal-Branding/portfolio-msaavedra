@@ -1,0 +1,18 @@
+1.1 Punto de partida (2026-10-29), rama feat/share-links sobre feat/classify-profile-views (42890de)
+Base descartable: portfolio_share_e2e (migrada con las 5 migraciones existentes y sembrada). La base
+`portfolio` del owner no se toca.
+
+Confirmado en el codigo:
+- ProfileView.kind y byKind existen (schema.prisma enum ViewKind; AggregateProfileViewsUseCase.byKind).
+- CuratedProfileQueryDto declara solo `token` (extiende LocaleQueryDto): no hay `via` ni `src`.
+  El ValidationPipe global solo transforma (sin whitelist), asi que un `?via=` hoy responde 200.
+- buildProfileLink(slug, params) = writeUrlState(params, { token: null }): conserva los demas parametros,
+  incluido un `via` (hoy viajaria al perfil siguiente).
+- metaFromProfile arma canonical con origen + ruta del slug, sin query.
+- frontend/Caddyfile sirve /profile-prefetch.js sin hash en el nombre; el bloque global lleva
+  `Referrer-Policy no-referrer` (la regla de Cache-Control: no-cache del script se comprueba sobre la imagen en 9.4).
+
+Suites antes de tocar nada:
+- backend `npm test`: 86 suites, 769 tests en verde.
+- backend `npm run test:e2e` (contra portfolio_share_e2e): 11 suites, 188 tests en verde.
+- frontend `npm test`: 56 archivos, 632 tests en verde.

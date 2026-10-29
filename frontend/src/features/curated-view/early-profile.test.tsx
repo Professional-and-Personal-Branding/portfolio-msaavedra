@@ -35,9 +35,16 @@ function serveProfile(slug = 'demo') {
   return requests;
 }
 
-function setEarly(slug: string, response: Response, locale: 'es' | 'en' = 'es', token = null) {
+function setEarly(
+  slug: string,
+  response: Response,
+  locale: 'es' | 'en' = 'es',
+  token = null,
+  via: string | null = null,
+  src: string | null = null,
+) {
   window.__portfolioEarlyProfile = {
-    key: earlyProfileKey(slug, locale, token),
+    key: earlyProfileKey(slug, locale, token, via, src),
     response: Promise.resolve(response),
   };
 }
@@ -58,6 +65,36 @@ describe('petición temprana del perfil — entrega a la app', () => {
     await waitFor(() => expect(document.title).toBe('Temprano · Ada Ejemplo'));
     // Se toma una sola vez.
     expect(window.__portfolioEarlyProfile).toBeUndefined();
+  });
+
+  // change `add-share-links` (D5): con `?via=` o `?src=` sigue siendo una petición y una visita.
+  it.each([
+    ['?via=k7m2q9xw4t', 'k7m2q9xw4t', null],
+    ['?src=indeed', null, 'indeed'],
+    ['?via=k7m2q9xw4t&src=indeed', 'k7m2q9xw4t', 'indeed'],
+  ])(
+    'con %s y la respuesta temprana con la misma clave, no hay una segunda petición',
+    async (search, via, src) => {
+      const requests = serveProfile();
+      setEarly('demo', Response.json(makeCuratedProfile({ slug: 'demo' })), 'es', null, via, src);
+
+      renderWithProviders(<AppRouter />, { route: `/demo${search}` });
+
+      expect(
+        await screen.findByRole('heading', { level: 1, name: 'Ada Ejemplo' }),
+      ).toBeInTheDocument();
+      expect(requests).toEqual([]);
+    },
+  );
+
+  it('si la temprana no llevaba via, la app pide la suya con via en la query (una sola petición)', async () => {
+    const requests = serveProfile();
+    setEarly('demo', Response.json(makeCuratedProfile({ slug: 'demo' })));
+
+    renderWithProviders(<AppRouter />, { route: '/demo?via=k7m2q9xw4t' });
+
+    await screen.findByRole('heading', { level: 1, name: 'Ada Ejemplo' });
+    expect(requests).toEqual([`${API}/curated-profiles/demo?locale=es&via=k7m2q9xw4t`]);
   });
 
   it('con otra clave, hace su propia petición y descarta la temprana', async () => {

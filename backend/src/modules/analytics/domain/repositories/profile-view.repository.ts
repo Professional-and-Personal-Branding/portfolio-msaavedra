@@ -11,6 +11,10 @@ export interface NewProfileView {
   readonly ipHash?: string;
   /** Tipo de la visita (D1): solo `HUMAN` incrementa `views`. */
   readonly kind: ViewKind;
+  /** Enlace de seguimiento atribuido (activo y del mismo perfil), o nulo (D7 de `add-share-links`). */
+  readonly shareLinkId?: string | null;
+  /** Portal efectivo: el del enlace atribuido o el `?src=` normalizado. */
+  readonly source?: string | null;
 }
 
 export interface DateRange {
@@ -40,6 +44,30 @@ export interface ReferrerCount {
   readonly views: number;
 }
 
+/** Visitas `HUMAN` del rango atribuidas a un enlace de seguimiento. */
+export interface ShareLinkCount {
+  readonly shareLinkId: string;
+  readonly code: string;
+  readonly label: string;
+  readonly slug: string;
+  readonly portal: string | null;
+  readonly revoked: boolean;
+  readonly views: number;
+}
+
+/** Visitas `HUMAN` del rango con un portal (`source`). */
+export interface SourceCount {
+  readonly source: string;
+  readonly views: number;
+}
+
+/** Aperturas `HUMAN` de un enlace en toda su historia. */
+export interface ShareLinkOpens {
+  readonly shareLinkId: string;
+  readonly opens: number;
+  readonly lastOpenedAt: Date | null;
+}
+
 export interface ProfileViewRepository {
   /** Crea la visita y, solo si es `HUMAN`, incrementa `views` del perfil de forma atómica. */
   record(view: NewProfileView): Promise<void>;
@@ -49,4 +77,16 @@ export interface ProfileViewRepository {
   countByReferrer(range: DateRange): Promise<ReferrerCount[]>;
   /** Todas las visitas del rango agrupadas por tipo; los tipos sin filas pueden faltar. */
   countByKind(range: DateRange): Promise<KindCount[]>;
+  /**
+   * Visitas `HUMAN` del rango con `shareLinkId`, por enlace (con su código, etiqueta, slug, portal y
+   * si está revocado); visitas descendente y, a igualdad, por etiqueta.
+   */
+  countByShareLink(range: DateRange): Promise<ShareLinkCount[]>;
+  /** Visitas `HUMAN` del rango con `source`, descendente. */
+  countBySource(range: DateRange): Promise<SourceCount[]>;
+  /**
+   * Aperturas `HUMAN` y última apertura de cada enlace pedido, en toda su historia. Los enlaces
+   * sin aperturas pueden faltar en el resultado.
+   */
+  countOpensByShareLink(shareLinkIds: readonly string[]): Promise<ShareLinkOpens[]>;
 }

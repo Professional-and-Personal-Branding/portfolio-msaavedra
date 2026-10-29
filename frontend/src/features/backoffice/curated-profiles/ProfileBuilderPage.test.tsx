@@ -175,7 +175,7 @@ describe('ProfileBuilderPage', () => {
 
     await openBuilder();
     await user.click(screen.getByRole('tab', { name: 'Publicación' }));
-    await user.click(screen.getByRole('button', { name: /Copiar/ }));
+    await user.click(screen.getByRole('button', { name: 'Copiar' }));
 
     expect(await screen.findByText('Link copiado')).toBeInTheDocument();
     await waitFor(async () =>

@@ -122,7 +122,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq
 | Ruta | Pantalla |
 |---|---|
 | `/admin/login` | Entrada |
-| `/admin` | Dashboard de analítica, con las tablas **Por origen** y **Por tipo** |
+| `/admin` | Dashboard de analítica, con las tablas **Por origen**, **Por enlace**, **Por portal** y **Por tipo** |
 | `/admin/portada` | Perfil base (titular, resumen, contacto, disponibilidad) e idiomas, con vista previa del hero |
 | `/admin/experiencias` | CRUD de experiencias |
 | `/admin/skills` | CRUD de categorías y skills |
@@ -195,11 +195,13 @@ Los datos son **bilingües ES/EN en un solo registro**: cada texto traducible es
 
 ### C8 — Analítica
 
-Cada carga de una ruta pública registra una **visita** (`ProfileView`): perfil, idioma, origen, fecha y **tipo**; la IP solo como HMAC. Las vistas previas del panel no cuentan. Cada visita se guarda con su tipo: *Personas*, *Tus visitas* (la petición trae la sesión del panel) y *Bots* (sin navegador reconocible: Googlebot, `HeadlessChrome`, `curl`…). **Solo las de personas suman** en el total y en las visitas de cada perfil; las otras se cuentan aparte, en **Por tipo**. Si abrís tu sitio sin la sesión del panel, cuenta como una persona más. El dashboard resume por día, perfil, idioma, origen y tipo, y los perfiles archivados conservan su historial.
+Cada carga de una ruta pública registra una **visita** (`ProfileView`): perfil, idioma, origen, fecha y **tipo**; la IP solo como HMAC. Las vistas previas del panel no cuentan. Cada visita se guarda con su tipo: *Personas*, *Tus visitas* (la petición trae la sesión del panel) y *Bots* (sin navegador reconocible: Googlebot, `HeadlessChrome`, `curl`…). **Solo las de personas suman** en el total y en las visitas de cada perfil; las otras se cuentan aparte, en **Por tipo**. Si abrís tu sitio sin la sesión del panel, cuenta como una persona más. El dashboard resume por día, perfil, idioma, origen, enlace, portal y tipo, y los perfiles archivados conservan su historial.
 
-- **En el ejemplo:** 105 visitas sintéticas en 5 perfiles (`all`, `ejemplo-backend`, `ejemplo-secciones`, `ejemplo-archivado`, `ejemplo-protegido`), con orígenes directo, LinkedIn, buscador y un dominio de `example.com`.
-- **Dónde se edita:** B2 (Dashboard)
-- **Casos que lo verifican:** TC-18, TC-39
+**El origen casi nunca llega.** El sitio no reenvía de dónde vino la persona (`Referrer-Policy: no-referrer`) y LinkedIn, Gmail o el chat tampoco lo mandan, así que en producción **Por origen** da casi siempre `directo`. Lo que sí viaja es el link: un **enlace de seguimiento** (`?via=<código>`, uno por destinatario o portal, con etiqueta y revocación) o un **portal** genérico (`?src=<portal>`). Cada **apertura** de una persona se cuenta en el enlace y en el portal, y se ve en **Por enlace** y **Por portal**. Un enlace revocado deja de atribuir, pero el link sigue abriendo el perfil.
+
+- **En el ejemplo:** 105 visitas sintéticas en 5 perfiles (`all`, `ejemplo-backend`, `ejemplo-secciones`, `ejemplo-archivado`, `ejemplo-protegido`), con orígenes directo, LinkedIn, buscador y un dominio de `example.com`. Ninguna trae enlace ni portal: las tablas **Por enlace** y **Por portal** arrancan con su estado vacío.
+- **Dónde se edita:** B2 (Dashboard); los enlaces se crean en B12 (Constructor · Publicación)
+- **Casos que lo verifican:** TC-18, TC-39, TC-41
 
 
 ---
@@ -317,14 +319,16 @@ Nueve tareas reales, con los pasos por pantalla, lo que tiene que pasar, los err
 1. **Dashboard** → elegí el **rango** (7, 30, 90 días o un año).
 2. Mirá los totales (**Visitas en el rango**, **Perfiles vistos**, **Idiomas**) y **Visitas por día**.
 3. En **Por perfil** abrí el constructor o la vista pública con los enlaces de cada fila; el perfil archivado lleva la marca `archivado`.
-4. **Por origen** muestra de dónde llegó cada visita: `directo`, `linkedin.com`, `google.com`…
-5. **Por tipo** separa *Personas*, *Tus visitas* y *Bots*: solo las de personas suman en el total.
+4. **Por origen** muestra de dónde llegó cada visita según el navegador: `directo`, `linkedin.com`, `google.com`… En producción casi siempre da `directo`, porque el sitio no reenvía el origen.
+5. **Por enlace** muestra qué enlace de seguimiento abrió cada persona (con el perfil, el portal y la marca `revocado`) y, al final, **Sin enlace**: las visitas que no llegaron por ninguno.
+6. **Por portal** muestra el portal del enlace o del link genérico (`?src=`) y, al final, **Sin portal**. No depende del referrer.
+7. **Por tipo** separa *Personas*, *Tus visitas* y *Bots*: solo las de personas suman en el total.
 
-**Resultado esperado:** Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos, 2 idiomas, y los orígenes directo, linkedin.com, google.com y empleos.example.com.
+**Resultado esperado:** Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos, 2 idiomas, y los orígenes directo, linkedin.com, google.com y empleos.example.com. **Por enlace** y **Por portal** quedan con su estado vacío hasta que se envíe un link con código.
 
-**Errores típicos:** Las visitas de hoy cuentan (defecto D-01 corregido). La vista previa del panel y la carga de otra persona de `/admin` no suman visitas. Tus propias visitas (con la sesión del panel) y las de bots tampoco suman en el total: están en **Por tipo**.
+**Errores típicos:** Las visitas de hoy cuentan (defecto D-01 corregido). La vista previa del panel y la carga de otra persona de `/admin` no suman visitas. Tus propias visitas (con la sesión del panel) y las de bots tampoco suman en el total: están en **Por tipo**. Si **Por origen** dice `directo` para todo, es lo esperado: mirá **Por enlace** y **Por portal**.
 
-**Casos:** TC-18, TC-39
+**Casos:** TC-18, TC-39, TC-41
 
 
 ---
@@ -357,7 +361,7 @@ Para la guía y las capturas se usa un administrador de prueba (`npm run admin:b
 
 ### B2 — Dashboard
 
-Ruta: `/admin`. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales (de **personas**), **Visitas por día**, **Por perfil** (con enlaces al constructor y a la vista pública y la marca `archivado`), **Por idioma**, **Por origen** y **Por tipo** (*Personas*, *Tus visitas* y *Bots*, con la aclaración de que solo las de personas suman).
+Ruta: `/admin`. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales (de **personas**), **Visitas por día**, **Por perfil** (con enlaces al constructor y a la vista pública y la marca `archivado`), **Por idioma**, **Por origen** (con la aclaración de que casi siempre da `directo`), **Por enlace** (etiqueta, perfil, portal, marca `revocado` y visitas, más una fila final **Sin enlace**), **Por portal** (con una fila final **Sin portal**) y **Por tipo** (*Personas*, *Tus visitas* y *Bots*, con la aclaración de que solo las de personas suman).
 
 | Campo | Tipo | Obligatorio | Validación | Ejemplo |
 |---|---|---|---|---|
@@ -367,7 +371,7 @@ Ruta: `/admin`. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 
 |---|---|
 | Todavía no hay visitas | No hay visitas en el rango elegido; el texto de apoyo es «Cuando alguien abra un perfil curado en el rango elegido, aparecerá acá.» |
 
-**Acciones y avisos:** Solo lectura. Las visitas se registran en la ruta pública, no en la vista previa del panel. Si el rango solo tiene visitas propias o de bots, el estado vacío convive con la tabla **Por tipo**; con los tres tipos en cero, aparece solo el estado vacío.
+**Acciones y avisos:** Solo lectura. Las visitas se registran en la ruta pública, no en la vista previa del panel. Si el rango solo tiene visitas propias o de bots, el estado vacío convive con la tabla **Por tipo**; con los tres tipos en cero, aparece solo el estado vacío. **Por enlace** y **Por portal** cuentan solo visitas de personas; sin ninguna atribuida muestran un texto que manda a la pestaña **Publicación** en lugar de una tabla de ceros.
 
 Con el ejemplo y 30 días: 105 visitas de personas, 5 perfiles vistos y 2 idiomas.
 
@@ -633,7 +637,7 @@ Ver R5 (Ajustar el tema y el acento).
 
 ### B12 — Constructor · Publicación
 
-Ruta: `/admin/perfiles/:id`. Los tres ejes: **Visibilidad**, **Enumerar en la home y el sitemap** y **Archivado**, más el **Link público** (copiar y abrir) y el aviso de faltantes de traducción.
+Ruta: `/admin/perfiles/:id`. Los tres ejes: **Visibilidad**, **Enumerar en la home y el sitemap** y **Archivado**, más el **Link público** (copiar y abrir), **Compartir en LinkedIn**, los **Enlaces de seguimiento** y el aviso de faltantes de traducción.
 
 | Campo | Tipo | Obligatorio | Validación | Ejemplo |
 |---|---|---|---|---|
@@ -642,10 +646,20 @@ Ruta: `/admin/perfiles/:id`. Los tres ejes: **Visibilidad**, **Enumerar en la ho
 | Enumerar en la home y el sitemap | interruptor | No (activado) | No cambia el acceso: un no enumerado abre por su link | Apagado en `ejemplo-dirigido` |
 | Archivado | botón | — | Archivar pide confirmar; Desarchivar es directo | `ejemplo-archivado` |
 | Link público | solo lectura | — | Copiar y Abrir; avisa si no resuelve | `/ejemplo-borrador` |
+| Compartir en LinkedIn | botón | — | Solo un perfil guardado, público y no archivado; abre la página de compartir de LinkedIn con el link y su código | `ejemplo-backend` |
+| Etiqueta (enlace nuevo) | texto | Sí | De 1 a 80 caracteres; se puede cambiar después | `Cobalto — Laura, RR. HH.` |
+| Portal (enlace nuevo) | texto con sugerencias | No | Letras, números y guiones, hasta 32 caracteres; no se cambia después | `linkedin` |
+| Link genérico por portal | selector y botón | — | Copia `/{slug}?src=<portal>` sin crear ningún enlace | `indeed` |
 
 | Mensaje | Cuándo |
 |---|---|
 | Un perfil protegido necesita un token de acceso | Visibilidad Protegido sin token. |
+| Guardá el perfil primero para crear enlaces de seguimiento. | Perfil nuevo, sin guardar: todavía no hay enlaces. |
+| Los links no resuelven: un perfil privado responde 404. | Aviso sobre los enlaces de un perfil privado. |
+| Los links no resuelven: el perfil está archivado y responde 404. | Aviso sobre los enlaces de un perfil archivado. |
+| El perfil es protegido: el link incluiría el token y publicarlo en LinkedIn lo expondría. | Motivo por el que **Compartir en LinkedIn** está deshabilitado en un perfil protegido. |
+| Revocar enlace de seguimiento | Título del diálogo de **Revocar**. |
+| El link sigue abriendo el perfil, pero sus visitas dejan de atribuirse a este enlace. Sus aperturas pasadas se conservan. La revocación no se deshace. | Texto del diálogo de **Revocar**. |
 | Este link no resuelve: un perfil privado responde 404. Usalo para borradores. | Aviso bajo el link de un perfil privado. |
 | Este link no resuelve: el perfil está archivado y responde 404. | Aviso bajo el link de un perfil archivado. |
 | Archivar perfil curado | Título del diálogo de **Archivar**. |
@@ -653,7 +667,11 @@ Ruta: `/admin/perfiles/:id`. Los tres ejes: **Visibilidad**, **Enumerar en la ho
 
 **Acciones y avisos:** **Archivar** → confirmar. **Desarchivar** vuelve al estado anterior. El aviso de faltantes (`Falta 1 traducción en EN`) vive acá, bajo el link.
 
+**Enlaces de seguimiento** (solo con el perfil guardado; usan siempre lo guardado, no el borrador): cada fila muestra la etiqueta (se renombra en el lugar), el portal, las **aperturas** de personas, la última apertura y el estado. **Copiar link** pone en el portapapeles la URL absoluta con `?via=<código>` (con `token` antes si el perfil es protegido). **Revocar** pide confirmar y no se deshace: el link sigue abriendo, pero deja de atribuirse. Las tuyas y las de bots no cuentan como aperturas. **Compartir en LinkedIn** reusa un enlace propio mientras esté activo y solo abre la página de compartir: no publica nada.
+
 ![Constructor, pestaña Publicación](manual/tc16-publicacion.jpg)
+
+![Enlaces de seguimiento en Publicación](manual/tc41-enlaces.jpg)
 
 ![Publicación de un perfil archivado](manual/tc22-archivado.jpg)
 
@@ -1225,7 +1243,7 @@ El contador del perfil y el registro de `ProfileView` siempre funcionaron. Lo qu
 
 ![Dashboard de analítica](manual/tc18-dashboard.jpg)
 
-*Capturada el 27 de octubre de 2026 sobre la base de ejemplo, con sesión iniciada: 105 visitas en 30 días, en 5 perfiles y 2 idiomas (el archivado conserva las suyas). Las cinco tablas: por día, por perfil, por idioma, por origen y por tipo.*
+*Capturada el 29 de octubre de 2026 sobre la base de ejemplo, con sesión iniciada: 105 visitas en 30 días, en 5 perfiles y 2 idiomas (el archivado conserva las suyas). Las siete tablas: por día, por perfil, por idioma, por origen, por enlace, por portal y por tipo (las dos nuevas, con su estado vacío: el ejemplo no trae enlaces).*
 
 De cada visita se guarda el perfil, el idioma, la fecha y la IP **solo como HMAC** con `ANALYTICS_SALT`. No hay cookies de seguimiento: la cookie de sesión del panel solo se lee para reconocer tus visitas y no se guarda. Las visitas se registran únicamente en la ruta pública, nunca en el preview, y si el registro falla la respuesta al visitante no se altera.
 
@@ -1261,6 +1279,50 @@ views de cada perfil                 -> igual a sus filas HUMAN
 ```
 
 Sin captura propia: el Dashboard con la tabla **Por tipo** es la de TC-18. Los e2e `view-kind.e2e-spec.ts` cubren la cookie, el `Authorization: Bearer`, la cookie vencida o forjada, Googlebot, HeadlessChrome y la ausencia de User-Agent.
+
+### TC-41 — Compartir un perfil con un enlace de seguimiento ✅
+
+**Precondición:** base de ejemplo, **descartable** (nunca `portfolio`: cada carga pública registra una visita), con la API y el frontend levantados (de preferencia la imagen de `frontend/Dockerfile`), la sesión del panel iniciada en `/admin` y un perfil `Público` guardado (`ejemplo-backend`).
+
+**Pasos:**
+1. `/admin/perfiles` → `ejemplo-backend` → pestaña **Publicación**. En **Enlaces de seguimiento**, escribí la etiqueta `Cobalto — Laura, RR. HH.`, el portal `linkedin` y **Crear enlace**.
+2. En la fila nueva pulsá **Copiar link**. El portapapeles queda con `https://<tu-sitio>/ejemplo-backend?via=<código>` (10 caracteres).
+3. En una **ventana privada** (sin la sesión del panel), pegá el link y abrilo. Recargá la pestaña **Publicación**: el enlace muestra **1 apertura**.
+4. Abrí también `/ejemplo-backend?src=indeed` en la ventana privada. En **Publicación**, **Link genérico por portal** → `indeed` → **Copiar link por portal** da esa misma URL sin crear ningún enlace.
+5. `/admin` → **Por enlace** y **Por portal**: el enlace con su apertura y los portales `linkedin` e `indeed`.
+6. Volvé a **Publicación** → **Revocar** en la fila → confirmá. El enlace queda `Revocado`, sin **Copiar link**, con sus aperturas.
+7. Abrí otra vez el link con el código revocado en la ventana privada: el perfil se ve igual. Las aperturas del enlace no cambian y la visita queda en **Sin enlace**.
+8. Con el perfil `Público`, **Compartir en LinkedIn**: se abre una pestaña en la página de compartir de LinkedIn con la URL del perfil y un `?via=` propio; no se publica nada.
+
+**Resultado esperado:**
+1. El enlace aparece con 0 aperturas, el portal `linkedin` y el estado `Activo`.
+2. La URL lleva `via=` y, en un perfil protegido, `token=` antes.
+3. 1 apertura. Las tuyas (con la sesión del panel) y las de bots no cuentan.
+4. `?src=indeed` suma al portal `indeed` sin tocar ningún enlace; la URL copiada es `…/ejemplo-backend?src=indeed`.
+5. **Por enlace**: `Cobalto — Laura, RR. HH.` con 1 y **Sin enlace** con el resto; **Por portal**: `linkedin` 1 e `indeed` 1.
+6. La revocación no se deshace; para otro envío se crea un enlace nuevo.
+7. El link no deja de funcionar: revocar deja de atribuir, no corta el acceso (para cortarlo, `Privado`, `Protegido` o archivar).
+8. La pestaña pide `https://www.linkedin.com/sharing/share-offsite/?url=…` con el `?via=` de un enlace `LINKEDIN_POST` que se reusa mientras esté activo.
+
+**Errores típicos:** **Por origen** sigue diciendo `directo`: el sitio no reenvía el origen (ver C8); la atribución viaja en el link, no en el referrer. Si el destinatario reenvía el link, esas visitas también se atribuyen a su enlace. Un código copiado a medias o de otro perfil no atribuye y no da error. En un perfil protegido, un `via` válido **no** reemplaza al token. **Compartir en LinkedIn** está deshabilitado en un perfil protegido, privado, archivado o sin guardar.
+
+**Ejecutado** (29 de octubre de 2026, imagen de `frontend/Dockerfile` en `localhost:8093`, API local y la base descartable `portfolio_share_check`, sembrada con el CV; Chrome no headless con un contexto sin sesión para las visitas y la sesión del panel iniciada por `fetch('/api/auth/login')`, sin escribir la contraseña en un navegador; evidencia en `openspec/changes/add-share-links/verification/`):
+
+```text
+Crear desde Publicación          -> código de 10 caracteres, portal linkedin, 0 aperturas
+?via=<código>                    -> 1 petición del perfil (con via) · +1 ProfileView · shareLinkId del enlace · source linkedin
+?src=indeed                      -> 1 petición del perfil (con src) · +1 ProfileView · shareLinkId nulo · source indeed
+?via=<código>&src=indeed&lang=en -> 1 petición del perfil · +1 ProfileView · shareLinkId del enlace · source linkedin (gana el portal del enlace)
+Revocar (diálogo)                -> revokedAt fijado · aperturas 2
+?via=<código revocado>           -> perfil igual · +1 ProfileView sin enlace ni portal · aperturas siguen en 2
+Compartir en LinkedIn (x2)       -> share-offsite?url=…?via=<código LINKEDIN_POST> · el segundo clic reusa el mismo enlace
+GET /profile-prefetch.js         -> Cache-Control: no-cache
+HTML de /<slug>?via=…            -> canonical y og:url sin query · mismo head que sin código
+```
+
+![Enlaces de seguimiento en Publicación](manual/tc41-enlaces.jpg)
+
+*Capturada sobre la base de ejemplo con `manual:capture`, que crea ese enlace por la API del panel. El Dashboard con **Por enlace** y **Por portal** es la captura de TC-18.* Los e2e `share-links.e2e-spec.ts` y `share-links-admin.e2e-spec.ts` cubren el código activo, revocado, de otro perfil, inexistente y mal formado, `?src=`, el perfil protegido, el slug anterior, el agregado y el ciclo de vida.
 
 ### TC-19 — Mantener las experiencias ✅
 
@@ -1738,7 +1800,7 @@ El umbral de Performance es 85 en CI porque el runner de GitHub es el equipo de 
 
 ## 6. Suite de regresión manual
 
-Antes de cada release, recorrer en este orden. Último caso ejecutado: **28 de octubre de 2026** (TC-39); antes, el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 44 capturas con `manual:capture`. TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
+Antes de cada release, recorrer en este orden. Último caso ejecutado: **29 de octubre de 2026** (TC-41); antes, el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 45 capturas con `manual:capture`. TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
 
 Los casos del backoffice están automatizados en [`manual/suite-backoffice.ps1`](manual/suite-backoffice.ps1): ejecuta TC-12 a TC-20 contra la API, imprime el resultado real junto al esperado y borra todos los datos de prueba que crea, pase o falle.
 
@@ -1788,8 +1850,9 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-38 | El seed por defecto se niega sobre una base con contenido | ✅ | transcripción de las salidas (códigos 0, 2, 1) contra una base descartable · tests de `seed-guard` y `seed-runner` |
 | TC-39 | Las visitas propias y de bots no suman | ✅ | app real con la cookie de sesión, Googlebot y sin User-Agent · e2e `view-kind` · tests del clasificador y del dashboard |
 | TC-40 | Ítems ocultos e insignias legibles | ✅ | `a11y:check` con panel sobre el ejemplo (0 en 50 cargas, antes 40 nodos) y sobre `cv-data.json` (0 en 72) · tests de las filas, la insignia, la región y `css-vars` · `print:check` |
+| TC-41 | Compartir un perfil con un enlace de seguimiento | ✅ | app real con la imagen de producción y Chrome no headless · e2e `share-links` y `share-links-admin` · tests de la petición temprana, del panel y del dashboard |
 
-**Los 40 casos pasan.** TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 44 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
+**Los 41 casos pasan.** TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 45 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
@@ -1925,3 +1988,6 @@ Cada término enlaza el concepto, el recorrido o el caso donde se usa.
 | **faltante de traducción** | Un campo bilingüe sin contenido en el idioma pedido; es solo un aviso. | C7 (Idiomas), R7 (Traducir y revisar faltantes), TC-32 |
 | **`ProfileView`** | El registro de una visita pública (perfil, idioma, origen, fecha, tipo, IP como HMAC). | C8 (Analítica), B2 (Dashboard), TC-18 |
 | **tipo de visita** | Si la visita fue de una persona, tuya (con la sesión del panel) o de un bot; solo las de personas suman en el total y en `views`. | C8 (Analítica), B2 (Dashboard), TC-39 |
+| **enlace de seguimiento** | Un link con un código propio (`?via=<código>`) para un destinatario o un portal, con etiqueta y revocación; cuenta las aperturas de personas sin depender del referrer. | C8 (Analítica), B12 (Constructor · Publicación), TC-41 |
+| **portal** | El sitio donde se publica un link (`linkedin`, `indeed`…): el del enlace de seguimiento o el de `?src=<portal>`, normalizado a minúsculas, números y guiones. | C8 (Analítica), B2 (Dashboard), TC-41 |
+| **apertura** | Una visita de una persona atribuida a un enlace de seguimiento; las tuyas y las de bots no cuentan. | B12 (Constructor · Publicación), TC-41 |

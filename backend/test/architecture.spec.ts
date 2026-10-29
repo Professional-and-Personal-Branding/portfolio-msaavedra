@@ -72,6 +72,23 @@ describe('Regla de dependencia (Clean Architecture)', () => {
     expect(found).toEqual([]);
   });
 
+  // add-share-links (D10): cada módulo escribe solo su agregado y la dependencia va en un sentido.
+  it('curated-profile no importa nada de analytics/infrastructure', () => {
+    const files = walk(path.join(SRC, 'modules', 'curated-profile'));
+    expect(files.length).toBeGreaterThan(0);
+    expect(violations(files, [/analytics\/infrastructure/])).toEqual([]);
+  });
+
+  it('analytics lee ShareLink pero nunca lo escribe', () => {
+    const files = walk(path.join(SRC, 'modules', 'analytics'));
+    const writers = files.filter((file) =>
+      /\.shareLink\.(create|createMany|update|updateMany|upsert|delete|deleteMany)/.test(
+        fs.readFileSync(file, 'utf-8'),
+      ),
+    );
+    expect(writers.map((file) => path.relative(SRC, file))).toEqual([]);
+  });
+
   it('el detector realmente detecta un import prohibido (autocontrol)', () => {
     const tmp = path.join(__dirname, '__arch_probe__.ts');
     fs.writeFileSync(

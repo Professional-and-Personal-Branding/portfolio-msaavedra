@@ -1,0 +1,17 @@
+# perf:budget (tope 155 KB gzip), 2026-10-29
+
+## Antes (rama feat/classify-profile-views, 42890de)
+| /assets/index-6TQb1gCI.js | módulo | 147.8 |
+| /profile-prefetch.js | clásico | 1.0 |
+| **Total** | | **148.9** |
+
+## Después (add-share-links, con el panel en el chunk del admin)
+# Presupuesto de JS del arranque público
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-mE8zdDK2.js | módulo | 147.9 |
+| /profile-prefetch.js | clásico | 1.2 |
+| **Total** | | **149.1** |
+Presupuesto: 155 KB.
+
+Chunk del admin: BackofficeApp 61.51 KB gzip antes -> 64.92 KB gzip después (fuera del arranque público).

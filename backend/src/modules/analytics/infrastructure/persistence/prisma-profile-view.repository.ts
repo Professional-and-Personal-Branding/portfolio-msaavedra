@@ -8,6 +8,9 @@ import {
   ProfileViewAggregate,
   ProfileViewRepository,
   ReferrerCount,
+  ShareLinkCount,
+  ShareLinkOpens,
+  SourceCount,
 } from '../../domain/repositories/profile-view.repository';
 
 interface DayRow {
@@ -29,6 +32,8 @@ export class PrismaProfileViewRepository implements ProfileViewRepository {
           userAgent: view.userAgent ?? null,
           ipHash: view.ipHash ?? null,
           kind: view.kind,
+          shareLinkId: view.shareLinkId ?? null,
+          source: view.source ?? null,
         },
       }),
       // Solo las visitas de personas suman en `views`; una OWNER o BOT es una sola escritura.
@@ -111,5 +116,78 @@ export class PrismaProfileViewRepository implements ProfileViewRepository {
       _count: { _all: true },
     });
     return rows.map((r) => ({ kind: r.kind, views: r._count._all }));
+  }
+
+  async countByShareLink(range: DateRange): Promise<ShareLinkCount[]> {
+    const rows = await this.prisma.profileView.groupBy({
+      by: ['shareLinkId'],
+      where: {
+        viewedAt: { gte: range.from, lte: range.to },
+        kind: 'HUMAN',
+        shareLinkId: { not: null },
+      },
+      _count: { _all: true },
+    });
+    const ids = rows.flatMap((r) => (r.shareLinkId === null ? [] : [r.shareLinkId]));
+    if (ids.length === 0) return [];
+    const links = await this.prisma.shareLink.findMany({
+      where: { id: { in: ids } },
+      select: {
+        id: true,
+        code: true,
+        label: true,
+        portal: true,
+        revokedAt: true,
+        curatedProfile: { select: { slug: true } },
+      },
+    });
+    const byId = new Map(links.map((link) => [link.id, link]));
+    return rows
+      .flatMap((r) => {
+        const link = r.shareLinkId === null ? undefined : byId.get(r.shareLinkId);
+        if (!link) return [];
+        return [
+          {
+            shareLinkId: link.id,
+            code: link.code,
+            label: link.label,
+            slug: link.curatedProfile.slug,
+            portal: link.portal,
+            revoked: link.revokedAt !== null,
+            views: r._count._all,
+          },
+        ];
+      })
+      .sort((a, b) => b.views - a.views || a.label.localeCompare(b.label));
+  }
+
+  async countBySource(range: DateRange): Promise<SourceCount[]> {
+    const rows = await this.prisma.profileView.groupBy({
+      by: ['source'],
+      where: {
+        viewedAt: { gte: range.from, lte: range.to },
+        kind: 'HUMAN',
+        source: { not: null },
+      },
+      _count: { _all: true },
+    });
+    return rows
+      .flatMap((r) => (r.source === null ? [] : [{ source: r.source, views: r._count._all }]))
+      .sort((a, b) => b.views - a.views || a.source.localeCompare(b.source));
+  }
+
+  async countOpensByShareLink(shareLinkIds: readonly string[]): Promise<ShareLinkOpens[]> {
+    if (shareLinkIds.length === 0) return [];
+    const rows = await this.prisma.profileView.groupBy({
+      by: ['shareLinkId'],
+      where: { shareLinkId: { in: [...shareLinkIds] }, kind: 'HUMAN' },
+      _count: { _all: true },
+      _max: { viewedAt: true },
+    });
+    return rows.flatMap((r) =>
+      r.shareLinkId === null
+        ? []
+        : [{ shareLinkId: r.shareLinkId, opens: r._count._all, lastOpenedAt: r._max.viewedAt }],
+    );
   }
 }

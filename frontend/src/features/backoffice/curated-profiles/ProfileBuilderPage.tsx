@@ -52,6 +52,9 @@ import {
 } from '../shared/use-admin-api';
 import { MissingTranslationsNotice } from './MissingTranslationsNotice';
 import { PreviewPanel } from './PreviewPanel';
+import { ShareLinksPanel } from './ShareLinksPanel';
+import type { SavedProfileRef } from './share-link-url';
+import { ShareOnLinkedInButton } from './ShareOnLinkedInButton';
 import {
   allSections,
   EMPTY_DRAFT,
@@ -169,6 +172,17 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
         [key]: list.includes(value) ? list.filter((item) => item !== value) : [...list, value],
       };
     });
+
+  // Lo que los enlaces de seguimiento usan del perfil: siempre lo guardado, nunca el borrador.
+  const savedRef: SavedProfileRef | undefined = saved
+    ? {
+        id: saved.id,
+        slug: saved.slug,
+        visibility: saved.visibility,
+        accessToken: saved.accessToken,
+        archivedAt,
+      }
+    : undefined;
 
   const publicUrl = `${globalThis.location?.origin ?? ''}${profilePath(draft.slug)}${
     draft.visibility === 'PROTECTED' && draft.accessToken
@@ -605,6 +619,13 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
                 pending={preview.isPlaceholderData}
               />
             </div>
+
+            <div className="flex flex-col gap-2">
+              <Label>Compartir</Label>
+              <ShareOnLinkedInButton profile={savedRef} />
+            </div>
+
+            <ShareLinksPanel profile={savedRef} dirty={dirty} />
 
             {saved && (
               <p className="text-xs text-text-dim">

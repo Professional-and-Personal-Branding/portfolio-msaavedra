@@ -222,3 +222,108 @@ describe('CuratedProfilePage', () => {
     expect(document.title).toBe('Perfil completo · Ada Ejemplo');
   });
 });
+
+// change `add-share-links`: `via` y `src` viajan a la API, no a la navegación interna ni al SEO.
+describe('CuratedProfilePage — atribución del link (via y src)', () => {
+  it('pide la API con locale, via y src en ese orden y sin tocar canonical ni og:url', async () => {
+    const urls: string[] = [];
+    server.use(
+      http.get(`${API}/curated-profiles/:slug`, ({ request }) => {
+        urls.push(request.url);
+        return HttpResponse.json(makeCuratedProfile({ slug: 'demo', title: 'Perfil demo' }));
+      }),
+    );
+
+    renderWithProviders(<AppRouter />, {
+      route: '/demo?src=indeed&via=k7m2q9xw4t&lang=en',
+    });
+
+    await screen.findByRole('heading', { level: 1, name: 'Ada Ejemplo' });
+    expect(urls).toEqual([`${API}/curated-profiles/demo?locale=en&via=k7m2q9xw4t&src=indeed`]);
+    await waitFor(() => expect(document.title).toBe('Perfil demo · Ada Ejemplo'));
+    const canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    const ogUrl = document.head.querySelector<HTMLMetaElement>('meta[property="og:url"]');
+    expect(canonical?.href).toBe(`${window.location.origin}/demo`);
+    expect(ogUrl?.content).toBe(`${window.location.origin}/demo`);
+  });
+
+  it('sin via ni src la query queda como siempre (solo locale)', async () => {
+    const urls: string[] = [];
+    server.use(
+      http.get(`${API}/curated-profiles/:slug`, ({ request }) => {
+        urls.push(request.url);
+        return HttpResponse.json(makeCuratedProfile({ slug: 'demo' }));
+      }),
+    );
+
+    renderWithProviders(<AppRouter />, { route: '/demo?via=&src=' });
+
+    await screen.findByRole('heading', { level: 1, name: 'Ada Ejemplo' });
+    expect(urls).toEqual([`${API}/curated-profiles/demo?locale=es`]);
+  });
+
+  it('el via va tal cual está en la URL: el cliente no lo valida', async () => {
+    const urls: string[] = [];
+    server.use(
+      http.get(`${API}/curated-profiles/:slug`, ({ request }) => {
+        urls.push(request.url);
+        return HttpResponse.json(makeCuratedProfile({ slug: 'demo' }));
+      }),
+    );
+
+    renderWithProviders(<AppRouter />, { route: '/demo?via=no-existe&src=Mi%20Portal' });
+
+    await screen.findByRole('heading', { level: 1, name: 'Ada Ejemplo' });
+    const url = new URL(urls[0] ?? '');
+    expect(url.searchParams.get('via')).toBe('no-existe');
+    expect(url.searchParams.get('src')).toBe('Mi Portal');
+  });
+
+  it('PROTECTED: el token escrito a mano conserva el via y la visita del reintento se atribuye', async () => {
+    const seen: { token: string | null; via: string | null }[] = [];
+    server.use(
+      http.get(`${API}/curated-profiles/:slug`, ({ request }) => {
+        const token = request.headers.get('x-access-token');
+        seen.push({ token, via: new URL(request.url).searchParams.get('via') });
+        return token === 'secreto'
+          ? HttpResponse.json(makeCuratedProfile({ slug: 'privado', visibility: 'PROTECTED' }))
+          : HttpResponse.json(
+              { statusCode: 401, message: 'Token requerido', error: 'Unauthorized' },
+              { status: 401 },
+            );
+      }),
+    );
+    const user = userEvent.setup();
+
+    renderWithProviders(<AppRouter />, { route: '/privado?via=k7m2q9xw4t' });
+
+    await screen.findByRole('heading', { name: 'Perfil protegido' });
+    await user.type(screen.getByLabelText('Token de acceso'), 'secreto');
+    await user.click(screen.getByRole('button', { name: 'Acceder' }));
+
+    await screen.findByRole('heading', { level: 1, name: 'Ada Ejemplo' });
+    expect(seen).toEqual([
+      { token: null, via: 'k7m2q9xw4t' },
+      { token: 'secreto', via: 'k7m2q9xw4t' },
+    ]);
+  });
+
+  it('cambiar el idioma conserva el via en la nueva petición', async () => {
+    const urls: string[] = [];
+    server.use(
+      http.get(`${API}/curated-profiles/:slug`, ({ request }) => {
+        urls.push(request.url);
+        return HttpResponse.json(makeCuratedProfile({ slug: 'demo' }));
+      }),
+    );
+    const user = userEvent.setup();
+
+    renderWithProviders(<AppRouter />, { route: '/demo?via=k7m2q9xw4t' });
+    await screen.findByRole('heading', { level: 1, name: 'Ada Ejemplo' });
+
+    await user.click(screen.getByRole('button', { name: 'en' }));
+
+    await waitFor(() => expect(urls).toHaveLength(2));
+    expect(urls[1]).toBe(`${API}/curated-profiles/demo?locale=en&via=k7m2q9xw4t`);
+  });
+});

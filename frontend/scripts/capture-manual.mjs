@@ -18,8 +18,11 @@
  *   - exige MANUAL_CAPTURE_DISPOSABLE_DB=1: las cargas públicas registran visitas;
  *   - `GET /api/profile` debe devolver el `fullName` de `docs/examples/cv-data.example.json`.
  *
- * Sin escrituras: fuera del inicio de sesión (`fetch('/api/auth/login')` desde la página, con
- * credenciales de prueba por variables de entorno) el script no hace POST, PATCH ni DELETE, y
+ * Sin escrituras, salvo dos: el inicio de sesión (`fetch('/api/auth/login')` desde la página, con
+ * credenciales de prueba por variables de entorno) y, para la captura `tc41-enlaces` (change
+ * `add-share-links`), la creación de UN enlace de seguimiento de ejemplo por la API del panel
+ * (`POST /api/admin/curated-profiles/:id/share-links`, solo si el perfil todavía no tiene uno con
+ * esa etiqueta). El script no hace ningún otro POST, PATCH ni DELETE, y
  * nunca escribe una contraseña en un campo real: la captura del error de credenciales usa un
  * email inexistente y un valor de relleno que no pertenece a nadie. Los errores de validación
  * se provocan con *Guardar* sobre un formulario vacío (valida en el cliente) y los avisos de
@@ -133,6 +136,19 @@ const MANIFEST = [
     sesion: true,
     esperar: 'Slug',
     pasos: [['click', 'aria/Publicación[role="tab"]'], ['esperar', 700]],
+  },
+  {
+    id: 'tc41-enlaces',
+    ruta: '/admin/perfiles/{id:ejemplo-backend}',
+    sesion: true,
+    esperar: 'Slug',
+    preparar: 'enlace-de-ejemplo',
+    pasos: [
+      ['click', 'aria/Publicación[role="tab"]'],
+      ['esperarTexto', 'Cobalto — Laura, RR. HH.'],
+      ['verEnlaces'],
+      ['esperar', 600],
+    ],
   },
   {
     id: 'tc17-preview-en',
@@ -388,6 +404,29 @@ async function profileIds(page) {
   return Object.fromEntries(list.map((profile) => [profile.slug, profile.id]));
 }
 
+/** Etiqueta y portal del enlace de ejemplo que muestra TC-41 (el único dato que el script escribe). */
+const EXAMPLE_LINK = { label: 'Cobalto — Laura, RR. HH.', portal: 'linkedin' };
+
+/** Crea el enlace de ejemplo por la API del panel si el perfil todavía no lo tiene (idempotente). */
+async function ensureExampleLink(page, profileId) {
+  await page.evaluate(
+    async (id, example) => {
+      const url = `/api/admin/curated-profiles/${id}/share-links`;
+      const links = await (await fetch(url, { credentials: 'same-origin' })).json();
+      if (links.some((link) => link.label === example.label)) return;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(example),
+      });
+      if (!response.ok) throw new Error(`No pude crear el enlace de ejemplo: ${response.status}`);
+    },
+    profileId,
+    EXAMPLE_LINK,
+  );
+}
+
 async function waitForText(page, ...candidates) {
   await page.waitForFunction(
     (texts) => texts.some((t) => document.body.innerText.includes(t)),
@@ -416,7 +455,12 @@ async function runStep(page, step) {
   else if (kind === 'tecla') await page.keyboard.press(a);
   else if (kind === 'esperar') await sleep(a);
   else if (kind === 'esperarTexto') await waitForText(page, ...step.slice(1));
-  else if (kind === 'verTexto') {
+  else if (kind === 'verEnlaces') {
+    // Desplaza hasta el bloque de enlaces de seguimiento para que entre en la captura.
+    await page.evaluate(() => {
+      document.querySelector('#enlaces-seguimiento')?.scrollIntoView({ block: 'start' });
+    });
+  } else if (kind === 'verTexto') {
     // Desplaza hasta el primer elemento que contiene el texto (para que entre en la captura).
     await page.evaluate((text) => {
       const el = [...document.querySelectorAll('[role="status"]')].find((n) => n.textContent.includes(text));
@@ -443,6 +487,11 @@ for (const entry of selected) {
       return ids[slug];
     });
     await page.goto(`${base}${route}`, { waitUntil: 'networkidle0' });
+    if (entry.preparar === 'enlace-de-ejemplo') {
+      // El `fetch` relativo necesita el origen de la página: se crea acá y se recarga para verlo.
+      await ensureExampleLink(page, ids['ejemplo-backend']);
+      await page.reload({ waitUntil: 'networkidle0' });
+    }
     if (entry.esperar) await waitForText(page, entry.esperar);
     if (entry.impresion) await page.emulateMediaType('print');
     await settle(page);

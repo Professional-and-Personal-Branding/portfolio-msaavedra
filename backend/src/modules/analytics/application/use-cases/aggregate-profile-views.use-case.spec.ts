@@ -8,6 +8,9 @@ describe('AggregateProfileViewsUseCase', () => {
     record: jest.fn(),
     aggregate: jest.fn().mockResolvedValue({ ...EMPTY, total: 3 }),
     countByKind: jest.fn().mockResolvedValue([]),
+    countByShareLink: jest.fn().mockResolvedValue([]),
+    countBySource: jest.fn().mockResolvedValue([]),
+    countOpensByShareLink: jest.fn().mockResolvedValue([]),
     countByReferrer: jest.fn().mockResolvedValue([
       { referrer: 'https://www.linkedin.com/feed/', views: 2 },
       { referrer: null, views: 1 },
@@ -92,6 +95,59 @@ describe('AggregateProfileViewsUseCase', () => {
       if (!result.ok) throw new Error('debía agregar');
       expect(result.value.byKind.map((k) => k.kind)).toEqual(['HUMAN', 'OWNER', 'BOT']);
       expect(result.value.byKind.map((k) => k.views)).toEqual([12, 3, 1]);
+    });
+  });
+
+  describe('byShareLink y bySource (add-share-links)', () => {
+    const LINKS = [
+      {
+        shareLinkId: 'a',
+        code: 'k7m2q9xw4t',
+        label: 'Acme',
+        slug: 'tech-lead-dotnet',
+        portal: 'linkedin',
+        revoked: false,
+        views: 3,
+      },
+      {
+        shareLinkId: 'b',
+        code: 'n3p5r7s9v1',
+        label: 'Globex',
+        slug: 'tech-lead-dotnet',
+        portal: null,
+        revoked: true,
+        views: 1,
+      },
+    ];
+    const SOURCES = [
+      { source: 'linkedin', views: 3 },
+      { source: 'indeed', views: 2 },
+    ];
+    const withAttribution = (links: typeof LINKS, sources: typeof SOURCES) =>
+      ({
+        ...repo,
+        aggregate: jest.fn().mockResolvedValue({ ...EMPTY, total: 6 }),
+        countByShareLink: jest.fn().mockResolvedValue(links),
+        countBySource: jest.fn().mockResolvedValue(sources),
+      }) satisfies ProfileViewRepository;
+
+    it('devuelve lo que el repositorio ordenó, con el mismo rango, y no toca byReferrer', async () => {
+      const source = withAttribution(LINKS, SOURCES);
+      const result = await new AggregateProfileViewsUseCase(source).execute({});
+      if (!result.ok) throw new Error('debía agregar');
+      expect(result.value.byShareLink).toEqual(LINKS);
+      expect(result.value.bySource).toEqual(SOURCES);
+      expect(result.value.byReferrer.map((r) => r.referrer)).toEqual(['linkedin.com', 'directo']);
+      const [range] = source.countByShareLink.mock.calls[0] as [{ from: Date; to: Date }];
+      expect(range.from).toBeInstanceOf(Date);
+      expect(range.to.getTime() - range.from.getTime()).toBe(30 * 86_400_000);
+    });
+
+    it('sin atribuciones: listas vacías, no ceros', async () => {
+      const result = await new AggregateProfileViewsUseCase(withAttribution([], [])).execute({});
+      if (!result.ok) throw new Error('debía agregar');
+      expect(result.value.byShareLink).toEqual([]);
+      expect(result.value.bySource).toEqual([]);
     });
   });
 });

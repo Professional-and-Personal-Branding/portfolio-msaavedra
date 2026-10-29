@@ -6,6 +6,8 @@ import {
   KindCount,
   ProfileViewAggregate,
   ProfileViewRepository,
+  ShareLinkCount,
+  SourceCount,
 } from '../../domain/repositories/profile-view.repository';
 import { aggregateByReferrer } from '../../domain/services/normalize-referrer';
 import { VIEW_KINDS } from '../../domain/view-kind';
@@ -28,6 +30,10 @@ export interface ProfileViewsOutput extends ProfileViewAggregate {
   byReferrer: { referrer: string; views: number }[];
   /** Todas las filas del rango por tipo: siempre HUMAN, OWNER y BOT, en ese orden (D7). */
   byKind: KindCount[];
+  /** Visitas `HUMAN` atribuidas a un enlace de seguimiento; su suma es `<= total` (D9). */
+  byShareLink: ShareLinkCount[];
+  /** Visitas `HUMAN` con portal (`source`); su suma es `<= total`. */
+  bySource: SourceCount[];
 }
 
 /**
@@ -47,10 +53,12 @@ export class AggregateProfileViewsUseCase {
     if (from > to) {
       return fail(new ValidationError('from no puede ser posterior a to', ['from', 'to']));
     }
-    const [aggregate, referrers, kinds] = await Promise.all([
+    const [aggregate, referrers, kinds, shareLinks, sources] = await Promise.all([
       this.views.aggregate({ from, to }),
       this.views.countByReferrer({ from, to }),
       this.views.countByKind({ from, to }),
+      this.views.countByShareLink({ from, to }),
+      this.views.countBySource({ from, to }),
     ]);
     return ok({
       from: from.toISOString(),
@@ -61,6 +69,8 @@ export class AggregateProfileViewsUseCase {
         kind,
         views: kinds.find((row) => row.kind === kind)?.views ?? 0,
       })),
+      byShareLink: shareLinks,
+      bySource: sources,
     });
   }
 }

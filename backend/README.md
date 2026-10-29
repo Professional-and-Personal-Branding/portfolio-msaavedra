@@ -82,9 +82,15 @@ Todo el detalle de cuerpos y respuestas está en [`openapi.json`](openapi.json) 
 | PATCH/DELETE | `/api/admin/skills/:id` | Editar (incluye mover con `categoryId`) / borrar |
 | GET/POST | `/api/admin/curated-profiles` | Listar (cualquier visibilidad, campos internos) / crear (409 slug repetido) |
 | GET/PATCH/DELETE | `/api/admin/curated-profiles/:id` | Ver / editar (filtros, overrides, tema, secciones, visibilidad, `listed`, token, slug con alias) / borrar (y sus visitas) |
-| GET | `/api/admin/analytics/views?from&to` | Visitas agregadas: total, por perfil, por idioma, por día y por origen (`byReferrer`); rango cerrado, default 30 días |
+| GET | `/api/admin/analytics/views?from&to` | Visitas agregadas: total, por perfil, por idioma, por día y por origen (`byReferrer`), por enlace (`byShareLink`), por portal (`bySource`) y por tipo (`byKind`); rango cerrado, default 30 días |
+| GET/POST | `/api/admin/curated-profiles/:id/share-links` | Enlaces de seguimiento del perfil (más recientes primero, con `opens` y `lastOpenedAt` de personas) / crear (`{ label, portal? }`) |
+| PATCH | `/api/admin/curated-profiles/:id/share-links/:linkId` | Cambiar la etiqueta (el código, el portal y el perfil no cambian) |
+| POST | `/api/admin/curated-profiles/:id/share-links/:linkId/revoke` | Revocar (irreversible, idempotente; el link sigue abriendo, solo deja de atribuir) |
+| POST | `/api/admin/curated-profiles/:id/share-links/linkedin` | El enlace `LINKEDIN_POST` activo (200) o uno nuevo (201); 409 si el perfil no es `PUBLIC` o está archivado |
 
 Reglas: cuerpos validados con `class-validator`; campos desconocidos → 400; `PROTECTED` exige `accessToken`; `themeId` debe existir; `slug` kebab-case y único. Los campos traducibles se envían y reciben como `{ es, en? }`.
+
+**Atribución:** `GET /api/curated-profiles/:slug?via=<código>&src=<portal>` guarda en el `ProfileView` el enlace de seguimiento (`shareLinkId`, solo si está activo y es de ese perfil) y el portal (`source`: el del enlace o `src` normalizado). Ninguno cambia la respuesta ni da 400, y un `via` no reemplaza al token de un perfil `PROTECTED`.
 
 **Visitas:** cada `GET /api/curated-profiles/:slug` con 200 registra un `ProfileView` (locale, referrer, user-agent, `ipHash` HMAC-SHA256 con `ANALYTICS_SALT`) e incrementa `views`, de forma atómica y **en segundo plano**: la respuesta no espera el registro y el apagado de la API drena las tareas en vuelo. 401/404 no registran, ni el preview ni el head. Un fallo del registro nunca rompe la respuesta.
 

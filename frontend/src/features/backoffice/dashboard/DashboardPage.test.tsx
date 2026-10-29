@@ -262,3 +262,126 @@ describe('DashboardPage', () => {
     expect(items.length).toBe(ANALYTICS.byDay.length);
   });
 });
+
+// add-share-links: tablas Por enlace y Por portal (D9), con «Sin enlace» y «Sin portal» como resto.
+describe('DashboardPage — enlaces de seguimiento y portales', () => {
+  const attributed = (over: Partial<typeof ANALYTICS> = {}) =>
+    http.get(`${API}/admin/analytics/views`, () => HttpResponse.json({ ...ANALYTICS, ...over }));
+
+  const rowsOf = (region: HTMLElement) =>
+    within(region)
+      .getAllByRole('row')
+      .slice(1)
+      .map((row) => row.textContent);
+
+  it('Por enlace: Acme 4, Globex 2 (revocado) y «Sin enlace» 4, en ese orden', async () => {
+    server.use(
+      attributed({
+        total: 10,
+        byShareLink: [
+          {
+            shareLinkId: 'a',
+            code: 'k7m2q9xw4t',
+            label: 'Acme',
+            slug: 'acme-backend',
+            portal: 'linkedin',
+            revoked: false,
+            views: 4,
+          },
+          {
+            shareLinkId: 'g',
+            code: 'n3p5r7s9v1',
+            label: 'Globex',
+            slug: 'all',
+            portal: null,
+            revoked: true,
+            views: 2,
+          },
+        ],
+      }),
+      ...adminHandlers,
+    );
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    const region = await screen.findByRole('region', { name: 'Por enlace' });
+    expect(rowsOf(region)).toEqual([
+      'Acmeacme-backendlinkedin4',
+      'Globexrevocadoall—2',
+      'Sin enlace4',
+    ]);
+    expect(within(region).getByText('revocado')).toBeInTheDocument();
+  });
+
+  it('Por enlace sin enlaces: estado vacío que manda a la pestaña Publicación', async () => {
+    server.use(attributed({ byShareLink: [] }), ...adminHandlers);
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    const region = await screen.findByRole('region', { name: 'Por enlace' });
+    expect(region).toHaveTextContent('Publicación');
+    expect(within(region).queryByRole('table')).toBeNull();
+  });
+
+  it('Por portal: linkedin 5, indeed 3 y «Sin portal» 2', async () => {
+    server.use(
+      attributed({
+        total: 10,
+        bySource: [
+          { source: 'linkedin', views: 5 },
+          { source: 'indeed', views: 3 },
+        ],
+      }),
+      ...adminHandlers,
+    );
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    const region = await screen.findByRole('region', { name: 'Por portal' });
+    expect(rowsOf(region)).toEqual(['linkedin5', 'indeed3', 'Sin portal2']);
+    expect(region).toHaveTextContent('no depende del referrer');
+  });
+
+  it('Por portal sin portales: estado vacío y no una tabla con ceros', async () => {
+    server.use(attributed({ bySource: [] }), ...adminHandlers);
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    const region = await screen.findByRole('region', { name: 'Por portal' });
+    expect(within(region).queryByRole('table')).toBeNull();
+    expect(region).toHaveTextContent('Todavía ninguna visita trae un portal');
+  });
+
+  it('Por origen aclara que casi siempre da «directo» y manda a las tablas nuevas', async () => {
+    server.use(...adminHandlers);
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    const region = await screen.findByRole('region', { name: 'Por origen' });
+    expect(region).toHaveTextContent('casi siempre da «directo»');
+  });
+
+  it('cambiar el rango recalcula las tablas de enlaces y portales', async () => {
+    let calls = 0;
+    server.use(
+      http.get(`${API}/admin/analytics/views`, () => {
+        calls += 1;
+        return HttpResponse.json({
+          ...ANALYTICS,
+          total: 10,
+          bySource: [{ source: calls === 1 ? 'linkedin' : 'indeed', views: 7 }],
+        });
+      }),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+    const first = await screen.findByRole('region', { name: 'Por portal' });
+    expect(rowsOf(first)).toEqual(['linkedin7', 'Sin portal3']);
+
+    await user.click(screen.getByRole('combobox', { name: 'Rango de fechas' }));
+    await user.click(await screen.findByRole('option', { name: 'Últimos 7 días' }));
+
+    await waitFor(() =>
+      expect(rowsOf(screen.getByRole('region', { name: 'Por portal' }))).toEqual([
+        'indeed7',
+        'Sin portal3',
+      ]),
+    );
+  });
+});

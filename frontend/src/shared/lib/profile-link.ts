@@ -16,10 +16,14 @@ export function profilePath(slug: string): string {
 
 /**
  * Enlace a un perfil curado conservando idioma/tema/layout de la URL actual.
- * El `token` no viaja: pertenece al perfil que lo emitió.
+ * El `token` no viaja: pertenece al perfil que lo emitió. `via` y `src` tampoco: atribuyen la
+ * visita al link que se abrió, no la navegación interna (change `add-share-links`).
  */
 export function buildProfileLink(slug: string, params: URLSearchParams): ProfileLink {
-  return { pathname: profilePath(slug), search: writeUrlState(params, { token: null }).toString() };
+  return {
+    pathname: profilePath(slug),
+    search: writeUrlState(params, { token: null, via: null, src: null }).toString(),
+  };
 }
 
 export function useProfileLink(slug: string): ProfileLink {

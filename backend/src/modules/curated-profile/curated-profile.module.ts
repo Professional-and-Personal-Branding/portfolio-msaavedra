@@ -24,17 +24,29 @@ import {
   UnarchiveCuratedProfileUseCase,
 } from './application/use-cases/admin/curated-profile-lifecycle.use-cases';
 import { PreviewCuratedProfileUseCase } from './application/use-cases/admin/preview-curated-profile.use-case';
+import {
+  CreateShareLinkUseCase,
+  GetOrCreateLinkedInShareLinkUseCase,
+  ListShareLinksUseCase,
+  RenameShareLinkUseCase,
+  RevokeShareLinkUseCase,
+} from './application/use-cases/admin/share-links.use-cases';
+import { SHARE_CODE_GENERATOR } from './application/ports/share-code.generator';
 import { ProfileHeadCache } from './application/services/profile-head.cache';
 import { BuildSitemapUseCase } from './application/use-cases/build-sitemap.use-case';
 import { GetProfileHeadUseCase } from './application/use-cases/get-profile-head.use-case';
 import { ListCuratedProfilesUseCase } from './application/use-cases/list-curated-profiles.use-case';
 import { ResolveCuratedProfileUseCase } from './application/use-cases/resolve-curated-profile.use-case';
 import { CURATED_PROFILE_REPOSITORY } from './domain/repositories/curated-profile.repository';
+import { SHARE_LINK_REPOSITORY } from './domain/repositories/share-link.repository';
+import { AdminShareLinkController } from './infrastructure/controllers/admin-share-link.controller';
 import { AdminCuratedProfileController } from './infrastructure/controllers/admin-curated-profile.controller';
 import { CuratedProfileController } from './infrastructure/controllers/curated-profile.controller';
 import { ProfileHeadController } from './infrastructure/controllers/profile-head.controller';
 import { SitemapController } from './infrastructure/controllers/sitemap.controller';
 import { PrismaCuratedProfileRepository } from './infrastructure/persistence/prisma-curated-profile.repository';
+import { PrismaShareLinkRepository } from './infrastructure/persistence/prisma-share-link.repository';
+import { CryptoShareCodeGenerator } from './infrastructure/security/crypto-share-code.generator';
 
 /**
  * Núcleo del producto. Consume los puertos exportados por profile, experience,
@@ -56,11 +68,14 @@ import { PrismaCuratedProfileRepository } from './infrastructure/persistence/pri
   controllers: [
     CuratedProfileController,
     AdminCuratedProfileController,
+    AdminShareLinkController,
     SitemapController,
     ProfileHeadController,
   ],
   providers: [
     { provide: CURATED_PROFILE_REPOSITORY, useClass: PrismaCuratedProfileRepository },
+    { provide: SHARE_LINK_REPOSITORY, useClass: PrismaShareLinkRepository },
+    { provide: SHARE_CODE_GENERATOR, useClass: CryptoShareCodeGenerator },
     { provide: CLOCK, useValue: systemClock },
     PortfolioSectionsLoader,
     CuratedProfileComposer,
@@ -75,6 +90,11 @@ import { PrismaCuratedProfileRepository } from './infrastructure/persistence/pri
     DuplicateCuratedProfileUseCase,
     ArchiveCuratedProfileUseCase,
     UnarchiveCuratedProfileUseCase,
+    ListShareLinksUseCase,
+    CreateShareLinkUseCase,
+    RenameShareLinkUseCase,
+    RevokeShareLinkUseCase,
+    GetOrCreateLinkedInShareLinkUseCase,
     BuildSitemapUseCase,
     GetProfileHeadUseCase,
     // Una sola instancia por proceso: la caché vive lo que vive la API.

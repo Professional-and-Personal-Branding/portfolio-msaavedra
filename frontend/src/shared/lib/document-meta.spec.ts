@@ -92,6 +92,22 @@ describe('applyDocumentMeta', () => {
     expect(JSON.parse(jsonLd?.textContent ?? '{}')).toMatchObject({ '@type': 'Person' });
   });
 
+  it('con ?via= y ?src= en la URL, canonical y og:url no llevan query', () => {
+    window.history.replaceState({}, '', '/tech-lead-dotnet?via=k7m2q9xw4t&src=linkedin&lang=en');
+    try {
+      applyDocumentMeta(
+        metaFromProfile(makeCuratedProfile({ slug: 'tech-lead-dotnet' }), 'en', ORIGIN),
+      );
+
+      expect(document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href).toBe(
+        `${ORIGIN}/tech-lead-dotnet`,
+      );
+      expect(content('meta[property="og:url"]')).toBe(`${ORIGIN}/tech-lead-dotnet`);
+    } finally {
+      window.history.replaceState({}, '', '/');
+    }
+  });
+
   it('al cambiar de idioma actualiza los metadatos sin duplicar etiquetas', () => {
     const data = makeCuratedProfile();
     applyDocumentMeta(metaFromProfile(data, 'es', ORIGIN));

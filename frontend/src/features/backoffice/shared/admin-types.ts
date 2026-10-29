@@ -38,6 +38,10 @@ export type AdminSocialLink = Schemas['AdminSocialLinkResponse'];
 export type CreateSocialLinkBody = Schemas['CreateSocialLinkDto'];
 export type UpdateSocialLinkBody = Schemas['UpdateSocialLinkDto'];
 
+// add-share-links: enlaces de seguimiento de un perfil.
+export type ShareLink = Schemas['ShareLinkResponse'];
+export type CreateShareLinkBody = Schemas['CreateShareLinkDto'];
+
 export type AdminTheme = Schemas['ThemeResponse'];
 export type ProfileViews = Schemas['ProfileViewsResponse'];
 export type Visibility = AdminCuratedProfile['visibility'];

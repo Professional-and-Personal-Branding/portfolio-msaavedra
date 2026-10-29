@@ -1,0 +1,49 @@
+# Verificación en la app real (add-share-links, tareas 9.2 a 9.6) — 2026-10-29
+Chrome: Chrome/156.0.8078.48 (no headless) · imagen de frontend/Dockerfile en http://localhost:8093 · API en :3331 · base portfolio_share_check
+
+Login del panel por fetch: 200
+Enlace creado desde Publicación: etiqueta «Acme — RR. HH.», portal linkedin, opens 0, kind MANUAL
+  código: 7qgy9ap3rb (10 caracteres)
+
+## 9.2 Una visita por carga a través del SPA (contexto de navegador sin sesión)
+User-Agent de las cargas: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36
+- /tech-lead-dotnet?via=<código>
+    peticiones del perfil: 1 -> /api/curated-profiles/tech-lead-dotnet?locale=en&via=7qgy9ap3rb
+    ProfileView: 0 -> 1 (delta 1)
+    última fila (kind | shareLinkId | source | locale): HUMAN|cmvtb1d0k000fucncxv501ceh|linkedin|en
+    canonical: http://localhost:8093/tech-lead-dotnet · og:url: http://localhost:8093/tech-lead-dotnet
+    shareLinkId esperado: cmvtb1d0k000fucncxv501ceh
+- /tech-lead-dotnet?src=indeed
+    peticiones del perfil: 1 -> /api/curated-profiles/tech-lead-dotnet?locale=en&src=indeed
+    ProfileView: 1 -> 2 (delta 1)
+    última fila (kind | shareLinkId | source | locale): HUMAN|(nulo)|indeed|en
+    canonical: http://localhost:8093/tech-lead-dotnet · og:url: http://localhost:8093/tech-lead-dotnet
+- /tech-lead-dotnet?via=<código>&src=indeed&lang=en
+    peticiones del perfil: 1 -> /api/curated-profiles/tech-lead-dotnet?locale=en&via=7qgy9ap3rb&src=indeed
+    ProfileView: 2 -> 3 (delta 1)
+    última fila (kind | shareLinkId | source | locale): HUMAN|cmvtb1d0k000fucncxv501ceh|linkedin|en
+    canonical: http://localhost:8093/tech-lead-dotnet · og:url: http://localhost:8093/tech-lead-dotnet
+Aperturas del enlace en el panel tras las cargas: 2 (esperado 2: la 1.ª y la 3.ª)
+
+## 9.3 Revocar desde el panel y volver a abrir
+Texto de la confirmación: Revocar enlace de seguimientoEl link sigue abriendo el perfil, pero sus visitas dejan de atribuirse a este enlace. Sus aperturas pasadas se conservan. La revocación no se deshace.CancelarRevocar
+Estado tras revocar: revokedAt fijado, opens 2
+- /tech-lead-dotnet?via=<código revocado>
+    peticiones del perfil: 1 -> /api/curated-profiles/tech-lead-dotnet?locale=en&via=7qgy9ap3rb
+    ProfileView: 3 -> 4 (delta 1)
+    última fila (kind | shareLinkId | source | locale): HUMAN|(nulo)|(nulo)|en
+    canonical: http://localhost:8093/tech-lead-dotnet · og:url: http://localhost:8093/tech-lead-dotnet
+Aperturas del enlace después de abrirlo revocado: 2 (sin cambio: sí)
+
+## 9.5 Compartir en LinkedIn
+URL pedida por la pestaña nueva: https://www.linkedin.com/sharing/share-offsite/?url=http%3A%2F%2Flocalhost%3A8093%2Ftech-lead-dotnet%3Fvia%3Dqepjm0n500
+  url decodificada: http://localhost:8093/tech-lead-dotnet?via=qepjm0n500
+  contiene via del enlace LINKEDIN_POST (qepjm0n500): true
+Enlace LINKEDIN_POST: portal linkedin, etiqueta «Publicación en LinkedIn»
+La navegación a linkedin.com se abortó en el cliente: no se publicó nada.
+Segundo clic: 2 navegaciones capturadas, enlaces 2 -> 2 (se reusa el activo)
+
+## 9.6 Dashboard
+Por enlace: ["Acme — RR. HH.revocadotech-lead-dotnetlinkedin2","Sin enlace2"]
+Por portal: ["linkedin2","indeed1","Sin portal1"]
+Captura: verification/9.6-dashboard.jpg
