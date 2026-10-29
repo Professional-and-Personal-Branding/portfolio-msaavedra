@@ -75,8 +75,8 @@ Slug inexistente o perfil `PRIVATE` MUST responder 404. Perfil `PROTECTED` sin t
 - **THEN** recibe 200
 
 ### Requirement: Documentación OpenAPI
-El documento OpenAPI SHALL incluir `/api/curated-profiles` y `/api/curated-profiles/{slug}`, documentando `locale`, el header `X-Access-Token`, el query `token` y las respuestas 200/401/404.
+El documento OpenAPI SHALL incluir `/api/curated-profiles` y `/api/curated-profiles/{slug}`, documentando `locale`, el header `X-Access-Token`, el query `token`, los query opcionales de atribución `via` y `src` (`share-links`) y las respuestas 200/401/404.
 
 #### Scenario: Rutas documentadas
 - **WHEN** un cliente hace `GET /api/docs-json`
-- **THEN** `paths` contiene ambas rutas y el detalle declara los parámetros `locale`, `X-Access-Token` y `token`
+- **THEN** `paths` contiene ambas rutas y el detalle declara los parámetros `locale`, `X-Access-Token`, `token`, `via` y `src`

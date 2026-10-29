@@ -171,15 +171,19 @@ La selección, el orden, el control de acceso y las secciones SHALL implementars
 - **THEN** todos los escenarios de esta capacidad pasan sin `DATABASE_URL`
 
 ### Requirement: Registro de visita al resolver por la ruta pública
-Una resolución exitosa solicitada por la ruta pública SHALL registrar la visita según `profile-view-analytics` (paso 6 del núcleo en `CLAUDE.md`). La resolución invocada sin contexto de visita (tests unitarios, usos internos) MUST NOT registrar nada. El registro MUST NOT modificar el resultado devuelto ni convertir un éxito en error.
+Una resolución exitosa solicitada por la ruta pública SHALL registrar la visita según `profile-view-analytics` y su atribución según `share-links` (paso 6 del núcleo en `CLAUDE.md`). La resolución invocada sin contexto de visita (tests unitarios, usos internos) MUST NOT registrar nada. El registro y la atribución MUST NOT modificar el resultado devuelto ni convertir un éxito en error.
 
 #### Scenario: Con contexto de visita
 - **WHEN** el caso de uso se ejecuta con `viewContext` (locale, referrer, userAgent, ipHash) y el perfil es accesible
 - **THEN** se registra una visita y el resultado es el mismo que sin contexto
 
+#### Scenario: Con código de enlace o portal
+- **WHEN** el caso de uso se ejecuta con `viewContext` que trae `via` y `src`
+- **THEN** se registra una visita con su atribución y el resultado es el mismo que sin `via` ni `src`
+
 #### Scenario: Sin contexto de visita
 - **WHEN** el caso de uso se ejecuta sin `viewContext`
-- **THEN** no se registra ninguna visita
+- **THEN** no se registra ninguna visita ni se busca ningún enlace
 
 #### Scenario: Fallo del registro
 - **WHEN** el repositorio de visitas falla al registrar
