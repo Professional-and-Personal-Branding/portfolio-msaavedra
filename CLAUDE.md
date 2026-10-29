@@ -109,7 +109,7 @@ Dado un `slug`, el caso de uso `ResolveCuratedProfileUseCase`:
    - Orden canónico (decisión D1 de `add-curated-profile-resolution`): **cronológico**, `startDate` desc y `order` asc como desempate — el mismo que `GET /api/experiences`.
 4. Resuelve el **tema**: `theme` base + `themeOverrides` (merge profundo).
 5. Aplica `sectionsOrder` y `sectionsHidden`.
-6. Incrementa el contador de vistas (registrar `ProfileView`) — implementado en Fase 3: solo cuando el caso de uso recibe `viewContext` (ruta pública), de forma atómica y sin que un fallo altere la respuesta. IP solo como HMAC (`ANALYTICS_SALT`).
+6. Registra la visita (`ProfileView`) — implementado en Fase 3: solo cuando el caso de uso recibe `viewContext` (ruta pública), en segundo plano y sin que un fallo altere la respuesta. IP solo como HMAC (`ANALYTICS_SALT`). Cada visita se guarda con su `kind` (change `classify-profile-views`): `OWNER` si la petición trae una sesión de administrador válida (cookie o Bearer, validada en la tarea en segundo plano; la ruta sigue siendo anónima), `BOT` si el `User-Agent` falta o está en la lista versionada (`classifyUserAgent`), `HUMAN` el resto. **El contador `views` y el agregado suman solo `HUMAN`**; `byKind` cuenta todas.
 7. Devuelve un DTO de presentación listo para el frontend.
 
 Este caso de uso es el corazón del producto — implementarlo con tests exhaustivos. Implementado en `backend/src/modules/curated-profile/` (servicios puros `select-by-tags`, `select-skill-categories`, `resolve-sections`; tema en `modules/theme/domain/services/merge-theme-tokens.ts`). `PRIVATE` → 404 (no revela existencia); `PROTECTED` → 401 sin token válido (`X-Access-Token` o `?token=`).
@@ -130,6 +130,7 @@ npm run seed -- --file <ruta>   # carga otro archivo (solo en una base DESCARTAB
 npm run seed:example     # carga docs/examples/cv-data.example.json (datos FICTICIOS) en una base aparte, p. ej. portfolio_example; nunca en la del owner
 npm run seed:example:verify   # compara la base con el ejemplo (conteos, mecanismos de cada perfil, alias y visitas)
 npm run admin:bootstrap  # crea/actualiza el administrador (ADMIN_EMAIL/ADMIN_PASSWORD/ADMIN_NAME, argon2id)
+npm run views:reclassify # recalcula el `kind` de las visitas con la lista de bots vigente y `views` como la cantidad de visitas HUMAN (simulación; `-- --apply` escribe; correrlo primero sin --apply y con pg_dump)
 npm run openapi:export   # escribe backend/openapi.json (fuente de los tipos del frontend; sin servidor ni DB)
 npm run prisma:deploy    # aplica migraciones en producción (NUNCA prisma db push)
 # El backoffice vive en el frontend: http://localhost:5173/admin

@@ -169,6 +169,8 @@ dropdb portafolio_restore_test
 
 - [ ] Anotar la fecha de la prueba en [`RELEASE-1.0.0-CHECKLIST.md`](RELEASE-1.0.0-CHECKLIST.md).
 
+Al primer deploy no hay visitas que reclasificar. Cuando suba la versión de la lista de bots, hacé el `pg_dump` de arriba y corré `railway run npm run views:reclassify` (simulación, no escribe) y, si el informe cierra, `railway run npm run views:reclassify -- --apply` (`docs/DEPLOY.md` § 7).
+
 ---
 
 ## 8. Cerrar el release

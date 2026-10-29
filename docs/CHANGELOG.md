@@ -1,5 +1,15 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Octubre 2026 (`classify-profile-views`)
+
+`views` y el dashboard cuentan solo las visitas de personas; cada visita se guarda con su tipo.
+
+- **Tipo de visita.** `ProfileView.kind` (`HUMAN`, `OWNER`, `BOT`), obligatorio y con `HUMAN` por defecto: la migración no cambia ningún número. `OWNER` si la petición trae una sesión de administrador válida (cookie `portfolio_session` o `Authorization: Bearer`; se valida en la tarea en segundo plano, así que la ruta pública sigue anónima, sin latencia extra y sin 401 por una cookie vieja); `BOT` si falta el `User-Agent` o coincide con la lista versionada (`classifyUserAgent`, v1); `HUMAN` el resto.
+- **Qué suma.** `views` de cada perfil y el total, `byProfile`, `byLocale`, `byDay` y `byReferrer` del agregado cuentan solo `HUMAN`. El agregado suma `byKind` (`HUMAN`, `OWNER`, `BOT`, siempre los tres) y el dashboard, la tabla **Por tipo**.
+- **Reclasificación.** `npm run views:reclassify` recalcula `kind` con la misma función y `views` como la cantidad de visitas `HUMAN`: simulación por defecto, `-- --apply` escribe en una transacción, idempotente, sin tocar las `OWNER`. En la base local del owner la corre él; las visitas propias anteriores al change no se pueden recuperar.
+- **Scripts de calidad.** Sus visitas quedan como `BOT`: Puppeteer ya manda `HeadlessChrome`; `a11y:check` (sus GET con `fetch`) y `perf:check` (UA emulado de Lighthouse) llevan el token `PortfolioCheck`.
+- **Docs.** `docs/MANUAL.md` e `index.html` (TC-39, B2, R9, C8, glosario y `tc18-dashboard.jpg` regenerada), `docs/DEPLOY.md` § 7, `docs/DEPLOY-RAILWAY.md`, `docs/DATA-POPULATION.md` y `backend/README.md`.
+
 ## Update — Octubre 2026 (`protect-default-seed`)
 
 `npm run seed` ya no puede pisar una base con contenido por accidente.

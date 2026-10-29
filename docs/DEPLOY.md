@@ -237,6 +237,8 @@ dropdb portafolio_restore_test
 
 Anotá la fecha de la última prueba de restauración en `docs/RELEASE-1.0.0-CHECKLIST.md`.
 
+**Reclasificar las visitas.** Cada visita se guarda con su tipo (`HUMAN`, `OWNER`, `BOT`) y `views` suma solo las de personas. La migración `classify_profile_views` no cambia ningún número: las filas previas quedan `HUMAN`. Cuando suba la versión de la lista de bots (`BOT_USER_AGENT_PATTERNS_VERSION`), recalculá las filas existentes: primero `railway run npm run views:reclassify` (simulación: informa qué cambia y no escribe), con el `pg_dump` de arriba hecho, y después `railway run npm run views:reclassify -- --apply`. Es idempotente y no corre en el `preDeployCommand`: un deploy no escribe datos salvo las migraciones. Las visitas `OWNER` anteriores al change no se pueden recuperar (no se guardó la sesión).
+
 ---
 
 ## 8. Después del despliegue

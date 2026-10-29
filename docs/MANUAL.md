@@ -122,7 +122,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq
 | Ruta | Pantalla |
 |---|---|
 | `/admin/login` | Entrada |
-| `/admin` | Dashboard de analítica, con la tabla **Por origen** |
+| `/admin` | Dashboard de analítica, con las tablas **Por origen** y **Por tipo** |
 | `/admin/portada` | Perfil base (titular, resumen, contacto, disponibilidad) e idiomas, con vista previa del hero |
 | `/admin/experiencias` | CRUD de experiencias |
 | `/admin/skills` | CRUD de categorías y skills |
@@ -195,11 +195,11 @@ Los datos son **bilingües ES/EN en un solo registro**: cada texto traducible es
 
 ### C8 — Analítica
 
-Cada carga de una ruta pública registra una **visita** (`ProfileView`): perfil, idioma, origen y fecha; la IP solo como HMAC. Las vistas previas del panel no cuentan. El dashboard resume por día, perfil, idioma y origen, y los perfiles archivados conservan su historial.
+Cada carga de una ruta pública registra una **visita** (`ProfileView`): perfil, idioma, origen, fecha y **tipo**; la IP solo como HMAC. Las vistas previas del panel no cuentan. Cada visita se guarda con su tipo: *Personas*, *Tus visitas* (la petición trae la sesión del panel) y *Bots* (sin navegador reconocible: Googlebot, `HeadlessChrome`, `curl`…). **Solo las de personas suman** en el total y en las visitas de cada perfil; las otras se cuentan aparte, en **Por tipo**. Si abrís tu sitio sin la sesión del panel, cuenta como una persona más. El dashboard resume por día, perfil, idioma, origen y tipo, y los perfiles archivados conservan su historial.
 
 - **En el ejemplo:** 105 visitas sintéticas en 5 perfiles (`all`, `ejemplo-backend`, `ejemplo-secciones`, `ejemplo-archivado`, `ejemplo-protegido`), con orígenes directo, LinkedIn, buscador y un dominio de `example.com`.
 - **Dónde se edita:** B2 (Dashboard)
-- **Casos que lo verifican:** TC-18
+- **Casos que lo verifican:** TC-18, TC-39
 
 
 ---
@@ -318,12 +318,13 @@ Nueve tareas reales, con los pasos por pantalla, lo que tiene que pasar, los err
 2. Mirá los totales (**Visitas en el rango**, **Perfiles vistos**, **Idiomas**) y **Visitas por día**.
 3. En **Por perfil** abrí el constructor o la vista pública con los enlaces de cada fila; el perfil archivado lleva la marca `archivado`.
 4. **Por origen** muestra de dónde llegó cada visita: `directo`, `linkedin.com`, `google.com`…
+5. **Por tipo** separa *Personas*, *Tus visitas* y *Bots*: solo las de personas suman en el total.
 
 **Resultado esperado:** Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos, 2 idiomas, y los orígenes directo, linkedin.com, google.com y empleos.example.com.
 
-**Errores típicos:** Las visitas de hoy cuentan (defecto D-01 corregido). La vista previa del panel y la carga de otra persona de `/admin` no suman visitas.
+**Errores típicos:** Las visitas de hoy cuentan (defecto D-01 corregido). La vista previa del panel y la carga de otra persona de `/admin` no suman visitas. Tus propias visitas (con la sesión del panel) y las de bots tampoco suman en el total: están en **Por tipo**.
 
-**Casos:** TC-18
+**Casos:** TC-18, TC-39
 
 
 ---
@@ -356,7 +357,7 @@ Para la guía y las capturas se usa un administrador de prueba (`npm run admin:b
 
 ### B2 — Dashboard
 
-Ruta: `/admin`. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales, **Visitas por día**, **Por perfil** (con enlaces al constructor y a la vista pública y la marca `archivado`), **Por idioma** y **Por origen**.
+Ruta: `/admin`. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales (de **personas**), **Visitas por día**, **Por perfil** (con enlaces al constructor y a la vista pública y la marca `archivado`), **Por idioma**, **Por origen** y **Por tipo** (*Personas*, *Tus visitas* y *Bots*, con la aclaración de que solo las de personas suman).
 
 | Campo | Tipo | Obligatorio | Validación | Ejemplo |
 |---|---|---|---|---|
@@ -366,9 +367,9 @@ Ruta: `/admin`. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 
 |---|---|
 | Todavía no hay visitas | No hay visitas en el rango elegido; el texto de apoyo es «Cuando alguien abra un perfil curado en el rango elegido, aparecerá acá.» |
 
-**Acciones y avisos:** Solo lectura. Las visitas se registran en la ruta pública, no en la vista previa del panel.
+**Acciones y avisos:** Solo lectura. Las visitas se registran en la ruta pública, no en la vista previa del panel. Si el rango solo tiene visitas propias o de bots, el estado vacío convive con la tabla **Por tipo**; con los tres tipos en cero, aparece solo el estado vacío.
 
-Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos y 2 idiomas.
+Con el ejemplo y 30 días: 105 visitas de personas, 5 perfiles vistos y 2 idiomas.
 
 ![Dashboard de analítica](manual/tc18-dashboard.jpg)
 
@@ -1201,9 +1202,42 @@ El contador del perfil y el registro de `ProfileView` siempre funcionaron. Lo qu
 
 ![Dashboard de analítica](manual/tc18-dashboard.jpg)
 
-*Capturada el 27 de octubre de 2026 sobre la base de ejemplo, con sesión iniciada: 105 visitas en 30 días, en 5 perfiles y 2 idiomas (el archivado conserva las suyas). Las cuatro tablas: por día, por perfil, por idioma y por origen.*
+*Capturada el 27 de octubre de 2026 sobre la base de ejemplo, con sesión iniciada: 105 visitas en 30 días, en 5 perfiles y 2 idiomas (el archivado conserva las suyas). Las cinco tablas: por día, por perfil, por idioma, por origen y por tipo.*
 
-De cada visita se guarda el perfil, el idioma, la fecha y la IP **solo como HMAC** con `ANALYTICS_SALT`. No hay cookies de seguimiento. Las visitas se registran únicamente en la ruta pública, nunca en el preview, y si el registro falla la respuesta al visitante no se altera.
+De cada visita se guarda el perfil, el idioma, la fecha y la IP **solo como HMAC** con `ANALYTICS_SALT`. No hay cookies de seguimiento: la cookie de sesión del panel solo se lee para reconocer tus visitas y no se guarda. Las visitas se registran únicamente en la ruta pública, nunca en el preview, y si el registro falla la respuesta al visitante no se altera.
+
+### TC-39 — Las visitas propias y de bots no suman ✅
+
+**Precondición:** base de ejemplo, **descartable** (nunca `portfolio`: cada carga pública registra una visita), con la API y el frontend levantados y la sesión del panel iniciada en `/admin`. Para el paso 3, `$API` es la URL de la API.
+
+**Pasos:**
+1. Anotá el **Dashboard** (30 días): el total de *Personas* y las visitas de `ejemplo-backend` en `/admin/perfiles`.
+2. Con la sesión del panel iniciada, abrí `/ejemplo-backend` (o pedí el perfil con la cookie de sesión).
+3. Desde la terminal, sin sesión: `curl -s -o /dev/null -H "User-Agent: Mozilla/5.0 (compatible; Googlebot/2.1)" $API/api/curated-profiles/ejemplo-backend` y otra vez con `-H "User-Agent:"` (sin User-Agent).
+4. En una **ventana privada**, abrí `/ejemplo-backend`.
+5. Recargá el Dashboard y `/admin/perfiles`.
+
+**Resultado esperado:**
+1. En la base de ejemplo: *Personas* 105 (el total) y `ejemplo-backend` con 26 visitas.
+2. La visita queda como *Tus visitas*: el total y las visitas del perfil **no cambian**.
+3. Dos visitas de *Bots*: tampoco suman.
+4. Esa visita sí suma: el total pasa a 106 y `ejemplo-backend` a 27.
+5. **Por tipo** muestra *Personas*, *Tus visitas* y *Bots* en ese orden, y la columna de visitas de cada perfil coincide con las de personas de **Por perfil**.
+
+**Errores típicos:** Si abrís tu sitio sin la sesión del panel (otro dispositivo, una ventana privada, una sesión vencida), la visita cuenta como una persona más. Un bot que se hace pasar por un navegador común también cuenta como persona: se reconoce por su User-Agent, no por su comportamiento. Las visitas de los scripts de calidad (`print:check`, `a11y:check`, `perf:check`, `manual:capture`) quedan como *Bots*.
+
+**Ejecutado** (28 de octubre de 2026, base de ejemplo descartable, API local; la sesión se inició por `POST /api/auth/login` y se reusó su cookie, sin escribir la contraseña en un navegador; evidencia en `openspec/changes/classify-profile-views/verification/`):
+
+```text
+base de ejemplo (antes)              -> Personas 105 · Tus visitas 0
+perfil con la cookie de sesión (x2)  -> filas OWNER, views del perfil igual
+Googlebot y sin User-Agent           -> filas BOT, views igual
+navegador sin sesión (ejemplo-backend)-> fila HUMAN, views 26 -> 27
+GET analytics/views                  -> total 106 · byKind HUMAN 106, OWNER 2, BOT (las 2 del paso 3)
+views de cada perfil                 -> igual a sus filas HUMAN
+```
+
+Sin captura propia: el Dashboard con la tabla **Por tipo** es la de TC-18. Los e2e `view-kind.e2e-spec.ts` cubren la cookie, el `Authorization: Bearer`, la cookie vencida o forjada, Googlebot, HeadlessChrome y la ausencia de User-Agent.
 
 ### TC-19 — Mantener las experiencias ✅
 
@@ -1679,7 +1713,7 @@ El umbral de Performance es 85 en CI porque el runner de GitHub es el equipo de 
 
 ## 6. Suite de regresión manual
 
-Antes de cada release, recorrer en este orden. Último caso ejecutado: **27 de octubre de 2026** (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 44 capturas con `manual:capture`. TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
+Antes de cada release, recorrer en este orden. Último caso ejecutado: **28 de octubre de 2026** (TC-39); antes, el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 44 capturas con `manual:capture`. TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
 
 Los casos del backoffice están automatizados en [`manual/suite-backoffice.ps1`](manual/suite-backoffice.ps1): ejecuta TC-12 a TC-20 contra la API, imprime el resultado real junto al esperado y borra todos los datos de prueba que crea, pase o falle.
 
@@ -1706,7 +1740,7 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-15 | Personalizar el tema | ✅ | captura · solo se guarda la diferencia |
 | TC-16 | Publicar, proteger, esconder | ✅ | captura · la tabla completa de visibilidad |
 | TC-17 | Previsualizar sin guardar | 🔍 | no persiste nada |
-| TC-18 | Dashboard de analítica | ✅ | captura renovada con las visitas de hoy y la tabla por origen (D-01 corregido) |
+| TC-18 | Dashboard de analítica | ✅ | captura renovada con las visitas de hoy y las tablas por origen y por tipo (D-01 corregido) |
 | TC-19 | Mantener experiencias | ✅ | 2 capturas · visible / oculta (D-02 corregido) |
 | TC-20 | Mantener skills | ✅ | captura · la categoría entra por el tag de su skill |
 | TC-21 | Duplicar un perfil | 🔍 | e2e · app real con capturas en el archivo del change |
@@ -1727,8 +1761,9 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-36 | Cargar los datos de ejemplo en una base descartable | ✅ | captura · salida de `seed:example` y `seed:example:verify` · dos cargas |
 | TC-37 | El seed de ejemplo se niega contra una base con otros datos | ✅ | salida transcrita · código 2 en las tres capas · conteos sin cambios |
 | TC-38 | El seed por defecto se niega sobre una base con contenido | ✅ | transcripción de las salidas (códigos 0, 2, 1) contra una base descartable · tests de `seed-guard` y `seed-runner` |
+| TC-39 | Las visitas propias y de bots no suman | ✅ | app real con la cookie de sesión, Googlebot y sin User-Agent · e2e `view-kind` · tests del clasificador y del dashboard |
 
-**Los 38 casos pasan.** TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 44 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
+**Los 39 casos pasan.** TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 44 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
@@ -1862,4 +1897,5 @@ Cada término enlaza el concepto, el recorrido o el caso donde se usa.
 | **alias de slug** | El slug anterior de un perfil renombrado, que sigue resolviendo al perfil. | R4 (Renombrar el slug sin romper los links), TC-24 |
 | **`LocalizedText`** | Un texto bilingüe `{ "es": "…", "en": "…" }` en un solo registro. | C7 (Idiomas), B3 (Portada (con Idiomas)) |
 | **faltante de traducción** | Un campo bilingüe sin contenido en el idioma pedido; es solo un aviso. | C7 (Idiomas), R7 (Traducir y revisar faltantes), TC-32 |
-| **`ProfileView`** | El registro de una visita pública (perfil, idioma, origen, fecha, IP como HMAC). | C8 (Analítica), B2 (Dashboard), TC-18 |
+| **`ProfileView`** | El registro de una visita pública (perfil, idioma, origen, fecha, tipo, IP como HMAC). | C8 (Analítica), B2 (Dashboard), TC-18 |
+| **tipo de visita** | Si la visita fue de una persona, tuya (con la sesión del panel) o de un bot; solo las de personas suman en el total y en `views`. | C8 (Analítica), B2 (Dashboard), TC-39 |
