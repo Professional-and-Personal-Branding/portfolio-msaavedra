@@ -41,7 +41,7 @@ openssl rand -base64 48
 # Sal para el hash de IP de la analítica: DEBE ser distinta del JWT_SECRET
 openssl rand -base64 32
 
-# Contraseña del administrador (la vas a cambiar en el primer arranque)
+# Contraseña del administrador (24 bytes; es la definitiva: va directo al gestor de contraseñas)
 openssl rand -base64 24
 ```
 
@@ -75,8 +75,8 @@ Guardalos en el gestor de secretos del proveedor, nunca en el repositorio. La AP
 | `THROTTLE_TTL` / `THROTTLE_LIMIT` | `60` / `120` | ventana en segundos y peticiones por IP |
 | `THROTTLE_LOGIN_LIMIT` | `5` | intentos de login por ventana e IP |
 | `ENABLE_API_DOCS` | *(sin definir)* | definila en `true` solo si querés Swagger público |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | los del administrador | solo se usan al correr `admin:bootstrap` |
-| `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` | `10` | solo Railway, servicio `api`. La API espera hasta 5 s a registrar las visitas en vuelo al apagarse; tiene que quedar **por encima de 5** (ver § 9.5, *Apagado de la API*) |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | los del administrador | **no van en el servicio `api`**: solo se usan al correr `admin:bootstrap` y se definen en la terminal de tu máquina (ver *Primer arranque*) |
+| `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` | *(no hace falta)* | solo Railway, servicio `api`. Ya queda versionado como `drainingSeconds: 10` en `backend/railway.json`; la variable solo sirve si querés pisarlo desde el panel. La API espera hasta 5 s a registrar las visitas en vuelo al apagarse; tiene que quedar **por encima de 5** (ver § 9.5, *Apagado de la API*) |
 | `CSP_HEADER` | *(sin definir)* | **del servicio `web`, no de la API.** Nombre de la cabecera de la CSP del sitio; sin definir bloquea, con `Content-Security-Policy-Report-Only` solo reporta (ver § 9.5, *Content-Security-Policy del sitio*) |
 
 ### Comandos
@@ -85,36 +85,37 @@ En Railway estos comandos no se escriben en el panel: los toma de **`backend/rai
 
 ```json
 {
-  "build": { "builder": "RAILPACK", "buildCommand": "npm run build" },
+  "build": {
+    "builder": "RAILPACK",
+    "buildCommand": "npm run prisma:generate && npm run build",
+    "watchPatterns": ["/backend/**"]
+  },
   "deploy": {
     "preDeployCommand": ["npm run prisma:deploy"],
-    "startCommand": "npm run start:prod",
+    "preDeployTimeoutSeconds": 300,
+    "startCommand": "node dist/main",
     "healthcheckPath": "/health",
-    "healthcheckTimeout": 300
+    "healthcheckTimeout": 300,
+    "drainingSeconds": 10,
+    "restartPolicyType": "ON_FAILURE"
   }
 }
 ```
 
+Dos detalles que importan: el `buildCommand` corre `prisma generate` **antes** de `nest build` (sin el cliente generado, el build de TypeScript no compila), y los `watchPatterns` llevan **ruta absoluta desde la raíz del repo** (`/backend/**`) porque el repositorio es un monorepo: así un cambio solo en `frontend/` o en `docs/` no redespliega la API. `drainingSeconds: 10` da margen a que la API registre (hasta 5 s) las visitas en vuelo al apagarse.
 `prisma:deploy` ejecuta `prisma migrate deploy`, que aplica las migraciones versionadas. **Nunca uses `prisma db push` en producción**: puede borrar datos.
 
-El `preDeployCommand` corre en un contenedor aparte con la imagen nueva, antes de que la versión nueva reciba tráfico; si la migración falla, el despliegue se detiene y la versión vieja sigue sirviendo. Por eso `prisma` y `tsx` están en `dependencies` y no en `devDependencies`: ese contenedor usa la imagen final, donde las dev ya no están.
+El `preDeployCommand` corre en un contenedor aparte con la imagen nueva, antes de que la versión nueva reciba tráfico; si la migración falla, el despliegue se detiene y la versión vieja sigue sirviendo. Por eso `prisma` y `tsx` están en `dependencies` y no en `devDependencies`. Railpack **no poda** las dev después del build salvo que se defina `RAILPACK_PRUNE_DEPS`, así que hoy funcionarían de las dos maneras; seguimos manteniéndolas en `dependencies` porque el día que se active la poda (o se pase a una imagen mínima) el `preDeployCommand`, el seed y `admin:bootstrap` dejarían de encontrar sus binarios.
 
 ### Primer arranque
 
-Desde tu máquina, con la `DATABASE_URL` del servicio ya enlazada (`railway link` una vez por proyecto):
+Se hace **una sola vez y desde tu máquina**, no con `railway run` (que corre localmente con las variables del servicio, incluida la `DATABASE_URL` de la red privada, `*.railway.internal`, que desde tu PC no resuelve). El paso a paso con cada comando está en [`DEPLOY-RAILWAY.md`](DEPLOY-RAILWAY.md) § 4; en resumen:
 
-```bash
-cd backend
+1. Encender **Public Access** en el servicio Postgres (solo para esto y para los backups) y copiar `DATABASE_PUBLIC_URL`.
+2. En una terminal, definir `DATABASE_URL` con esa URL y correr, desde `backend/`: `npm run seed`, `npm run seed:verify` y `npm run admin:bootstrap` (con `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `ADMIN_NAME` definidas **solo en esa terminal**). Carga porque la base está vacía; si ya tiene datos, el seed se niega con código 2.
+3. Cerrar la terminal o borrar las variables.
 
-# 1. Cargar los datos del portafolio (una sola vez: después se edita desde /admin).
-#    Carga porque la base está vacía. Si ya tiene datos, el seed se niega con código 2.
-railway run npm run seed && railway run npm run seed:verify
-
-# 2. Crear el administrador
-railway run npm run admin:bootstrap
-
-# 3. Entrar al backoffice y cambiar la contraseña del paso 1
-```
+**No hay pantalla para cambiar la contraseña** del administrador. Se rota volviendo a correr `admin:bootstrap` con un `ADMIN_PASSWORD` nuevo (hace *upsert* por email, es idempotente).
 
 El `preDeployCommand` solo migra (`npm run prisma:deploy`): **nunca siembra**. Un deploy no dispara una carga; sembrar en producción es siempre un comando manual.
 
@@ -194,7 +195,7 @@ curl -s $API/api/curated-profiles/no-existe | jq
 # 6. El login se frena tras varios intentos
 for i in $(seq 1 6); do
   curl -s -o /dev/null -w "%{http_code} " -X POST $API/api/auth/login \
-    -H 'Content-Type: application/json' -d '{"email":"x@y.z","password":"mal"}'
+    -H 'Content-Type: application/json' -d '{"email":"nadie@example.com","password":"mal"}'
 done; echo    # termina en 429
 
 # 7. SEO
@@ -243,6 +244,7 @@ Anotá la fecha de la última prueba de restauración en `docs/RELEASE-1.0.0-CHE
 
 - **Search Console**: dar de alta el dominio y enviar el sitemap.
 - **Vista previa de los links**: resuelto en 1.1 por `add-server-rendered-head` (el head de cada perfil sale del servidor, § 9.5). Falta verificarlo con el sitio desplegado: pegar dos perfiles distintos en el [Post Inspector de LinkedIn](https://www.linkedin.com/post-inspector/) y en un canal de Slack; las tarjetas tienen que mostrar títulos distintos y la imagen. Si salen genéricas, ver *Qué falla y por qué* en `docs/MANUAL.md`.
+- **Límites por IP detrás de Caddy**: ver *IP real del cliente* en el § 9.5; si se quita el `header_up X-Forwarded-For` del `Caddyfile`, el límite de peticiones y el del login pasan a ser compartidos por todos los visitantes.
 - **Escalar a más de una instancia**: el límite de peticiones se cuenta en memoria, así que cada instancia lleva su propio contador. Si algún día hace falta escalar horizontalmente (en Railway, subir las réplicas del servicio), hay que moverlo a un almacén compartido.
 - **Costo**: Railway cobra por uso (RAM $10/GB/mes, vCPU $20/vCPU/mes) y el plan Hobby incluye $5. Tres servicios siempre encendidos lo superan; mirá el panel de uso la primera semana para saber en qué se estabiliza.
 
@@ -283,14 +285,14 @@ Las secciones anteriores son independientes del proveedor. Acá están los cuatr
 
 ### 9.3 Dos ajustes del repositorio, antes de elegir proveedor
 
-**A. `prisma` y `tsx` son `devDependencies`.** `npm run prisma:deploy` necesita el CLI de `prisma`, y `seed` / `admin:bootstrap` necesitan `tsx`. Si el proveedor instala con `NODE_ENV=production` —que hace que `npm ci` omita las `devDependencies`— o poda las dev después del build, esos comandos no existen y el deploy falla. Dos salidas, en orden de preferencia:
+**A. `prisma` y `tsx` (histórico: hoy ya están en `dependencies`).** `npm run prisma:deploy` necesita el CLI de `prisma`, y `seed` / `admin:bootstrap` necesitan `tsx`. Si el proveedor instala con `NODE_ENV=production` —que hace que `npm ci` omita las `devDependencies`— o poda las dev después del build, esos comandos no existen y el deploy falla. Dos salidas, en orden de preferencia:
 
 1. Mover `prisma` y `tsx` a `dependencies` en `backend/package.json` y regenerar el lockfile. Es lo más robusto y vale para los tres proveedores.
 2. Dejarlas donde están y usar `npm ci --include=dev` como *build command*, asegurándose de que el proveedor **no** pode las dev entre el build y el arranque.
 
-**B. `SESSION_COOKIE_SAMESITE`** se decide con la tabla del § 0, y la respuesta depende del proveedor: con DigitalOcean podés usar `strict`; con Seenode y Railway, lo normal es `none`.
+**B. `SESSION_COOKIE_SAMESITE`** se decide con la tabla del § 0, y la respuesta depende del proveedor: con DigitalOcean podés usar `strict`; con Seenode lo normal es `none`; Railway también puede usar `strict` gracias al proxy de Caddy del servicio `web` (§ 9.5).
 
-Lo que **no** hay que tocar: `app.listen(config.port)` ya escucha en todas las interfaces, y `app.set('trust proxy', 1)` ya está puesto, así que el límite por IP cuenta la IP real detrás del balanceador.
+Lo que **no** hay que tocar: `app.listen(config.port)` ya escucha en todas las interfaces, y `app.set('trust proxy', 1)` ya está puesto, así que el límite por IP cuenta la IP real detrás del balanceador. En Railway, con el proxy de Caddy en el medio, además hace falta que Caddy reenvíe la IP del cliente: ver *IP real del cliente* en el § 9.5.
 
 ### 9.4 Seenode — campo por campo
 
@@ -337,9 +339,9 @@ Un proyecto con **tres servicios**: `api`, `Postgres` y `web`. Lo que es configu
 | Campo del panel | Valor |
 |---|---|
 | Root Directory | `backend` |
-| Config file | `railway.json` (relativo al root directory) |
+| Config file path | **`/backend/railway.json`** — ruta **absoluta desde la raíz del repo**: el Root Directory no la reubica, y `railway.json` a secas no se encuentra |
 | Build / Start / Pre-deploy / Healthcheck | **no tocar**: los toma de `backend/railway.json` |
-| Pre-deploy Timeout | `300` — por defecto **no tiene límite**, y un comando colgado deja el despliegue en curso indefinidamente |
+| Pre-deploy Timeout | `300` — ya versionado (`preDeployTimeoutSeconds`); por defecto **no tiene límite**, y un comando colgado deja el despliegue en curso indefinidamente |
 | Networking | el dominio público es opcional; dejalo para poder correr la verificación del § 5 contra la API cruda |
 
 Variables: las del § 3, con `PORT=8080`, `SESSION_COOKIE_SAMESITE=strict`, `FRONTEND_URL` = el dominio del servicio `web` y `DATABASE_URL=${{Postgres.DATABASE_URL}}` (red privada).
@@ -358,6 +360,7 @@ Se agrega desde el canvas del proyecto (New → Database → PostgreSQL).
 | Campo del panel | Valor |
 |---|---|
 | Root Directory | `frontend` |
+| Config file path | **`/frontend/railway.json`** (ruta absoluta desde la raíz del repo) |
 | Builder | **no tocar**: `frontend/railway.json` ya dice `DOCKERFILE` |
 | Variable `API_ORIGIN` | `http://api.railway.internal:8080` (el nombre del servicio `api`, tal como figura en el canvas) |
 | Variable `VITE_API_URL` | **vacía** |
@@ -386,6 +389,8 @@ El `Caddyfile` escucha en `:{$PORT}` —Railway inyecta `PORT`— y reparte así
 
 **Apagado de la API y visitas en vuelo.** La visita se registra en segundo plano, fuera del camino de la respuesta; al recibir `SIGTERM`, la API espera hasta **5 s** a que terminen las que quedan en vuelo (`drain`) y recién entonces cierra. **Recomendación (P3, no bloquea):** confirmar el valor actual de `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` en el servicio `api` y fijarlo **por encima de ese tope de 5 s**, por ejemplo en `10`. Si queda por debajo, Railway envía `SIGKILL` antes de que termine el drenaje y se pierden las visitas en vuelo (quedan solo en el log).
 
+**IP real del cliente (límites de peticiones y analítica).** Con Caddy en el medio, la API ve la conexión de Caddy, no la del navegador. Railway entrega la IP del cliente en la cabecera `X-Real-IP`, y el `Caddyfile` la copia a `X-Forwarded-For` con `header_up X-Forwarded-For {http.request.header.X-Real-IP}` en los dos proxies (`@backend` y `@head`). Como `app.set('trust proxy', 1)` toma un solo salto, la API usa esa IP para el límite de peticiones, el del login y el `ipHash` de la analítica. Sin esa línea, todos los visitantes compartirían una IP (la del borde): cinco logins fallidos de cualquiera bloquearían al administrador y la analítica contaría un solo visitante. Como `header_up` **reemplaza** el valor, un `X-Forwarded-For` enviado por el cliente no sirve para evadir el límite. Verificación en producción: `DEPLOY-RAILWAY.md` § 7 (el `X-Real-IP` que manda el cliente lo pisa el borde de Railway; comprobarlo es parte de la lista).
+
 Caddy preserva el `Host` original al hacer proxy, así que la cookie de sesión queda ligada al dominio del sitio, que es justamente lo que permite `SameSite=strict`.
 
 > **Red privada:** Railway la resuelve por IPv6. La API no necesita ningún cambio —`app.listen(port)` de Node escucha en `::` cuando no se le pasa host— pero si algún día alguien la ata a `0.0.0.0`, el proxy deja de encontrarla.
@@ -394,7 +399,7 @@ Caddy preserva el `Host` original al hacer proxy, así que la cookie de sesión 
 
 1. Crear el proyecto y agregar **Postgres**.
 2. Crear `api` desde el repo con Root Directory `backend`, cargar las variables del § 3 y desplegar. El `preDeployCommand` corre la migración; el healthcheck decide si la versión entra.
-3. Correr el primer arranque del § 3 (`railway run npm run seed`, `seed:verify`, `admin:bootstrap`).
+3. Correr el primer arranque del § 3, desde tu máquina contra `DATABASE_PUBLIC_URL` (`npm run seed`, `seed:verify`, `admin:bootstrap`).
 4. Crear `web` con Root Directory `frontend`, poner `API_ORIGIN` y desplegar.
 5. Asignar el dominio al servicio `web` y recién entonces fijar `FRONTEND_URL` en `api` (CORS y las URLs del sitemap dependen de él) y redesplegar `api`.
 6. Correr la verificación del § 5.
