@@ -19,6 +19,10 @@
 :{$PORT:8080} {
 	encode zstd gzip
 
+	# IP real: Railway la entrega en X-Real-IP; sin copiarla a X-Forwarded-For (más abajo, en los
+	# dos proxies) la API ve la IP del borde para todos: el límite de peticiones y el del login
+	# se comparten y la analítica registra un solo ipHash. Ver docs/DEPLOY.md § 9.5 (IP real del cliente).
+
 	# Fragmento de head por perfil (change `add-server-rendered-head`). Lo pide el
 	# propio Caddy desde `index.html` con `httpInclude`, que hace una sub-petición a
 	# este mismo servidor: por eso es una ruta y no `{$API_ORIGIN}` directo. Va
@@ -28,6 +32,7 @@
 	handle @head {
 		reverse_proxy {$API_ORIGIN} {
 			header_up X-Forwarded-Proto https
+			header_up X-Forwarded-For {http.request.header.X-Real-IP}
 			transport http {
 				dial_timeout 500ms
 				response_header_timeout 500ms
@@ -51,6 +56,7 @@
 			# Explícito, para que la redirección a https del backend no entre en bucle:
 			# el TLS real lo terminó el borde de Railway antes de llegar hasta acá.
 			header_up X-Forwarded-Proto https
+			header_up X-Forwarded-For {http.request.header.X-Real-IP}
 		}
 	}
 

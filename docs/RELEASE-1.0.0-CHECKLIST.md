@@ -31,6 +31,10 @@
 - [x] ✅ **SEO + OpenGraph.** Título, descripción, canonical, OpenGraph, Twitter Card y JSON-LD `Person` por perfil y por idioma; `noindex` en perfiles no públicos y en `/admin`; `robots.txt` y `sitemap.xml` generados por el backend con los perfiles públicos.
   - ✅ **Resuelto en 1.1** por `add-server-rendered-head`: el head de cada perfil (título, descripción, canonical, Open Graph, Twitter y JSON-LD) lo arma el servidor y Caddy lo inserta en `index.html`, así que los scrapers que no ejecutan JavaScript ya ven la tarjeta del perfil. **Falta verificar con el Post Inspector de LinkedIn y con Slack después del deploy** (ver "Estado del release").
 - [ ] ⏳ **Backup de DB.** Sin código que escribir. Activar los respaldos del Postgres gestionado y **probar una restauración** siguiendo `docs/DEPLOY.md` § 7. Anotar acá la fecha de la última prueba: `________`.
+- [ ] ⏳ **Backup fuera de Railway y prueba de restauración.** Un `pg_dump -Fc` propio (con Public Access encendido solo para eso), guardado fuera de la PC de trabajo y restaurado en un `postgres:<N>-alpine` descartable con la misma versión mayor del servicio; el conteo de `CuratedProfile` tiene que coincidir. Paso 9 de `docs/DEPLOY-RAILWAY.md`.
+- [ ] ⏳ **Config file path de los dos servicios.** `/backend/railway.json` en `api` y `/frontend/railway.json` en `web` (rutas absolutas desde la raíz del repo). Sin eso Railway ignora el archivo versionado: el build no corre `prisma generate` y no hay pre-deploy ni healthcheck. Pasos 3 y 5.
+- [ ] ⏳ **IP real del cliente verificada.** El `Caddyfile` copia `X-Real-IP` a `X-Forwarded-For`; falta comprobar en el sitio desplegado que el límite del login es por IP real (otra red recibe 401, no 429) y que Railway pisa un `X-Real-IP` falso del cliente. Paso 7 (7b y 7c).
+- [ ] ⏳ **Primer poblado desde la máquina del owner.** `npm run seed`, `seed:verify` y `admin:bootstrap` contra `DATABASE_PUBLIC_URL` (sin `railway run`), y Public Access apagado después. Paso 4.
 
 ---
 
@@ -51,8 +55,8 @@
 **Todo lo que es código está cerrado.** Los 6 bloqueantes de hardening, el ajuste de empaquetado del CLI de Prisma y la configuración de despliegue. De los importantes queda uno, backups, que no es código y se cierra al desplegar. **Proveedor elegido: Railway** (`docs/DEPLOY.md` § 9.5). Lo que queda para el 1.0.0:
 
 1. Crear el proyecto en Railway y seguir **`docs/DEPLOY-RAILWAY.md`** (la guía corta, con checkboxes). El detalle de cada paso está en `docs/DEPLOY.md`.
-2. Activar backups y **probar una restauración** (§ 7), y anotar la fecha en este documento.
-3. Correr la verificación posterior al despliegue (§ 5).
+2. Activar backups, hacer un **dump fuera de Railway** y **probar una restauración** (paso 9 de la guía y § 7), y anotar la fecha en este documento.
+3. Correr la verificación posterior al despliegue (§ 5), incluida la prueba de IP real del paso 7.
 4. Pendientes de la ronda 1.1 que necesitan el sitio arriba:
    - **Vista previa de los links** (tarea 5.4 de `add-server-rendered-head`): pegar dos perfiles distintos en el [Post Inspector de LinkedIn](https://www.linkedin.com/post-inspector/) y en un canal de Slack. Las tarjetas tienen que mostrar títulos distintos y la imagen. Capturas en `openspec/changes/archive/2026-10-08-add-server-rendered-head/verification/`.
    - **Migración `curated_profile_lifecycle`**: antes del primer deploy que la incluya, probar `prisma migrate deploy` sobre una restauración del backup de producción (la prueba hecha fue sobre una copia de la base de desarrollo).

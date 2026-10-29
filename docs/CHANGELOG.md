@@ -10,6 +10,17 @@
 - **Scripts de calidad.** Sus visitas quedan como `BOT`: Puppeteer ya manda `HeadlessChrome`; `a11y:check` (sus GET con `fetch`) y `perf:check` (UA emulado de Lighthouse) llevan el token `PortfolioCheck`.
 - **Docs.** `docs/MANUAL.md` e `index.html` (TC-39, B2, R9, C8, glosario y `tc18-dashboard.jpg` regenerada), `docs/DEPLOY.md` § 7, `docs/DEPLOY-RAILWAY.md`, `docs/DATA-POPULATION.md` y `backend/README.md`.
 
+## Update — Octubre 2026 (`fix(deploy)`)
+
+Correcciones de despliegue que salieron de la revisión integral previa al deploy en Railway.
+
+- **`backend/railway.json`.** `buildCommand` corre `prisma generate` antes de `nest build`; `startCommand` pasa a `node dist/main`; `watchPatterns` con ruta absoluta del repo (`/backend/**`); `drainingSeconds: 10` y `preDeployTimeoutSeconds: 300` versionados (claves confirmadas en el schema de Railway).
+- **`frontend/railway.json`.** `watchPatterns` `/frontend/**` y `healthcheckPath: /`.
+- **Config file path.** Los dos servicios deben apuntar a `/backend/railway.json` y `/frontend/railway.json` (absolutas desde la raíz): `railway.json` relativo al Root Directory no lo encuentra.
+- **`frontend/Caddyfile`.** `header_up X-Forwarded-For {http.request.header.X-Real-IP}` en los dos proxies: sin esto la API veía la IP del borde para todos (límite de peticiones y de login compartidos, un solo `ipHash`).
+- **Imágenes base.** `frontend/Dockerfile` fija `node:22.23.3-alpine` y `caddy:2.11.4-alpine`; `backend/package.json` declara `engines.node` `22.x`.
+- **Docs.** `docs/DEPLOY-RAILWAY.md` reescrita como guía de 10 pasos (poblado y administrador desde la máquina del owner contra `DATABASE_PUBLIC_URL`, sin `railway run`; rotación de la contraseña con `admin:bootstrap`; dominio sin `www`; prueba de IP real; backup fuera de Railway y restauración). `docs/DEPLOY.md` y `docs/RELEASE-1.0.0-CHECKLIST.md` alineados. El comando de recarga de la entrada anterior (`railway run -- sh -c ...`) quedó reemplazado por el del paso 4 de la guía.
+
 ## Update — Octubre 2026 (`protect-default-seed`)
 
 `npm run seed` ya no puede pisar una base con contenido por accidente.
