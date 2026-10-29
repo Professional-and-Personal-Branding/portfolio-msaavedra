@@ -228,6 +228,75 @@ describe('buildPrintSheet — límites', () => {
     expect(block(blocks, 'certifications').omittedLabel).toBe('y 4 certificaciones más');
   });
 
+  describe('credenciales de las certificaciones (add-certification-verification, D7)', () => {
+    const NOW = new Date(2026, 9, 29);
+    const base = makeCuratedProfile().certifications[0]!;
+    const withCredential = {
+      ...base,
+      id: 'c1',
+      name: 'Arquitecto Cloud',
+      issuer: 'Escuela Demo',
+      year: '2021',
+      verificationUrl: 'https://example.org/credenciales/arquitecto',
+      credentialId: 'EJ-1',
+      expiresAt: '2029-06',
+    };
+    const expiredNoLink = {
+      ...base,
+      id: 'c2',
+      name: 'Liderazgo',
+      issuer: 'Escuela Demo',
+      year: null,
+      verificationUrl: null,
+      credentialId: null,
+      expiresAt: '2025-12',
+    };
+    const items = (locale: 'es' | 'en') =>
+      block(
+        buildPrintSheet(
+          makeCuratedProfile({ certifications: [withCredential, expiredNoLink] }),
+          locale,
+          ORIGIN,
+          NOW,
+        ).blocks,
+        'certifications',
+      ).items;
+
+    it('la credencial es un PrintLink y la URL no entra en el texto', () => {
+      const [first] = items('es');
+      expect(first?.credential).toEqual({
+        text: 'Ver credencial',
+        href: 'https://example.org/credenciales/arquitecto',
+      });
+      expect(first?.text).toBe('Arquitecto Cloud (Escuela Demo, 2021)');
+      expect(first?.text).not.toContain('example.org');
+      expect(first?.expired).toBe(false);
+    });
+
+    it('una vencida suma «vencida» («expired») al paréntesis y no lleva enlace', () => {
+      expect(items('es')[1]).toEqual({
+        text: 'Liderazgo (Escuela Demo, vencida)',
+        credential: null,
+        expired: true,
+      });
+      expect(items('en')[1]?.text).toBe('Liderazgo (Escuela Demo, expired)');
+      expect(items('en')[0]?.credential?.text).toBe('View credential');
+    });
+
+    it('sin credenciales el texto es el de siempre y los límites no cambian', () => {
+      const plain = block(
+        buildPrintSheet(makeCuratedProfile(), 'es', ORIGIN, NOW).blocks,
+        'certifications',
+      );
+      expect(plain.items.map((i) => i.text)).toEqual([
+        'AWS Solutions Architect (AWS, 2023)',
+        'Scrum Master (Scrum.org)',
+      ]);
+      expect(plain.items.every((i) => i.credential === null && !i.expired)).toBe(true);
+      expect(PRINT_LIMITS.certifications).toBe(4);
+    });
+  });
+
   it('formación en curso lleva la marca de en curso', () => {
     const eduBase = makeCuratedProfile().education[0]!;
     const data = makeCuratedProfile({

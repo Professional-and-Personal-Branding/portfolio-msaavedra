@@ -43,19 +43,19 @@
 
 ## 6. Contrato y vista pública (D4, D5, D6, D7)
 
-- [ ] 6.1 `npm run openapi:export` y, en `frontend/`, `npm run api:types`: los tres campos aparecen en `CertificationResponse`, en la vista curada, en el preview y en el panel. Verificar: el test de deriva del frontend verde y `git diff --exit-code` tras un segundo export.
-- [ ] 6.2 `frontend/src/shared/lib/certification-validity.ts`: `certificationValidity(expiresAt, now)` → `'none' | 'valid' | 'expired'` (fin de mes con `AAAA-MM`, fin de año con `AAAA`). Verificar: `certification-validity.spec.ts` con `now` fijo en 2026-10-29: `null` → `none`; `2026-10` → `valid`; `2026-09` → `expired`; `2026` → `valid`; `2025` → `expired`; `2029-06` → `valid`.
-- [ ] 6.3 `shared/i18n/messages.ts`: claves `certification.verify` («Ver credencial» / «View credential»), `certification.credentialId` («ID» / «ID»), `certification.validUntil` («Válida hasta {date}» / «Valid until {date}»), `certification.expired` («Vencida» / «Expired») y `print.certification.expired` («vencida» / «expired»). Verificar: el test de paridad de claves ES/EN, si existe, verde.
-- [ ] 6.4 `shared/components/portfolio/Certifications.tsx`: línea de detalle (ID y vigencia con `formatMonthYear`) y enlace «Ver credencial» de D6 (`target="_blank"`, `rel="noopener noreferrer"`, `sr-only` con el nombre, `ArrowUpRight`, clases del enlace de `Projects.tsx`). Sin datos nuevos, el DOM de la tarjeta queda igual. Verificar: tests de 6.6.
-- [ ] 6.5 `features/curated-view/print/print-sheet.ts`: `buildPrintSheet(data, locale, origin, now = new Date())`; ítems `{ text, credential, expired }` de D7. `PrintableSheet.tsx`: un párrafo con `line-clamp-3`, cada ítem con `LinkOrText` para la credencial, separados por « · ». Verificar: tests de 6.6.
-- [ ] 6.6 Tests de Vitest:
+- [x] 6.1 `npm run openapi:export` y, en `frontend/`, `npm run api:types`: los tres campos aparecen en `CertificationResponse`, en la vista curada, en el preview y en el panel. Verificar: el test de deriva del frontend verde y `git diff --exit-code` tras un segundo export.
+- [x] 6.2 `frontend/src/shared/lib/certification-validity.ts`: `certificationValidity(expiresAt, now)` → `'none' | 'valid' | 'expired'` (fin de mes con `AAAA-MM`, fin de año con `AAAA`). Verificar: `certification-validity.spec.ts` con `now` fijo en 2026-10-29: `null` → `none`; `2026-10` → `valid`; `2026-09` → `expired`; `2026` → `valid`; `2025` → `expired`; `2029-06` → `valid`.
+- [x] 6.3 `shared/i18n/messages.ts`: claves `certification.verify` («Ver credencial» / «View credential»), `certification.credentialId` («ID» / «ID»), `certification.validUntil` («Válida hasta {date}» / «Valid until {date}»), `certification.expired` («Vencida» / «Expired») y `print.certification.expired` («vencida» / «expired»). Verificar: el test de paridad de claves ES/EN, si existe, verde.
+- [x] 6.4 `shared/components/portfolio/Certifications.tsx`: línea de detalle (ID y vigencia con `formatMonthYear`) y enlace «Ver credencial» de D6 (`target="_blank"`, `rel="noopener noreferrer"`, `sr-only` con el nombre, `ArrowUpRight`, clases del enlace de `Projects.tsx`). Sin datos nuevos, el DOM de la tarjeta queda igual. Verificar: tests de 6.6.
+- [x] 6.5 `features/curated-view/print/print-sheet.ts`: `buildPrintSheet(data, locale, origin, now = new Date())`; ítems `{ text, credential, expired }` de D7. `PrintableSheet.tsx`: un párrafo con `line-clamp-3`, cada ítem con `LinkOrText` para la credencial, separados por « · ». Verificar: tests de 6.6.
+- [x] 6.6 Tests de Vitest:
   - `layouts.test.tsx` o un test nuevo de `Certifications`: enlace con `href`, `target` y `rel` exactos; nombres accesibles distintos para dos credenciales; «View credential» con `?lang=en`; «Válida hasta» y «Vencida» con `vi.setSystemTime(new Date('2026-10-29'))`; tarjeta sin datos nuevos sin enlace ni línea de detalle.
   - `print-sheet.spec.ts`: credencial como `PrintLink` sin la URL en el texto; «(Escuela Demo, vencida)» y «(…, expired)»; sin credenciales, el mismo texto que antes; los límites no cambian.
   - `PrintableSheet.test.tsx`: el enlace «Ver credencial» con su `href` y sin `data-motion`.
   - Fixtures (`test/fixtures/curated-profile.ts`, `admin.ts`, `msw-admin.ts`) con los tres campos.
 
   Verificar: `npm test`, `npm run lint` y `npm run typecheck` verdes en `frontend/`.
-- [ ] 6.7 `npm run build` y `npm run perf:budget`: el arranque público sigue ≤ 155 KB gzip y en un solo JS de módulo. Verificar: salida en `verification/6.7-perf-budget.txt`, con la diferencia frente a 1.1.
+- [x] 6.7 `npm run build` y `npm run perf:budget`: el arranque público sigue ≤ 155 KB gzip y en un solo JS de módulo. Verificar: salida en `verification/6.7-perf-budget.txt`, con la diferencia frente a 1.1.
 
 ## 7. Panel (D8)
 

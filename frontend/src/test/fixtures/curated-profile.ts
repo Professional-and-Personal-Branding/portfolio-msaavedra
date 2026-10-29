@@ -104,8 +104,26 @@ export function makeCuratedProfile(overrides: Partial<CuratedProfile> = {}): Cur
       },
     ],
     certifications: [
-      { id: 'cert-1', name: 'AWS Solutions Architect', issuer: 'AWS', year: '2023', order: 1 },
-      { id: 'cert-2', name: 'Scrum Master', issuer: 'Scrum.org', year: null, order: 2 },
+      {
+        id: 'cert-1',
+        name: 'AWS Solutions Architect',
+        issuer: 'AWS',
+        year: '2023',
+        verificationUrl: null,
+        credentialId: null,
+        expiresAt: null,
+        order: 1,
+      },
+      {
+        id: 'cert-2',
+        name: 'Scrum Master',
+        issuer: 'Scrum.org',
+        year: null,
+        verificationUrl: null,
+        credentialId: null,
+        expiresAt: null,
+        order: 2,
+      },
     ],
     socialLinks: [
       {

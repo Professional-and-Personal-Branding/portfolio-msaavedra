@@ -93,6 +93,27 @@ describe('PrintableSheet', () => {
     ]);
   });
 
+  it('«Ver credencial» es un enlace con su href en el bloque de certificaciones, sin motion', () => {
+    const base = makeCuratedProfile().certifications[0]!;
+    const data = makeCuratedProfile({
+      certifications: [
+        { ...base, verificationUrl: 'https://example.org/credenciales/1', expiresAt: '2000-01' },
+      ],
+    });
+    const { container } = renderSheet(data);
+    const block = within(sheet(container))
+      .getByText(/AWS Solutions Architect/)
+      .closest('p');
+    const link = within(block as HTMLElement).getByRole('link', {
+      name: 'Ver credencial',
+      hidden: true,
+    });
+    expect(link).toHaveAttribute('href', 'https://example.org/credenciales/1');
+    expect(block?.textContent).toContain('vencida');
+    expect(block?.textContent).not.toContain('example.org');
+    expect(sheet(container).querySelector('[data-motion]')).toBeNull();
+  });
+
   it('no deja ningún nodo de la hoja sin texto legible (sin etiquetas vacías)', () => {
     const { container } = renderSheet();
     const empty = Array.from(sheet(container).querySelectorAll('li')).filter(

@@ -5279,6 +5279,23 @@
             "nullable": true,
             "example": "2021"
           },
+          "verificationUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL https de la página pública de la credencial en el emisor.",
+            "example": "https://www.credly.com/badges/00000000-0000-0000-0000-000000000000"
+          },
+          "credentialId": {
+            "type": "string",
+            "nullable": true,
+            "example": "EJ-2023-0042"
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "YYYY-MM o YYYY. La vigencia la deriva el cliente.",
+            "example": "2029-06"
+          },
           "order": {
             "type": "number"
           }
@@ -5288,6 +5305,9 @@
           "name",
           "issuer",
           "year",
+          "verificationUrl",
+          "credentialId",
+          "expiresAt",
           "order"
         ]
       },
@@ -6808,6 +6828,23 @@
             "nullable": true,
             "example": "2021"
           },
+          "verificationUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL https de la página pública de la credencial en el emisor.",
+            "example": "https://www.credly.com/badges/00000000-0000-0000-0000-000000000000"
+          },
+          "credentialId": {
+            "type": "string",
+            "nullable": true,
+            "example": "EJ-2023-0042"
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "YYYY-MM o YYYY. La vigencia la deriva el cliente.",
+            "example": "2029-06"
+          },
           "order": {
             "type": "number"
           },
@@ -6820,6 +6857,9 @@
           "name",
           "issuer",
           "year",
+          "verificationUrl",
+          "credentialId",
+          "expiresAt",
           "order",
           "visible"
         ]
@@ -6838,6 +6878,26 @@
             "type": "string",
             "example": "2021",
             "description": "YYYY; omitir o null si no se conoce",
+            "nullable": true
+          },
+          "verificationUrl": {
+            "type": "string",
+            "example": "https://www.credly.com/badges/00000000-0000-0000-0000-000000000000",
+            "description": "URL https absoluta de la página pública de la credencial; null para quitarla",
+            "nullable": true,
+            "maxLength": 2048
+          },
+          "credentialId": {
+            "type": "string",
+            "example": "EJ-2023-0042",
+            "description": "ID de la credencial en el emisor (texto plano); null para quitarlo",
+            "nullable": true,
+            "maxLength": 100
+          },
+          "expiresAt": {
+            "type": "string",
+            "example": "2029-06",
+            "description": "Vencimiento YYYY-MM o YYYY; null si no vence",
             "nullable": true
           },
           "order": {
@@ -6869,6 +6929,26 @@
             "type": "string",
             "example": "2021",
             "description": "YYYY; omitir o null si no se conoce",
+            "nullable": true
+          },
+          "verificationUrl": {
+            "type": "string",
+            "example": "https://www.credly.com/badges/00000000-0000-0000-0000-000000000000",
+            "description": "URL https absoluta de la página pública de la credencial; null para quitarla",
+            "nullable": true,
+            "maxLength": 2048
+          },
+          "credentialId": {
+            "type": "string",
+            "example": "EJ-2023-0042",
+            "description": "ID de la credencial en el emisor (texto plano); null para quitarlo",
+            "nullable": true,
+            "maxLength": 100
+          },
+          "expiresAt": {
+            "type": "string",
+            "example": "2029-06",
+            "description": "Vencimiento YYYY-MM o YYYY; null si no vence",
             "nullable": true
           },
           "order": {
