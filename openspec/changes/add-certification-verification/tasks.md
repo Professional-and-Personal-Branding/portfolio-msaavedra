@@ -59,9 +59,9 @@
 
 ## 7. Panel (D8)
 
-- [ ] 7.1 `features/backoffice/formacion/formacion-form.ts`: `certificationSchema` con los tres campos y los mensajes literales de D8; `EMPTY_CERTIFICATION`, `toCertificationValues` (`null` → `''`) y `toCertificationBody` (`''` → `null`, recortado). Verificar: tests de 7.3.
-- [ ] 7.2 `FormacionForms.tsx`: **Enlace de verificación** (con la ayuda de D8, `type="url"`, `inputMode="url"`), **ID de credencial** y **Vence** (placeholder `AAAA-MM`), con sus errores asociados por `aria-describedby`. Verificar: tests de 7.3.
-- [ ] 7.3 Tests de Vitest (`formacion-form.spec.ts` y `FormacionPage.test.tsx`): los escenarios de *Campos de credencial en el formulario de certificación* (http → mensaje y ninguna petición; `06/2029` → mensaje; vaciar el enlace → `PATCH` con `null`; editar solo el ID y cancelar → confirmación), más «El ID de credencial admite hasta 100 caracteres» y «El vencimiento no puede ser anterior al año». Verificar: `npm test`, `npm run lint` y `npm run typecheck` verdes en `frontend/`.
+- [x] 7.1 `features/backoffice/formacion/formacion-form.ts`: `certificationSchema` con los tres campos y los mensajes literales de D8; `EMPTY_CERTIFICATION`, `toCertificationValues` (`null` → `''`) y `toCertificationBody` (`''` → `null`, recortado). Verificar: tests de 7.3.
+- [x] 7.2 `FormacionForms.tsx`: **Enlace de verificación** (con la ayuda de D8, `type="url"`, `inputMode="url"`), **ID de credencial** y **Vence** (placeholder `AAAA-MM`), con sus errores asociados por `aria-describedby`. Verificar: tests de 7.3.
+- [x] 7.3 Tests de Vitest (`formacion-form.spec.ts` y `FormacionPage.test.tsx`): los escenarios de *Campos de credencial en el formulario de certificación* (http → mensaje y ninguna petición; `06/2029` → mensaje; vaciar el enlace → `PATCH` con `null`; editar solo el ID y cancelar → confirmación), más «El ID de credencial admite hasta 100 caracteres» y «El vencimiento no puede ser anterior al año». Verificar: `npm test`, `npm run lint` y `npm run typecheck` verdes en `frontend/`.
 
 ## 8. App real sobre base descartable
 
