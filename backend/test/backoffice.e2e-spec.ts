@@ -262,6 +262,94 @@ describe('Backoffice: preview y catálogo de temas (e2e)', () => {
       expect(after).toHaveLength(ids.length - 1);
     });
 
+    // Change add-builder-skill-project-overrides (D11): el constructor escribe ids de skills y
+    // proyectos en los mismos arreglos; el preview y la ruta pública deben resolverlos igual.
+    it('Overrides de skills y proyectos: el preview y la ruta pública coinciden tras guardar', async () => {
+      const slug = 'e2e-overrides-ovr';
+      const auth = { Authorization: `Bearer ${token}` };
+      // Fixtures propios: una categoría con una skill java y otra sin tags comunes, y un proyecto
+      // visible sin tags comunes.
+      const category = await prisma.skillCategory.create({
+        data: {
+          name: { es: 'Categoría e2e overrides', en: 'E2E overrides category' },
+          order: 9999,
+          skills: {
+            create: [
+              { name: 'E2E Java skill', tags: ['java'], order: 0 },
+              { name: 'E2E Libre skill', tags: ['e2e-ovr'], order: 1 },
+            ],
+          },
+        },
+        include: { skills: true },
+      });
+      const excludedSkill = category.skills.find((s) => s.name === 'E2E Java skill');
+      const includedSkill = category.skills.find((s) => s.name === 'E2E Libre skill');
+      const project = await prisma.project.create({
+        data: {
+          name: 'E2E Proyecto libre',
+          role: { es: 'Autor', en: 'Author' },
+          period: '2026',
+          summary: { es: 'x', en: 'x' },
+          technologies: [],
+          tags: ['e2e-ovr'],
+          order: 9999,
+          visible: true,
+        },
+      });
+      if (!excludedSkill || !includedSkill) throw new Error('fixtures de skills incompletas');
+      const criteria = {
+        filterTags: ['java'],
+        includeIds: [includedSkill.id, project.id],
+        excludeIds: [excludedSkill.id],
+      };
+      try {
+        // Sin overrides: la skill java entra por tag y las otras dos no.
+        const base = await preview().send({ filterTags: ['java'] });
+        expect(JSON.stringify(base.body.skillCategories)).toContain('E2E Java skill');
+        expect(JSON.stringify(base.body.skillCategories)).not.toContain('E2E Libre skill');
+        expect((base.body.projects as { id: string }[]).map((p) => p.id)).not.toContain(project.id);
+
+        const res = await preview().send(criteria);
+        expect(res.status).toBe(200);
+        const categories = res.body.skillCategories as { name: string; skills: string[] }[];
+        const mine = categories.find((c) => c.name === 'Categoría e2e overrides');
+        expect(mine?.skills).toEqual(['E2E Libre skill']);
+        expect((res.body.projects as { id: string }[]).map((p) => p.id)).toContain(project.id);
+
+        // Guardar los mismos criterios en un perfil de prueba y comparar con la ruta pública.
+        const created = await request(app.getHttpServer())
+          .post('/api/admin/curated-profiles')
+          .set(auth)
+          .send({ slug, title: { es: 'Overrides e2e', en: 'Overrides e2e' } });
+        expect(created.status).toBe(201);
+        const patched = await request(app.getHttpServer())
+          .patch(`/api/admin/curated-profiles/${created.body.id as string}`)
+          .set(auth)
+          .send(criteria);
+        expect(patched.status).toBe(200);
+
+        const publico = await get(`/api/curated-profiles/${slug}?locale=es`);
+        expect(publico.status).toBe(200);
+        const saved = await adminProfile(slug);
+        expect(saved.includeIds).toEqual(criteria.includeIds);
+        expect(saved.excludeIds).toEqual(criteria.excludeIds);
+        const previewed = await preview()
+          .query({ locale: 'es' })
+          .send({ slug, title: { es: 'Overrides e2e', en: 'Overrides e2e' }, ...criteria });
+        expect(previewed.status).toBe(200);
+        expect(publico.body.experiences).toEqual(previewed.body.experiences);
+        expect(publico.body.skillCategories).toEqual(previewed.body.skillCategories);
+        expect(publico.body.projects).toEqual(previewed.body.projects);
+        expect(publico.body.skillCategories).toEqual(res.body.skillCategories);
+        expect(publico.body.projects).toEqual(res.body.projects);
+      } finally {
+        await settleBackgroundTasks(app);
+        await prisma.curatedProfile.deleteMany({ where: { slug } });
+        await prisma.skillCategory.delete({ where: { id: category.id } });
+        await prisma.project.delete({ where: { id: project.id } });
+      }
+    });
+
     it('un borrador PRIVATE o PROTECTED se resuelve sin token de acceso', async () => {
       const privado = await preview().send({ filterTags: ['java'], visibility: 'PRIVATE' });
       const protegido = await preview().send({
