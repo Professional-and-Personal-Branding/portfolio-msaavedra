@@ -79,6 +79,28 @@ export const ADMIN_CATEGORIES: AdminSkillCategory[] = [
   },
 ];
 
+/**
+ * Categorías para el constructor (change `add-builder-skill-project-overrides`): Kotlin matchea
+ * por el tag `java`; React, en otra categoría, no comparte ningún tag con él.
+ */
+export const OVERRIDES_CATEGORIES: AdminSkillCategory[] = [
+  {
+    id: 'cat-lang',
+    name: { es: 'Lenguajes', en: 'Languages' },
+    order: 0,
+    skills: [
+      { id: 'sk-kotlin', categoryId: 'cat-lang', name: 'Kotlin', tags: ['java'], order: 0 },
+      { id: 'sk-java', categoryId: 'cat-lang', name: 'Java', tags: ['java'], order: 1 },
+    ],
+  },
+  {
+    id: 'cat-front',
+    name: { es: 'Frontend', en: 'Frontend' },
+    order: 1,
+    skills: [{ id: 'sk-react', categoryId: 'cat-front', name: 'React', tags: ['react'], order: 0 }],
+  },
+];
+
 export function makeAdminCuratedProfile(
   overrides: Partial<AdminCuratedProfile> = {},
 ): AdminCuratedProfile {
