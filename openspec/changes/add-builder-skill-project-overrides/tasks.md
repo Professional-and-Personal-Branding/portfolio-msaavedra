@@ -62,6 +62,6 @@
 
 ## 8. Cierre
 
-- [ ] 8.1 `backend/`: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`; `frontend/`: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run perf:budget`, `npm run manual:check`. Verificar: todo verde; salida en `verification/8.1-cierre.txt`.
-- [ ] 8.2 `npx -y @fission-ai/openspec@1.14.1 validate add-builder-skill-project-overrides --strict` y `validate --all --strict`, sin «Archive would refuse». Verificar: salida en `verification/8.2-validacion.txt`.
-- [ ] 8.3 `git diff --stat main -- backend/src backend/prisma backend/scripts` vacío (D1) y la base `portfolio` del owner sin escrituras. Verificar: nota en `verification/8.3-alcance.txt`.
+- [x] 8.1 `backend/`: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`; `frontend/`: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run perf:budget`, `npm run manual:check`. Verificar: todo verde; salida en `verification/8.1-cierre.txt`.
+- [x] 8.2 `npx -y @fission-ai/openspec@1.14.1 validate add-builder-skill-project-overrides --strict` y `validate --all --strict`, sin «Archive would refuse». Verificar: salida en `verification/8.2-validacion.txt`.
+- [x] 8.3 `git diff --stat main -- backend/src backend/prisma backend/scripts` vacío (D1) y la base `portfolio` del owner sin escrituras. Verificar: nota en `verification/8.3-alcance.txt`.

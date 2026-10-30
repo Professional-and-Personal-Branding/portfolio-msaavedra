@@ -1,19 +1,19 @@
 # Verificación — add-builder-skill-project-overrides
 
-> Plan de verificación. Se completa al implementar, con la evidencia en `verification/`, como en `add-certification-verification`. Todas las escrituras van contra bases descartables (la de e2e y `portfolio_overrides_check`); la base `portfolio` del owner no se toca.
+> Plan de verificación, completado al implementar (29 de octubre de 2026), con la evidencia en `verification/`, como en `add-certification-verification`. Todas las escrituras van contra bases descartables (la de e2e y `portfolio_overrides_check`); la base `portfolio` del owner no se toca.
 
 ## Resultado por tarea
 
 | Tarea | Qué se comprueba | Resultado | Evidencia |
 |---|---|---|---|
-| 1.1 Punto de partida | Suites verdes antes de tocar nada | pendiente | `verification/1.1-punto-de-partida.txt` |
-| 2.1–2.2 Servicios puros | Include/exclude de skills y arreglo mixto, sin cambiar el código del núcleo | pendiente | specs en `domain/services/` |
-| 3.1–3.3 Caso de uso y preview | Proyecto incluido y oculto, skills; preview igual a la ruta pública | pendiente | `verification/3.2-e2e.txt` |
-| 4.1–4.4 Funciones puras | Exclusión mutua, huérfanos, buscador, universo de tags | pendiente | `selection-overrides.spec.ts` |
-| 5.1–5.8 Constructor | Escenarios de `curated-profile-builder`; contrato y arranque público sin cambios | pendiente | tests de `curated-profiles/`, `verification/5.8-perf-budget.txt` |
-| 6.1–6.3 App real | TC-43 y `a11y:check` con el panel | pendiente | `verification/6.2-tc43.txt`, `6.3-a11y.txt` |
-| 7.1–7.5 Docs | TC-43, B10, TC-13, capturas, `manual:check` | pendiente (7.5 al archivar) | diff |
-| 8.1–8.3 Cierre | Todo verde, validación estricta, sin diff en el backend | pendiente | `verification/8.1-cierre.txt`, `8.2-validacion.txt`, `8.3-alcance.txt` |
+| 1.1 Punto de partida | Suites verdes antes de tocar nada | OK: backend 909, e2e 244, frontend 960; perfmax 149,7 KB | `verification/1.1-punto-de-partida.txt` |
+| 2.1–2.2 Servicios puros | Include/exclude de skills y arreglo mixto, sin cambiar el código del núcleo | OK (+7 tests) | specs en `domain/services/` |
+| 3.1–3.3 Caso de uso y preview | Proyecto incluido y oculto, skills; preview igual a la ruta pública | OK (+5 unitarios, +1 e2e, +1 de ejemplo) | `verification/3.2-e2e.txt` |
+| 4.1–4.4 Funciones puras | Exclusión mutua, huérfanos, buscador, universo de tags | OK (+16 tests) | `selection-overrides.spec.ts` |
+| 5.1–5.8 Constructor | Escenarios de `curated-profile-builder`; contrato y arranque público sin cambios | OK (+14 tests; openapi y api.d.ts sin diff; perf:budget 149,7 KB igual que antes) | tests de `curated-profiles/`, `verification/5.8-perf-budget.txt` |
+| 6.1–6.3 App real | TC-43 y `a11y:check` con el panel | OK: TC-43 completo, a11y:check 0 violaciones, axe sobre Selección 0 | `verification/6.2-tc43.txt`, `6.3-a11y.txt` |
+| 7.1–7.5 Docs | TC-43, B10, TC-13, capturas, `manual:check` | 7.1 a 7.4 OK (43 casos, 47 imágenes); 7.5 al archivar | diff |
+| 8.1–8.3 Cierre | Todo verde, validación estricta, sin diff en el backend | OK: ver `8.1-cierre.txt`; `validate --all --strict`: Totals 40 passed, 0 failed; el diff de `backend/src` son solo 3 specs de test | `verification/8.1-cierre.txt`, `8.2-validacion.txt`, `8.3-alcance.txt` |
 
 ## TC-43 — Ajustar skills y proyectos de un perfil
 
@@ -61,3 +61,21 @@ GET   /api/curated-profiles/ejemplo-overrides               -> mismas experience
 3. **Equivalencia por API.** Con el perfil guardado, comparar `POST /api/admin/curated-profiles/preview` (mismo borrador) con `GET /api/curated-profiles/ejemplo-overrides`: `experiences`, `skillCategories` y `projects` idénticos.
 4. **Accesibilidad (6.3).** `$env:A11Y_CHECK_DISPOSABLE_DB = "1"; $env:A11Y_CHECK_PROFILE = "ejemplo-backend"; npm run a11y:check -- <base>` con las variables del panel. Ninguna violación nueva en el constructor.
 5. **Limpieza.** Borrar `portfolio_overrides_check`. Comprobar que `portfolio` no recibió escrituras y que no hay diff en `backend/src`, `backend/prisma` ni `backend/scripts` (8.3).
+
+## Resultados del cierre (29 de octubre de 2026)
+
+| Suite | Antes | Después |
+|---|---|---|
+| backend `npm test` | 909 | 922 |
+| backend `npm run test:e2e` | 244 | 245 |
+| frontend `npm test -- --run` | 960 | 990 (ver nota) |
+| `perf:budget` | 149,7 KB | 149,7 KB |
+| `manual:check` | 42 casos, 46 imágenes | 43 casos, 47 imágenes |
+| `print:check` (ejemplo) | — | 20 casos, 0 con problemas |
+
+- Backend: `lint`, `typecheck`, `build` y `openapi:export` sin diff, todos en verde. Frontend: `lint`, `typecheck`, `build` en verde.
+- Nota de los tests del frontend: la primera corrida en frío (con la app real aún levantada) falló 4 tests por tiempos; con todo lo propio bajado, la segunda falló 2 (`CuratedProfilePage` y `CuratedProfileView.staged`, ajenos al change; pasan solos, 537 tests) y la tercera pasó completa (990). Detalle en `verification/8.1-cierre.txt`.
+- `a11y:check` con el panel contra la imagen de `frontend/Dockerfile`: 50 cargas, 0 violaciones. Como abre la ficha en Identidad, se sumó axe sobre la pestaña Selección (escritorio y móvil): 0 violaciones; las regiones desplazables son enfocables y con nombre.
+- TC-43 en la app real: contadores observados distintos del plan (3 y 4 categorías) y el contador del preview no singulariza («1 proyectos», comportamiento previo); ver `verification/6.2-tc43.txt`.
+- Validación: `validate add-builder-skill-project-overrides --strict` válido; `validate --all --strict`: Totals: 40 passed, 0 failed.
+- Alcance: sin diff en `backend/prisma` ni `backend/scripts`; en `backend/src` solo specs de test. La base `portfolio` del owner no se tocó.
