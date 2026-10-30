@@ -188,6 +188,7 @@ npm run perf:check -- <base>   # Lighthouse mobile, mediana de PERF_CHECK_RUNS (
 - [x] `classify-profile-views` — cada visita se guarda con su `kind` (HUMAN/OWNER/BOT), `views` suma solo las humanas y `npm run views:reclassify` recalcula las históricas (archivado 2026-10-29)
 - [x] `fix-admin-contrast` — ítems ocultos e insignias del panel con contraste AA, token `--t-success-ink` y pierna `a11y-example` del CI (archivado 2026-10-29)
 - [x] `add-share-links` — enlaces de seguimiento `?via=` y portal `?src=`, API de admin, «Compartir en LinkedIn» y tablas «Por enlace» y «Por portal» (archivado 2026-10-29)
+- [x] `add-certification-verification` — cada certificación puede llevar `verificationUrl` (solo https), `credentialId` y `expiresAt` (`AAAA-MM` o `AAAA`); «Ver credencial» en la sección y en el PDF, «Vencida» derivada en el cliente, sin llamadas al emisor; migración aditiva y seed retrocompatible (archivado 2026-10-29)
 
 ---
 
