@@ -139,21 +139,21 @@ Sin migración de base ni de contrato. El despliegue es el del frontend; los per
 
 ## Open Questions
 
-Ninguna es bloqueante para implementar.
+Ninguna era bloqueante para implementar. **Resueltas el 2026-10-29 con la recomendación del arquitecto (P1: A, P2: A, P3: A)**: sin overrides por categoría, el contador del preview no cambia y el buscador queda solo en skills. Las alternativas B y C quedan como ideas de changes aparte.
 
 - **P1 — Overrides por categoría completa.** **[no bloqueante]**
   - A) No en este change: solo skills individuales (D3).
   - B) Atajo «Incluir todas / Excluir todas» que expande a los ids de las skills actuales de la categoría.
   - C) Ids de `SkillCategory` con significado propio en el núcleo (MODIFIED de *Selección de skills por categoría* y cambio de `selectSkillCategories`).
 
-  **Recomiendo A.** B deja una foto que no sigue a las skills nuevas; C toca el núcleo. Si el uso real lo pide, C es la forma correcta en un change aparte.
+  **Resuelta: A (2026-10-29).** **Recomiendo A.** B deja una foto que no sigue a las skills nuevas; C toca el núcleo. Si el uso real lo pide, C es la forma correcta en un change aparte.
 - **P2 — Contador de skills en el preview.** Hoy dice «N experiencias · N categorías · N proyectos». **[no bloqueante]**
   - A) Dejarlo así.
   - B) Sumar «M skills» (MODIFIED de *Preview en vivo del resultado*).
 
-  **Recomiendo A**: el preview ya muestra las skills; B se puede sumar sin costo si al usarlo se extraña.
+  **Resuelta: A (2026-10-29).** **Recomiendo A**: el preview ya muestra las skills; B se puede sumar sin costo si al usarlo se extraña.
 - **P3 — Buscador en experiencias y proyectos.** **[no bloqueante]**
   - A) Solo en skills (D10).
   - B) En los tres bloques.
 
-  **Recomiendo A** mientras haya menos de 30 experiencias y 10 proyectos.
+  **Resuelta: A (2026-10-29).** **Recomiendo A** mientras haya menos de 30 experiencias y 10 proyectos.
