@@ -1,23 +1,23 @@
 # Verificación — upgrade-profile-structured-data
 
-> Plan de verificación. Se completa al implementar, con la evidencia en `verification/`, como en `add-certification-verification`. Ninguna tarea escribe en la base `portfolio` del owner.
+> Verificación completada el 2026-11-04 al implementar, con la evidencia en `verification/`, como en `add-certification-verification`. Ninguna tarea escribe en la base `portfolio` del owner.
 
 ## Resultado por tarea
 
 | Tarea | Qué se comprueba | Resultado | Evidencia |
 |---|---|---|---|
-| 1.1 Punto de partida | Suites verdes y tamaño del arranque antes de tocar nada | pendiente | `verification/1.1-punto-de-partida.txt` |
-| 2.1 Fixture | `expected.jsonLd` por caso, revisado a mano contra D2 | pendiente | `verification/2.1-fixture.md` |
-| 3.1–3.4 Servidor | `ProfilePage` con `Person`, listas de D3/D4, sin fechas, escape de D8, paridad con el fixture | pendiente | specs de `profile-head.*` |
-| 4.1–4.4 Cliente | Misma salida que el servidor, sin bloque con `noindex`, un solo bloque al navegar, `perf:budget` ≤ 155 KB | pendiente | `verification/4.4-perf-budget.txt` |
-| 5.1 E2e | Bloque parseado en `es` y `en`, `via`/`src` ignorados, `@id` común, regresión de no indexables | pendiente | `verification/5.1-e2e.txt` |
-| 6.1–6.3 App real | TC-44 pasos 1 a 5, consola sin violaciones de CSP, validador de schema.org | pendiente | `verification/6.2-tc44.txt`, `6.3-base-del-owner.txt` |
-| 7.1–7.4 Docs | TC-44 en el manual, `manual:check`, deploy, checklist, changelog, roadmap | pendiente | diff |
-| 8.1–8.2 Cierre | Todo verde, contrato sin cambios, validación estricta | pendiente | `verification/8.1-cierre.txt`, `8.2-validacion.txt` |
+| 1.1 Punto de partida | Suites verdes y tamaño del arranque antes de tocar nada | ✅ backend 909 + 244 e2e, frontend 960, arranque 149,7 KB | `verification/1.1-punto-de-partida.txt` |
+| 2.1 Fixture | `expected.jsonLd` por caso, revisado a mano contra D2 | ✅ 7 casos (3 ampliados, 4 nuevos) | `verification/2.1-fixture.md` |
+| 3.1–3.4 Servidor | `ProfilePage` con `Person`, listas de D3/D4, sin fechas, escape de D8, paridad con el fixture | ✅ 12 tests nuevos en `profile-head.renderer.spec.ts` y la paridad con el fixture | specs de `profile-head.*` |
+| 4.1–4.4 Cliente | Misma salida que el servidor, sin bloque con `noindex`, un solo bloque al navegar, `perf:budget` ≤ 155 KB | ✅ 150,1 KB (+0,4) | `verification/4.4-perf-budget.txt` |
+| 5.1 E2e | Bloque parseado en `es` y `en`, `via`/`src` ignorados, `@id` común, regresión de no indexables | ✅ 250 tests (+6) | `verification/5.1-e2e.txt` |
+| 6.1–6.3 App real | TC-44 pasos 1 a 5, consola sin violaciones de CSP, validador de schema.org | ✅ validador de schema.org: 0 errores y 0 advertencias; pasos 6 y 7 tras el deploy | `verification/6.2-tc44.txt`, `6.3-base-del-owner.txt` |
+| 7.1–7.4 Docs | TC-44 en el manual, `manual:check`, deploy, checklist, changelog, roadmap | ✅ 7.1 a 7.3; 7.4 queda para el PR de archivado | diff |
+| 8.1–8.2 Cierre | Todo verde, contrato sin cambios, validación estricta | ✅ `Totals: 39 passed, 0 failed` | `verification/8.1-cierre.txt`, `8.2-validacion.txt` |
 
 ## TC-44 — Los buscadores leen la página de perfil
 
-Texto del caso para `docs/MANUAL.md` (sección 2, después de TC-40, y de TC-43 si ya está fusionado) y su espejo en `docs/manual/index.html`. Estado inicial al implementarlo: 🔍 con los pasos 1 a 5 ejecutados contra la imagen local; pasa a ✅ cuando los pasos 6 y 7 se corren con el sitio desplegado.
+Texto del caso para `docs/MANUAL.md` (sección 2, después de TC-40, y de TC-43 si ya está fusionado) y su espejo en `docs/manual/index.html`. Quedó en 🔍 con los pasos 1 a 5 ejecutados contra la imagen local; pasa a ✅ cuando los pasos 6 y 7 se corren con el sitio desplegado. El texto de `docs/MANUAL.md` ajusta los nombres de los controles del validador a los de su interfaz (**Fragmento de código**, **Obtener la URL**) y pide pegar el JSON-LD y no el HTML completo.
 
 **Precondición:** base **descartable** sembrada con el ejemplo (nunca `portfolio`: cada carga pública registra una visita), la API y la imagen de `frontend/Dockerfile` levantadas, y un perfil del ejemplo puesto en `PROTECTED` desde el panel. Para los pasos 6 y 7, el sitio desplegado.
 
@@ -51,3 +51,12 @@ GET /api/public/profile-head?slug=no-existe                -> genérico, igual a
 ```
 
 **Captura:** ninguna; la evidencia es la transcripción del bloque y la salida de los validadores.
+
+## Notas de la implementación
+
+- **Manual: 43 casos en esta rama.** `main` trae 42 casos y 46 imágenes; el PR #46 (abierto) suma TC-43 y una captura. TC-44 se escribió como si TC-43 existiera y no se numeró nada como TC-43, así que `manual:check` cuenta **43 casos** acá (42 + TC-44) y **46 imágenes**. Al fusionar `main` después del #46 el total pasa a 44 casos y 47 imágenes; los textos de resumen del § 6 (`Último caso ejecutado`, `Pasan los 42 casos anteriores`) y la tabla de la suite van a tener conflicto textual con los del #46 y se resuelven a mano.
+- **`jsonLd` ausente con `noindex` también en el servidor.** `headMetaFromProfile` devuelve `jsonLd: undefined` cuando la página es `noindex` (como el cliente), para que el fixture afirme la misma ausencia de los dos lados. `renderProfileHead` conserva su condición `jsonLd && !noindex`.
+- **`design.md` D8 reparado.** El texto de la lista de reemplazos de `safeJson` había perdido las secuencias `\uXXXX` (decía «`<` por `<`»); se restauraron. P1 quedó registrada como resuelta con la opción A.
+- **Fixture.** 7 casos: los 3 existentes con `sections`, `skillCategories`, `education`, `certifications` y `socialLinks`, y 4 nuevos (perfil rico con 70 skills, secciones ocultas, `PROTECTED` y escape). Los `expected` están escritos a mano en el generador, no salen del código de producción.
+- **PROTECTED con token en el navegador:** no se abrió (el token no se tipea ni se imprime); lo cubren el test unitario del cliente y el paso 4 por `curl`.
+- **Flaky.** Una corrida de `npm test` del frontend, hecha con la máquina cargada, dio 1 test fallido; las dos siguientes, 972 de 972.
