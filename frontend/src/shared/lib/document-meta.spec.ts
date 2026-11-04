@@ -4,7 +4,7 @@ import {
   applyDocumentMeta,
   DEFAULT_META,
   metaFromProfile,
-  personJsonLd,
+  profilePageJsonLd,
   restoreDocumentMeta,
 } from './document-meta';
 
@@ -47,24 +47,95 @@ describe('metaFromProfile', () => {
   });
 });
 
-describe('personJsonLd', () => {
-  it('describe a la persona con sus enlaces', () => {
-    const jsonLd = personJsonLd(makeCuratedProfile());
+describe('profilePageJsonLd', () => {
+  const jsonLd = (overrides = {}, locale: 'es' | 'en' = 'es') => {
+    const data = makeCuratedProfile({ slug: 'tech-lead-dotnet', ...overrides });
+    return metaFromProfile(data, locale, ORIGIN).jsonLd;
+  };
+  const person = (overrides = {}) =>
+    (jsonLd(overrides)?.mainEntity ?? {}) as Record<string, unknown>;
 
-    expect(jsonLd).toMatchObject({
+  it('es un ProfilePage con el Person en mainEntity', () => {
+    const ld = jsonLd();
+
+    expect(ld).toMatchObject({
       '@context': 'https://schema.org',
-      '@type': 'Person',
-      name: 'Ada Ejemplo',
-      email: 'mailto:ada@example.com',
+      '@type': 'ProfilePage',
+      url: `${ORIGIN}/tech-lead-dotnet`,
+      inLanguage: 'es',
+      mainEntity: {
+        '@type': 'Person',
+        '@id': `${ORIGIN}/#person`,
+        url: `${ORIGIN}/`,
+        name: 'Ada Ejemplo',
+        email: 'mailto:ada@example.com',
+      },
     });
-    expect(jsonLd?.sameAs).toEqual([
+    expect(person().sameAs).toEqual([
       'https://github.com/ada',
       'https://linkedin.com/in/ada-ejemplo',
     ]);
   });
 
+  it('name y description son los del título y la meta, y no hay fechas', () => {
+    const data = makeCuratedProfile({ slug: 'tech-lead-dotnet', title: 'Backend' });
+    const meta = metaFromProfile(data, 'en', ORIGIN);
+
+    expect(meta.jsonLd).toMatchObject({
+      url: meta.canonical,
+      name: meta.title,
+      description: meta.description,
+      inLanguage: 'en',
+    });
+    expect(JSON.stringify(meta.jsonLd)).not.toMatch(/dateModified|dateCreated/);
+  });
+
+  it('el @id y la url del Person son los mismos en todos los perfiles', () => {
+    const home = metaFromProfile(makeCuratedProfile({ slug: 'all' }), 'es', ORIGIN).jsonLd;
+    const otro = jsonLd();
+    expect((home?.mainEntity as Record<string, unknown>)['@id']).toBe(
+      (otro?.mainEntity as Record<string, unknown>)['@id'],
+    );
+    expect((home?.mainEntity as Record<string, unknown>).url).toBe(`${ORIGIN}/`);
+  });
+
+  it('knowsAbout sale de las skills de la vista, sin repetidos y hasta 50', () => {
+    const skills = Array.from({ length: 70 }, (_, i) => `Skill ${i + 1}`);
+    const knows = person({
+      skillCategories: [
+        { name: 'A', skills: ['TypeScript', 'typescript'] },
+        { name: 'B', skills },
+      ],
+    }).knowsAbout as string[];
+
+    expect(knows).toHaveLength(50);
+    expect(knows.slice(0, 3)).toEqual(['TypeScript', 'Skill 1', 'Skill 2']);
+  });
+
+  it('con las secciones ocultas el Person no trae knowsAbout, alumniOf ni hasCredential', () => {
+    const oculto = person({ sections: ['hero', 'contact'] });
+    expect(oculto).not.toHaveProperty('knowsAbout');
+    expect(oculto).not.toHaveProperty('alumniOf');
+    expect(oculto).not.toHaveProperty('hasCredential');
+  });
+
   it('sin perfil base no genera nada', () => {
-    expect(personJsonLd(makeCuratedProfile({ profile: null }))).toBeUndefined();
+    const data = makeCuratedProfile({ profile: null });
+    const ctx = {
+      title: 't',
+      description: 'd',
+      canonical: `${ORIGIN}/`,
+      locale: 'es' as const,
+      origin: ORIGIN,
+    };
+    expect(profilePageJsonLd(data, ctx)).toBeUndefined();
+    expect(metaFromProfile(data, 'es', ORIGIN).jsonLd).toBeUndefined();
+  });
+
+  it('un perfil no público no lleva JSON-LD (noindex)', () => {
+    for (const visibility of ['PRIVATE', 'PROTECTED'] as const) {
+      expect(jsonLd({ visibility })).toBeUndefined();
+    }
   });
 });
 
@@ -89,7 +160,10 @@ describe('applyDocumentMeta', () => {
     );
 
     const jsonLd = document.head.querySelector('script[type="application/ld+json"]');
-    expect(JSON.parse(jsonLd?.textContent ?? '{}')).toMatchObject({ '@type': 'Person' });
+    expect(JSON.parse(jsonLd?.textContent ?? '{}')).toMatchObject({
+      '@type': 'ProfilePage',
+      mainEntity: { '@type': 'Person' },
+    });
   });
 
   it('con ?via= y ?src= en la URL, canonical y og:url no llevan query', () => {
@@ -177,7 +251,43 @@ describe('applyDocumentMeta', () => {
       `${ORIGIN}/tech-lead-dotnet`,
     );
     const jsonLd = document.head.querySelector('script[type="application/ld+json"]');
-    expect(JSON.parse(jsonLd?.textContent ?? '{}')).toMatchObject({ name: 'Ada Ejemplo' });
+    expect(JSON.parse(jsonLd?.textContent ?? '{}')).toMatchObject({
+      '@type': 'ProfilePage',
+      name: 'Backend · Ada Ejemplo',
+      mainEntity: { name: 'Ada Ejemplo' },
+    });
+  });
+
+  it('un perfil PROTECTED con token quita el bloque que trajo el servidor y no escribe ninguno', () => {
+    document.head.innerHTML = SERVER_HEAD;
+    applyDocumentMeta(
+      metaFromProfile(makeCuratedProfile({ visibility: 'PROTECTED' }), 'es', ORIGIN),
+    );
+
+    expect(document.head.querySelectorAll('script[type="application/ld+json"]')).toHaveLength(0);
+    expect(content('meta[name="robots"]')).toBe('noindex, nofollow');
+  });
+
+  it('al aplicar dos perfiles seguidos queda un solo bloque, con la url del segundo', () => {
+    applyDocumentMeta(metaFromProfile(makeCuratedProfile({ slug: 'all' }), 'es', ORIGIN));
+    applyDocumentMeta(
+      metaFromProfile(makeCuratedProfile({ slug: 'tech-lead-dotnet' }), 'es', ORIGIN),
+    );
+
+    const scripts = document.head.querySelectorAll('script[type="application/ld+json"]');
+    expect(scripts).toHaveLength(1);
+    expect(JSON.parse(scripts[0]?.textContent ?? '{}')).toMatchObject({
+      '@type': 'ProfilePage',
+      url: `${ORIGIN}/tech-lead-dotnet`,
+    });
+  });
+
+  it('pasar de un perfil público a uno protegido quita el bloque del anterior', () => {
+    applyDocumentMeta(metaFromProfile(makeCuratedProfile(), 'es', ORIGIN));
+    applyDocumentMeta(
+      metaFromProfile(makeCuratedProfile({ visibility: 'PROTECTED' }), 'es', ORIGIN),
+    );
+    expect(document.head.querySelector('script[type="application/ld+json"]')).toBeNull();
   });
 
   it('navegar entre perfiles deja una etiqueta por clave con los valores del nuevo', () => {

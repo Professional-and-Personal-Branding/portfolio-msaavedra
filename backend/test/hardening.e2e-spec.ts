@@ -207,6 +207,14 @@ describe('Hardening de producción (e2e)', () => {
   describe('Fragmento de head (public-seo)', () => {
     const head = (query: string) => get(`/api/public/profile-head?${query}`);
     const robots = (html: string) => /<meta name="robots" content="([^"]+)"/.exec(html)?.[1];
+    const title = (html: string) => /<title>(.*?)<\/title>/.exec(html)?.[1];
+    const canonicalOf = (html: string) => /<link rel="canonical" href="([^"]+)"/.exec(html)?.[1];
+    /** El `ProfilePage` embebido (upgrade-profile-structured-data); `undefined` si no hay bloque. */
+    const jsonLd = (html: string) => {
+      const raw = /<script type="application\/ld\+json">(.*?)<\/script>/s.exec(html)?.[1];
+      return raw === undefined ? undefined : (JSON.parse(raw) as Record<string, unknown>);
+    };
+    const personOf = (html: string) => (jsonLd(html)?.mainEntity ?? {}) as Record<string, unknown>;
 
     async function withVisibility(
       slug: string,
@@ -273,6 +281,8 @@ describe('Hardening de producción (e2e)', () => {
           }
           const conHeader = await head('slug=devops-platform').set('X-Access-Token', 'tok-head');
           expect(conHeader.text).not.toContain(title);
+          expect(conHeader.text).not.toContain('application/ld+json');
+          expect(conHeader.text).not.toContain('ProfilePage');
         },
       );
     });
@@ -284,6 +294,91 @@ describe('Hardening de producción (e2e)', () => {
         expect(privado.status).toBe(200);
         expect(inexistente.status).toBe(200);
         expect(privado.text).toBe(inexistente.text);
+      });
+    });
+
+    // upgrade-profile-structured-data (D2, D6, D8): el JSON-LD ProfilePage del fragmento.
+    describe('JSON-LD ProfilePage', () => {
+      it.each(['es', 'en'] as const)(
+        'tech-lead-dotnet en %s: ProfilePage con su Person',
+        async (lang) => {
+          const profile = await prisma.profile.findFirstOrThrow();
+          const res = await head(`slug=tech-lead-dotnet&lang=${lang}`);
+          const ld = jsonLd(res.text);
+
+          expect(ld).toMatchObject({
+            '@type': 'ProfilePage',
+            inLanguage: lang,
+            mainEntity: { '@type': 'Person', name: profile.fullName },
+          });
+          expect(ld?.url).toBe(canonicalOf(res.text));
+          expect(ld?.url).toBe(`${FRONTEND_URL}/tech-lead-dotnet`);
+          expect(ld?.name).toBe(title(res.text));
+          expect((await get('/sitemap.xml')).text).toContain(`<loc>${String(ld?.url)}</loc>`);
+
+          const knows = personOf(res.text).knowsAbout as string[];
+          expect(knows.length).toBeGreaterThan(0);
+          expect(knows.length).toBeLessThanOrEqual(50);
+          expect(new Set(knows.map((skill) => skill.toLowerCase())).size).toBe(knows.length);
+          expect(JSON.stringify(ld)).not.toMatch(/dateModified|dateCreated/);
+        },
+      );
+
+      it('?via= y ?src= no cambian el bloque', async () => {
+        const limpio = jsonLd((await head('slug=tech-lead-dotnet')).text);
+        const conQuery = jsonLd(
+          (await head('slug=tech-lead-dotnet&via=k7m2q9xw4t&src=linkedin')).text,
+        );
+        expect(conQuery).toEqual(limpio);
+        expect(String(conQuery?.url)).not.toContain('?');
+      });
+
+      it('la home y otro perfil comparten el @id y la url del Person', async () => {
+        const home = personOf((await head('slug=all')).text);
+        const otro = personOf((await head('slug=tech-lead-dotnet')).text);
+        expect(home['@id']).toBe(`${FRONTEND_URL}/#person`);
+        expect(otro['@id']).toBe(home['@id']);
+        expect(otro.url).toBe(home.url);
+      });
+
+      it('archivado e inexistente: genérico sin bloque, igual que un PRIVATE', async () => {
+        const row = await prisma.curatedProfile.findUniqueOrThrow({
+          where: { slug: 'devops-platform' },
+        });
+        try {
+          await prisma.curatedProfile.update({
+            where: { id: row.id },
+            data: { archivedAt: new Date() },
+          });
+          const archivado = await head('slug=devops-platform');
+          const inexistente = await head('slug=no-existe-jamas');
+          expect(robots(archivado.text)).toBe('noindex, nofollow');
+          expect(archivado.text).not.toContain('application/ld+json');
+          expect(archivado.text).not.toContain('ProfilePage');
+          expect(archivado.text).toBe(inexistente.text);
+        } finally {
+          await prisma.curatedProfile.update({
+            where: { id: row.id },
+            data: { archivedAt: row.archivedAt },
+          });
+        }
+      });
+
+      it('PUBLIC con listed: false emite el bloque y index, follow', async () => {
+        const row = await prisma.curatedProfile.findUniqueOrThrow({
+          where: { slug: 'devops-platform' },
+        });
+        try {
+          await prisma.curatedProfile.update({ where: { id: row.id }, data: { listed: false } });
+          const res = await head('slug=devops-platform');
+          expect(robots(res.text)).toBe('index, follow');
+          expect(jsonLd(res.text)).toMatchObject({ '@type': 'ProfilePage' });
+        } finally {
+          await prisma.curatedProfile.update({
+            where: { id: row.id },
+            data: { listed: row.listed },
+          });
+        }
       });
     });
 

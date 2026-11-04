@@ -21,6 +21,10 @@ const RESOLVED = {
   description: 'Descripción del perfil',
   visibility: 'PUBLIC',
   profile: { fullName: 'Ada', headline: 'h', summary: 's', email: 'a@x.com', location: 'SCZ' },
+  sections: [],
+  skillCategories: [],
+  education: [],
+  certifications: [],
   socialLinks: [],
 } as unknown as CuratedProfileOutput;
 

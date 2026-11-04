@@ -33,30 +33,112 @@ export function metaFromProfile(
 ): DocumentMeta {
   const name = data.profile?.fullName ?? DEFAULT_META.title;
   const path = data.slug === 'all' ? '/' : `/${data.slug}`;
+  const base = origin.replace(/\/+$/, '');
+  const title = `${data.title} · ${name}`;
+  const description = truncate(
+    data.description || data.headline || data.profile?.summary || '',
+    300,
+  );
+  const canonical = `${base}${path}`;
+  const noindex = data.visibility !== 'PUBLIC';
 
   return {
-    title: `${data.title} · ${name}`,
-    description: truncate(data.description || data.headline || data.profile?.summary || '', 300),
-    canonical: `${origin.replace(/\/+$/, '')}${path}`,
+    title,
+    description,
+    canonical,
     locale,
-    noindex: data.visibility !== 'PUBLIC',
-    jsonLd: personJsonLd(data),
+    noindex,
+    // Una página noindex no lleva datos estructurados (D6): `setJsonLd` quita el bloque.
+    jsonLd: noindex
+      ? undefined
+      : profilePageJsonLd(data, { title, description, canonical, locale, origin: base }),
   };
 }
 
-/** `schema.org/Person` con lo que el perfil ya expone. */
-export function personJsonLd(data: CuratedProfile): Record<string, unknown> | undefined {
+/** Textos ya derivados, el idioma y el origen (sin `/` final) con los que se arma el bloque. */
+interface ProfilePageContext {
+  title: string;
+  description: string;
+  canonical: string;
+  locale: Locale;
+  origin: string;
+}
+
+/** Tope de `knowsAbout` (D3). */
+const KNOWS_ABOUT_MAX = 50;
+
+/**
+ * `schema.org/ProfilePage` con el `Person` en `mainEntity`. Gemela de `profilePageJsonLd`
+ * del backend (`profile-head.renderer.ts`): mismas reglas y mismo orden de claves; el
+ * fixture compartido compara las dos.
+ */
+export function profilePageJsonLd(
+  data: CuratedProfile,
+  context: ProfilePageContext,
+): Record<string, unknown> | undefined {
   const profile = data.profile;
   if (!profile) return undefined;
 
+  const knowsAbout = data.sections.includes('skills')
+    ? distinct(data.skillCategories.flatMap((category) => category.skills)).slice(
+        0,
+        KNOWS_ABOUT_MAX,
+      )
+    : [];
+  const alumniOf = data.sections.includes('education')
+    ? distinct(data.education.map((item) => item.institution))
+    : [];
+  const credentials = data.sections.includes('certifications')
+    ? data.certifications.map(credentialJsonLd)
+    : [];
+
   return {
     '@context': 'https://schema.org',
-    '@type': 'Person',
-    name: profile.fullName,
-    jobTitle: data.headline || profile.headline,
-    email: `mailto:${profile.email}`,
-    address: { '@type': 'PostalAddress', addressLocality: profile.location },
-    ...(data.socialLinks.length > 0 ? { sameAs: data.socialLinks.map((link) => link.url) } : {}),
+    '@type': 'ProfilePage',
+    url: context.canonical,
+    name: context.title,
+    description: context.description,
+    inLanguage: context.locale,
+    mainEntity: {
+      '@type': 'Person',
+      '@id': `${context.origin}/#person`,
+      url: `${context.origin}/`,
+      name: profile.fullName,
+      jobTitle: data.headline || profile.headline,
+      email: `mailto:${profile.email}`,
+      address: { '@type': 'PostalAddress', addressLocality: profile.location },
+      ...(data.socialLinks.length > 0 ? { sameAs: data.socialLinks.map((link) => link.url) } : {}),
+      ...(knowsAbout.length > 0 ? { knowsAbout } : {}),
+      ...(alumniOf.length > 0
+        ? { alumniOf: alumniOf.map((name) => ({ '@type': 'EducationalOrganization', name })) }
+        : {}),
+      ...(credentials.length > 0 ? { hasCredential: credentials } : {}),
+    },
+  };
+}
+
+/** Conserva la primera aparición, tal como está escrita; compara sin mayúsculas ni espacios en los extremos. */
+function distinct(values: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const value of values) {
+    const text = value.trim();
+    const key = text.toLowerCase();
+    if (!text || seen.has(key)) continue;
+    seen.add(key);
+    result.push(text);
+  }
+  return result;
+}
+
+function credentialJsonLd(item: CuratedProfile['certifications'][number]) {
+  return {
+    '@type': 'EducationalOccupationalCredential',
+    name: item.name,
+    recognizedBy: { '@type': 'Organization', name: item.issuer },
+    ...(item.verificationUrl ? { url: item.verificationUrl } : {}),
+    ...(item.credentialId ? { identifier: item.credentialId } : {}),
+    ...(item.expiresAt ? { expires: item.expiresAt } : {}),
   };
 }
 
