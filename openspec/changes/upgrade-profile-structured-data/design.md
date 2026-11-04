@@ -129,7 +129,7 @@ Alternativa descartada: **un paquete compartido** entre `backend/` y `frontend/`
 
 ### D8 — Escape del JSON embebido
 
-- `safeJson` reemplaza `<` por `<`, `>` por `>`, `&` por `&`, U+2028 por ` ` y U+2029 por ` `. El resultado sigue siendo JSON válido, y `JSON.parse` devuelve el objeto original.
+- `safeJson` reemplaza `<` por `\u003c`, `>` por `\u003e`, `&` por `\u0026`, U+2028 por `\u2028` y U+2029 por `\u2029`. El resultado sigue siendo JSON válido, y `JSON.parse` devuelve el objeto original.
 - Así ningún texto del perfil (título, titular, nombre de una certificación, una skill) puede cerrar el `<script>`, abrir un comentario (`<!--`) ni romper el HTML.
 - El cliente sigue usando `script.textContent = JSON.stringify(data)`: `textContent` no interpreta HTML, así que no necesita escape.
 - Test: un título `</script><script>alert(1)</script>` y una skill `C# & <F#>` producen un fragmento donde `</script` aparece una sola vez (el cierre propio), y el contenido del bloque, parseado, devuelve los textos originales.
@@ -175,4 +175,4 @@ Ninguna bloqueante.
   - B) Columna nueva `contentUpdatedAt`, movida por las ediciones del perfil curado y de su contenido.
   - C) Seguir sin `dateModified` y quitar `<lastmod>` del sitemap.
 
-  **Recomiendo A**: es S, arregla un dato que hoy ya se publica mal en el sitemap (y deja ver el día de la última visita a un perfil listado) y no suma columnas. **[no bloqueante]**
+  **Resuelta el 2026-11-04 con la opción A**: este change no emite `dateModified` (D5) y el arreglo de `updatedAt` va en un change aparte, `fix-curated-profile-updated-at`. `dateModified` y el `<lastmod>` del sitemap se corrigen ahí.

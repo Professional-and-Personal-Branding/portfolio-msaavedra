@@ -1,0 +1,6 @@
+backend: npm run test:e2e contra portfolio_sd_e2e (migrada y sembrada), 2026-11-04
+Test Suites: 14 passed, 14 total
+Tests:       250 passed, 250 total      (antes: 244; +6 en hardening.e2e-spec.ts, bloque «JSON-LD ProfilePage»)
+Casos nuevos: tech-lead-dotnet en es y en (ProfilePage, url = canonical = <loc> del sitemap, name = <title>, inLanguage, mainEntity.name = fullName sembrado, knowsAbout no vacio, <= 50 y sin repetidos, sin dateModified);
+?via=&src= no cambian el bloque; all y tech-lead-dotnet comparten mainEntity.@id; archivado = inexistente sin bloque; PUBLIC con listed:false emite el bloque.
+Regresion ampliada: PROTECTED con X-Access-Token tampoco trae application/ld+json ni ProfilePage (con y sin token por query ya estaba).
