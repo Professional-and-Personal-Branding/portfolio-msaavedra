@@ -1,0 +1,16 @@
+corrida 1 (build + vitest run en proceso nuevo)
+ Test Files  65 passed (65)
+      Tests  981 passed (981)
+   Duration  37.59s (tests 52%, environment 29%, import 10%, setup 5%, transform 3%)
+
+corrida 2 (build + vitest run en proceso nuevo)
+ Test Files  65 passed (65)
+      Tests  981 passed (981)
+   Duration  39.15s (tests 51%, environment 31%, import 10%, setup 5%, transform 3%)
+
+corrida 3 (build + vitest run en proceso nuevo)
+ Test Files  65 passed (65)
+      Tests  981 passed (981)
+   Duration  39.19s (tests 53%, environment 28%, import 10%, setup 5%, transform 3%)
+
+6.5 control: test temporal con await screen.findByText('no-existe') falló a 1016 ms (asyncUtilTimeout intacto, no 15 s). Test borrado antes del commit; setup.ts sin diff.
