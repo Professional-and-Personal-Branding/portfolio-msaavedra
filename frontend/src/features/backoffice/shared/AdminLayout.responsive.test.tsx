@@ -36,9 +36,10 @@ describe('AdminLayout responsive', () => {
   it('las acciones conservan su nombre accesible cuando muestran solo el ícono', async () => {
     const header = await renderHeader();
     const portfolio = within(header).getByRole('link', { name: 'Ver portafolio' });
+    const account = within(header).getByRole('link', { name: 'Cuenta' });
     const logout = within(header).getByRole('button', { name: 'Cerrar sesión' });
 
-    for (const action of [portfolio, logout]) {
+    for (const action of [portfolio, account, logout]) {
       expect(action).toHaveAttribute('title', action.getAttribute('aria-label'));
       expect(action.querySelector('span')).toHaveClass(
         'hidden',

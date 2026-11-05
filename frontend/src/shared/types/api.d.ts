@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: df2eea2d00b12556a0f4f23b1b28599538b505efb855b31ec7a02c982b40f195
+// openapi-sha256: 2c3900b561255710ebbabb8b56fef4bbc458cb038235ab9e429eff71bd964d37
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -637,6 +637,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cambiar la contraseña del administrador
+         * @description Exige la contraseña actual, guarda la nueva (12 a 256 caracteres, distinta de la actual) e invalida todas las demás sesiones (`sessionVersion`). Responde como el login, con un token nuevo y la cookie `portfolio_session` reemitida para la sesión que cambió; el token con el que se hizo la petición deja de valer.
+         */
+        post: operations["AuthController_doChangePassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/certifications": {
         parameters: {
             query?: never;
@@ -1036,6 +1056,18 @@ export interface components {
             verificationUrl: string | null;
             /** @example 2021 */
             year: string | null;
+        };
+        ChangePasswordDto: {
+            /**
+             * @description Contraseña vigente.
+             * @example la-contraseña-actual
+             */
+            currentPassword: string;
+            /**
+             * @description De 12 a 256 caracteres y distinta de la actual. No se recortan espacios.
+             * @example una-contraseña-nueva-y-larga
+             */
+            newPassword: string;
         };
         CountByDay: {
             /** @example 2026-09-07 */
@@ -4418,6 +4450,56 @@ export interface operations {
                 };
             };
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AuthController_doChangePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Cuerpo inválido o política */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin sesión, sesión revocada o contraseña actual incorrecta */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Demasiados intentos */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
