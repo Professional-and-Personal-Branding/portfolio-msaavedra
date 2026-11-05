@@ -31,9 +31,16 @@ describe('PreviewPanel', () => {
   // quedan en español aunque el preview muestre el contenido en inglés.
   describe('contadores', () => {
     const base = makeCuratedProfile();
-    const [firstExperience, secondExperience] = base.experiences;
-    const [firstCategory, secondCategory] = base.skillCategories;
-    const [project] = base.projects;
+    /** Perfil con esa cantidad de experiencias, categorías y proyectos (el fixture trae 2, 2 y 1). */
+    const withCounts = (experiences: number, categories: number, projects: number) => ({
+      ...base,
+      experiences: base.experiences.slice(0, experiences),
+      skillCategories: Array.from({ length: categories }, (_, i) => ({
+        name: `Categoría ${i}`,
+        skills: [],
+      })),
+      projects: base.projects.slice(0, projects),
+    });
     const renderCounts = (
       data: ReturnType<typeof makeCuratedProfile>,
       locale: 'es' | 'en' = 'es',
@@ -51,12 +58,7 @@ describe('PreviewPanel', () => {
       );
 
     it('con 1 de cada uno, usa el singular', () => {
-      renderCounts({
-        ...base,
-        experiences: [firstExperience],
-        skillCategories: [firstCategory],
-        projects: [project],
-      });
+      renderCounts(withCounts(1, 1, 1));
 
       expect(screen.getByTestId('preview-counts').textContent).toBe(
         '1 experiencia · 1 categoría · 1 proyecto',
@@ -64,12 +66,7 @@ describe('PreviewPanel', () => {
     });
 
     it('con 2, 3 y 0, usa el plural (el 0 también)', () => {
-      renderCounts({
-        ...base,
-        experiences: [firstExperience, secondExperience],
-        skillCategories: [firstCategory, secondCategory, { name: 'Otra', skills: [] }],
-        projects: [],
-      });
+      renderCounts(withCounts(2, 3, 0));
 
       expect(screen.getByTestId('preview-counts').textContent).toBe(
         '2 experiencias · 3 categorías · 0 proyectos',
@@ -77,7 +74,7 @@ describe('PreviewPanel', () => {
     });
 
     it('con el preview en inglés, el contador sigue en español', () => {
-      renderCounts({ ...base, projects: [project] }, 'en');
+      renderCounts(withCounts(1, 1, 1), 'en');
 
       expect(screen.getByTestId('preview-counts').textContent).toContain('1 proyecto');
     });
