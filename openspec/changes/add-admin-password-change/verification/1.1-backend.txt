@@ -1,0 +1,7 @@
+> portfolio-backend@0.1.0 lint
+> eslint "{src,test,scripts}/**/*.ts"
+
+Test Suites: 94 passed, 94 total
+Tests:       925 passed, 925 total
+Test Suites: 14 passed, 14 total
+Tests:       250 passed, 250 total

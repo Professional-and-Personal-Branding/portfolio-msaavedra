@@ -32,7 +32,12 @@ export class LoginUseCase {
     if (!valid) return fail(new InvalidCredentialsError());
 
     await this.admins.touchLastLogin(admin.id, new Date());
-    const signed = await this.signer.sign({ sub: admin.id, email: admin.email, name: admin.name });
+    const signed = await this.signer.sign({
+      sub: admin.id,
+      email: admin.email,
+      name: admin.name,
+      sessionVersion: admin.sessionVersion,
+    });
 
     return ok({
       accessToken: signed.token,

@@ -5,6 +5,8 @@ export interface TokenClaims {
   readonly sub: string;
   readonly email: string;
   readonly name: string;
+  /** Versión de sesión del administrador; se firma como claim `sv`. */
+  readonly sessionVersion: number;
 }
 
 export interface SignedToken {

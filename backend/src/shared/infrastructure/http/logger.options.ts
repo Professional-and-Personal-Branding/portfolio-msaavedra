@@ -13,8 +13,12 @@ export const REDACTED_PATHS = [
   'res.headers["set-cookie"]',
   'req.body.password',
   'req.body.accessToken',
+  'req.body.currentPassword',
+  'req.body.newPassword',
   'password',
   'accessToken',
+  'currentPassword',
+  'newPassword',
 ];
 
 const TOKEN_QUERY = /([?&]token=)[^&]*/gi;

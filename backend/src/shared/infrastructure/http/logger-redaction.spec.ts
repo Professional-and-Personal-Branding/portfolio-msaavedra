@@ -67,6 +67,25 @@ describe('Redacción real del logger (spec api-observability)', () => {
     expect(output).toContain('[Redacted]');
   });
 
+  it('redacta currentPassword y newPassword, también dentro de req.body', () => {
+    const { logger, lines } = captureLogger();
+
+    logger.info({ currentPassword: 'la-actual-secreta', newPassword: 'la-nueva-secreta' });
+    logger.info({
+      req: {
+        id: 'r',
+        method: 'POST',
+        url: '/api/auth/password',
+        body: { currentPassword: 'la-actual-secreta', newPassword: 'la-nueva-secreta' },
+      },
+    });
+
+    const output = lines();
+    expect(output).not.toContain('la-actual-secreta');
+    expect(output).not.toContain('la-nueva-secreta');
+    expect(output).toContain('[Redacted]');
+  });
+
   it('de la respuesta solo escribe el status: la cookie emitida nunca sale', () => {
     const { logger, lines } = captureLogger();
 

@@ -64,6 +64,74 @@
         ]
       }
     },
+    "/api/auth/password": {
+      "post": {
+        "description": "Exige la contraseña actual, guarda la nueva (12 a 256 caracteres, distinta de la actual) e invalida todas las demás sesiones (`sessionVersion`). Responde como el login, con un token nuevo y la cookie `portfolio_session` reemitida para la sesión que cambió; el token con el que se hizo la petición deja de valer.",
+        "operationId": "AuthController_doChangePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cuerpo inválido o política",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión, sesión revocada o contraseña actual incorrecta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cambiar la contraseña del administrador",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/auth/logout": {
       "post": {
         "description": "Borra la cookie de sesión. No requiere una sesión válida.",
@@ -4251,6 +4319,27 @@
           "message",
           "error",
           "timestamp"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "example": "la-contraseña-actual",
+            "description": "Contraseña vigente."
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "una-contraseña-nueva-y-larga",
+            "minLength": 12,
+            "maxLength": 256,
+            "description": "De 12 a 256 caracteres y distinta de la actual. No se recortan espacios."
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
         ]
       },
       "AvailabilityResponse": {

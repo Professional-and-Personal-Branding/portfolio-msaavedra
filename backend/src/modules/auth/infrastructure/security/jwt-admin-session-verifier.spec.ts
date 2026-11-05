@@ -1,5 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import { NotFoundError } from '../../../../shared/domain/errors';
+import { SessionRevokedError } from '../../domain/errors/session-revoked.error';
 import { fail, ok } from '../../../../shared/domain/result';
 import { GetCurrentAdminUseCase } from '../../application/use-cases/get-current-admin.use-case';
 import { JwtAdminSessionVerifier } from './jwt-admin-session-verifier';
@@ -11,8 +11,8 @@ function build(adminResult: 'found' | 'missing' | 'throws' = 'found') {
     if (adminResult === 'throws') return Promise.reject(new Error('base caída'));
     return Promise.resolve(
       adminResult === 'found'
-        ? ok({ id: 'a1', email: 'a@x.com', name: 'A' })
-        : fail(new NotFoundError('Administrador', 'a1')),
+        ? ok({ id: 'a1', email: 'a@x.com', name: 'A', sessionVersion: 0 })
+        : fail(new SessionRevokedError()),
     );
   });
   const jwt = new JwtService({ secret: SECRET, signOptions: { algorithm: 'HS256' } });
@@ -62,6 +62,21 @@ describe('JwtAdminSessionVerifier', () => {
       verifier.isAdminSession(jwt.sign({ email: 'a@x.com' }, { expiresIn: 60 })),
     ).resolves.toBe(false);
     expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('le pasa el sv del token a la verificación compartida (revocado → false)', async () => {
+    const { verifier, jwt, execute } = build('missing');
+    const token = jwt.sign({ sub: 'a1', sv: 2 }, { expiresIn: 60 });
+    await expect(verifier.isAdminSession(token)).resolves.toBe(false);
+    expect(execute).toHaveBeenCalledWith({ id: 'a1', sessionVersion: 2 });
+  });
+
+  it('un token sin sv se verifica como sessionVersion undefined (vale 0)', async () => {
+    const { verifier, jwt, execute } = build('found');
+    await expect(verifier.isAdminSession(jwt.sign({ sub: 'a1' }, { expiresIn: 60 }))).resolves.toBe(
+      true,
+    );
+    expect(execute).toHaveBeenCalledWith({ id: 'a1', sessionVersion: undefined });
   });
 
   it('sub de un administrador inexistente', async () => {
