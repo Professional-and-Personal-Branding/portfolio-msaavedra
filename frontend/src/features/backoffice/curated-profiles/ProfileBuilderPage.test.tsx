@@ -221,6 +221,24 @@ describe('ProfileBuilderPage', () => {
       { timeout: 3000 },
     );
   });
+
+  // polish-views-updated-at-and-builder, P2: el badge de visitas concuerda en número.
+  it('el badge de visitas usa el singular con una sola visita', async () => {
+    server.use(
+      trackPreviews([]),
+      http.get(`${API}/admin/curated-profiles`, () =>
+        HttpResponse.json([makeAdminCuratedProfile({ views: 1 })]),
+      ),
+      ...adminHandlers,
+    );
+
+    const user = userEvent.setup();
+
+    await openBuilder();
+    await user.click(screen.getByRole('tab', { name: 'Publicación' }));
+
+    expect(await screen.findByText('1 visita')).toBeInTheDocument();
+  });
 });
 
 // add-curated-profile-lifecycle: los tres ejes en la pestaña Publicación.

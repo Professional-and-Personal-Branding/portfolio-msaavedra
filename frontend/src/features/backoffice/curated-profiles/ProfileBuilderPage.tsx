@@ -26,6 +26,7 @@ import {
 import { Switch } from '@/shared/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import type { Locale } from '@/shared/i18n/locale';
+import { formatCount } from '@/shared/i18n/plural';
 import { isHttpError } from '@/shared/lib/api-client';
 import { profilePath } from '@/shared/lib/profile-link';
 import { cn } from '@/shared/lib/utils';
@@ -629,7 +630,9 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
 
             {saved && (
               <p className="text-xs text-text-dim">
-                <Badge variant="outline">{saved.views} visitas</Badge>
+                <Badge variant="outline">
+                  {formatCount(saved.views, { one: 'visita', other: 'visitas' })}
+                </Badge>
               </p>
             )}
           </TabsContent>
