@@ -1023,7 +1023,7 @@ POST con accentColor                   -> 400  campo retirado (retire-accent-col
 
 ![Pestaña Identidad del constructor](manual/tc12b-identidad.jpg)
 
-*Pestaña Identidad, con la vista previa en vivo a la derecha: `2 experiencias · 3 categorías · 1 proyectos` ya filtradas (en `ejemplo-backend`).*
+*Pestaña Identidad, con la vista previa en vivo a la derecha: `2 experiencias · 3 categorías · 1 proyecto` ya filtradas (en `ejemplo-backend`).*
 
 Los campos que no mandás toman su valor por defecto: `filterTags`, `includeIds`, `excludeIds`, `sectionsOrder` y `sectionsHidden` vacíos, `layout` en `classic`, `visibility` en `PUBLIC`.
 

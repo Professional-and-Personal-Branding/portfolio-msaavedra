@@ -1,0 +1,11 @@
+== app real (API 3344, base descartable portfolio_polish_example)
+UPDATE 1
+antes:
+26|2026-01-15 12:00:00
+    <loc>http://localhost:8098/ejemplo-backend</loc>
+    <lastmod>2026-01-15</lastmod>
+visita HTTP 200
+despues:
+27|2026-01-15 12:00:00
+    <loc>http://localhost:8098/ejemplo-backend</loc>
+    <lastmod>2026-01-15</lastmod>
