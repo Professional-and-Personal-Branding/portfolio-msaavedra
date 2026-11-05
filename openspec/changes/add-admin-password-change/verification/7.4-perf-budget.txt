@@ -6,10 +6,10 @@
 
 | Script | Tipo | gzip (KB) |
 |---|---|---|
-| /assets/index-Bkq6bryG.js | módulo | 148.9 |
+| /assets/index-w8W8ybPv.js | módulo | 148.9 |
 | /profile-prefetch.js | clásico | 1.2 |
 | **Total** | | **150.1** |
 
 Presupuesto: 155 KB.
 
-Base (sin el change, mismo árbol): Total 150.1 KB; con el change: Total 150.1 KB. La pantalla va en BackofficeApp (chunk del panel).
+Sin el change (mismo árbol, stash): Total 150.1 KB. Con el change: Total 150.1 KB. La pantalla va en BackofficeApp (chunk del panel, 77,9 KB gzip).

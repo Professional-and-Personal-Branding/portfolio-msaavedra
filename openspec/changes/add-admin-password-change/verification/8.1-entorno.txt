@@ -1,0 +1,7 @@
+Entorno de la app real (5 de noviembre de 2026). Sin credenciales.
+- Base descartable portfolio_pwd_example en el contenedor portfolio-postgres (localhost:5434), migrada con prisma migrate deploy
+  (prisma migrate status confirmó el destino: portfolio_pwd_example) y sembrada con SEED_DISPOSABLE_DB=1 npm run seed:example.
+- Administrador capture@example.com creado con npm run admin:bootstrap y contraseñas aleatorias de la terminal (18 bytes, base64url).
+- API de la rama (node dist/main) en localhost:3345; imagen de frontend/Dockerfile (pwd-web) en localhost:8099 con API_ORIGIN
+  apuntando a la API: un solo origen, igual que en producción.
+- La base `portfolio` del owner no se tocó.

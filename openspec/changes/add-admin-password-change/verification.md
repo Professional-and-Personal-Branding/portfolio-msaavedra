@@ -6,16 +6,32 @@
 
 | Tarea | Qué se comprueba | Resultado | Evidencia |
 |---|---|---|---|
-| 1.1 Punto de partida | Suites verdes antes de tocar nada | pendiente | `verification/1.1-punto-de-partida.txt` |
-| 2.1–2.4 Dominio | `acceptsSession`, `validateNewPassword` (puntos de código, sin recorte), errores nuevos | pendiente | specs en `domain/` |
-| 3.1–3.2 Esquema y migración | Un solo `ADD COLUMN ... DEFAULT 0`; escritura condicional por versión | pendiente | `verification/3.1-migracion.sql` |
-| 4.1–4.4 Aplicación y token | Claim `sv`; una sola verificación para guard, `/me` y visitas; caso de uso con repos simulados | pendiente | specs de `application/` y `security/` |
-| 5.1–5.3 Controller, límite y redacción | 200 con cookie nueva; contador propio; `currentPassword`/`newPassword` redactados | pendiente | specs de `security/` y `logger-redaction.spec.ts` |
-| 6.1–6.5 E2e | Flujo completo con invalidación de la sesión vieja (cookie y Bearer), errores, límite, visitas, logs y bootstrap | pendiente | `verification/6-e2e.txt` |
-| 7.1–7.4 Contrato y panel | `api.d.ts` sin deriva; pantalla Cuenta con mensajes literales; arranque público igual | pendiente | `verification/7.4-perf-budget.txt` |
-| 8.1–8.4 App real | TC-45, `a11y:check` de Cuenta, logs sin contraseñas | pendiente | `verification/8.1-entorno.txt`, `8.2-tc45.txt`, `8.3-a11y.txt` |
-| 9.1–9.5 Docs | TC-45, B14, deploy, changelog, `manual:check` | pendiente | diff |
-| 10.1–10.3 Cierre | Todo verde, validación estricta, base del owner intacta | pendiente | `verification/10.1-cierre.txt`, `10.2-validacion.txt`, `10.3-base-del-owner.txt` |
+| 1.1 Punto de partida | Suites verdes antes de tocar nada | ok — Backend: lint ok, 925 unit (94 suites), 250 e2e (14 suites). Frontend: 971 de 972 (1 timeout en frío que pasó solo). | `verification/1.1-punto-de-partida.txt` |
+| 2.1–2.4 Dominio | `acceptsSession`, `validateNewPassword` (puntos de código, sin recorte), errores nuevos | ok — `admin-user.entity.spec`, `validate-new-password.spec`. | specs en `domain/` |
+| 3.1–3.2 Esquema y migración | Un solo `ADD COLUMN ... DEFAULT 0`; escritura condicional por versión | ok — Un solo `ADD COLUMN`; `migrate diff` contra `portfolio_pwd_check`: sin diferencias; repositorio probado en el e2e. | `verification/3.1-migracion.sql` |
+| 4.1–4.4 Aplicación y token | Claim `sv`; una sola verificación para guard, `/me` y visitas; caso de uso con repos simulados | ok — Casos de uso, estrategia, verificador y firmante con specs; una sola verificación (e2e de visitas). | specs de `application/` y `security/` |
+| 5.1–5.3 Controller, límite y redacción | 200 con cookie nueva; contador propio; `currentPassword`/`newPassword` redactados | ok — `password-change-rate-limit.guard.spec`, `logger-redaction.spec`; `login-rate-limit.guard.spec` sin cambios. | specs de `security/` y `logger-redaction.spec.ts` |
+| 6.1–6.5 E2e | Flujo completo con invalidación de la sesión vieja (cookie y Bearer), errores, límite, visitas, logs y bootstrap | ok — `admin-password.e2e-spec.ts`: 20 pruebas; suite e2e 270 en verde. | `verification/6-e2e.txt` |
+| 7.1–7.4 Contrato y panel | `api.d.ts` sin deriva; pantalla Cuenta con mensajes literales; arranque público igual | ok — `api.d.ts` sin deriva; 21 pruebas nuevas; arranque público 150,1 KB gzip antes y después. | `verification/7.4-perf-budget.txt` |
+| 8.1–8.4 App real | TC-45, `a11y:check` de Cuenta, logs sin contraseñas | parcial — Por la API, límite, `admin:bootstrap`, sesión revocada en Chrome, `a11y:check` (52 cargas, 0) y logs (0 coincidencias) ejecutados; los pasos del panel con contraseñas reales no se tipearon (regla de credenciales). | `verification/8.1-entorno.txt`, `8.2-tc45.txt`, `8.3-a11y.txt` |
+| 9.1–9.5 Docs | TC-45, B14, deploy, changelog, `manual:check` | ok (9.5 al archivar) — `manual:check`: 44 casos; TC-45 en 🔍; B14, glosario, deploy y changelog. 9.5 queda para el archivado. | diff |
+| 10.1–10.3 Cierre | Todo verde, validación estricta, base del owner intacta | parcial — 10.1 y 10.2 ok; 10.3: la lectura de `portfolio` no se hizo (ver evidencia). | `verification/10.1-cierre.txt`, `10.2-validacion.txt`, `10.3-base-del-owner.txt` |
+
+## Resultados de la implementación (5 de noviembre de 2026)
+
+- **Backend:** `lint`, `typecheck`, `build` y `openapi:export` sin deriva en verde; unit 955 (99 suites), e2e 270 (15 suites).
+- **Frontend:** `lint`, `typecheck`, `build` en verde; 993 pruebas (66 archivos); `perf:budget` 150,1 KB (tope 155, igual que antes del change); `manual:check` con 44 casos.
+- **OpenSpec:** `validate --all --strict`: `Totals: 40 passed, 0 failed`, sin «Archive would refuse».
+- **TC-45:** por la API, todos los códigos esperados. Los pasos del panel que escriben contraseñas reales no se ejecutaron a mano (el brief prohíbe tipear credenciales en un navegador): el caso queda en 🔍. La revocación se comprobó en Chrome con el login por `fetch` y `admin:bootstrap` desde otro cliente.
+
+### Desvíos respecto del diseño
+
+1. **`useSession` oculta al administrador ante un 401 de `/me`** (no estaba en el diseño). D6 supone que `RequireSession` manda al login cuando `/me` vuelve 401, pero la caché conservaba el dato anterior y el panel seguía montado; TC-45 paso 7 no se cumplía. Lo detectó el test «sesión revocada»; con el arreglo, también se comprobó en Chrome.
+2. **Mensajes de error de Cuenta con un tono propio** (`color-mix` entre `--color-destructive` y `--t-text`): `text-destructive` pesa 3,48:1 sobre la tarjeta del panel y axe lo marcó. El resto de los formularios del panel usa `text-destructive` y no se auditó con errores a la vista; queda como pendiente aparte.
+3. **`a11y:check` suma `/admin/cuenta`** a las rutas del panel (52 cargas en lugar de 50).
+4. **Núcleo del bootstrap en `scripts/lib/bootstrap-admin.ts`** para poder probarlo (6.5); el script lo usa.
+5. **10.3 sin consulta a `portfolio`** (permiso denegado por la sesión).
+6. En 8.2, la primera corrida del bloque de límite cayó dentro de la ventana de 60 s de la corrida anterior y dio 429 antes de tiempo; se repitió esperando.
 
 ## TC-45 — Cambiar la contraseña del panel
 

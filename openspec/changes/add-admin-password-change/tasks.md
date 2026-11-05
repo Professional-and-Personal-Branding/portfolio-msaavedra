@@ -63,21 +63,21 @@
 
 ## 8. App real
 
-- [ ] 8.1 Sobre `portfolio_pwd_check` migrada y sembrada con el ejemplo: API de la rama y la imagen de `frontend/Dockerfile`; administrador creado con `admin:bootstrap` y una contraseña aleatoria de la terminal (ver § Credenciales). Verificar: `npm run prisma:status` contra esa base antes de escribir; nota en `verification/8.1-entorno.txt` sin credenciales.
-- [ ] 8.2 TC-45 completo según `verification.md`: pasos de la API por `fetch`/`curl` con dos frascos de cookies y pasos del panel en Chrome. Verificar: transcripción de status y cabeceras (con `Set-Cookie` y tokens redactados) en `verification/8.2-tc45.txt`; ningún valor de contraseña en el archivo (`grep` de las variables → 0).
-- [ ] 8.3 `npm run a11y:check` sobre la pantalla Cuenta (con `A11Y_CHECK_DISPOSABLE_DB=1` y las credenciales de la terminal; sumar `/admin/cuenta` a las rutas del panel del script si no las recorre todas). Verificar: 0 violaciones; salida en `verification/8.3-a11y.txt`.
-- [ ] 8.4 Logs de la API durante 8.2: buscar los valores de las dos contraseñas (desde las variables, sin imprimirlos) → 0 coincidencias. Verificar: el conteo en `verification/8.2-tc45.txt`.
+- [x] 8.1 Sobre `portfolio_pwd_check` migrada y sembrada con el ejemplo: API de la rama y la imagen de `frontend/Dockerfile`; administrador creado con `admin:bootstrap` y una contraseña aleatoria de la terminal (ver § Credenciales). Verificar: `npm run prisma:status` contra esa base antes de escribir; nota en `verification/8.1-entorno.txt` sin credenciales.
+- [x] 8.2 TC-45 completo según `verification.md`: pasos de la API por `fetch`/`curl` con dos frascos de cookies y pasos del panel en Chrome. Verificar: transcripción de status y cabeceras (con `Set-Cookie` y tokens redactados) en `verification/8.2-tc45.txt`; ningún valor de contraseña en el archivo (`grep` de las variables → 0). **Nota:** los pasos del panel que escriben contraseñas reales no se tipearon en el navegador; el caso queda en 🔍 (ver `verification.md`).
+- [x] 8.3 `npm run a11y:check` sobre la pantalla Cuenta (con `A11Y_CHECK_DISPOSABLE_DB=1` y las credenciales de la terminal; sumar `/admin/cuenta` a las rutas del panel del script si no las recorre todas). Verificar: 0 violaciones; salida en `verification/8.3-a11y.txt`.
+- [x] 8.4 Logs de la API durante 8.2: buscar los valores de las dos contraseñas (desde las variables, sin imprimirlos) → 0 coincidencias. Verificar: el conteo en `verification/8.2-tc45.txt`.
 
 ## 9. Docs
 
-- [ ] 9.1 `docs/MANUAL.md` e `index.html`: **TC-45** (texto de `verification.md`) en la sección 3 y en la tabla de la suite (§ 6); pantalla **B14 — Cuenta** con la tabla de campos y la columna *Mensaje* de D11; B1 y § 0 *Sesión para los `curl`* aclaran que tras un cambio de contraseña el `TOKEN` viejo da 401; glosario: *Versión de sesión*. Verificar: `npm run manual:check` verde.
-- [ ] 9.2 Captura `bo-cuenta.jpg` (formulario con «Las contraseñas no coinciden», sin enviar nada) agregada al manifiesto de `capture-manual.mjs` y generada con `manual:capture` sobre la base de ejemplo. Verificar: `manual:check` (inventario y tope de 150 KB) verde.
-- [ ] 9.3 `docs/DEPLOY.md` § 3 y `docs/DEPLOY-RAILWAY.md` (paso 1 y paso 4): la rotación de rutina va por **Cuenta** en el panel; `admin:bootstrap` queda como recuperación y cierra todas las sesiones. Verificar: `grep -n "No hay pantalla\|no tiene pantalla" docs/` sin resultados.
-- [ ] 9.4 `docs/CHANGELOG.md`: entrada del change (endpoint, `sessionVersion`, pantalla Cuenta, migración aditiva). Verificar: diff revisado.
+- [x] 9.1 `docs/MANUAL.md` e `index.html`: **TC-45** (texto de `verification.md`) en la sección 3 y en la tabla de la suite (§ 6); pantalla **B14 — Cuenta** con la tabla de campos y la columna *Mensaje* de D11; B1 y § 0 *Sesión para los `curl`* aclaran que tras un cambio de contraseña el `TOKEN` viejo da 401; glosario: *Versión de sesión*. Verificar: `npm run manual:check` verde.
+- [x] 9.2 Captura `bo-cuenta.jpg` (formulario con «Las contraseñas no coinciden», sin enviar nada) agregada al manifiesto de `capture-manual.mjs` y generada con `manual:capture` sobre la base de ejemplo. Verificar: `manual:check` (inventario y tope de 150 KB) verde.
+- [x] 9.3 `docs/DEPLOY.md` § 3 y `docs/DEPLOY-RAILWAY.md` (paso 1 y paso 4): la rotación de rutina va por **Cuenta** en el panel; `admin:bootstrap` queda como recuperación y cierra todas las sesiones. Verificar: `grep -n "No hay pantalla\|no tiene pantalla" docs/` sin resultados.
+- [x] 9.4 `docs/CHANGELOG.md`: entrada del change (endpoint, `sessionVersion`, pantalla Cuenta, migración aditiva). Verificar: diff revisado.
 - [ ] 9.5 Al archivar: la línea del roadmap en `CLAUDE.md` (`add-admin-password-change` — cambio de contraseña desde **Cuenta**, `sessionVersion` en el JWT que revoca las demás sesiones, límite propio y `admin:bootstrap` como recuperación) y, en *Decisiones tomadas* (Backoffice), que el guard compara `sv`. Verificar: diff revisado en el PR de archivado.
 
 ## 10. Cierre
 
-- [ ] 10.1 Todo verde: `npm test`, `npm run test:e2e`, `npm run lint` y `npm run typecheck` en `backend/`; `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`, `npm run perf:budget` y `npm run manual:check` en `frontend/`. Verificar: conteos en `verification/10.1-cierre.txt`.
-- [ ] 10.2 `npx -y @fission-ai/openspec@1.14.1 validate --all --strict` sin fallos nuevos y sin avisos «Archive would refuse» para este change. Verificar: salida en `verification/10.2-validacion.txt`.
-- [ ] 10.3 Borrar `portfolio_pwd_check` y confirmar que `portfolio` no tiene la migración (`prisma migrate status` contra ella muestra la migración pendiente). Verificar: `verification/10.3-base-del-owner.txt`.
+- [x] 10.1 Todo verde: `npm test`, `npm run test:e2e`, `npm run lint` y `npm run typecheck` en `backend/`; `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`, `npm run perf:budget` y `npm run manual:check` en `frontend/`. Verificar: conteos en `verification/10.1-cierre.txt`.
+- [x] 10.2 `npx -y @fission-ai/openspec@1.14.1 validate --all --strict` sin fallos nuevos y sin avisos «Archive would refuse» para este change. Verificar: salida en `verification/10.2-validacion.txt`.
+- [ ] 10.3 Borrar `portfolio_pwd_check` y confirmar que `portfolio` no tiene la migración (`prisma migrate status` contra ella muestra la migración pendiente). Verificar: `verification/10.3-base-del-owner.txt`. **Nota:** bases descartables borradas; la consulta a `portfolio` no se hizo (permiso denegado), la confirma el owner.

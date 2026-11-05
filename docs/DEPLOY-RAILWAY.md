@@ -42,7 +42,7 @@ New-Secret 32   # ANALYTICS_SALT   (distinta del JWT_SECRET)
 New-Secret 24   # contraseña del administrador (ADMIN_PASSWORD en el paso 4)
 ```
 
-La contraseña del administrador **es la definitiva**: el panel no tiene pantalla para cambiarla (se rota con `admin:bootstrap`, paso 4).
+La contraseña de `admin:bootstrap` puede ser la de siempre, pero conviene cambiarla después desde **Cuenta** en el panel (`/admin/cuenta`); `admin:bootstrap` queda como recuperación.
 
 En producción la API **no arranca** si el `JWT_SECRET` es el del `.env.example`, tiene menos de 32 caracteres, coincide con `ANALYTICS_SALT`, o si `FRONTEND_URL` no usa https.
 
@@ -135,7 +135,7 @@ Remove-Item Env:DATABASE_URL, Env:NODE_ENV, Env:ADMIN_EMAIL, Env:ADMIN_PASSWORD,
 - [ ] **Apagar Public Access** del Postgres. Se vuelve a encender solo para backups y recargas (paso 9 y *Recarga*).
 - [ ] Si `npm run seed` sale con código 2 («Negativa: … la base ya tiene contenido») es que ya había datos: no escribió nada. Leé el mensaje antes de seguir.
 
-**Rotar la contraseña del administrador** (no hay pantalla para eso): repetir `admin:bootstrap` con un `ADMIN_PASSWORD` nuevo (hace *upsert* por email). Hace falta Public Access encendido y las variables solo en esa terminal.
+**Rotar la contraseña del administrador**: la rotación de rutina va por **Cuenta** en el panel (cierra las sesiones de otros dispositivos). Si se perdió la contraseña, o se sospecha que hay una sesión tomada, `admin:bootstrap` es la recuperación: repetirlo con un `ADMIN_PASSWORD` nuevo (hace *upsert* por email y también cierra todas las sesiones). Hace falta Public Access encendido y las variables solo en esa terminal.
 
 **Recarga deliberada** (borra y recarga desde `docs/cv-data.json`, **también lo editado en el panel**): primero el respaldo del paso 9; después, en una terminal con `DATABASE_URL` y `NODE_ENV=production` como arriba:
 

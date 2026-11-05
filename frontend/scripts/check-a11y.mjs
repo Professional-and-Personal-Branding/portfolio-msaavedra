@@ -400,6 +400,7 @@ if (ADMIN_EMAIL && ADMIN_PASSWORD) {
     ['admin-skills', '/admin/skills'],
     ['admin-formacion', '/admin/formacion'],
     ['admin-proyectos', '/admin/proyectos'],
+    ['admin-cuenta', '/admin/cuenta'],
     ['admin-perfiles', '/admin/perfiles'],
     ...(first?.id ? [['admin-builder', `/admin/perfiles/${first.id}`]] : []),
   ].map(([id, path]) => ({ id, path, keyboard: id === 'admin' || id === 'admin-builder' }));

@@ -375,6 +375,7 @@
     <a href="#tc26"><span class="dot ok"></span><span class="id">TC-26</span> Formación</a>
     <a href="#tc42"><span class="dot ok"></span><span class="id">TC-42</span> Credencial verificable</a>
     <a href="#tc44"><span class="dot part"></span><span class="id">TC-44</span> Datos estructurados</a>
+    <a href="#tc45"><span class="dot part"></span><span class="id">TC-45</span> Cambiar la contraseña</a>
     <a href="#tc27"><span class="dot ok"></span><span class="id">TC-27</span> Proyectos</a>
     <a href="#tc28"><span class="dot ok"></span><span class="id">TC-28</span> Aviso en el constructor</a>
     <a href="#tc29"><span class="dot ok"></span><span class="id">TC-29</span> Aviso en la Portada</a>
@@ -433,7 +434,7 @@ npm ci &amp;&amp; npm run dev           # sitio en http://localhost:5173</pre></
       <div class="codewrap"><pre>curl -s http://localhost:3300/health | jq
 # {"status":"ok","uptime":16,"checks":{"database":{"status":"up","responseTime":12}}}</pre></div>
 
-      <div class="note"><b>Sesión para los <code>curl</code>.</b> El panel usa una cookie httpOnly, pero la API también acepta <code>Authorization: Bearer</code>, que es más cómodo en consola. El login está limitado a 5 intentos por minuto y por IP.</div>
+      <div class="note"><b>Sesión para los <code>curl</code>.</b> El panel usa una cookie httpOnly, pero la API también acepta <code>Authorization: Bearer</code>, que es más cómodo en consola. El login está limitado a 5 intentos por minuto y por IP. Cambiar la contraseña desde <b>Cuenta</b> (B14, TC-45) o correr <code>npm run admin:bootstrap</code> cierra todas las sesiones anteriores: un <code>TOKEN</code> sacado antes da <code>401</code>; volvé a hacer el login.</div>
 
       <div class="codewrap"><pre>API=http://localhost:3300
 
@@ -505,7 +506,7 @@ $env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del o
     <!-- ───────────── Resumen ───────────── -->
     <section id="resumen" class="block">
       <h2>Resumen de la última ejecución</h2>
-      <p class="lede">Último caso ejecutado el 4 de noviembre de 2026 (TC-44, pasos 1 a 5); antes, el 29 de octubre (TC-42 y TC-41), el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias): suite <code>suite-backoffice.ps1</code>, recorridos y casos de lectura por API, <code>print:check</code> y las 46 capturas con <code>manual:capture</code>. TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real.</p>
+      <p class="lede">Último caso ejecutado el 5 de noviembre de 2026 (TC-45, por la API y la sesión revocada en Chrome); antes, el 4 de noviembre (TC-44, pasos 1 a 5); antes, el 29 de octubre (TC-42 y TC-41), el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias): suite <code>suite-backoffice.ps1</code>, recorridos y casos de lectura por API, <code>print:check</code> y las 46 capturas con <code>manual:capture</code>. TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real.</p>
 
       <div class="stats">
         <div class="stat"><b>42</b><span>casos</span></div>
@@ -515,7 +516,7 @@ $env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del o
         <div class="stat"><b>46</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Pasan los 42 casos anteriores; TC-44 queda parcial</b> (<code>upgrade-profile-structured-data</code>: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado) (30 con captura; 10 verificados contra la API o con e2e, sin captura de la pantalla). TC-42 (verificar una certificación desde el sitio), con <code>add-certification-verification</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable), con la captura <code>tc42-credencial</code> nueva y la del diálogo de certificación regenerada con <code>manual:capture</code>. TC-41 (compartir un perfil con un enlace de seguimiento), con <code>add-share-links</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable); el Dashboard con <b>Por enlace</b> y <b>Por portal</b> es la captura de TC-18, regenerada con <code>manual:capture</code>. TC-39 (las visitas propias y de bots no suman), con <code>classify-profile-views</code>, se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por <code>POST /api/auth/login</code>; el Dashboard con <b>Por tipo</b> es la captura de TC-18. TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-40 (ítems ocultos e insignias legibles), con <code>fix-admin-contrast</code>, el 28 de octubre contra la imagen de producción del frontend y bases descartables; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Pasan los 42 casos anteriores; TC-44 y TC-45 quedan parciales</b> (<code>add-admin-password-change</code>: TC-45 se ejecutó el 5 de noviembre de 2026 en la app real con una base descartable, por la API y con la sesión revocada en Chrome, con la captura <code>bo-cuenta</code>; los pasos del panel que escriben contraseñas reales no se ejecutaron a mano) (<code>upgrade-profile-structured-data</code>: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado) (30 con captura; 10 verificados contra la API o con e2e, sin captura de la pantalla). TC-42 (verificar una certificación desde el sitio), con <code>add-certification-verification</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable), con la captura <code>tc42-credencial</code> nueva y la del diálogo de certificación regenerada con <code>manual:capture</code>. TC-41 (compartir un perfil con un enlace de seguimiento), con <code>add-share-links</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable); el Dashboard con <b>Por enlace</b> y <b>Por portal</b> es la captura de TC-18, regenerada con <code>manual:capture</code>. TC-39 (las visitas propias y de bots no suman), con <code>classify-profile-views</code>, se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por <code>POST /api/auth/login</code>; el Dashboard con <b>Por tipo</b> es la captura de TC-18. TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-40 (ítems ocultos e insignias legibles), con <code>fix-admin-contrast</code>, el 28 de octubre contra la imagen de producción del frontend y bases descartables; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -768,7 +769,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 </tbody>
 </table></div>
         <p><span class="lbl">Acciones y avisos</span> · El login está limitado a 5 intentos por minuto y por IP (429 con <code>Retry-After</code>).</p>
-        <p>Para la guía y las capturas se usa un administrador de prueba (<code>npm run admin:bootstrap</code> con una contraseña aleatoria de la sesión).</p>
+        <p>Para la guía y las capturas se usa un administrador de prueba (<code>npm run admin:bootstrap</code> con una contraseña aleatoria de la sesión). Una vez dentro, la contraseña se cambia desde <b>Cuenta</b> (B14); si se perdió, <code>npm run admin:bootstrap</code> es la recuperación.</p>
         <figure class="shot" id="img-tc11-login"><img src="tc11-login.jpg" width="800" height="500" alt="Login del backoffice"></figure>
         <figure class="shot" id="img-tc11-login-error"><img src="tc11-login-error.jpg" width="800" height="500" alt="Error de credenciales"></figure>
       </article>
@@ -1124,6 +1125,36 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         <p><span class="lbl">Acciones y avisos</span> · La vista previa refleja el borrador sin guardar: tocar el Slug o un tag la recalcula. Con <code>ejemplo-borrador</code> en EN, la pestaña Publicación muestra <code>Falta 1 traducción en EN</code>.</p>
         <figure class="shot" id="img-tc17-preview-en"><img src="tc17-preview-en.jpg" width="800" height="500" alt="Vista previa en inglés con un borrador sin guardar"></figure>
         <figure class="shot" id="img-tc32-faltantes"><img src="tc32-faltantes.jpg" width="800" height="500" alt="Aviso de faltantes de traducción"></figure>
+      </article>
+
+      <article class="screen" id="b14">
+        <h3>Cuenta</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/cuenta</code>. Se llega con el botón <b>Cuenta</b> de la barra superior (antes de <b>Cerrar sesión</b>). Muestra el nombre y el email del administrador (solo lectura) y el formulario <b>Cambiar contraseña</b>. Al cambiarla se <b>cierran las sesiones abiertas en otros navegadores y dispositivos</b>; la sesión que hizo el cambio sigue, porque el servidor le emite una cookie nueva. Ninguna contraseña ni token toca <code>localStorage</code> ni <code>sessionStorage</code>.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Contraseña actual</td><td>texto (oculto)</td><td>Sí</td><td>No vacía; hasta 256 caracteres</td><td>—</td></tr>
+<tr><td>Nueva contraseña</td><td>texto (oculto)</td><td>Sí</td><td>De 12 a 256 caracteres (un acento o un emoji cuentan 1) y distinta de la actual; no se recortan espacios</td><td>—</td></tr>
+<tr><td>Repetí la nueva contraseña</td><td>texto (oculto)</td><td>Sí</td><td>Igual a la nueva</td><td>—</td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">Escribí tu contraseña actual</td><td>La actual está vacía.</td></tr>
+<tr><td class="msg">Usá al menos 12 caracteres</td><td>La nueva tiene menos de 12 caracteres.</td></tr>
+<tr><td class="msg">Usá como máximo 256 caracteres</td><td>La actual o la nueva pasan de 256 caracteres.</td></tr>
+<tr><td class="msg">La nueva contraseña tiene que ser distinta de la actual</td><td>La nueva es igual a la actual.</td></tr>
+<tr><td class="msg">Las contraseñas no coinciden</td><td>La repetición no es igual a la nueva. No sale ninguna petición.</td></tr>
+<tr><td class="msg">La contraseña actual no es correcta</td><td>La API respondió 401 y la sesión sigue vigente.</td></tr>
+<tr><td class="msg">La API rechazó la contraseña nueva. Revisá las reglas.</td><td>La API respondió 400.</td></tr>
+<tr><td class="msg">Demasiados intentos. Probá de nuevo en unos minutos.</td><td>La API respondió 429: 5 intentos por minuto y por IP, con un contador propio (el del login no cuenta).</td></tr>
+<tr><td class="msg">No pudimos contactar al servidor. Intentá de nuevo.</td><td>Cualquier otro error.</td></tr>
+<tr><td class="msg">Contraseña actualizada. Se cerraron las sesiones de otros dispositivos.</td><td>Aviso de éxito; los tres campos quedan vacíos.</td></tr>
+</tbody>
+</table></div>
+        <p><span class="lbl">Acciones y avisos</span> · Si la sesión se revocó (otro dispositivo cambió la contraseña) o venció, la próxima petición del panel da 401 y vuelve al login. Los <code>curl</code> con un <code>TOKEN</code> anterior al cambio también dan 401 (ver «Sesión para los curl»). Si perdiste la contraseña, la recuperación es <code>npm run admin:bootstrap</code> desde la terminal: acepta contraseñas de 8 caracteres o más y también cierra todas las sesiones.</p>
+        <figure class="shot" id="img-bo-cuenta"><img src="bo-cuenta.jpg" width="800" height="500" alt="Cuenta con el aviso de repetición distinta"></figure>
       </article>
 
     </section>
@@ -1679,6 +1710,26 @@ Descartar                                          -> cierra, la categoría no s
         <div class="note"><i>Atrás</i> del navegador con un diálogo abierto no tiene aviso propio (decisión D11). En la app real se probó <i>Escape</i>; clic fuera, X y <i>Cancelar</i> los cubren los tests del guardián y de cada página.</div>
               <fieldset class="run" data-run="tc30"><legend>Resultado de la corrida · TC-30</legend><label><input type="radio" name="r-tc30" value="pass"> pasa</label><label><input type="radio" name="r-tc30" value="fail"> falla</label><label><input type="radio" name="r-tc30" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-30"></fieldset>
 </article>
+
+      <article class="case" data-status="part" id="tc45" data-area="backoffice" data-change="add-admin-password-change">
+        <div class="case-head"><span class="case-id">TC-45</span><h3>Cambiar la contraseña del panel</h3><span class="pill part">parcial</span></div>
+        <p><span class="lbl">Precondición</span> · Base de ejemplo <b>descartable</b> (nunca <code>portfolio</code>), con la API y el frontend levantados (de preferencia la imagen de <code>frontend/Dockerfile</code>). Un administrador de prueba creado con <code>npm run admin:bootstrap</code> y una contraseña aleatoria que solo vive en la terminal y en el gestor de contraseñas, y una segunda contraseña aleatoria para el cambio.</p>
+        <p><span class="lbl">Pasos</span> · (1) En Chrome, entrá a <code>/admin</code> (sesión A); en una <b>ventana privada</b>, entrá también (sesión B); (2) en A, pulsá <b>Cuenta</b> en la barra superior; (3) en <b>Nueva contraseña</b> escribí 11 caracteres y pasá al campo siguiente; (4) escribí una nueva válida y, en <b>Repetí la nueva contraseña</b>, otra distinta, y pulsá <b>Cambiar contraseña</b>; (5) escribí una <b>Contraseña actual</b> incorrecta, la nueva y su repetición iguales, y pulsá <b>Cambiar contraseña</b>; (6) corregí la <b>Contraseña actual</b> y pulsá <b>Cambiar contraseña</b>; (7) en B, abrí <b>Experiencias</b>; (8) en B, entrá con la contraseña anterior y después con la nueva; (9) en A, recargá la página.</p>
+        <p><span class="lbl">Esperado</span> · (1) Las dos sesiones llegan al Dashboard; (2) se abre <code>/admin/cuenta</code> con el nombre y el email del administrador y el formulario <b>Cambiar contraseña</b>; (3) se ve «Usá al menos 12 caracteres»; (4) se ve «Las contraseñas no coinciden» y no sale ninguna petición (pestaña Red); (5) se ve «La contraseña actual no es correcta» y se sigue en Cuenta; (6) aparece «Contraseña actualizada. Se cerraron las sesiones de otros dispositivos.» y los tres campos quedan vacíos; (7) B vuelve a <code>/admin/login</code>; (8) con la anterior, «Email o contraseña incorrectos»; con la nueva, B entra al Dashboard; (9) A sigue en el panel sin pasar por el login.</p>
+        <p><span class="lbl">Errores típicos</span> · «La contraseña actual no es correcta» después de varios intentos puede pasar a «Demasiados intentos. Probá de nuevo en unos minutos.» (5 por minuto e IP, como el login). Los <code>curl</code> con un <code>TOKEN</code> sacado antes del cambio dan 401: volvé a hacer el login de «Sesión para los curl». Si perdiste la contraseña, la recuperación es <code>npm run admin:bootstrap</code> desde la terminal (también cierra todas las sesiones).</p>
+        <p><span class="lbl">Observado</span> · 5 de noviembre de 2026, imagen de <code>frontend/Dockerfile</code> en <code>localhost:8099</code>, API de la rama en <code>localhost:3345</code> y la base descartable <code>portfolio_pwd_example</code>, sembrada con el ejemplo. El bloque <b>Por la API</b> dio exactamente los códigos esperados (200, 200, 401 sin <code>Set-Cookie</code>, 400, 400, 401 sin sesión, 200 con <code>Set-Cookie</code> <code>HttpOnly</code>; <code>/me</code> 200 con la cookie nueva, 401 con la anterior y con la de B; login 401 con la contraseña anterior y 200 con la nueva). Además: el sexto intento de cambio en un minuto dio 429 con <code>Retry-After</code>, con el login todavía disponible; <code>npm run admin:bootstrap</code> cerró la sesión abierta (<code>sessionVersion</code> +1) y permitió entrar con la contraseña nueva; en Chrome, con la sesión abierta en <code>/admin/experiencias</code> y la versión incrementada desde otro cliente, pulsar <b>Skills</b> devolvió al login; y los logs de la API y del contenedor <code>web</code> tienen 0 apariciones de las contraseñas. Los pasos 3 a 6 y 8 del panel, que piden escribir contraseñas reales en el navegador, <b>no se ejecutaron a mano</b>: las reglas del formulario y sus mensajes los cubren los tests del frontend y la captura de abajo, hecha con valores de relleno. Por eso el caso queda parcial. <code>a11y:check</code> con panel (52 cargas, incluida <b>Cuenta</b>) y axe con los errores de validación a la vista: 0 violaciones.</p>
+        <div class="codewrap"><pre>login (A)                                  -&gt; 200
+login (B)                                  -&gt; 200
+POST /api/auth/password, actual incorrecta -&gt; 401, sin Set-Cookie
+POST /api/auth/password, nueva de 5        -&gt; 400
+POST /api/auth/password, correcta (A)      -&gt; 200, Set-Cookie portfolio_session
+GET  /api/auth/me con la cookie de A       -&gt; 200
+GET  /api/auth/me con la cookie anterior   -&gt; 401
+GET  /api/auth/me con la sesión B          -&gt; 401
+login con la contraseña anterior / nueva   -&gt; 401 / 200</pre></div>
+        <figure class="shot" id="img-bo-cuenta-tc45"><img src="bo-cuenta.jpg" width="800" height="500" alt="Cuenta con el aviso de repetición distinta"></figure>
+              <fieldset class="run" data-run="tc45"><legend>Resultado de la corrida · TC-45</legend><label><input type="radio" name="r-tc45" value="pass"> pasa</label><label><input type="radio" name="r-tc45" value="fail"> falla</label><label><input type="radio" name="r-tc45" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-45"></fieldset>
+</article>
     </section>
 
     <!-- ───────────── Defectos ───────────── -->
@@ -1966,6 +2017,7 @@ echo "$SITIO/acme-tech-lead"</pre></div>
         <div class="g"><dt id="g-enlace-de-seguimiento">enlace de seguimiento</dt><dd>Un link con un código propio (<code>?via=&lt;código&gt;</code>) para un destinatario o un portal, con etiqueta y revocación; cuenta las aperturas de personas sin depender del referrer. <span class="refs"><a href="#c8">C8 · Analítica</a>, <a href="#b12">B12 · Constructor · Publicación</a>, <a href="#tc41">TC-41</a></span></dd></div>
         <div class="g"><dt id="g-portal">portal</dt><dd>El sitio donde se publica un link (<code>linkedin</code>, <code>indeed</code>…): el del enlace de seguimiento o el de <code>?src=&lt;portal&gt;</code>, normalizado a minúsculas, números y guiones. <span class="refs"><a href="#c8">C8 · Analítica</a>, <a href="#b2">B2 · Dashboard</a>, <a href="#tc41">TC-41</a></span></dd></div>
         <div class="g"><dt id="g-credencial">credencial</dt><dd>Lo que acredita una certificación en el emisor: el enlace de verificación, el ID y el vencimiento, los tres opcionales. <span class="refs"><a href="#b6">B6 · Formación</a>, <a href="#tc42">TC-42</a></span></dd></div>
+        <div class="g"><dt id="g-versi-n-de-sesi-n">versión de sesión</dt><dd>Un número del administrador (<code>sessionVersion</code>) que el token del panel lleva como <code>sv</code>; cambiar la contraseña desde <b>Cuenta</b> o correr <code>admin:bootstrap</code> lo incrementa y los tokens con otra versión dejan de valer. <span class="refs"><a href="#b14">B14 · Cuenta</a>, <a href="#tc45">TC-45</a></span></dd></div>
         <div class="g"><dt id="g-enlace-de-verificacion">enlace de verificación</dt><dd>La página pública de la credencial en el emisor (Credly, Accredible…); solo <code>https://</code>. El sitio lo muestra como «Ver credencial» y no comprueba que funcione. <span class="refs"><a href="#b6">B6 · Formación</a>, <a href="#tc42">TC-42</a></span></dd></div>
         <div class="g"><dt id="g-apertura">apertura</dt><dd>Una visita de una persona atribuida a un enlace de seguimiento; las tuyas y las de bots no cuentan. <span class="refs"><a href="#b12">B12 · Constructor · Publicación</a>, <a href="#tc41">TC-41</a></span></dd></div>
       </dl>

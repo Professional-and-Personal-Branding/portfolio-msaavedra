@@ -1,0 +1,3 @@
+axe-core sobre /admin/cuenta con los errores de validación a la vista (1400x900):
+axe (errores visibles): [] · mensajes: ["Usá al menos 12 caracteres","Las contraseñas no coinciden"]
+Primer intento con text-destructive: 2 nodos color-contrast serious (3,48:1, #dc2626 sobre #161d2e). Corregido mezclando el rojo con --t-text (sin color con nombre: status-color-usage.spec); resultado final: 0 violaciones.

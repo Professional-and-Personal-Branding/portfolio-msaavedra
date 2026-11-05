@@ -1,0 +1,69 @@
+
+> portfolio-frontend@0.1.0 a11y:check
+> node scripts/check-a11y.mjs http://localhost:8099
+
+Perfiles con acento bajo 4,5:1: ejemplo-backend #1A365D (1.38:1), ejemplo-secciones #8a5a00 (2.6:1)
+home.mobile: sin violaciones · teclado: ok (29 controles)
+profile.mobile: sin violaciones · teclado: ok (29 controles)
+profile-en-dark-sidebar.mobile: sin violaciones · teclado: ok (29 controles)
+not-found.mobile: sin violaciones
+admin-login.mobile: sin violaciones
+preset-modern-dark-classic.mobile: sin violaciones
+preset-modern-dark-sidebar.mobile: sin violaciones
+preset-modern-light-classic.mobile: sin violaciones
+preset-modern-light-sidebar.mobile: sin violaciones
+preset-minimal-classic.mobile: sin violaciones
+preset-minimal-sidebar.mobile: sin violaciones
+preset-elegant-classic.mobile: sin violaciones
+preset-elegant-sidebar.mobile: sin violaciones
+preset-corporate-classic.mobile: sin violaciones
+preset-corporate-sidebar.mobile: sin violaciones
+accent-ejemplo-backend.mobile: sin violaciones
+accent-ejemplo-secciones.mobile: sin violaciones
+home.desktop: sin violaciones · teclado: ok (29 controles)
+profile.desktop: sin violaciones · teclado: ok (29 controles)
+profile-en-dark-sidebar.desktop: sin violaciones · teclado: ok (29 controles)
+not-found.desktop: sin violaciones
+admin-login.desktop: sin violaciones
+preset-modern-dark-classic.desktop: sin violaciones
+preset-modern-dark-sidebar.desktop: sin violaciones
+preset-modern-light-classic.desktop: sin violaciones
+preset-modern-light-sidebar.desktop: sin violaciones
+preset-minimal-classic.desktop: sin violaciones
+preset-minimal-sidebar.desktop: sin violaciones
+preset-elegant-classic.desktop: sin violaciones
+preset-elegant-sidebar.desktop: sin violaciones
+preset-corporate-classic.desktop: sin violaciones
+preset-corporate-sidebar.desktop: sin violaciones
+accent-ejemplo-backend.desktop: sin violaciones
+accent-ejemplo-secciones.desktop: sin violaciones
+admin.mobile: sin violaciones · teclado: ok (29 controles)
+admin-portada.mobile: sin violaciones
+admin-experiencias.mobile: sin violaciones
+admin-skills.mobile: sin violaciones
+admin-formacion.mobile: sin violaciones
+admin-proyectos.mobile: sin violaciones
+admin-cuenta.mobile: sin violaciones
+admin-perfiles.mobile: sin violaciones
+admin-builder.mobile: sin violaciones · teclado: ok (30 controles)
+admin.desktop: sin violaciones · teclado: ok (29 controles)
+admin-portada.desktop: sin violaciones
+admin-experiencias.desktop: sin violaciones
+admin-skills.desktop: sin violaciones
+admin-formacion.desktop: sin violaciones
+admin-proyectos.desktop: sin violaciones
+admin-cuenta.desktop: sin violaciones
+admin-perfiles.desktop: sin violaciones
+admin-builder.desktop: sin violaciones · teclado: ok (30 controles)
+
+# a11y:check · axe-core 4.13.0
+
+Base: http://localhost:8099 · 2026-11-05T06:37:44.413Z · 52 cargas (con panel)
+
+| Regla | Impacto | Nodos | Páginas | Ejemplo |
+|---|---|---|---|---|
+| (ninguna) | | 0 | | |
+
+Violaciones serious/critical: 0 nodos en 0 regla(s).
+Recorrido de teclado: sin problemas.
+

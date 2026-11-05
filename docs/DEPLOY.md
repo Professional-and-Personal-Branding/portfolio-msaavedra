@@ -115,7 +115,7 @@ Se hace **una sola vez y desde tu máquina**, no con `railway run` (que corre lo
 2. En una terminal, definir `DATABASE_URL` con esa URL y correr, desde `backend/`: `npm run seed`, `npm run seed:verify` y `npm run admin:bootstrap` (con `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `ADMIN_NAME` definidas **solo en esa terminal**). Carga porque la base está vacía; si ya tiene datos, el seed se niega con código 2.
 3. Cerrar la terminal o borrar las variables.
 
-**No hay pantalla para cambiar la contraseña** del administrador. Se rota volviendo a correr `admin:bootstrap` con un `ADMIN_PASSWORD` nuevo (hace *upsert* por email, es idempotente).
+La contraseña del administrador se cambia desde **Cuenta** en el panel (`/admin/cuenta`): pide la actual, exige 12 a 256 caracteres y **cierra las sesiones abiertas en otros dispositivos** (`sessionVersion` en el JWT). `admin:bootstrap` queda como **recuperación** (contraseña olvidada o sesión sospechosa): se vuelve a correr con un `ADMIN_PASSWORD` nuevo (hace *upsert* por email, es idempotente) y también cierra todas las sesiones. La primera vez que se despliega esta versión, las sesiones abiertas siguen valiendo hasta el primer cambio.
 
 El `preDeployCommand` solo migra (`npm run prisma:deploy`): **nunca siembra**. Un deploy no dispara una carga; sembrar en producción es siempre un comando manual.
 

@@ -1,0 +1,20 @@
+== backend ==
+lint exit=0
+typecheck exit=0
+Test Suites: 99 passed, 99 total
+Tests:       955 passed, 955 total
+Test Suites: 15 passed, 15 total
+Tests:       270 passed, 270 total
+openapi diff exit=0
+build exit=0
+== frontend (final) ==
+lint exit=0
+typecheck exit=0
+test: Test Files 66 passed (66); Tests 993 passed (993) (corrida limpia; en las anteriores, 2 a 5 timeouts en frío de la vista pública y el constructor que pasan solos)
+build exit=0
+# Presupuesto de JS del arranque público
+| **Total** | | **150.1** |
+Presupuesto: 155 KB.
+manual:check ok: 44 casos alineados, 47 imágenes (3.43 MB), index.html 254 KB, 178 ids.
+
+Antes (1.1): backend unit 925 (94 suites), e2e 250 (14 suites), frontend 972 (1 timeout en frío que pasó solo). Después: unit 955 (99 suites), e2e 270 (15 suites), frontend 993 (66 archivos).

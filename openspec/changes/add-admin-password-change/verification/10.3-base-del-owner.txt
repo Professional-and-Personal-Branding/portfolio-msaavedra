@@ -1,0 +1,5 @@
+No se consultó la base `portfolio` del owner: el clasificador de permisos de la sesión rechazó la lectura de
+_prisma_migrations y no se buscó otra vía. La garantía es por construcción: todas las bases usadas fueron propias
+(portfolio_pwd_check, portfolio_pwd_e2e, portfolio_pwd_example) y cada comando que escribe verificó antes el destino con
+`prisma migrate status`. La comprobación pendiente (que `prisma migrate status` contra `portfolio` muestre
+20261105005841_add_admin_session_version como pendiente) la hace el owner al actualizar.
