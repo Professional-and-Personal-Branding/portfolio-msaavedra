@@ -127,13 +127,18 @@ Los tres requisitos son nuevos, con nombres que no existen en `openspec/specs/`.
 
 Sin migración de schema ni de datos. Despliegue normal: el `preDeployCommand` no tiene nada nuevo que aplicar. Rollback: revertir el commit; los `updatedAt` vuelven a moverse con las visitas, sin pérdida de datos.
 
+## Resoluciones del owner (2026-11-04)
+
+- **P1 → A, change aparte.** Este change no toca el contrato (`openapi.json`, `api.d.ts`) ni el JSON-LD; `dateModified` y `updatedAt` público quedan para un change posterior, cuando este y #47 estén en `main`.
+- **P2 → A.** Se pluralizan también «{n} visitas» (constructor, `ProfilesPage` y su aviso de borrar, `aria-label` del dashboard) y «{n} skills» (`SkillsPage` y su aviso) con `formatCount`; el grupo 4 de `tasks.md` es obligatorio. En los avisos de borrar el posesivo concuerda también («su 1 visita registrada», «su 1 skill»); en el de visitas se omitió el «sus» redundante solo cuando corresponde.
+
 ## Open Questions
 
-- **P1 [no bloqueante] — `dateModified` en el JSON-LD y `updatedAt` en el DTO público.** Con D1 y D2, `updatedAt` ya es confiable, y P1 de `upgrade-profile-structured-data` dejaba `dateModified` para el change que lo corrigiera.
+- **P1 [resuelta: A] — `dateModified` en el JSON-LD y `updatedAt` en el DTO público.** Con D1 y D2, `updatedAt` ya es confiable, y P1 de `upgrade-profile-structured-data` dejaba `dateModified` para el change que lo corrigiera.
   - A) Change aparte, chico, cuando este y #47 estén en `main`: `updatedAt` en `CuratedProfileOutput`, OpenAPI y `api.d.ts`, `dateModified` en el fragmento y en el cliente, con su escenario en `public-seo`.
   - B) Sumarlo acá: el change deja de ser solo correctivo, toca el contrato y queda atado a cómo termine #47.
   - **Recomendación: A.** Este change no cambia el contrato y se puede revisar solo. Nota: `upgrade-profile-structured-data` nombra el arreglo como `fix-curated-profile-updated-at`. Al archivarlo conviene aclarar que lo hizo `polish-views-updated-at-and-builder`.
-- **P2 [no bloqueante] — ¿La misma convención para los contadores del resto del panel?** Tienen el mismo defecto: el badge «{n} visitas» del constructor (`ProfileBuilderPage.tsx`), «{n} visitas» de la lista y del diálogo de borrar (`ProfilesPage.tsx`), «{n} skills» y su diálogo (`SkillsPage.tsx`) y el `aria-label` «{día}: {n} visitas» del dashboard.
+- **P2 [resuelta: A] — ¿La misma convención para los contadores del resto del panel?** Tienen el mismo defecto: el badge «{n} visitas» del constructor (`ProfileBuilderPage.tsx`), «{n} visitas» de la lista y del diálogo de borrar (`ProfilesPage.tsx`), «{n} skills» y su diálogo (`SkillsPage.tsx`) y el `aria-label` «{día}: {n} visitas» del dashboard.
   - A) Sí, en este change, con `formatCount` (unas seis líneas más y sus tests).
   - B) No; un change aparte cuando se toquen esas pantallas.
   - **Recomendación: A.** Es el mismo arreglo con el mismo helper, y queda como grupo 4 opcional de `tasks.md`: si el owner elige B, el grupo se borra antes de implementar.
