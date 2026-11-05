@@ -1,0 +1,35 @@
+base: e711e52902743df5107e058d4734497b4d643db7
+== backend lint
+
+> portfolio-backend@0.1.0 lint
+> eslint "{src,test,scripts}/**/*.ts"
+
+== typecheck
+
+> portfolio-backend@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+== test
+
+> portfolio-backend@0.1.0 test
+> jest
+
+[33m[Nest] 18896  - [39m11/04/2026, 8:52:28 PM [33m   WARN[39m [38;5;3m[SocialLinkPrismaMapper] [39m[33mSocialLink "github" con stats de forma inesperada; se usa null[39m
+[33m[Nest] 32072  - [39m11/04/2026, 8:52:28 PM [33m   WARN[39m [38;5;3m[ThemePrismaMapper] [39m[33mTheme "modern-dark" con tokens de forma inesperada; se usa {}[39m
+[33m[Nest] 32072  - [39m11/04/2026, 8:52:28 PM [33m   WARN[39m [38;5;3m[ThemePrismaMapper] [39m[33mTheme "modern-dark" con tokens de forma inesperada; se usa {}[39m
+[33m[Nest] 6624  - [39m11/04/2026, 8:52:28 PM [33m   WARN[39m [38;5;3m[PrismaJsonMapper] [39m[33mCampo "Profile.headline" con forma inesperada; se devuelve vacío[39m
+[33m[Nest] 6624  - [39m11/04/2026, 8:52:28 PM [33m   WARN[39m [38;5;3m[PrismaJsonMapper] [39m[33mCampo "Profile.summary" con forma inesperada; se devuelve vacío[39m
+[33m[Nest] 18896  - [39m11/04/2026, 8:52:28 PM [33m   WARN[39m [38;5;3m[SocialLinkPrismaMapper] [39m[33mSocialLink "github" con stats de forma inesperada; se usa null[39m
+[33m[Nest] 39812  - [39m11/04/2026, 8:52:28 PM [33m   WARN[39m [38;5;3m[PrismaJsonMapper] [39m[33mCampo "Experience.role" con forma inesperada; se devuelve vacío[39m
+[33m[Nest] 54148  - [39m11/04/2026, 8:52:28 PM [33m   WARN[39m [38;5;3m[PrismaJsonMapper] [39m[33mCampo "SkillCategory.name" con forma inesperada; se devuelve vacío[39m
+[33m[Nest] 55028  - [39m11/04/2026, 8:52:29 PM [33m   WARN[39m [38;5;3m[PrismaJsonMapper] [39m[33mCampo "CuratedProfile.title" con forma inesperada; se devuelve vacío[39m
+[33m[Nest] 55028  - [39m11/04/2026, 8:52:29 PM [33m   WARN[39m [38;5;3m[CuratedProfilePrismaMapper] [39m[33mCuratedProfile "tech-lead-dotnet" con visibility desconocida "WEIRD"; se usa PRIVATE[39m
+[33m[Nest] 8236  - [39m11/04/2026, 8:52:29 PM [33m   WARN[39m [38;5;3m[ResolveCuratedProfileUseCase] [39m[33mNo se pudo registrar la visita de cp1: db down[39m
+[33m[Nest] 32072  - [39m11/04/2026, 8:52:29 PM [33m   WARN[39m [38;5;3m[PrismaJsonMapper] [39m[33mCampo "Certification.name" con forma inesperada; se devuelve vacío[39m
+[33m[Nest] 45584  - [39m11/04/2026, 8:52:29 PM [33m   WARN[39m [38;5;3m[PrismaJsonMapper] [39m[33mCampo "Project.summary" con forma inesperada; se devuelve vacío[39m
+
+Test Suites: 94 passed, 94 total
+Tests:       925 passed, 925 total
+Snapshots:   0 total
+Time:        48.646 s
+Ran all test suites.

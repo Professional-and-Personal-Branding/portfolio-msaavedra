@@ -1,0 +1,15 @@
+
+> portfolio-backend@0.1.0 lint
+> eslint "{src,test,scripts}/**/*.ts"
+
+
+> portfolio-backend@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+Test Suites: 94 passed, 94 total
+Tests:       925 passed, 925 total
+Test Suites: 15 passed, 15 total
+Tests:       253 passed, 253 total
+
+OpenAPI exportado a openapi.json: 43 rutas, 69 schemas
+OPENAPI_SIN_CAMBIOS

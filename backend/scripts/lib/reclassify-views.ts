@@ -208,10 +208,9 @@ export async function applyReclassification(
         await tx.profileView.updateMany({ where: { id: { in: ids } }, data: { kind: 'HUMAN' } });
       }
       for (const change of plan.profileChanges) {
-        await tx.curatedProfile.update({
-          where: { id: change.id },
-          data: { views: change.expected },
-        });
+        // SQL crudo (change polish-views-updated-at-and-builder, D2): corregir `views` no es editar el
+        // perfil, y `update` rellenaría `@updatedAt` y movería el `<lastmod>` del sitemap.
+        await tx.$executeRaw`UPDATE "CuratedProfile" SET "views" = ${change.expected} WHERE "id" = ${change.id}`;
       }
     },
     { timeout: 120_000, maxWait: 10_000 },

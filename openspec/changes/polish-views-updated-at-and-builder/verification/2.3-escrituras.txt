@@ -1,0 +1,89 @@
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:15:      { referrer: 'https://www.linkedin.com/feed/', views: 2 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:16:      { referrer: null, views: 1 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:49:      { referrer: 'linkedin.com', views: 2 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:50:      { referrer: 'directo', views: 1 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:57:    const withKinds = (rows: { kind: 'HUMAN' | 'OWNER' | 'BOT'; views: number }[]) =>
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:68:        { kind: 'HUMAN', views: 0 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:69:        { kind: 'OWNER', views: 0 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:70:        { kind: 'BOT', views: 0 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:76:        withKinds([{ kind: 'BOT', views: 4 }]),
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:81:        { kind: 'HUMAN', views: 0 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:82:        { kind: 'OWNER', views: 0 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:83:        { kind: 'BOT', views: 4 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:90:          { kind: 'BOT', views: 1 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:91:          { kind: 'OWNER', views: 3 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:92:          { kind: 'HUMAN', views: 12 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:110:        views: 3,
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:119:        views: 1,
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:123:      { source: 'linkedin', views: 3 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.spec.ts:124:      { source: 'indeed', views: 2 },
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.ts:30:  byReferrer: { referrer: string; views: number }[];
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.ts:45:  constructor(@Inject(PROFILE_VIEW_REPOSITORY) private readonly views: ProfileViewRepository) {}
+src/modules/analytics/application/use-cases/aggregate-profile-views.use-case.ts:70:        views: kinds.find((row) => row.kind === kind)?.views ?? 0,
+src/modules/analytics/domain/repositories/profile-view.repository.ts:28:  readonly views: number;
+src/modules/analytics/domain/repositories/profile-view.repository.ts:35:  readonly byProfile: readonly { slug: string; views: number }[];
+src/modules/analytics/domain/repositories/profile-view.repository.ts:36:  readonly byLocale: readonly { locale: string; views: number }[];
+src/modules/analytics/domain/repositories/profile-view.repository.ts:38:  readonly byDay: readonly { day: string; views: number }[];
+src/modules/analytics/domain/repositories/profile-view.repository.ts:44:  readonly views: number;
+src/modules/analytics/domain/repositories/profile-view.repository.ts:55:  readonly views: number;
+src/modules/analytics/domain/repositories/profile-view.repository.ts:61:  readonly views: number;
+src/modules/analytics/domain/services/classify-user-agent.ts:6: * después se corre `npm run views:reclassify` para recalcular las filas viejas.
+src/modules/analytics/domain/services/normalize-referrer.spec.ts:41:    { referrer: 'https://www.linkedin.com/feed/', views: 3 },
+src/modules/analytics/domain/services/normalize-referrer.spec.ts:42:    { referrer: 'https://linkedin.com/in/manuel', views: 2 },
+src/modules/analytics/domain/services/normalize-referrer.spec.ts:43:    { referrer: null, views: 4 },
+src/modules/analytics/domain/services/normalize-referrer.spec.ts:44:    { referrer: 'basura', views: 1 },
+src/modules/analytics/domain/services/normalize-referrer.spec.ts:45:    { referrer: 'https://manuel.dev/all', views: 2 },
+src/modules/analytics/domain/services/normalize-referrer.spec.ts:50:      { referrer: 'directo', views: 5 },
+src/modules/analytics/domain/services/normalize-referrer.spec.ts:51:      { referrer: 'linkedin.com', views: 5 },
+src/modules/analytics/domain/services/normalize-referrer.spec.ts:52:      { referrer: 'interno', views: 2 },
+src/modules/analytics/domain/services/normalize-referrer.spec.ts:57:    const sum = (list: { views: number }[]) => list.reduce((acc, r) => acc + r.views, 0);
+src/modules/analytics/domain/services/normalize-referrer.ts:41:  rows: readonly { referrer: string | null; views: number }[],
+src/modules/analytics/domain/services/normalize-referrer.ts:43:): { referrer: string; views: number }[] {
+src/modules/analytics/infrastructure/persistence/prisma-profile-view.repository.ts:18:  views: bigint | number;
+src/modules/analytics/infrastructure/persistence/prisma-profile-view.repository.ts:92:          views: r._count._all,
+src/modules/analytics/infrastructure/persistence/prisma-profile-view.repository.ts:96:        .map((r) => ({ locale: r.locale ?? 'unknown', views: r._count._all }))
+src/modules/analytics/infrastructure/persistence/prisma-profile-view.repository.ts:100:        views: Number(r.views),
+src/modules/analytics/infrastructure/persistence/prisma-profile-view.repository.ts:111:    return rows.map((r) => ({ referrer: r.referrer, views: r._count._all }));
+src/modules/analytics/infrastructure/persistence/prisma-profile-view.repository.ts:120:    return rows.map((r) => ({ kind: r.kind, views: r._count._all }));
+src/modules/analytics/infrastructure/persistence/prisma-profile-view.repository.ts:159:            views: r._count._all,
+src/modules/analytics/infrastructure/persistence/prisma-profile-view.repository.ts:177:      .flatMap((r) => (r.source === null ? [] : [{ source: r.source, views: r._count._all }]))
+src/modules/curated-profile/application/dto/curated-profile.admin-output.ts:27:  views: number;
+src/modules/curated-profile/application/mappers/curated-profile.admin-mapper.ts:25:    views: p.views,
+src/modules/curated-profile/application/use-cases/admin/curated-profile-admin.use-cases.spec.ts:56:      const p = CuratedProfile.create({ ...props, id: `cp-${store.length + 1}`, views: 0 });
+src/modules/curated-profile/application/use-cases/admin/curated-profile-admin.use-cases.spec.ts:83:const ALL = CuratedProfile.create({ ...NEW, id: 'all', slug: 'all', filterTags: [], views: 3 });
+src/modules/curated-profile/application/use-cases/admin/curated-profile-admin.use-cases.spec.ts:93:        views: 5,
+src/modules/curated-profile/application/use-cases/admin/curated-profile-admin.use-cases.spec.ts:103:      views: 5,
+src/modules/curated-profile/application/use-cases/admin/curated-profile-admin.use-cases.spec.ts:141:    const p1 = CuratedProfile.create({ ...NEW, id: 'p1', views: 0 });
+src/modules/curated-profile/application/use-cases/admin/curated-profile-lifecycle.use-cases.spec.ts:34:  views: 40,
+src/modules/curated-profile/application/use-cases/admin/curated-profile-lifecycle.use-cases.spec.ts:50:      const cp = CuratedProfile.create({ ...props, id: `new-${created.length}`, views: 0 });
+src/modules/curated-profile/application/use-cases/admin/curated-profile-lifecycle.use-cases.spec.ts:95:      views: 0,
+src/modules/curated-profile/application/use-cases/admin/preview-curated-profile.use-case.ts:44:      views: 0,
+src/modules/curated-profile/application/use-cases/admin/share-links.use-cases.spec.ts:42:  views: 0,
+src/modules/curated-profile/application/use-cases/admin/share-links.use-cases.ts:41:    protected readonly views: ProfileViewRepository,
+src/modules/curated-profile/application/use-cases/admin/share-links.use-cases.ts:66:    @Inject(PROFILE_VIEW_REPOSITORY) private readonly views: ProfileViewRepository,
+src/modules/curated-profile/application/use-cases/admin/share-links.use-cases.ts:88:    @Inject(PROFILE_VIEW_REPOSITORY) views: ProfileViewRepository,
+src/modules/curated-profile/application/use-cases/admin/share-links.use-cases.ts:123:    @Inject(PROFILE_VIEW_REPOSITORY) views: ProfileViewRepository,
+src/modules/curated-profile/application/use-cases/admin/share-links.use-cases.ts:149:    @Inject(PROFILE_VIEW_REPOSITORY) views: ProfileViewRepository,
+src/modules/curated-profile/application/use-cases/admin/share-links.use-cases.ts:185:    @Inject(PROFILE_VIEW_REPOSITORY) views: ProfileViewRepository,
+src/modules/curated-profile/application/use-cases/curated-profile.use-cases.spec.ts:129:    views: 0,
+src/modules/curated-profile/application/use-cases/curated-profile.use-cases.spec.ts:874:    const { id: _id, views: _views, ...props } = curated().toProps();
+src/modules/curated-profile/domain/entities/curated-profile.entity.spec.ts:22:  views: 0,
+src/modules/curated-profile/domain/entities/curated-profile.entity.ts:38:  readonly views: number;
+src/modules/curated-profile/infrastructure/persistence/curated-profile.prisma-mapper.spec.ts:23:  views: 3,
+src/modules/curated-profile/infrastructure/persistence/curated-profile.prisma-mapper.ts:45:    views: record.views,
+scripts/lib/reclassify-views.ts:2: * Lógica de `npm run views:reclassify` (change `classify-profile-views`, D4 y D5).
+scripts/lib/reclassify-views.ts:33:        error: `Argumento desconocido: ${arg}. Uso: npm run views:reclassify [-- --apply]`,
+scripts/lib/reclassify-views.ts:49:  readonly views: number;
+scripts/lib/reclassify-views.ts:138:    `views:reclassify — lista de bots v${BOT_USER_AGENT_PATTERNS_VERSION}`,
+scripts/lib/reclassify-views.ts:187:  return prisma.curatedProfile.findMany({ select: { id: true, slug: true, views: true } });
+scripts/lib/seed-runner.ts:467:      data: { views: { increment: views.length } },
+scripts/reclassify-views.ts:4: *   npm run views:reclassify              → simulación: informa y no escribe
+scripts/reclassify-views.ts:5: *   npm run views:reclassify -- --apply   → escribe en una transacción
+scripts/reclassify-views.ts:57:    console.error('❌ Error en views:reclassify:', e instanceof Error ? e.message : e);
+
+== Resumen (revisión manual) ==
+Escrituras de `views` tras el change: los dos $executeRaw (prisma-profile-view.repository.ts y
+scripts/lib/reclassify-views.ts), el `create` del seed y un `update` con `increment` en
+scripts/lib/seed-runner.ts:467 (visitas sintéticas del seed de EJEMPLO). Este último corre al
+sembrar, cuando el perfil se acaba de crear: `updatedAt` = momento de creación, que es correcto;
+no se toca (fuera del alcance de D1/D2, se informa como observación).
