@@ -159,7 +159,7 @@ Cada experiencia, skill y proyecto lleva **tags**. Un perfil incluye lo que comp
 
 - **En el ejemplo:** `ejemplo-overrides` fuerza una experiencia sin tags comunes (Brújula Demo), intenta forzar una oculta (se ignora), suma un proyecto y quita una experiencia y una skill que sí coincidían.
 - **Dónde se edita:** B10 (Constructor · Selección)
-- **Casos que lo verifican:** TC-03, TC-13, TC-20
+- **Casos que lo verifican:** TC-03, TC-13, TC-20, TC-43
 
 ### C4 — Secciones
 
@@ -214,7 +214,7 @@ Nueve tareas reales, con los pasos por pantalla, lo que tiene que pasar, los err
 
 1. **Perfiles** → botón **Duplicar** en `ejemplo-backend` → confirmar (también se puede crear con **Nuevo perfil**). La copia nace privada y sin enumerar, y se abre en el constructor.
 2. **Identidad**: cambiá el **Slug** (kebab-case, es la URL), el **Título** y el **Titular** en ES y EN, y el **Tipo de rol**.
-3. **Selección**: activá los **Tags de filtrado** de la vacante y mirá la vista previa. Con *Incluir* o *Excluir* ajustás experiencias puntuales.
+3. **Selección**: activá los **Tags de filtrado** de la vacante y mirá la vista previa. Con *Incluir* o *Excluir* ajustás experiencias, skills y proyectos puntuales.
 4. **Diseño**: elegí el **Tema** y el **Acento**, y ordená u ocultá las **Secciones**.
 5. **Guardar**. Después, en **Publicación**, cambiá la **Visibilidad** a `Público` (o `Protegido` con token) y copiá el **Link público**.
 
@@ -598,19 +598,29 @@ Ruta: `/admin/perfiles/:id`. Primera de las cuatro pestañas del constructor (**
 
 ### B10 — Constructor · Selección
 
-Ruta: `/admin/perfiles/:id`. Qué entra en el perfil. Los **Tags de filtrado** se activan como chips (abajo, los tags disponibles en los datos). Cada experiencia lleva **Incluir** y **Excluir**.
+Ruta: `/admin/perfiles/:id`. Qué entra en el perfil. Los **Tags de filtrado** se activan como chips (abajo, los tags disponibles en los datos: de experiencias, skills y proyectos). Después vienen tres bloques, **Experiencias**, **Skills** (agrupadas por categoría, con un buscador) y **Proyectos**, y en cada fila los botones **Incluir** y **Excluir**.
 
 | Campo | Tipo | Obligatorio | Validación | Ejemplo |
 |---|---|---|---|---|
 | Tags de filtrado | chips | No | Sin tags entran todas las experiencias visibles | `java` · `microservices` |
 | Incluir (por experiencia) | botón | No | Fuerza la inclusión; solo de ítems visibles | Brújula Demo en `ejemplo-overrides` |
 | Excluir (por experiencia) | botón | No | Fuerza la exclusión; siempre gana | Atlas Demo en `ejemplo-overrides` |
+| Buscar skill | texto | No | Filtra las skills por nombre (sin distinguir mayúsculas ni acentos); no busca por categoría y no cambia el perfil | `kot` deja solo Kotlin |
+| Incluir (por skill) | botón | No | Fuerza una skill aunque no comparta tags; su categoría aparece con esa skill | React en `ejemplo-overrides` |
+| Excluir (por skill) | botón | No | Quita una skill que sí coincide; siempre gana | Kotlin en `ejemplo-overrides` |
+| Incluir (por proyecto) | botón | No | Fuerza la inclusión; solo de proyectos visibles | Herramienta Interna de Métricas en `ejemplo-overrides` |
+| Excluir (por proyecto) | botón | No | Fuerza la exclusión; siempre gana | Plataforma de Reservas |
+| Oculta / Oculto | insignia | — | Un ítem con `visible: false` lleva la insignia y su **Incluir** está deshabilitado | Terracota Demo y Prototipo en Pausa |
 
-**Acciones y avisos:** **Limitación vigente:** incluir y excluir en el panel cubre **solo experiencias**. Para forzar o quitar skills y proyectos hay que usar la API (`includeIds` / `excludeIds` con los ids de skills y proyectos). La vista previa se recalcula con cada clic.
+**Acciones y avisos:** la vista previa se recalcula con cada clic. **Incluir** y **Excluir** se apagan entre sí: pulsar uno en un ítem excluido (o al revés) lo cambia de lado, y pulsarlo de nuevo lo deja sin override. Si un perfil guardado por la API trae el mismo id en los dos arreglos, la fila lo muestra como excluido y dice «Excluida: la exclusión gana sobre la inclusión». El encabezado de cada categoría cuenta las skills forzadas o quitadas («1 excluida»). Las skills se ajustan **de a una**: no hay un botón para incluir o excluir una categoría entera.
+
+Un ítem oculto (experiencia o proyecto con `visible: false`) se lista al final de su bloque con la insignia **Oculta** u **Oculto** y su **Incluir** deshabilitado («Oculta: no entra aunque la incluyas»), salvo que ya esté incluido: así se puede quitar esa inclusión. Si el perfil guarda ids de ítems que ya no existen, la pestaña avisa «1 referencia a un ítem que ya no existe» (o «N referencias a ítems que ya no existen») con el botón **Quitar**, que los saca del borrador; hasta que lo pulses y guardes se conservan y no cambian el resultado. Si alguna de las tres listas no carga, ese bloque muestra el error con **Reintentar**, no se informan referencias y **Guardar** no altera los ids.
 
 Los ítems con `visible: false` nunca entran, ni forzándolos: en `ejemplo-overrides`, Terracota Demo (oculta) no aparece aunque esté en `includeRefs`.
 
 ![Constructor, pestaña Selección](manual/tc13-seleccion.jpg)
+
+![Constructor, bloques Skills y Proyectos](manual/tc43-overrides.jpg)
 
 ### B11 — Constructor · Diseño
 
@@ -1039,9 +1049,9 @@ Tres mecanismos, en este orden:
 | `includeIds` | Fuerza la inclusión. Solo funciona con items **visibles** |
 | `excludeIds` | Fuerza la exclusión. **Siempre gana**, incluso sobre `includeIds` |
 
-**Pasos:** pestaña **Selección** → los tags disponibles aparecen como chips (clic para activar o desactivar) y cada experiencia tiene los botones *Incluir* y *Excluir*. El preview de la derecha se recalcula con cada clic.
+**Pasos:** pestaña **Selección** → los tags disponibles aparecen como chips (clic para activar o desactivar) y los bloques **Experiencias**, **Skills** y **Proyectos** tienen los botones *Incluir* y *Excluir* en cada fila (skills y proyectos, en TC-43). El preview de la derecha se recalcula con cada clic.
 
-**Resultado esperado:** el preview refleja el filtro. Varios clics seguidos se acumulan: cada uno parte del estado anterior, no del render inicial.
+**Resultado esperado:** el preview refleja el filtro. Varios clics seguidos se acumulan: cada uno parte del estado anterior, no del render inicial. *Incluir* y *Excluir* de un mismo ítem no pueden quedar presionados a la vez: el segundo apaga al primero.
 
 **Equivalente por API:**
 
@@ -1072,6 +1082,47 @@ El orden de salida siempre es cronológico: `startDate` descendente, `order` asc
 ![Pestaña Selección](manual/tc13-seleccion.jpg)
 
 *Los tags activos arriba y el universo de tags disponible debajo, sacado de los datos reales. La vista previa se recalcula con cada clic.*
+
+### TC-43 — Ajustar skills y proyectos de un perfil ✅
+
+**Precondición:** base de ejemplo, **descartable** (nunca `portfolio`: cada carga pública registra una visita), con la API y el frontend levantados (de preferencia la imagen de `frontend/Dockerfile`) y la sesión del panel iniciada en `/admin`.
+
+**Pasos:**
+1. `/admin/perfiles` → abrí **ejemplo-overrides** → pestaña **Selección**. Mirá los bloques **Experiencias**, **Skills** y **Proyectos** y el contador del preview.
+2. En **Buscar skill** escribí `kot`. Después borrá el texto.
+3. En **Kotlin** (categoría *Lenguajes*) pulsá **Excluir** para quitar la exclusión.
+4. En **React** (categoría *Frontend*) pulsá **Incluir**.
+5. En **Plataforma de Reservas** pulsá **Excluir**. Después pulsá **Incluir** en el mismo proyecto y otra vez **Incluir** para dejarlo sin override.
+6. Volvé a pulsar **Excluir** en **Plataforma de Reservas**. Mirá la fila de **Prototipo en Pausa**.
+7. Pulsá **Guardar**. En una **ventana privada**, abrí `/ejemplo-overrides` y mirá **Skills** y **Proyectos**.
+8. Por la API, agregá un id inexistente a `excludeIds` del perfil (ver abajo) y recargá la ficha en el panel. Pulsá **Quitar** en el aviso y **Guardar**.
+
+**Resultado esperado:**
+1. **Kotlin** tiene **Excluir** presionado y el encabezado de *Lenguajes* indica «1 excluida». **Herramienta Interna de Métricas** tiene **Incluir** presionado. **Terracota Demo** y **Prototipo en Pausa** llevan la insignia **Oculta** u **Oculto**. El preview dice «2 experiencias · 3 categorías · 2 proyectos».
+2. Con `kot` solo se ve *Lenguajes* con **Kotlin**; el preview no se recalcula. Al borrar el texto vuelven las cuatro categorías.
+3. **Excluir** de Kotlin deja de estar presionado, el encabezado de *Lenguajes* ya no cuenta ninguna y Kotlin aparece en *Lenguajes* en el preview; el contador no cambia.
+4. El preview pasa a «4 categorías» y muestra *Frontend* solo con React.
+5. Con **Excluir**, el preview pasa a «1 proyectos» (el contador no pone el singular). Con **Incluir**, Excluir se apaga solo y vuelven los 2 proyectos. El segundo **Incluir** deja el proyecto sin override (sigue en el preview porque comparte tags).
+6. El preview vuelve a «1 proyectos». **Prototipo en Pausa** tiene **Incluir** deshabilitado, con la descripción «Oculto: no entra aunque lo incluyas».
+7. Se guarda sin errores. La vista pública muestra *Frontend* con React, *Lenguajes* con Kotlin y en **Proyectos** solo *Herramienta Interna de Métricas*. *Prototipo en Pausa* no aparece.
+8. Al recargar, la pestaña dice «1 referencia a un ítem que ya no existe» y salir con **Volver** no pide confirmación. Después de **Quitar**, la ficha queda con cambios sin guardar; al guardar, `excludeIds` ya no tiene el id inexistente y conserva el de Plataforma de Reservas.
+
+**Errores típicos:** buscar una categoría en **Buscar skill** (busca por nombre de skill, no de categoría). Esperar que **Incluir** reviva un ítem oculto: hay que marcarlo **Visible en el sitio** en su pantalla. Esperar que excluir una categoría entera exista: se excluyen sus skills una por una. Pulsar **Incluir** en un ítem excluido ya quita la exclusión: los dos botones no pueden quedar presionados a la vez.
+
+**Por la API** (con la cookie de sesión de § 0; los ids salen de `GET /api/admin/skill-categories` y `GET /api/admin/projects`):
+
+```text
+PATCH /api/admin/curated-profiles/:id {"includeIds":["<id React>","<id Brújula>","<id Terracota>","<id Herramienta>"],
+                                       "excludeIds":["<id Atlas>","<id Plataforma>","id-inexistente"]} -> 200
+POST  /api/admin/curated-profiles/preview  (mismo borrador)  -> skillCategories con Frontend [React], projects sin Plataforma
+GET   /api/curated-profiles/ejemplo-overrides               -> mismas experiences, skillCategories y projects que el preview
+```
+
+**Ejecutado** (29 de octubre de 2026, imagen de `frontend/Dockerfile` en `localhost:8096`, API local y la base descartable `portfolio_ovr_example`, sembrada con el ejemplo; Chrome no headless con la sesión del panel iniciada por `fetch('/api/auth/login')`, sin escribir la contraseña en un navegador, y un contexto sin sesión para el sitio; evidencia en `openspec/changes/add-builder-skill-project-overrides/verification/`): los pasos 1 a 8 dieron lo esperado con los contadores de arriba. El preview y la ruta pública devolvieron `experiences`, `skillCategories` y `projects` idénticos con el perfil guardado, y el `PATCH` llevó solo ids en `includeIds` y `excludeIds`. `a11y:check` con el panel dio 0 violaciones y axe sobre la pestaña **Selección** (escritorio y móvil) también; la consola, sin errores.
+
+![Bloques Skills y Proyectos de ejemplo-overrides](manual/tc43-overrides.jpg)
+
+*Kotlin excluida (y «1 excluida» en su categoría), la inclusión de Herramienta Interna de Métricas y el proyecto oculto con **Incluir** deshabilitado.*
 
 ### TC-14 — Ordenar y ocultar secciones ✅
 
@@ -1845,7 +1896,7 @@ El umbral de Performance es 85 en CI porque el runner de GitHub es el equipo de 
 
 ## 6. Suite de regresión manual
 
-Antes de cada release, recorrer en este orden. Último caso ejecutado: **29 de octubre de 2026** (TC-42 y TC-41); antes, el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 46 capturas con `manual:capture`. TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
+Antes de cada release, recorrer en este orden. Último caso ejecutado: **29 de octubre de 2026** (TC-43, TC-42 y TC-41); antes, el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 46 capturas con `manual:capture` (TC-43 suma la 47.ª y regenera la de TC-13). TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
 
 Los casos del backoffice están automatizados en [`manual/suite-backoffice.ps1`](manual/suite-backoffice.ps1): ejecuta TC-12 a TC-20 contra la API, imprime el resultado real junto al esperado y borra todos los datos de prueba que crea, pase o falle.
 
@@ -1897,8 +1948,9 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-40 | Ítems ocultos e insignias legibles | ✅ | `a11y:check` con panel sobre el ejemplo (0 en 50 cargas, antes 40 nodos) y sobre `cv-data.json` (0 en 72) · tests de las filas, la insignia, la región y `css-vars` · `print:check` |
 | TC-41 | Compartir un perfil con un enlace de seguimiento | ✅ | app real con la imagen de producción y Chrome no headless · e2e `share-links` y `share-links-admin` · tests de la petición temprana, del panel y del dashboard |
 | TC-42 | Verificar una certificación desde el sitio | ✅ | app real con la imagen de producción y Chrome no headless · API (400 con `http://`, 200, `null`) · PDF de una página con el enlace · `print:check` (ejemplo y CV) · tests de la sección, la hoja y el panel |
+| TC-43 | Ajustar skills y proyectos de un perfil | ✅ | app real con la imagen de producción y Chrome no headless · preview = ruta pública (API) · `a11y:check` con panel y axe sobre Selección · tests de las funciones puras, del constructor y del núcleo (unitarios y e2e) |
 
-**Los 42 casos pasan.** TC-42 (change `add-certification-verification`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc42-credencial` nueva y la del diálogo de certificación regenerada con `manual:capture`. TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 46 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
+**Los 43 casos pasan.** TC-43 (change `add-builder-skill-project-overrides`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc43-overrides` nueva y la de `tc13-seleccion` regenerada con `manual:capture`. TC-42 (change `add-certification-verification`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc42-credencial` nueva y la del diálogo de certificación regenerada con `manual:capture`. TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 46 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
@@ -2021,7 +2073,7 @@ Cada término enlaza el concepto, el recorrido o el caso donde se usa.
 | **perfil base** | La información profesional única (nombre, contacto, idiomas…) de la que sale todo lo demás. | C1 (Perfil base), B3 (Portada (con Idiomas)) |
 | **perfil curado** | Una vista filtrada y personalizada del perfil base, con su slug, tema y reglas. | C2 (Perfil curado), B8 (Perfiles), TC-12 |
 | **`filterTags`** | Lista de tags: un ítem entra si comparte al menos uno. Vacía, entra todo. | C3 (Tags y overrides), B10 (Constructor · Selección), TC-13 |
-| **`includeIds` / `excludeIds`** | Overrides de selección: forzar incluir (solo visibles) o excluir (siempre gana). | C3 (Tags y overrides), B10 (Constructor · Selección), TC-13 |
+| **`includeIds` / `excludeIds`** | Overrides de selección, con ids de experiencias, skills y proyectos: forzar incluir (solo visibles) o excluir (siempre gana). | C3 (Tags y overrides), B10 (Constructor · Selección), TC-13, TC-43 |
 | **sección** | Cada bloque de la página; son nueve y se pueden reordenar y ocultar por perfil. | C4 (Secciones), B11 (Constructor · Diseño), TC-14 |
 | **preset** | Uno de los cinco temas base (`modern-dark`, `modern-light`, `minimal`, `elegant`, `corporate`). | C5 (Tema), B11 (Constructor · Diseño), TC-15 |
 | **token de diseño** | Un valor de color, tipografía o espaciado guardado en la base y aplicado como variable CSS. | C5 (Tema), B11 (Constructor · Diseño) |
@@ -2037,5 +2089,6 @@ Cada término enlaza el concepto, el recorrido o el caso donde se usa.
 | **enlace de seguimiento** | Un link con un código propio (`?via=<código>`) para un destinatario o un portal, con etiqueta y revocación; cuenta las aperturas de personas sin depender del referrer. | C8 (Analítica), B12 (Constructor · Publicación), TC-41 |
 | **portal** | El sitio donde se publica un link (`linkedin`, `indeed`…): el del enlace de seguimiento o el de `?src=<portal>`, normalizado a minúsculas, números y guiones. | C8 (Analítica), B2 (Dashboard), TC-41 |
 | **apertura** | Una visita de una persona atribuida a un enlace de seguimiento; las tuyas y las de bots no cuentan. | B12 (Constructor · Publicación), TC-41 |
+| **referencia huérfana** | Un id de `includeIds` o `excludeIds` que ya no corresponde a ninguna experiencia, skill ni proyecto (el ítem se borró). El sitio lo ignora; el constructor lo cuenta y deja quitarlo. | B10 (Constructor · Selección), TC-43 |
 | **credencial** | Lo que acredita una certificación en el emisor: el enlace de verificación, el ID y el vencimiento, los tres opcionales. | B6 (Formación), TC-42 |
 | **enlace de verificación** | La página pública de la credencial en el emisor (Credly, Accredible…); solo `https://`. El sitio lo muestra como «Ver credencial» y no comprueba que funcione. | B6 (Formación), TC-42 |

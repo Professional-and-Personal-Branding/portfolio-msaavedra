@@ -93,7 +93,7 @@ El JSON tiene seis secciones:
 
 Cada **experiencia**, **skill** y **proyecto** tiene `tags`. Cada **perfil curado** tiene `filterTags`. La regla de inclusión es simple:
 
-> Un item aparece en un perfil curado si comparte **al menos un tag** con los `filterTags` de ese perfil (`filterTags` vacío = todos, como el perfil `all`). Los overrides `includeIds`/`excludeIds` referencian ids generados por el seed, así que **no viven en este JSON**: se gestionan desde el backoffice. Las experiencias se sirven en orden cronológico (`startDate` desc; `order` solo desempata).
+> Un item aparece en un perfil curado si comparte **al menos un tag** con los `filterTags` de ese perfil (`filterTags` vacío = todos, como el perfil `all`). Los overrides `includeIds`/`excludeIds` referencian ids generados por el seed, así que **no viven en este JSON**: se gestionan desde el backoffice (pestaña **Selección**, para experiencias, skills y proyectos). Las experiencias se sirven en orden cronológico (`startDate` desc; `order` solo desempata).
 
 Ejemplo: el perfil `ai-software-engineer` tiene `filterTags: ["ai-engineer","ai","nodejs","nestjs","fullstack","python"]`. La experiencia de Ensitech tiene el tag `ai-engineer`, por lo tanto aparece. Mojix (solo tags Java/Quarkus/retail) no aparece.
 
@@ -470,8 +470,8 @@ Cada plantilla crea un perfil curado. Además de las plantillas, el seed crea si
 | `roleType` | LocalizedText | No | `"Backend"` | Agrupa el menú por tipo de rol | Identidad → Tipo de rol |
 | `techFocus` | texto | No | `"Java"` | Etiqueta del menú | Identidad → Tecnología destacada |
 | `filterTags` | lista de texto | Sí (`[]` = todo) | `["java","microservices"]` | Qué experiencias, skills y proyectos entran | Selección → Tags de filtrado |
-| `includeRefs` | lista de referencias | No (`[]`) | `["experience:brujula","project:herramienta-interna"]` | Fuerza la inclusión (solo ítems visibles) | Selección → **Incluir** en cada experiencia. *Skills y proyectos solo por la API*: el constructor ofrece incluir y excluir solo experiencias |
-| `excludeRefs` | lista de referencias | No (`[]`) | `["experience:atlas","skill:Kotlin"]` | Fuerza la exclusión; siempre gana | Selección → **Excluir** (solo experiencias; skills y proyectos por la API) |
+| `includeRefs` | lista de referencias | No (`[]`) | `["experience:brujula","project:herramienta-interna"]` | Fuerza la inclusión (solo ítems visibles) | Selección → **Incluir** en cada experiencia, skill (agrupadas por categoría, con buscador) y proyecto; los ocultos no se pueden incluir |
+| `excludeRefs` | lista de referencias | No (`[]`) | `["experience:atlas","skill:Kotlin"]` | Fuerza la exclusión; siempre gana | Selección → **Excluir** en cada experiencia, skill y proyecto; **Incluir** y **Excluir** se apagan entre sí |
 | `themeOverrides` | objeto parcial de tokens | No | `{ "colors": { "accent": "#1A365D" } }` | Colores, tipografía y radio propios | Diseño → customizador |
 | `theme` | slug de preset | No (`modern-dark`) | `"elegant"` | Tema base | Diseño → Tema |
 | `layout` | `classic` \| `sidebar` | No (`classic`) | `"sidebar"` | Estructura de la página | Diseño → Layout |

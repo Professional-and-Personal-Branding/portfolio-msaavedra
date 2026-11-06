@@ -89,3 +89,21 @@ describe('selectByTags (spec curated-profile-resolution)', () => {
     expect(selectByTags([], criteria(['java'], ['a'], ['b']))).toEqual([]);
   });
 });
+
+describe('selectByTags con ids de distintos tipos en el mismo arreglo', () => {
+  // Skills y proyectos comparten includeIds/excludeIds (D2 de add-builder-skill-project-overrides).
+  const skills = [item('skill-java', 'java'), item('skill-react', 'frontend')];
+  const projects = [item('proj-erp', 'java'), item('proj-web', 'frontend')];
+  const shared = criteria(['java'], ['skill-react'], ['proj-erp']);
+
+  it('cada lista solo reacciona a sus propios ids', () => {
+    expect(ids(selectByTags(skills, shared))).toEqual(['skill-java', 'skill-react']);
+    expect(ids(selectByTags(projects, shared))).toEqual([]);
+  });
+
+  it('un id ajeno no altera el resultado', () => {
+    expect(ids(selectByTags(skills, criteria(['java'], ['proj-web'], ['proj-erp'])))).toEqual([
+      'skill-java',
+    ]);
+  });
+});

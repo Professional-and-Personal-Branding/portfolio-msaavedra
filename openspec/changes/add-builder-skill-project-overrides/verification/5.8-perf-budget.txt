@@ -1,0 +1,17 @@
+5.8 npm run build + npm run perf:budget (despues de los grupos 4 y 5)
+
+> portfolio-frontend@0.1.0 perf:budget
+> node scripts/check-bundle-budget.mjs
+
+# Presupuesto de JS del arranque público
+
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-lwLajGZi.js | módulo | 148.5 |
+| /profile-prefetch.js | clásico | 1.2 |
+| **Total** | | **149.7** |
+
+Presupuesto: 155 KB.
+
+
+Diferencia frente a 1.1: ver 1.1-punto-de-partida.txt (antes: index-Dv4ot09Y.js 148.5 KB gzip, total 149.7 KB). Esperado 0: el constructor vive en el chunk del panel.

@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { SECTION_IDS } from '../src/modules/curated-profile/domain/services/resolve-sections';
 import { selectByTags } from '../src/modules/curated-profile/domain/services/select-by-tags';
+import { tagsForSkillCategory } from '../scripts/lib/seed-defaults';
 import { parseSeedSource, SeedSource } from '../scripts/lib/seed-source';
 
 /**
@@ -169,6 +170,47 @@ describe('cobertura de los mecanismos del perfil curado', () => {
     expect(selected).not.toContain('terracota'); // oculta: el composer la ignora
     expect(selected).not.toContain('atlas'); // excluida aunque comparte tags
     expect(selected).toContain('cobalto');
+  });
+
+  // Change add-builder-skill-project-overrides, escenario «Datos de ejemplo — ejemplo-overrides».
+  it('ejemplo-overrides: sin Kotlin, con dos proyectos y sin el proyecto oculto', () => {
+    const t = tpl('ejemplo-overrides');
+    const pick = (refs: string[] | undefined, kind: string) =>
+      (refs ?? []).filter((r) => r.startsWith(`${kind}:`)).map((r) => r.slice(kind.length + 1));
+    const projects = selectByTags(
+      ex.projects.filter((p) => p.visible !== false),
+      {
+        filterTags: t.filterTags,
+        includeIds: pick(t.includeRefs, 'project'),
+        excludeIds: pick(t.excludeRefs, 'project'),
+      },
+    ).map((p) => p.name);
+    expect(projects).toEqual(['Plataforma de Reservas', 'Herramienta Interna de Métricas']);
+    expect(projects).not.toContain('Prototipo en Pausa');
+
+    // El seed identifica cada skill por su nombre en la referencia `skill:<nombre>`.
+    const skills = ex.skillCategories.flatMap((c) =>
+      c.skills.map((s) => ({
+        id: typeof s === 'string' ? s : s.name,
+        tags:
+          typeof s === 'string'
+            ? (c.tags ?? tagsForSkillCategory(c.name.es))
+            : (s.tags ?? c.tags ?? tagsForSkillCategory(c.name.es)),
+      })),
+    );
+    const selectedSkills = selectByTags(skills, {
+      filterTags: t.filterTags,
+      includeIds: pick(t.includeRefs, 'skill'),
+      excludeIds: pick(t.excludeRefs, 'skill'),
+    }).map((s) => s.id);
+    expect(selectedSkills).not.toContain('Kotlin');
+    // Sin la exclusión, Kotlin sí entra por tag: la exclusión es lo que la saca.
+    const withoutExclusion = selectByTags(skills, {
+      filterTags: t.filterTags,
+      includeIds: [],
+      excludeIds: [],
+    }).map((s) => s.id);
+    expect(withoutExclusion).toContain('Kotlin');
   });
 
   it('el perfil archivado conserva visitas sintéticas', () => {
