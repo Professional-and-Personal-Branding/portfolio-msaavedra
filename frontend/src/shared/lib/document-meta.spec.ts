@@ -77,7 +77,7 @@ describe('profilePageJsonLd', () => {
     ]);
   });
 
-  it('name y description son los del título y la meta, y no hay fechas', () => {
+  it('name y description son los del título y la meta; sin updatedAt no hay fechas', () => {
     const data = makeCuratedProfile({ slug: 'tech-lead-dotnet', title: 'Backend' });
     const meta = metaFromProfile(data, 'en', ORIGIN);
 
@@ -88,6 +88,17 @@ describe('profilePageJsonLd', () => {
       inLanguage: 'en',
     });
     expect(JSON.stringify(meta.jsonLd)).not.toMatch(/dateModified|dateCreated/);
+  });
+
+  it('dateModified es el día UTC del ISO de updatedAt, entre inLanguage y mainEntity', () => {
+    const data = makeCuratedProfile({ updatedAt: '2026-03-01T23:30:00.000Z' });
+    const ld = metaFromProfile(data, 'es', ORIGIN).jsonLd;
+
+    expect(ld?.dateModified).toBe('2026-03-01');
+    const keys = Object.keys(ld ?? {});
+    expect(keys.indexOf('dateModified')).toBe(keys.indexOf('inLanguage') + 1);
+    expect(keys.indexOf('mainEntity')).toBe(keys.indexOf('dateModified') + 1);
+    expect(JSON.stringify(ld)).not.toContain('dateCreated');
   });
 
   it('el @id y la url del Person son los mismos en todos los perfiles', () => {

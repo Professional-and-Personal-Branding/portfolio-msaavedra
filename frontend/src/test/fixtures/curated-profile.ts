@@ -30,6 +30,7 @@ export function makeCuratedProfile(overrides: Partial<CuratedProfile> = {}): Cur
     techFocus: 'Polyglot',
     layout: 'classic',
     visibility: 'PUBLIC',
+    updatedAt: null,
     // Lo que devuelve el backend para un perfil con datos en todo: el catálogo completo.
     sections: [
       'hero',

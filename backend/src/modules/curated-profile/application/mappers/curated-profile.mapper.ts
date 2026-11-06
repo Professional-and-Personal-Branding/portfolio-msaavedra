@@ -75,6 +75,7 @@ export function toCuratedProfileOutput(r: CuratedProfileResolution): CuratedProf
   return {
     ...toCuratedProfileSummary(r.curated, l),
     visibility: r.curated.visibility,
+    updatedAt: r.curated.updatedAt?.toISOString() ?? null,
     sections: [...r.sections.sections],
     hiddenSections: [...r.sections.hiddenSections],
     theme: r.theme ? toResolvedThemeOutput(r.theme.theme, r.theme.tokens) : null,

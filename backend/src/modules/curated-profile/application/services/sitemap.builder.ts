@@ -14,6 +14,11 @@ export interface SitemapProfile extends ListingState {
 
 const HOME_SLUG = 'all';
 
+/** Día UTC (`AAAA-MM-DD`) de una fecha: lo comparten el `<lastmod>` del sitemap y `dateModified` del head. */
+export function isoDay(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
 /** Ruta pública de un perfil: la home es `all`. La comparten el sitemap y el head. */
 export function profilePath(slug: string): string {
   return slug === HOME_SLUG ? '/' : `/${slug}`;
@@ -42,7 +47,7 @@ export function buildSitemapXml(baseUrl: string, entries: readonly SitemapEntry[
     .map((entry) => {
       const loc = escapeXml(`${origin}${entry.path}`);
       const lastmod = entry.lastModified
-        ? `\n    <lastmod>${entry.lastModified.toISOString().slice(0, 10)}</lastmod>`
+        ? `\n    <lastmod>${isoDay(entry.lastModified)}</lastmod>`
         : '';
       return `  <url>\n    <loc>${loc}</loc>${lastmod}\n  </url>`;
     })

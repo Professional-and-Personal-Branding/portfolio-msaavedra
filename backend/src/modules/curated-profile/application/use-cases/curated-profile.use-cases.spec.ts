@@ -614,6 +614,7 @@ describe('ResolveCuratedProfileUseCase', () => {
         'techFocus',
         'layout',
         'visibility',
+        'updatedAt',
         'sections',
         'hiddenSections',
         'theme',
@@ -626,6 +627,14 @@ describe('ResolveCuratedProfileUseCase', () => {
         'socialLinks',
       ].sort(),
     );
+  });
+
+  it('updatedAt: la última edición del perfil curado en ISO UTC, sin consultas nuevas; null si no hay fila', async () => {
+    const edited = await resolveOk(
+      build({ curated: curated({ updatedAt: new Date('2026-01-15T12:00:00.000Z') }) }).useCase,
+    );
+    expect(edited.updatedAt).toBe('2026-01-15T12:00:00.000Z');
+    expect((await resolveOk(build().useCase)).updatedAt).toBeNull();
   });
 
   it('sin perfil base → profile null, resolución continúa', async () => {
