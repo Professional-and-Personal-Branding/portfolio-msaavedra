@@ -11,6 +11,7 @@ import {
 } from '@/shared/components/ui/dialog';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
+import { formatCount } from '@/shared/i18n/plural';
 import type { AdminSkill, AdminSkillCategory } from '../shared/admin-types';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { UnsavedChangesPrompt } from '../shared/UnsavedChangesPrompt';
@@ -303,7 +304,9 @@ function CategoryCard({
     <section aria-label={category.name.es} className="surface p-card">
       <header className="mb-3 flex flex-wrap items-center gap-2">
         <h2 className="flex-1 font-semibold text-brand-2-ink">{category.name.es}</h2>
-        <span className="text-xs text-text-dim">{category.skills.length} skills</span>
+        <span className="text-xs text-text-dim">
+          {formatCount(category.skills.length, { one: 'skill', other: 'skills' })}
+        </span>
         <Button
           variant="outline"
           size="icon-sm"
@@ -323,7 +326,7 @@ function CategoryCard({
             </Button>
           }
           title="Borrar categoría"
-          description={`Se borrará "${category.name.es}" y también sus ${category.skills.length} skills. Esta acción no se puede deshacer.`}
+          description={`Se borrará "${category.name.es}" y también ${category.skills.length === 1 ? 'su' : 'sus'} ${formatCount(category.skills.length, { one: 'skill', other: 'skills' })}. Esta acción no se puede deshacer.`}
           onConfirm={onDelete}
         />
         <Button variant="outline" size="sm" onClick={onAddSkill}>

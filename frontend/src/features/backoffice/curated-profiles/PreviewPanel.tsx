@@ -2,6 +2,7 @@ import { RefreshCw } from 'lucide-react';
 import { useId } from 'react';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import type { Locale } from '@/shared/i18n/locale';
+import { formatCount } from '@/shared/i18n/plural';
 import type { CuratedProfile } from '@/shared/types/portfolio';
 import { ProfileLayout } from '@/themes/layouts/ProfileLayout';
 import { renderableSections } from '@/themes/layouts/sections';
@@ -48,8 +49,9 @@ export function PreviewPanel({
         <PreviewLocaleTabs locale={locale} onLocaleChange={onLocaleChange} panelId={panelId} />
         {data && (
           <p className="ml-auto text-xs text-text-dim" data-testid="preview-counts">
-            {data.experiences.length} experiencias · {data.skillCategories.length} categorías ·{' '}
-            {data.projects.length} proyectos
+            {formatCount(data.experiences.length, { one: 'experiencia', other: 'experiencias' })} ·{' '}
+            {formatCount(data.skillCategories.length, { one: 'categoría', other: 'categorías' })} ·{' '}
+            {formatCount(data.projects.length, { one: 'proyecto', other: 'proyectos' })}
           </p>
         )}
       </header>

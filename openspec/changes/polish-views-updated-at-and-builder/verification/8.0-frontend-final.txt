@@ -1,0 +1,19 @@
+== lint
+> eslint .
+
+== typecheck
+
+== build
+
+[32m✓ built in 581ms[39m
+== perf:budget
+# Presupuesto de JS del arranque público
+| **Total** | | **150.1** |
+Presupuesto: 155 KB.
+== test
+ Test Files  65 passed (65)
+      Tests  981 passed (981)
+== manual:check
+manual:check ok: 43 casos alineados, 46 imágenes (3.38 MB), index.html 244 KB, 173 ids.
+== api drift
+SIN_CAMBIOS

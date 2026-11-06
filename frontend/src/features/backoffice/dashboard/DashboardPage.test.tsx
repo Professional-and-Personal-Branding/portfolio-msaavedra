@@ -62,7 +62,7 @@ describe('DashboardPage', () => {
 
     // Cada barra expone su fecha y su cantidad como texto accesible.
     expect(screen.getByRole('img', { name: '7 sept: 5 visitas' })).toBeInTheDocument();
-    expect(screen.getAllByRole('img', { name: /visitas$/ })).toHaveLength(3);
+    expect(screen.getAllByRole('img', { name: /visitas?$/ })).toHaveLength(3);
   });
 
   it('las barras diarias son proporcionales al máximo y tienen un contenedor de alto definido', async () => {
@@ -73,7 +73,7 @@ describe('DashboardPage', () => {
     // byDay del fixture: 1, 5 y 2 visitas → máximo 5.
     const max = await screen.findByRole('img', { name: '7 sept: 5 visitas' });
     const mid = screen.getByRole('img', { name: '8 sept: 2 visitas' });
-    const min = screen.getByRole('img', { name: '6 sept: 1 visitas' });
+    const min = screen.getByRole('img', { name: '6 sept: 1 visita' });
     expect(max.style.height).toBe('100%');
     expect(mid.style.height).toBe('40%');
     expect(min.style.height).toBe('20%');

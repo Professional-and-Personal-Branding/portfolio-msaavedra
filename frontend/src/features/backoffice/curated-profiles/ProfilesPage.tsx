@@ -13,6 +13,7 @@ import {
 import { Link, useNavigate } from 'react-router';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
+import { formatCount } from '@/shared/i18n/plural';
 import { profilePath } from '@/shared/lib/profile-link';
 import type { AdminCuratedProfile, Visibility } from '../shared/admin-types';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
@@ -129,7 +130,9 @@ function ProfileRow({ profile, onDelete, onDuplicate }: ProfileRowProps) {
         </p>
       </div>
 
-      <span className="text-xs text-text-dim">{profile.views} visitas</span>
+      <span className="text-xs text-text-dim">
+        {formatCount(profile.views, { one: 'visita', other: 'visitas' })}
+      </span>
 
       <Button asChild variant="outline" size="icon-sm">
         <Link
@@ -167,7 +170,7 @@ function ProfileRow({ profile, onDelete, onDuplicate }: ProfileRowProps) {
           </Button>
         }
         title="Borrar perfil curado"
-        description={`Se borrará "${profile.title.es}" (/${profile.slug}) y sus ${profile.views} visitas registradas. Para retirarlo conservando las visitas, archivalo desde su pestaña Publicación.`}
+        description={`Se borrará "${profile.title.es}" (/${profile.slug}) y ${profile.views === 1 ? 'su' : 'sus'} ${formatCount(profile.views, { one: 'visita registrada', other: 'visitas registradas' })}. Para retirarlo conservando las visitas, archivalo desde su pestaña Publicación.`}
         onConfirm={onDelete}
       />
     </li>

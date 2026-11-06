@@ -114,6 +114,24 @@ describe('SkillsPage', () => {
   });
 });
 
+// polish-views-updated-at-and-builder, P2: la cantidad de skills concuerda en número.
+describe('SkillsPage — contador de skills', () => {
+  it('una categoría con una sola skill usa el singular, también al borrar', async () => {
+    server.use(...adminHandlers);
+    const user = userEvent.setup();
+
+    await openPage();
+    const metodologias = screen.getByRole('region', { name: 'Metodologías' });
+    expect(within(metodologias).getByText('1 skill')).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('region', { name: 'Lenguajes' })).getByText('2 skills'),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Borrar categoría Metodologías' }));
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent('también su 1 skill.');
+  });
+});
+
 describe('SkillsPage — aviso al descartar', () => {
   const PROMPT = 'Tenés cambios sin guardar';
 

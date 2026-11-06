@@ -2,6 +2,7 @@ import { Eye, Globe, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Badge } from '@/shared/components/ui/badge';
+import { formatCount } from '@/shared/i18n/plural';
 import {
   Select,
   SelectContent,
@@ -274,7 +275,7 @@ function DayBars({ data }: { data: { day: string; views: number }[] }) {
             <div className="relative min-h-0 w-full flex-1" data-testid="day-bar-track">
               <div
                 role="img"
-                aria-label={`${formatDay(row.day)}: ${row.views} visitas`}
+                aria-label={`${formatDay(row.day)}: ${formatCount(row.views, { one: 'visita', other: 'visitas' })}`}
                 className="absolute inset-x-0 bottom-0 rounded-t-sm bg-brand-gradient"
                 style={{ height: `${barPercent(row.views, max)}%` }}
               />
