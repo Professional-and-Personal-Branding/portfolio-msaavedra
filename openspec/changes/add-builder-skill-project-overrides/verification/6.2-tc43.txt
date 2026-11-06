@@ -1,0 +1,108 @@
+# TC-43 en la app real (2026-10-30T00:33:11.109Z)
+Login por fetch desde la página: HTTP 200
+Estado inicial restablecido al del seed (PATCH por API): HTTP 200
+Perfil ejemplo-overrides: includeIds=3 excludeIds=2 filterTags=["java","microservices"]
+
+## Paso 1: estado inicial de la pestaña Selección
+  Kotlin: {"pressed":"true","disabled":false,"title":null} / Incluir: {"pressed":"false","disabled":false,"title":null}
+  Encabezado de categorías: ["Lenguajes · 1 excluida","Backend","Frontend","Cloud & DevOps"]
+  Herramienta Interna de Métricas: Incluir={"pressed":"true","disabled":false,"title":null}
+  Fila Terracota Demo: Terracota Demo · Desarrolladora Junior (oculta) Oculta Incluir Excluir | Incluir={"pressed":"true","disabled":false,"title":null}
+  Fila Prototipo en Pausa: Prototipo en Pausa · Experimento (oculto) Oculto Oculto: no entra aunque lo incluyas Incluir Excluir | Incluir={"pressed":"false","disabled":true,"title":"Oculto: no entra aunque lo incluyas"}
+  Contador del preview: 2 experiencias · 3 categorías · 2 proyectos
+  Preview inicial: categorías: Lenguajes[Java 21, TypeScript, Python, SQL] | Backend[Spring Boot, Apache Kafka, PostgreSQL] | Cloud & DevOps[Docker, Kubernetes, Terraform, GitHub Actions]; proyectos: Plataforma de Reservas, Herramienta Interna de Métricas; experiencias: 2
+  Peticiones de preview hasta ahora: 1
+
+## Paso 2: buscar «kot» y borrar
+  Con «kot» los grupos visibles: ["Lenguajes · 1 excluida"]
+  Botones de skill visibles: ["Incluir Kotlin"]
+  Peticiones de preview nuevas durante la búsqueda: 0
+  Tras borrar el texto, grupos: ["Lenguajes · 1 excluida","Backend","Frontend","Cloud & DevOps"]
+
+## Paso 3: Excluir de Kotlin (para quitar la exclusión)
+  - click en Excluir Kotlin
+      contador: 2 experiencias · 3 categorías · 2 proyectos
+      preview: categorías: Lenguajes[Java 21, TypeScript, Python, SQL, Kotlin] | Backend[Spring Boot, Apache Kafka, PostgreSQL] | Cloud & DevOps[Docker, Kubernetes, Terraform, GitHub Actions]; proyectos: Plataforma de Reservas, Herramienta Interna de Métricas; experiencias: 2
+      peticiones de preview acumuladas: 2
+      Kotlin: Excluir=false Incluir=false
+      cuerpo del último preview: includeIds=3 excludeIds=1
+
+## Paso 4: Incluir React
+  - click en Incluir React
+      contador: 2 experiencias · 4 categorías · 2 proyectos
+      preview: categorías: Lenguajes[Java 21, TypeScript, Python, SQL, Kotlin] | Backend[Spring Boot, Apache Kafka, PostgreSQL] | Frontend[React] | Cloud & DevOps[Docker, Kubernetes, Terraform, GitHub Actions]; proyectos: Plataforma de Reservas, Herramienta Interna de Métricas; experiencias: 2
+      peticiones de preview acumuladas: 3
+      React: Incluir=true
+
+## Paso 5: Plataforma de Reservas
+  - click en Excluir Plataforma de Reservas
+      contador: 2 experiencias · 4 categorías · 1 proyectos
+      preview: categorías: Lenguajes[Java 21, TypeScript, Python, SQL, Kotlin] | Backend[Spring Boot, Apache Kafka, PostgreSQL] | Frontend[React] | Cloud & DevOps[Docker, Kubernetes, Terraform, GitHub Actions]; proyectos: Herramienta Interna de Métricas; experiencias: 2
+      peticiones de preview acumuladas: 4
+  - click en Incluir Plataforma de Reservas
+      contador: 2 experiencias · 4 categorías · 2 proyectos
+      preview: categorías: Lenguajes[Java 21, TypeScript, Python, SQL, Kotlin] | Backend[Spring Boot, Apache Kafka, PostgreSQL] | Frontend[React] | Cloud & DevOps[Docker, Kubernetes, Terraform, GitHub Actions]; proyectos: Plataforma de Reservas, Herramienta Interna de Métricas; experiencias: 2
+      peticiones de preview acumuladas: 5
+      Plataforma: Incluir=true Excluir=false
+  - segundo click en Incluir Plataforma de Reservas (sin override)
+      contador: 2 experiencias · 4 categorías · 2 proyectos
+      preview: (sin preview nuevo)
+      peticiones de preview acumuladas: 5
+      Plataforma: Incluir=false Excluir=false
+
+## Paso 6: Excluir Plataforma de Reservas y mirar Prototipo en Pausa
+  - click en Excluir Plataforma de Reservas
+      contador: 2 experiencias · 4 categorías · 1 proyectos
+      preview: (sin preview nuevo)
+      peticiones de preview acumuladas: 5
+      Prototipo en Pausa Incluir: {"pressed":"false","disabled":true,"title":"Oculto: no entra aunque lo incluyas"}
+      Descripción accesible del botón: Oculto: no entra aunque lo incluyas
+      Fila: Prototipo en Pausa · Experimento (oculto) Oculto Oculto: no entra aunque lo incluyas Incluir Excluir
+      Estado de las filas: Kotlin(Excluir=false) React(Incluir=true) Plataforma(Excluir=true)
+
+## Paso 7: Guardar y ver la vista pública en ventana privada
+  PATCH: HTTP ok=true; includeIds=4 excludeIds=2
+  Guardado: includeIds=4 (React, Brújula, Terracota, Herramienta esperados) excludeIds=2 (Atlas, Plataforma esperados)
+  Cuerpo del PATCH incluye solo ids: true
+  Vista pública (ventana privada, sin sesión): categorías: Lenguajes[Java 21, TypeScript, Python, SQL, Kotlin] | Backend[Spring Boot, Apache Kafka, PostgreSQL] | Frontend[React] | Cloud & DevOps[Docker, Kubernetes, Terraform, GitHub Actions]
+  Proyectos públicos: Herramienta Interna de Métricas; experiencias: 2
+  Texto de la página: Kotlin=true Prototipo en Pausa=false Herramienta=true React=true
+
+## Equivalencia por API: preview del perfil guardado vs ruta pública
+  experiences iguales: true; skillCategories iguales: true; projects iguales: true
+
+## Paso 8: referencia huérfana
+  PATCH por API con id-inexistente: HTTP 200
+  Aviso al abrir la ficha: ["1 referencia a un ítem que ya no existe Quitar"]
+  Peticiones de preview tras recargar: incluye id-inexistente en excludeIds = true
+  Volver sin tocar nada: URL=/admin/perfiles, diálogo de cambios sin guardar presente=false
+  Tras Quitar, Volver pide confirmación (cambios sin guardar): true
+  PATCH tras Quitar: excludeIds=2 (sin id-inexistente: true), includeIds=4
+  Guardado final: excludeIds contiene id-inexistente=false; contiene Plataforma de Reservas=true
+
+## Cuerpos de las peticiones de preview (includeIds/excludeIds por cantidad)
+  preview #1: filterTags=["java","microservices"] includeIds=3 excludeIds=2
+  preview #2: filterTags=["java","microservices"] includeIds=3 excludeIds=1
+  preview #3: filterTags=["java","microservices"] includeIds=4 excludeIds=1
+  preview #4: filterTags=["java","microservices"] includeIds=4 excludeIds=2
+  preview #5: filterTags=["java","microservices"] includeIds=5 excludeIds=1
+  preview #6: filterTags=["java","microservices"] includeIds=4 excludeIds=2
+  preview #7: filterTags=["java","microservices"] includeIds=4 excludeIds=3
+  preview #8: filterTags=["java","microservices"] includeIds=4 excludeIds=3
+  preview #9: filterTags=["java","microservices"] includeIds=4 excludeIds=2
+
+## Cuerpos de los PATCH desde el panel
+  PATCH #1 (por API desde el script: restablecer / id inexistente): includeIds=3 excludeIds=2
+  PATCH #2 (desde el panel): includeIds=4 excludeIds=2
+  PATCH #3 (por API desde el script: restablecer / id inexistente): includeIds=n/a excludeIds=3
+  PATCH #4 (desde el panel): includeIds=4 excludeIds=2
+
+## Respuestas HTTP >= 400: ["panel: GET /api/auth/me -> 401"]
+## Consola: ["panel: Failed to load resource: the server responded with a status of 401 (Unauthorized)"]
+
+## Diferencias frente al texto del plan (verification.md) y su efecto en el manual
+- El preview inicial de ejemplo-overrides dice «2 experiencias · 3 categorías · 2 proyectos» (el plan decía 2 categorías: Lenguajes, Backend y Cloud & DevOps coinciden por tag). Al incluir React pasa a «4 categorías» (el plan decía 3). TC-43 del manual usa los contadores observados.
+- El contador de PreviewPanel no singulariza: con un solo proyecto dice «1 proyectos». Es comportamiento previo del panel, fuera del alcance del change; el manual lo cita tal cual.
+- El segundo clic en Incluir de Plataforma de Reservas (sin override) y el segundo Excluir del paso 6 no piden un preview nuevo: la clave del borrador ya estaba en la caché de TanStack Query; los contadores son los correctos.
+- Los dos PATCH marcados «por API desde el script» son el restablecimiento del estado del seed al inicio y el id inexistente del paso 8; los otros dos salen del botón Guardar del panel.
+- El único HTTP >= 400 es GET /api/auth/me -> 401 en /admin/login antes de iniciar sesión (esperado); es el único error de consola.

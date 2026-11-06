@@ -1,0 +1,24 @@
+## backend
+prisma:status -> Datasource "db": PostgreSQL database "portfolio_ovr_e2e", schema "public" at "localhost:5434" | Database schema is up to date!
+npm run lint -> exit 0
+npm run typecheck -> exit 0
+npm run build -> exit 0
+npm test: Test Suites: 94 passed, 94 total | Tests:       922 passed, 922 total
+openapi:export + git diff --exit-code backend/openapi.json -> exit 0
+npm run test:e2e: Test Suites: 14 passed, 14 total | Tests:       245 passed, 245 total
+## frontend
+npm run lint -> exit 0
+npm run typecheck -> exit 0
+npm test -- --run (1.a corrida):  ❯ src/features/curated-view/CuratedProfileView.staged.test.tsx (6 tests | 1 failed) 5951ms |  ❯ src/features/curated-view/CuratedProfilePage.test.tsx (15 tests | 1 failed) 8468ms |  ❯ src/features/backoffice/curated-profiles/ShareLinks.test.tsx (15 tests | 1 failed) 15123ms |  ❯ src/features/backoffice/curated-profiles/ProfileBuilderPage.test.tsx (53 tests | 1 failed) 50774ms | ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯ |  FAIL  src/features/curated-view/CuratedProfilePage.test.tsx > CuratedProfilePage > renderiza el perfil curado con sus secciones y pide la API con ?locale= | TestingLibraryElementError: Unable to find role="heading" and name "Ada Ejemplo" |  FAIL  src/features/curated-view/CuratedProfileView.staged.test.tsx > CuratedProfileView — render en dos tiempos > cambiar el idioma con el perfil revelado no produce ningún render con solo el hero | AssertionError: expected null not to be null |  ❯ runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:47:12 |  FAIL  src/features/backoffice/curated-profiles/ProfileBuilderPage.test.tsx > ProfileBuilderPage > cambiar tags vuelve a previsualizar, y varios cambios seguidos hacen una sola petición | TestingLibraryElementError: Unable to find an element by: [data-testid="preview-counts"] |  FAIL  src/features/backoffice/curated-profiles/ShareLinks.test.tsx > Enlaces de seguimiento — pestaña Publicación > crea un enlace, aparece con 0 aperturas y copia la URL absoluta con ?via= | Error: Test timed out in 5000ms. |  Test Files  4 failed | 61 passed (65) |       Tests  4 failed | 986 passed (990) |    Duration  75.03s (environment 48%, tests 25%, import 14%, setup 11%, transform 2%)
+npm run build -> exit 0
+npm run perf:budget -> exit 0; # Presupuesto de JS del arranque público | **Total** | | **149.7** | Presupuesto: 155 KB.
+npm run manual:check -> exit 0; manual:check ok: 43 casos alineados, 47 imágenes (3.44 MB), index.html 248 KB, 176 ids.
+npm run print:check (ejemplo, base descartable portfolio_ovr_example) -> exit 0
+all                 dark+sidebar  es      1   1       9.7:1      OK    
+all                 dark+sidebar  en      1   1       9.7:1      OK    
+
+20 casos (5 perfiles), 0 con problemas. Contraste mínimo: 9.74:1
+npm test -- --run (2.a corrida, sin API ni contenedor ni Chrome propios):  ❯ src/features/curated-view/CuratedProfileView.staged.test.tsx (6 tests | 1 failed) 4710ms |  ❯ src/features/curated-view/CuratedProfilePage.test.tsx (15 tests | 1 failed) 7266ms | ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯ |  FAIL  src/features/curated-view/CuratedProfilePage.test.tsx > CuratedProfilePage > renderiza el perfil curado con sus secciones y pide la API con ?locale= |  FAIL  src/features/curated-view/CuratedProfileView.staged.test.tsx > CuratedProfileView — render en dos tiempos > cambiar el idioma con el perfil revelado no produce ningún render con solo el hero |  Test Files  2 failed | 63 passed (65) |       Tests  2 failed | 988 passed (990) |    Duration  86.25s (environment 48%, tests 25%, import 12%, setup 12%, transform 2%)
+1.a corrida (con la app real aun levantada): 4 tests fallaron por timeouts/carga (CuratedProfilePage, CuratedProfileView.staged, ProfileBuilderPage 'cambiar tags', ShareLinks 'crea un enlace'); 986 de 990 pasaron.
+2.a corrida: 2 fallos (CuratedProfilePage y CuratedProfileView.staged, tiempos); esos 10 archivos de src/features/curated-view pasan solos (537 tests, 6 s).
+3.a corrida completa:  Test Files  65 passed (65) |       Tests  990 passed (990) |    Duration  62.52s (tests 56%, environment 24%, import 11%, transform 5%, setup 4%)

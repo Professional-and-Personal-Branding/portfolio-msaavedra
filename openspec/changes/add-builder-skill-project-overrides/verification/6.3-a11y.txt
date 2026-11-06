@@ -1,0 +1,48 @@
+6.3 a11y:check con panel contra la imagen de frontend/Dockerfile (base descartable portfolio_ovr_example, API 3342, web 8096)
+A11Y_CHECK_DISPOSABLE_DB=1 A11Y_CHECK_PROFILE=ejemplo-backend npm run a11y:check -- http://localhost:8096 (con A11Y_CHECK_ADMIN_EMAIL/_PASSWORD; no se imprimen)
+
+preset-corporate-classic.desktop: sin violaciones
+preset-corporate-sidebar.desktop: sin violaciones
+accent-ejemplo-backend.desktop: sin violaciones
+accent-ejemplo-secciones.desktop: sin violaciones
+admin.mobile: sin violaciones · teclado: ok (29 controles)
+admin-portada.mobile: sin violaciones
+admin-experiencias.mobile: sin violaciones
+admin-skills.mobile: sin violaciones
+admin-formacion.mobile: sin violaciones
+admin-proyectos.mobile: sin violaciones
+admin-perfiles.mobile: sin violaciones
+admin-builder.mobile: sin violaciones · teclado: ok (30 controles)
+admin.desktop: sin violaciones · teclado: ok (29 controles)
+admin-portada.desktop: sin violaciones
+admin-experiencias.desktop: sin violaciones
+admin-skills.desktop: sin violaciones
+admin-formacion.desktop: sin violaciones
+admin-proyectos.desktop: sin violaciones
+admin-perfiles.desktop: sin violaciones
+admin-builder.desktop: sin violaciones · teclado: ok (30 controles)
+
+# a11y:check · axe-core 4.13.0
+
+Base: http://localhost:8096 · 2026-10-30T00:37:03.189Z · 50 cargas (con panel)
+
+| Regla | Impacto | Nodos | Páginas | Ejemplo |
+|---|---|---|---|---|
+| (ninguna) | | 0 | | |
+
+Violaciones serious/critical: 0 nodos en 0 regla(s).
+Recorrido de teclado: sin problemas.
+
+
+exit=0 (misma salida limpia que 8.4-a11y.txt de add-certification-verification: 50 cargas, 0 reglas, teclado sin problemas)
+
+--- Complemento: a11y:check abre la ficha en la pestana Identidad, asi que no cubre las listas nuevas; axe-core 4.13.0 sobre la pestana Seleccion ---
+# axe-core sobre la pestaña Selección de ejemplo-overrides (2026-10-30T00:37:24.969Z)
+desktop · estado inicial (Kotlin excluida, proyecto y experiencia ocultos, Incluir deshabilitado): sin violaciones
+desktop · regiones: [{"name":"Experiencias","tabindex":"0","scrolls":false},{"name":"Skills","tabindex":"0","scrolls":true},{"name":"Proyectos","tabindex":"0","scrolls":false}]
+desktop · búsqueda sin resultados: sin violaciones
+desktop · Tab desde el buscador llega a una región desplazable (Skills/Proyectos): true
+mobile · estado inicial (Kotlin excluida, proyecto y experiencia ocultos, Incluir deshabilitado): sin violaciones
+mobile · regiones: [{"name":"Experiencias","tabindex":"0","scrolls":false},{"name":"Skills","tabindex":"0","scrolls":true},{"name":"Proyectos","tabindex":"0","scrolls":false}]
+mobile · búsqueda sin resultados: sin violaciones
+mobile · Tab desde el buscador llega a una región desplazable (Skills/Proyectos): true
