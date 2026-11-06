@@ -1,0 +1,4 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/features/backoffice/curated-profiles/ProfileBuilderPage.test.tsx > ProfileBuilderPage > cambiar tags vuelve a previsualizar, y varios cambios seguidos hacen una sola petición
+ Test Files  1 failed | 63 passed (64)
+      Tests  1 failed | 971 passed (972)

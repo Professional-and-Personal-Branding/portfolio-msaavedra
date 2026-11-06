@@ -15,6 +15,7 @@ export function toAdminUserEntity(record: AdminUserRecord): AdminUser {
     name: record.name,
     createdAt: record.createdAt,
     lastLoginAt: record.lastLoginAt,
+    sessionVersion: record.sessionVersion,
   });
 }
 
@@ -46,5 +47,19 @@ export class PrismaAdminUserRepository implements AdminUserRepository {
 
   async touchLastLogin(id: string, at: Date): Promise<void> {
     await this.prisma.adminUser.update({ where: { id }, data: { lastLoginAt: at } });
+  }
+
+  async changePassword(
+    id: string,
+    passwordHash: string,
+    expectedVersion: number,
+  ): Promise<AdminUser | null> {
+    // Escritura condicional: solo cambia si la versión sigue siendo la esperada (atómica en Postgres).
+    const { count } = await this.prisma.adminUser.updateMany({
+      where: { id, sessionVersion: expectedVersion },
+      data: { passwordHash, sessionVersion: { increment: 1 } },
+    });
+    if (count === 0) return null;
+    return this.findById(id);
   }
 }

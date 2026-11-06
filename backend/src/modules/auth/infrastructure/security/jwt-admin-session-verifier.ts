@@ -5,7 +5,7 @@ import { GetCurrentAdminUseCase } from '../../application/use-cases/get-current-
 
 /**
  * Misma validación que el guard del panel: HS256, firma y expiración con el
- * secreto de la app, y que el administrador siga existiendo. Cualquier error es
+ * secreto de la app, y que el administrador siga existiendo con la misma versión de sesión (`sv`). Cualquier error es
  * `false`; el token no se escribe en ningún lado.
  */
 @Injectable()
@@ -17,11 +17,14 @@ export class JwtAdminSessionVerifier implements AdminSessionVerifier {
 
   async isAdminSession(token: string): Promise<boolean> {
     try {
-      const payload = await this.jwt.verifyAsync<{ sub?: unknown }>(token, {
+      const payload = await this.jwt.verifyAsync<{ sub?: unknown; sv?: unknown }>(token, {
         algorithms: ['HS256'],
       });
       if (typeof payload?.sub !== 'string' || payload.sub.length === 0) return false;
-      const admin = await this.getCurrentAdmin.execute({ id: payload.sub });
+      const admin = await this.getCurrentAdmin.execute({
+        id: payload.sub,
+        sessionVersion: payload.sv,
+      });
       return admin.ok;
     } catch {
       return false;

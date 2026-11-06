@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { APP_CONFIG, AppConfig } from '../../../../config/configuration';
-import { AdminOutput } from '../../application/dto/auth.output';
+import { AuthenticatedAdmin } from '../../application/dto/auth.output';
 import { GetCurrentAdminUseCase } from '../../application/use-cases/get-current-admin.use-case';
 import { adminTokenExtractors } from './extract-admin-token';
 
@@ -11,13 +11,15 @@ export interface JwtPayload {
   sub: string;
   email: string;
   name: string;
+  /** Versión de sesión; ausente en los tokens emitidos antes de `add-admin-password-change`. */
+  sv?: unknown;
   iat?: number;
   exp?: number;
 }
 
 /**
  * Valida firma y expiración (passport-jwt) y luego confirma que el
- * administrador siga existiendo. Lo devuelto queda en `req.user`.
+ * administrador siga existiendo y que la versión de sesión (`sv`) siga vigente. Lo devuelto queda en `req.user`.
  * El token se toma del header `Authorization: Bearer` y, si no viene, de la
  * cookie de sesión del backoffice (spec `admin-authentication`).
  */
@@ -35,10 +37,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: JwtPayload): Promise<AdminOutput> {
+  async validate(payload: JwtPayload): Promise<AuthenticatedAdmin> {
     if (!payload?.sub) throw new UnauthorizedException('Token inválido');
-    const result = await this.getCurrentAdmin.execute({ id: payload.sub });
-    if (!result.ok) throw new UnauthorizedException('Administrador inexistente');
+    const result = await this.getCurrentAdmin.execute({
+      id: payload.sub,
+      sessionVersion: payload.sv,
+    });
+    if (!result.ok) throw new UnauthorizedException('Sesión inválida');
     return result.value;
   }
 }

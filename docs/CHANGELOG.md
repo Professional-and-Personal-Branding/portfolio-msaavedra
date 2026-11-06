@@ -1,5 +1,17 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`add-admin-password-change`)
+
+El administrador cambia su contraseña desde el panel y el cambio revoca las demás sesiones.
+
+- **Endpoint.** `POST /api/auth/password` (`{ currentPassword, newPassword }`, cookie o Bearer): verifica la actual, guarda el hash argon2id de la nueva y responde 200 con el cuerpo del login y una cookie `portfolio_session` nueva. La nueva tiene de 12 a 256 caracteres (puntos de código) y es distinta de la actual (400); una actual incorrecta da 401 genérico.
+- **`sessionVersion`.** `AdminUser.sessionVersion` (entero, por defecto 0) y claim `sv` en el JWT. El guard, `GET /api/auth/me` y el reconocimiento de visitas propias comparten una sola verificación: un token con otra versión da 401 y una visita con él ya no cuenta como `OWNER`. Un token sin `sv` vale como versión 0 (las sesiones abiertas antes del deploy siguen hasta el primer cambio). La escritura es condicional por versión: dos cambios simultáneos no pueden ganar los dos.
+- **Límite y logs.** Contador propio para el cambio (5 por minuto e IP, después de validar la sesión, independiente del login; ventana compartida en `CredentialAttemptLimiter`). `currentPassword` y `newPassword` se redactan en los logs.
+- **Panel.** Pantalla **Cuenta** (`/admin/cuenta`, botón en la barra) con React Hook Form + Zod. `RequireSession` manda al login cuando `GET /api/auth/me` vuelve 401 (antes la caché conservaba al administrador y el panel seguía montado).
+- **`admin:bootstrap`.** Incrementa `sessionVersion` al actualizar: sigue siendo la recuperación y cierra todas las sesiones.
+- **Migración aditiva** `add_admin_session_version` (un `ADD COLUMN ... DEFAULT 0`); sin dependencias nuevas.
+- **Docs.** `docs/MANUAL.md` e `index.html` (TC-45, B14, glosario; `bo-cuenta.jpg`), `docs/DEPLOY.md` § 3 y `docs/DEPLOY-RAILWAY.md`.
+
 ## Update — Noviembre 2026 (`polish-views-updated-at-and-builder`)
 
 Tres correcciones chicas, sin cambios de contrato ni migraciones.

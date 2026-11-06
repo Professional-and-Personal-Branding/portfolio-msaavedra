@@ -94,6 +94,8 @@ curl -s $API/api/auth/me -H "$AUTH" | jq
 ```
 
 > El login está limitado a **5 intentos por minuto y por IP**. Si ves un `429`, mirá el `Retry-After`.
+>
+> Cambiar la contraseña desde **Cuenta** (B14, TC-45) o correr `npm run admin:bootstrap` cierra todas las sesiones anteriores: un `TOKEN` sacado antes da `401`. Volvé a hacer el login de arriba.
 
 ---
 
@@ -353,7 +355,7 @@ Ruta: `/admin/login`. Entrada al panel. La sesión es una cookie `httpOnly`: el 
 
 **Acciones y avisos:** El login está limitado a 5 intentos por minuto y por IP (429 con `Retry-After`).
 
-Para la guía y las capturas se usa un administrador de prueba (`npm run admin:bootstrap` con una contraseña aleatoria de la sesión).
+Para la guía y las capturas se usa un administrador de prueba (`npm run admin:bootstrap` con una contraseña aleatoria de la sesión). Una vez dentro, la contraseña se cambia desde **Cuenta** (B14); si se perdió, `npm run admin:bootstrap` es la recuperación.
 
 ![Login del backoffice](manual/tc11-login.jpg)
 
@@ -710,6 +712,33 @@ Ruta: `/admin/perfiles/:id`. A la derecha del constructor, con los componentes r
 ![Vista previa en inglés con un borrador sin guardar](manual/tc17-preview-en.jpg)
 
 ![Aviso de faltantes de traducción](manual/tc32-faltantes.jpg)
+
+### B14 — Cuenta
+
+Ruta: `/admin/cuenta`. Se llega con el botón **Cuenta** de la barra superior (antes de **Cerrar sesión**). Muestra el nombre y el email del administrador (solo lectura) y el formulario **Cambiar contraseña**. Al cambiarla se **cierran las sesiones abiertas en otros navegadores y dispositivos**; la sesión que hizo el cambio sigue, porque el servidor le emite una cookie nueva. Ninguna contraseña ni token toca `localStorage` ni `sessionStorage`.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Contraseña actual | texto (oculto) | Sí | No vacía; hasta 256 caracteres | — |
+| Nueva contraseña | texto (oculto) | Sí | De 12 a 256 caracteres (un acento o un emoji cuentan 1) y distinta de la actual; no se recortan espacios | — |
+| Repetí la nueva contraseña | texto (oculto) | Sí | Igual a la nueva | — |
+
+| Mensaje | Cuándo |
+|---|---|
+| Escribí tu contraseña actual | La actual está vacía. |
+| Usá al menos 12 caracteres | La nueva tiene menos de 12 caracteres. |
+| Usá como máximo 256 caracteres | La actual o la nueva pasan de 256 caracteres. |
+| La nueva contraseña tiene que ser distinta de la actual | La nueva es igual a la actual. |
+| Las contraseñas no coinciden | La repetición no es igual a la nueva. No sale ninguna petición. |
+| La contraseña actual no es correcta | La API respondió 401 y la sesión sigue vigente. |
+| La API rechazó la contraseña nueva. Revisá las reglas. | La API respondió 400. |
+| Demasiados intentos. Probá de nuevo en unos minutos. | La API respondió 429: 5 intentos por minuto y por IP, con un contador propio (el del login no cuenta). |
+| No pudimos contactar al servidor. Intentá de nuevo. | Cualquier otro error. |
+| Contraseña actualizada. Se cerraron las sesiones de otros dispositivos. | Aviso de éxito; los tres campos quedan vacíos. |
+
+**Acciones y avisos:** Si la sesión se revocó (otro dispositivo cambió la contraseña) o venció, la próxima petición del panel da 401 y vuelve al login. Los `curl` con un `TOKEN` anterior al cambio también dan 401 (ver § 0). Si perdiste la contraseña, la recuperación es `npm run admin:bootstrap` desde la terminal: acepta contraseñas de 8 caracteres o más y también cierra todas las sesiones.
+
+![Cuenta con el aviso de repetición distinta](manual/bo-cuenta.jpg)
 
 ---
 
@@ -1539,6 +1568,67 @@ curl -s -D - -o /dev/null $API/api/curated-profiles/el-slug-viejo | grep -i cont
 
 *`/ejemplo-nombre-anterior` abre el perfil `ejemplo-renombrado`.*
 
+### TC-45 — Cambiar la contraseña del panel 🔍
+
+**Precondición:** base de ejemplo **descartable** (nunca `portfolio`), con la API y el frontend levantados (de preferencia la imagen de `frontend/Dockerfile`). Un administrador de prueba creado con `npm run admin:bootstrap` y una contraseña aleatoria que solo vive en la terminal y en el gestor de contraseñas, y una segunda contraseña aleatoria para el cambio.
+
+**Pasos (panel):**
+1. En Chrome, entrá a `/admin` (sesión A). En una **ventana privada**, entrá también (sesión B).
+2. En A, pulsá **Cuenta** en la barra superior.
+3. En **Nueva contraseña** escribí 11 caracteres y pasá al campo siguiente.
+4. Escribí una nueva válida y, en **Repetí la nueva contraseña**, otra distinta. Pulsá **Cambiar contraseña**.
+5. Escribí una **Contraseña actual** incorrecta, la nueva y su repetición iguales, y pulsá **Cambiar contraseña**.
+6. Corregí la **Contraseña actual** y pulsá **Cambiar contraseña**.
+7. En B, abrí **Experiencias**.
+8. En B, entrá con la contraseña anterior; después, con la nueva.
+9. En A, recargá la página.
+
+**Resultado esperado:**
+1. Las dos sesiones llegan al Dashboard.
+2. Se abre `/admin/cuenta` con el nombre y el email del administrador y el formulario **Cambiar contraseña**.
+3. Se ve «Usá al menos 12 caracteres».
+4. Se ve «Las contraseñas no coinciden» y no sale ninguna petición (pestaña Red).
+5. Se ve «La contraseña actual no es correcta» y se sigue en Cuenta.
+6. Aparece «Contraseña actualizada. Se cerraron las sesiones de otros dispositivos.» y los tres campos quedan vacíos.
+7. B vuelve a `/admin/login`.
+8. Con la anterior, «Email o contraseña incorrectos»; con la nueva, B entra al Dashboard.
+9. A sigue en el panel sin pasar por el login.
+
+**Errores típicos:** «La contraseña actual no es correcta» después de varios intentos puede pasar a «Demasiados intentos. Probá de nuevo en unos minutos.» (5 por minuto e IP, como el login). Los `curl` con un `TOKEN` sacado antes del cambio dan 401: volvé a hacer el login de § 0. Si perdiste la contraseña, la recuperación es `npm run admin:bootstrap` desde la terminal (también cierra todas las sesiones).
+
+**Por la API** (Bash; las contraseñas en variables de la terminal, los cuerpos armados con `node` para no escribirlas en la línea de comandos):
+
+```bash
+API=http://localhost:3300
+EMAIL=capture@example.com              # el del administrador de prueba
+# OLD_PW y NEW_PW ya definidas en esta terminal, sin imprimirlas
+login() { node -e "process.stdout.write(JSON.stringify({email:process.env.EMAIL,password:process.env[process.argv[1]]}))" "$1" \
+  | curl -s -o /dev/null -w '%{http_code}\n' -c "$2" -H 'Content-Type: application/json' --data @- $API/api/auth/login; }
+export EMAIL OLD_PW NEW_PW
+
+login OLD_PW a.jar                                   # 200  sesión A
+login OLD_PW b.jar                                   # 200  sesión B
+cp a.jar a-vieja.jar
+
+node -e "process.stdout.write(JSON.stringify({currentPassword:'incorrecta-de-prueba',newPassword:process.env.NEW_PW}))" \
+  | curl -s -o /dev/null -w '%{http_code}\n' -b a.jar -H 'Content-Type: application/json' --data @- $API/api/auth/password   # 401
+node -e "process.stdout.write(JSON.stringify({currentPassword:process.env.OLD_PW,newPassword:'corta'}))" \
+  | curl -s -o /dev/null -w '%{http_code}\n' -b a.jar -H 'Content-Type: application/json' --data @- $API/api/auth/password   # 400
+node -e "process.stdout.write(JSON.stringify({currentPassword:process.env.OLD_PW,newPassword:process.env.NEW_PW}))" \
+  | curl -s -o /dev/null -w '%{http_code}\n' -b a.jar -c a.jar -H 'Content-Type: application/json' --data @- $API/api/auth/password  # 200
+
+curl -s -o /dev/null -w '%{http_code}\n' -b a.jar        $API/api/auth/me   # 200  cookie nueva de A
+curl -s -o /dev/null -w '%{http_code}\n' -b a-vieja.jar  $API/api/auth/me   # 401  cookie anterior de A
+curl -s -o /dev/null -w '%{http_code}\n' -b b.jar        $API/api/auth/me   # 401  sesión B
+login OLD_PW c.jar                                   # 401
+login NEW_PW c.jar                                   # 200
+rm -f a.jar a-vieja.jar b.jar c.jar
+```
+
+**Ejecutado** (5 de noviembre de 2026, imagen de `frontend/Dockerfile` en `localhost:8099`, API de la rama en `localhost:3345` y la base descartable `portfolio_pwd_example`, sembrada con el ejemplo): el bloque **Por la API** dio exactamente los códigos esperados (200, 200, 401 sin `Set-Cookie`, 400, 400, 401 sin sesión, 200 con `Set-Cookie` `HttpOnly`; `/me` 200 con la cookie nueva, 401 con la anterior y con la de B; login 401 con la contraseña anterior y 200 con la nueva). Además: el sexto intento de cambio en un minuto dio 429 con `Retry-After`, con el login todavía disponible; `npm run admin:bootstrap` cerró la sesión abierta (`sessionVersion` +1) y permitió entrar con la contraseña nueva; en Chrome, con la sesión abierta en `/admin/experiencias` y la versión incrementada desde otro cliente, pulsar **Skills** devolvió al login; y los logs de la API y del contenedor `web` tienen 0 apariciones de las contraseñas. Los pasos 3 a 6 y 8 del panel, que piden escribir contraseñas reales en el navegador, **no se ejecutaron a mano**: las reglas del formulario y sus mensajes los cubren los tests del frontend y la captura de abajo, hecha con valores de relleno. Por eso el caso queda en 🔍. `a11y:check` con panel (52 cargas, incluida **Cuenta**) y axe con los errores de validación a la vista: 0 violaciones. Evidencia: `openspec/changes/add-admin-password-change/verification/8.2-tc45.txt`.
+
+![Cuenta con el aviso de repetición distinta](manual/bo-cuenta.jpg)
+
 ## 4. Administrar el resto del contenido
 
 Desde el change `add-profile-content-admin`, todo lo que el sitio muestra se edita en el panel. El seed queda para **poblar una base vacía**, no para editar.
@@ -1931,7 +2021,7 @@ El umbral de Performance es 85 en CI porque el runner de GitHub es el equipo de 
 
 ## 6. Suite de regresión manual
 
-Antes de cada release, recorrer en este orden. Último caso ejecutado: **4 de noviembre de 2026** (TC-44, pasos 1 a 5); antes, el 29 de octubre (TC-43, TC-42 y TC-41) y el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 46 capturas con `manual:capture` (TC-43 suma la 47.ª y regenera la de TC-13). TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
+Antes de cada release, recorrer en este orden. Último caso ejecutado: **5 de noviembre de 2026** (TC-45, por la API y la sesión revocada en Chrome); antes, el 4 de noviembre (TC-44, pasos 1 a 5); antes, el 29 de octubre (TC-43, TC-42 y TC-41) y el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 46 capturas con `manual:capture` (TC-43 suma una y regenera la de TC-13). TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
 
 Los casos del backoffice están automatizados en [`manual/suite-backoffice.ps1`](manual/suite-backoffice.ps1): ejecuta TC-12 a TC-20 contra la API, imprime el resultado real junto al esperado y borra todos los datos de prueba que crea, pase o falle.
 
@@ -1983,10 +2073,11 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-40 | Ítems ocultos e insignias legibles | ✅ | `a11y:check` con panel sobre el ejemplo (0 en 50 cargas, antes 40 nodos) y sobre `cv-data.json` (0 en 72) · tests de las filas, la insignia, la región y `css-vars` · `print:check` |
 | TC-41 | Compartir un perfil con un enlace de seguimiento | ✅ | app real con la imagen de producción y Chrome no headless · e2e `share-links` y `share-links-admin` · tests de la petición temprana, del panel y del dashboard |
 | TC-44 | Los buscadores leen la página de perfil | 🔍 | `curl` del HTML de la imagen de producción (público, `PROTECTED`, privado, archivado e inexistente) · Chrome sin errores de CSP · validador de schema.org sin errores · e2e del fragmento y fixture compartido · pasos 6 y 7 (Rich Results Test) tras el deploy |
+| TC-45 | Cambiar la contraseña del panel | 🔍 | `curl` de la imagen de producción con dos sesiones (cambio, 401 de la anterior, límite y `admin:bootstrap`) · Chrome con la sesión revocada · `a11y:check` con Cuenta · e2e `admin-password` · pasos del panel con contraseñas reales sin ejecutar a mano |
 | TC-42 | Verificar una certificación desde el sitio | ✅ | app real con la imagen de producción y Chrome no headless · API (400 con `http://`, 200, `null`) · PDF de una página con el enlace · `print:check` (ejemplo y CV) · tests de la sección, la hoja y el panel |
 | TC-43 | Ajustar skills y proyectos de un perfil | ✅ | app real con la imagen de producción y Chrome no headless · preview = ruta pública (API) · `a11y:check` con panel y axe sobre Selección · tests de las funciones puras, del constructor y del núcleo (unitarios y e2e) |
 
-**Pasan los 43 casos anteriores; TC-44 queda en 🔍** (change `upgrade-profile-structured-data`: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado). TC-43 (change `add-builder-skill-project-overrides`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc43-overrides` nueva y la de `tc13-seleccion` regenerada con `manual:capture`. TC-42 (change `add-certification-verification`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc42-credencial` nueva y la del diálogo de certificación regenerada con `manual:capture`. TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 46 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
+**Pasan los 43 casos anteriores; TC-44 y TC-45 quedan en 🔍** (change `add-admin-password-change`: TC-45 se ejecutó el 5 de noviembre de 2026 en la app real con una base descartable, por la API y con la sesión revocada en Chrome, con la captura `bo-cuenta`; los pasos del panel que escriben contraseñas reales no se ejecutaron a mano; change `upgrade-profile-structured-data`: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado). TC-43 (change `add-builder-skill-project-overrides`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc43-overrides` nueva y la de `tc13-seleccion` regenerada con `manual:capture`. TC-42 (change `add-certification-verification`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc42-credencial` nueva y la del diálogo de certificación regenerada con `manual:capture`. TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 46 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
@@ -2127,4 +2218,5 @@ Cada término enlaza el concepto, el recorrido o el caso donde se usa.
 | **apertura** | Una visita de una persona atribuida a un enlace de seguimiento; las tuyas y las de bots no cuentan. | B12 (Constructor · Publicación), TC-41 |
 | **referencia huérfana** | Un id de `includeIds` o `excludeIds` que ya no corresponde a ninguna experiencia, skill ni proyecto (el ítem se borró). El sitio lo ignora; el constructor lo cuenta y deja quitarlo. | B10 (Constructor · Selección), TC-43 |
 | **credencial** | Lo que acredita una certificación en el emisor: el enlace de verificación, el ID y el vencimiento, los tres opcionales. | B6 (Formación), TC-42 |
+| **versión de sesión** | Un número del administrador (`sessionVersion`) que el token del panel lleva como `sv`; cambiar la contraseña desde **Cuenta** o correr `admin:bootstrap` lo incrementa y los tokens con otra versión dejan de valer. | B14 (Cuenta), TC-45 |
 | **enlace de verificación** | La página pública de la credencial en el emisor (Credly, Accredible…); solo `https://`. El sitio lo muestra como «Ver credencial» y no comprueba que funcione. | B6 (Formación), TC-42 |

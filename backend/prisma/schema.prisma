@@ -328,4 +328,6 @@ model AdminUser {
   name         String
   createdAt    DateTime @default(now())
   lastLoginAt  DateTime?
+  /// Versión de sesión: el JWT lleva `sv` y solo vale si coincide. Cambiar la contraseña la incrementa.
+  sessionVersion Int @default(0)
 }

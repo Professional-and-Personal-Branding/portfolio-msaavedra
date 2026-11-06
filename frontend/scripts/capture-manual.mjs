@@ -23,8 +23,9 @@
  * `add-share-links`), la creación de UN enlace de seguimiento de ejemplo por la API del panel
  * (`POST /api/admin/curated-profiles/:id/share-links`, solo si el perfil todavía no tiene uno con
  * esa etiqueta). El script no hace ningún otro POST, PATCH ni DELETE, y
- * nunca escribe una contraseña en un campo real: la captura del error de credenciales usa un
- * email inexistente y un valor de relleno que no pertenece a nadie. Los errores de validación
+ * nunca escribe una contraseña real en un campo: la captura del error de credenciales usa un
+ * email inexistente y un valor de relleno que no pertenece a nadie, y la de Cuenta (`bo-cuenta`)
+ * solo valores de relleno que la validación del cliente rechaza sin enviar nada. Los errores de validación
  * se provocan con *Guardar* sobre un formulario vacío (valida en el cliente) y los avisos de
  * cambios sin guardar se abren y se cierran con *Cancelar*.
  */
@@ -228,6 +229,23 @@ const MANIFEST = [
     ],
   },
   { id: 'tc20-skills', ruta: '/admin/skills', sesion: true, esperar: 'Spring Boot' },
+  // Cuenta (change `add-admin-password-change`): el formulario con «Las contraseñas no coinciden».
+  // Valores de relleno que no pertenecen a nadie; la validación es del cliente y no sale ninguna
+  // petición (no se pulsa nada que envíe: el error aparece al salir del último campo).
+  {
+    id: 'bo-cuenta',
+    ruta: '/admin/cuenta',
+    sesion: true,
+    esperar: 'Cambiar contraseña',
+    pasos: [
+      ['type', '#current-password', 'relleno-actual-sin-uso'],
+      ['type', '#new-password', 'relleno-nueva-sin-uso-1'],
+      ['type', '#confirm-password', 'relleno-nueva-sin-uso-2'],
+      ['click', 'aria/Nueva contraseña'],
+      ['esperarTexto', 'Las contraseñas no coinciden'],
+      ['esperar', 400],
+    ],
+  },
   {
     id: 'bo-skills-dialogo',
     ruta: '/admin/skills',

@@ -16,17 +16,20 @@ import { NodeEnv } from '../../../../config/env.validation';
 import { adminValidationPipe } from '../../../../shared/infrastructure/http/admin-validation.pipe';
 import { toHttpException } from '../../../../shared/infrastructure/http/domain-error.mapper';
 import { ErrorResponseDto } from '../../../../shared/infrastructure/http/error-response.dto';
-import { AdminOutput, LoginOutput } from '../../application/dto/auth.output';
+import { AdminOutput, AuthenticatedAdmin, LoginOutput } from '../../application/dto/auth.output';
+import { ChangeAdminPasswordUseCase } from '../../application/use-cases/change-admin-password.use-case';
 import { LoginUseCase } from '../../application/use-cases/login.use-case';
 import { CurrentAdmin } from '../security/current-admin.decorator';
 import { JwtAuthGuard } from '../security/jwt-auth.guard';
 import { LoginRateLimitGuard } from '../security/login-rate-limit.guard';
+import { PasswordChangeRateLimitGuard } from '../security/password-change-rate-limit.guard';
 import {
   buildClearSessionCookieOptions,
   buildSessionCookieOptions,
   SESSION_COOKIE_NAME,
 } from '../security/session-cookie';
 import { AdminResponse, LoginResponse } from './docs/auth.response';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginDto } from './dto/login.dto';
 
 @ApiTags('auth')
@@ -35,6 +38,7 @@ import { LoginDto } from './dto/login.dto';
 export class AuthController {
   constructor(
     private readonly login: LoginUseCase,
+    private readonly changePassword: ChangeAdminPasswordUseCase,
     private readonly config: ConfigService,
   ) {}
 
@@ -66,16 +70,54 @@ export class AuthController {
     const result = await this.login.execute({ email: dto.email, password: dto.password });
     if (!result.ok) throw toHttpException(result.error);
 
+    this.setSessionCookie(res, result.value);
+    return result.value;
+  }
+
+  @Post('password')
+  @HttpCode(200)
+  // El límite va después del guard de sesión: una petición anónima da 401 sin consumir el cupo.
+  @UseGuards(JwtAuthGuard, PasswordChangeRateLimitGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Cambiar la contraseña del administrador',
+    description:
+      'Exige la contraseña actual, guarda la nueva (12 a 256 caracteres, distinta de la actual) e invalida todas las demás sesiones (`sessionVersion`). Responde como el login, con un token nuevo y la cookie `portfolio_session` reemitida para la sesión que cambió; el token con el que se hizo la petición deja de valer.',
+  })
+  @ApiOkResponse({ type: LoginResponse })
+  @ApiBadRequestResponse({ type: ErrorResponseDto, description: 'Cuerpo inválido o política' })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    description: 'Sin sesión, sesión revocada o contraseña actual incorrecta',
+  })
+  @ApiTooManyRequestsResponse({ type: ErrorResponseDto, description: 'Demasiados intentos' })
+  async doChangePassword(
+    @CurrentAdmin() admin: AuthenticatedAdmin,
+    @Body() dto: ChangePasswordDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<LoginOutput> {
+    const result = await this.changePassword.execute({
+      adminId: admin.id,
+      sessionVersion: admin.sessionVersion,
+      currentPassword: dto.currentPassword,
+      newPassword: dto.newPassword,
+    });
+    if (!result.ok) throw toHttpException(result.error);
+
+    this.setSessionCookie(res, result.value);
+    return result.value;
+  }
+
+  private setSessionCookie(res: Response, session: LoginOutput): void {
     res.cookie(
       SESSION_COOKIE_NAME,
-      result.value.accessToken,
+      session.accessToken,
       buildSessionCookieOptions(
-        result.value.expiresIn,
+        session.expiresIn,
         this.isProduction,
         this.appConfig.sessionCookieSameSite,
       ),
     );
-    return result.value;
   }
 
   @Post('logout')
@@ -101,7 +143,8 @@ export class AuthController {
   })
   @ApiOkResponse({ type: AdminResponse })
   @ApiUnauthorizedResponse({ type: ErrorResponseDto })
-  me(@CurrentAdmin() admin: AdminOutput): AdminOutput {
-    return admin;
+  me(@CurrentAdmin() admin: AuthenticatedAdmin): AdminOutput {
+    // No expone la versión de sesión.
+    return { id: admin.id, email: admin.email, name: admin.name };
   }
 }

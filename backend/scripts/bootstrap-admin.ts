@@ -4,11 +4,14 @@
  *   npm run admin:bootstrap
  *
  * Lee ADMIN_EMAIL, ADMIN_PASSWORD y ADMIN_NAME del entorno (.env), hashea la contraseña
- * con argon2id y crea o actualiza (upsert por email) el AdminUser. Idempotente.
+ * con argon2id y crea o actualiza (upsert por email) el AdminUser. Si ya existe, también cierra
+ * las sesiones abiertas (incrementa `sessionVersion`): es la vía de recuperación si se pierde la
+ * contraseña.
  * Termina con exit 1 si faltan email o contraseña. El seed de datos no toca esta tabla.
  */
 import { PrismaClient } from '@prisma/client';
 import * as argon2 from 'argon2';
+import { upsertAdminUser } from './lib/bootstrap-admin';
 
 const PLACEHOLDER_PASSWORD = 'cambiar-en-primer-arranque';
 
@@ -35,14 +38,9 @@ async function main(): Promise<void> {
   const prisma = new PrismaClient();
   try {
     const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
-    const existing = await prisma.adminUser.findUnique({ where: { email } });
-    const admin = await prisma.adminUser.upsert({
-      where: { email },
-      create: { email, passwordHash, name },
-      update: { passwordHash, name },
-    });
+    const admin = await upsertAdminUser(prisma, { email, passwordHash, name });
     console.log(
-      `✅ Administrador ${existing ? 'actualizado' : 'creado'}: ${admin.email} (${admin.name}) — hash ${passwordHash.slice(0, 10)}…`,
+      `✅ Administrador ${admin.created ? 'creado' : 'actualizado (sesiones abiertas cerradas)'}: ${admin.email} (${admin.name}) — hash ${passwordHash.slice(0, 10)}…`,
     );
   } finally {
     await prisma.$disconnect();

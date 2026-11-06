@@ -1,4 +1,5 @@
 import { AdminUser } from '../../domain/entities/admin-user.entity';
+import { SessionRevokedError } from '../../domain/errors/session-revoked.error';
 import { InvalidCredentialsError } from '../../domain/errors/invalid-credentials.error';
 import { PasswordHasher } from '../../domain/ports/password-hasher.port';
 import { TokenSigner } from '../../domain/ports/token-signer.port';
@@ -13,6 +14,7 @@ const ADMIN = AdminUser.create({
   name: 'Admin',
   createdAt: new Date('2026-01-01'),
   lastLoginAt: null,
+  sessionVersion: 2,
 });
 
 function deps(found: AdminUser | null = ADMIN, verifyResult = true) {
@@ -21,6 +23,7 @@ function deps(found: AdminUser | null = ADMIN, verifyResult = true) {
     findById: jest.fn().mockResolvedValue(found),
     upsert: jest.fn(),
     touchLastLogin: jest.fn().mockResolvedValue(undefined),
+    changePassword: jest.fn(),
   };
   const hasher: PasswordHasher = {
     hash: jest.fn(),
@@ -55,6 +58,7 @@ describe('LoginUseCase (spec admin-authentication)', () => {
       sub: 'a1',
       email: 'admin@test.local',
       name: 'Admin',
+      sessionVersion: 2,
     });
   });
 
@@ -81,14 +85,65 @@ describe('LoginUseCase (spec admin-authentication)', () => {
 });
 
 describe('GetCurrentAdminUseCase', () => {
-  it('devuelve el admin sin hash; inexistente → NotFound', async () => {
+  it('versión igual → devuelve el admin sin hash, con la versión', async () => {
     const d = deps();
-    const ok = await new GetCurrentAdminUseCase(d.admins).execute({ id: 'a1' });
-    expect(ok.ok).toBe(true);
-    if (ok.ok) expect(ok.value).toEqual({ id: 'a1', email: 'admin@test.local', name: 'Admin' });
+    const result = await new GetCurrentAdminUseCase(d.admins).execute({
+      id: 'a1',
+      sessionVersion: 2,
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toEqual({
+        id: 'a1',
+        email: 'admin@test.local',
+        name: 'Admin',
+        sessionVersion: 2,
+      });
+    }
+  });
 
+  it('versión distinta → SessionRevokedError', async () => {
+    const d = deps();
+    const result = await new GetCurrentAdminUseCase(d.admins).execute({
+      id: 'a1',
+      sessionVersion: 1,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBeInstanceOf(SessionRevokedError);
+  });
+
+  it('token sin sv vale 0: sirve con versión 0 y no con una mayor', async () => {
+    const fresh = AdminUser.create({
+      id: 'a2',
+      email: 'a2@test.local',
+      passwordHash: 'h',
+      name: 'A2',
+      createdAt: new Date('2026-01-01'),
+      lastLoginAt: null,
+      sessionVersion: 0,
+    });
+    const zero = deps(fresh);
+    const accepted = await new GetCurrentAdminUseCase(zero.admins).execute({
+      id: 'a2',
+      sessionVersion: undefined,
+    });
+    expect(accepted.ok).toBe(true);
+
+    const rotated = deps();
+    const rejected = await new GetCurrentAdminUseCase(rotated.admins).execute({
+      id: 'a1',
+      sessionVersion: undefined,
+    });
+    expect(rejected.ok).toBe(false);
+  });
+
+  it('administrador inexistente → SessionRevokedError', async () => {
     const none = deps(null);
-    const missing = await new GetCurrentAdminUseCase(none.admins).execute({ id: 'zz' });
+    const missing = await new GetCurrentAdminUseCase(none.admins).execute({
+      id: 'zz',
+      sessionVersion: 0,
+    });
     expect(missing.ok).toBe(false);
+    if (!missing.ok) expect(missing.error).toBeInstanceOf(SessionRevokedError);
   });
 });

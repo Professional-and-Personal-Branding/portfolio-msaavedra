@@ -8,6 +8,7 @@ import {
   Menu,
   Palette,
   Sparkles,
+  UserCog,
   Wrench,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -130,6 +131,12 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               >
                 <ExternalLink aria-hidden />
                 <span className={ACTION_LABEL}>Ver portafolio</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/admin/cuenta" aria-label="Cuenta" title="Cuenta">
+                <UserCog aria-hidden />
+                <span className={ACTION_LABEL}>Cuenta</span>
               </Link>
             </Button>
             <Button

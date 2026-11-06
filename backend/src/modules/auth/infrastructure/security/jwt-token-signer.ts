@@ -18,7 +18,7 @@ export class JwtTokenSigner implements TokenSigner {
 
   async sign(claims: TokenClaims): Promise<SignedToken> {
     const token = await this.jwt.signAsync(
-      { email: claims.email, name: claims.name },
+      { email: claims.email, name: claims.name, sv: claims.sessionVersion },
       { subject: claims.sub, expiresIn: this.expiresInSeconds },
     );
     return { token, expiresInSeconds: this.expiresInSeconds };

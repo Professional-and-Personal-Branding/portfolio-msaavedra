@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router';
 import { TooltipProvider } from '@/shared/components/ui/tooltip';
 import { LoginPage } from './auth/LoginPage';
 import { RequireSession } from './auth/RequireSession';
+import { AccountPage } from './account/AccountPage';
 import { DashboardPage } from './dashboard/DashboardPage';
 import { ExperiencesPage } from './experiences/ExperiencesPage';
 import { FormacionPage } from './formacion/FormacionPage';
@@ -26,6 +27,7 @@ export function BackofficeApp() {
                 <AdminLayout>
                   <Routes>
                     <Route index element={<DashboardPage />} />
+                    <Route path="cuenta" element={<AccountPage />} />
                     <Route path="portada" element={<PortadaPage />} />
                     <Route path="experiencias" element={<ExperiencesPage />} />
                     <Route path="skills" element={<SkillsPage />} />
