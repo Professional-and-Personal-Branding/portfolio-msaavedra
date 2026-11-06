@@ -37,6 +37,11 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.{spec,test}.{ts,tsx}'],
     css: false,
+    // D7 de `polish-views-updated-at-and-builder`: en frío (tras un build, con el disco sin caché) los tests largos
+    // con `userEvent` del panel superan los 5 s por defecto. Solo cubre el tiempo del test y de los hooks: el
+    // `asyncUtilTimeout` de `src/test/setup.ts` sigue en 1 s, así que un `findBy` lento de verdad sigue fallando.
+    testTimeout: 15_000,
+    hookTimeout: 30_000,
     env: {
       // Rutas absolutas para fetch en Node; MSW intercepta este host.
       VITE_API_URL: 'http://api.test',

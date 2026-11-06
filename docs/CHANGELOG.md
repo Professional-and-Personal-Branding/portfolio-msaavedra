@@ -1,5 +1,14 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`polish-views-updated-at-and-builder`)
+
+Tres correcciones chicas, sin cambios de contrato ni migraciones.
+
+- **Una visita no es una edición (D1, D2).** El incremento de `views` (registro de visitas y `npm run views:reclassify`) pasa a un `UPDATE` crudo parametrizado dentro de la misma transacción, sin tocar `CuratedProfile.updatedAt`. El `<lastmod>` del sitemap ya no se mueve con cada visita humana. Las fechas ya infladas en bases locales se corrigen con la próxima edición del perfil (D3). Con esto `updatedAt` es confiable: este change hizo el arreglo que `upgrade-profile-structured-data` nombraba `fix-curated-profile-updated-at`; `dateModified` queda para un change aparte (P1).
+- **Concordancia de número en el panel (D5, D6, P2).** El helper `formatCount` (sobre `Intl.PluralRules`) arregla «1 experiencia · 1 categoría · 1 proyecto» en el preview y los contadores de visitas (constructor, lista de perfiles, aviso de borrar, `aria-label` del dashboard) y de skills. Siguen en español aunque el preview muestre el contenido en inglés.
+- **Pruebas del frontend en frío (D7).** `testTimeout` de 15 s y `hookTimeout` de 30 s en `frontend/vite.config.ts`; el `findBy` de 1 s de `setup.ts` no cambia.
+- **Manual.** Epígrafe y captura de TC-12 (`tc12b-identidad.jpg`) corregidos; sin casos nuevos.
+
 ## Update — Noviembre 2026 (`upgrade-profile-structured-data`)
 
 El head de cada perfil público emite `ProfilePage` con el `Person` adentro, en el servidor y en el cliente.

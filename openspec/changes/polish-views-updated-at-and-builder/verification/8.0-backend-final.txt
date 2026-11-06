@@ -1,0 +1,16 @@
+== lint
+> eslint "{src,test,scripts}/**/*.ts"
+
+== typecheck
+
+== test
+Test Suites: 94 passed, 94 total
+Tests:       925 passed, 925 total
+== build
+
+== openapi
+OpenAPI exportado a openapi.json: 43 rutas, 69 schemas
+OPENAPI_SIN_CAMBIOS
+== e2e
+Test Suites: 15 passed, 15 total
+Tests:       253 passed, 253 total

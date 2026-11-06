@@ -37,12 +37,14 @@ export class PrismaProfileViewRepository implements ProfileViewRepository {
         },
       }),
       // Solo las visitas de personas suman en `views`; una OWNER o BOT es una sola escritura.
+      // SQL crudo a propósito (change polish-views-updated-at-and-builder, D1): una visita no es una
+      // edición, y `update`/`updateMany` de Prisma rellenan `@updatedAt` y moverían el `<lastmod>`
+      // del sitemap. Nombres de tabla y columna escritos a mano: si `CuratedProfile` lleva `@@map` o
+      // `views` se renombra, esto falla en ejecución (los e2e de visitas lo detectan).
       ...(view.kind === 'HUMAN'
         ? [
-            this.prisma.curatedProfile.update({
-              where: { id: view.curatedProfileId },
-              data: { views: { increment: 1 } },
-            }),
+            this.prisma
+              .$executeRaw`UPDATE "CuratedProfile" SET "views" = "views" + 1 WHERE "id" = ${view.curatedProfileId}`,
           ]
         : []),
     ]);
@@ -63,7 +65,7 @@ export class PrismaProfileViewRepository implements ProfileViewRepository {
         orderBy: { _count: { curatedProfileId: 'desc' } },
       }),
       this.prisma.profileView.groupBy({ by: ['locale'], where, _count: { _all: true } }),
-      // Único SQL crudo del proyecto: agrupación por día (date_trunc) — encapsulado aquí.
+      // SQL crudo: agrupación por día (date_trunc) — encapsulado aquí.
       this.prisma.$queryRaw<DayRow[]>`
         SELECT date_trunc('day', "viewedAt") AS day, COUNT(*)::int AS views
         FROM "ProfileView"

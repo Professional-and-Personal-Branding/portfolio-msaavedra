@@ -74,4 +74,23 @@ describe('ProfilesPage', () => {
     await waitFor(() => expect(duplicados).toEqual(['cp-1']));
     expect(await screen.findByLabelText('Slug *')).toHaveValue('acme-backend-2');
   });
+
+  // polish-views-updated-at-and-builder, P2: las visitas concuerdan en número.
+  it('con una sola visita usa el singular en la fila y en el aviso de borrar', async () => {
+    const unaVisita = makeAdminCuratedProfile({ views: 1 });
+    server.use(
+      http.get(`${API}/admin/curated-profiles`, () => HttpResponse.json([unaVisita])),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<AppRouter />, { route: '/admin/perfiles' });
+
+    const fila = (await screen.findByRole('link', { name: 'Editar acme-backend' })).closest(
+      'li',
+    ) as HTMLElement;
+    expect(within(fila).getByText('1 visita')).toBeInTheDocument();
+
+    await user.click(within(fila).getByRole('button', { name: 'Borrar acme-backend' }));
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent('y su 1 visita registrada.');
+  });
 });

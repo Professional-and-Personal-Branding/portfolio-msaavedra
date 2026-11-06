@@ -1,0 +1,162 @@
+== frontend lint
+
+> portfolio-frontend@0.1.0 lint
+> eslint .
+
+== typecheck
+
+> portfolio-frontend@0.1.0 typecheck
+> tsc -b
+
+== test (tibia)
+
+> portfolio-frontend@0.1.0 test
+> vitest run --run
+
+
+ RUN  v5.0.0 D:/projects/portfolio-msaavedra/wt-polish/frontend
+
+ ❯ src/features/curated-view/CuratedProfileView.staged.test.tsx (6 tests | 1 failed) 3158ms
+   ❯ CuratedProfileView — render en dos tiempos (6)
+     × cambiar el idioma con el perfil revelado no produce ningún render con solo el hero 1498ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/curated-view/CuratedProfileView.staged.test.tsx > CuratedProfileView — render en dos tiempos > cambiar el idioma con el perfil revelado no produce ningún render con solo el hero
+AssertionError: expected null not to be null
+
+Ignored nodes: comments, script, style
+[36m<html[39m
+  [33mlang[39m=[32m"es"[39m
+[36m>[39m
+  [36m<head>[39m
+    [36m<title>[39m
+      [0mManuel Saavedra · Portafolio profesional[0m
+    [36m</title>[39m
+  [36m</head>[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<a[39m
+        [33mdata-discover[39m=[32m"true"[39m
+        [33mhref[39m=[32m"/demo?lang=en"[39m
+      [36m>[39m
+        [0ma inglés[0m
+      [36m</a>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"min-h-screen bg-bg font-sans text-text print:min-h-0 print:bg-transparent dark"[39m
+        [33mdata-mode[39m=[32m"dark"[39m
+        [33mdata-theme[39m=[32m"default"[39m
+        [33mstyle[39m=[32m"--t-bg: #0a0e1a; --t-bg-soft: #111827; --t-card: #161d2e; --t-border: #252d42; --t-text: #e8edf5; --t-text-muted: #94a3b8; --t-accent: #38bdf8; --t-accent2: #818cf8; --t-accent-foreground: #0a0e1a; --t-accent-ink: #38bdf8; --t-success-ink: #00bc7d; --t-accent2-ink: #818cf8; --t-text-dim: #7a879a; --t-ring: #38bdf8; --t-radius: 16px; --t-max-width: 1080px; --t-space: 1rem; --t-density: 1; --t-scale: 1; --t-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; --t-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; --t-glass: 1; --t-motion: 1; color-scheme: dark;"[39m
+      [36m>[39m
+        [36m<a[39m
+          [33mclass[39m=[32m"sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-theme-sm focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-foreground print:hidden"[39m
+          [33mhref[39m=[32m"#contenido"[39m
+        [36m>[39m
+          [0mSaltar al contenido[0m
+        [36m</a>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative flex min-h-screen flex-col print:hidden"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"pointer-events-none fixed inset-0 bg-glow"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative z-10 flex flex-1 flex-col"[39m
+          [36m>[39m
+            [36m<header[39m
+              [33mclass[39m=[32m"sticky top-0 z-40 border-b border-border glass print:hidden"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"mx-auto flex w-full max-w-(--t-max-width) items-center gap-2 px-4 py-3 md:px-6"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mclass[39m=[32m"truncate font-heading text-sm font-bold tracking-tight md:text-base"[39m
+                  [33mdata-discover[39m=[32m"true"[39m
+                  [33mhref[39m=[32m"/?lang=es"[39m
+                [36m>[39m
+                  [0mPortafolio[0m
+                [36m</a>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"ml-auto flex items-center gap-2"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33maria-label[39m=[32m"Diseño"[39m
+                    [33mclass[39m=[32m"hidden items-center gap-1 sm:flex"[39m
+                    [33mrole[39m=[32m"group"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Clásico"[39m
+                      [33maria-pressed[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 bg-primary text-primary-foreground hover:bg-primary/90 size-8"[39m
+                      [33mdata-size[39m=[32m"icon-sm"[39m
+                      [33mdata-slot[39m=[32m"button"[39m
+                      [33mdata-variant[39m=[32m"default"[39m
+                      [33mtitle[39m=[32m"Clásico"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-template"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"18"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"9"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"5"[39m
+                          [33mx[39m=[32m"16"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                    [36m</button>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Lateral"[39m
+                      [33maria-pressed[39m=[32m"false"[39m
+                      [33mclass[39m=[32m"inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50 size-8"[39m
+                      [33mdata-size[39m=[32m"icon-sm"[39m
+                      [33mdata-slot[39m=[32m"button"[39m
+                      [33md...
+ ❯ src/features/curated-view/CuratedProfileView.staged.test.tsx:82:73
+     80|       { route: '/demo?lang=es' },
+     81|     );
+     82|     await waitFor(() => expect(container.querySelector('#contact')).no…
+       |                                                                         ^
+     83|     const before = commits.length;
+     84|
+ ❯ runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 63 passed (64)
+      Tests  1 failed | 971 passed (972)
+   Start at  20:54:41
+   Duration  84.65s (environment 49%, tests 26%, import 12%, setup 11%, transform 2%)
+
+Environment  jsdom was created 64 times · 483.96s total, 49% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+

@@ -1,0 +1,33 @@
+
+> portfolio-backend@0.1.0 test:e2e
+> jest --config ./test/jest-e2e.json --runInBand views-updated-at
+
+[01:01:28] [32mINFO[39m (66336): [36mrequest completed[39m [90m{"req":{"id":"c23e60a7-2d0c-414b-b19a-9eb211fceadd","method":"POST","url":"/api/auth/login"},"res":{"statusCode":200},"responseTime":729}[39m
+[01:01:28] [32mINFO[39m (66336): [36mrequest completed[39m [90m{"req":{"id":"9a2ae9a9-d3d4-4a2f-a2ef-1f6639b1bd7d","method":"GET","url":"/api/curated-profiles/tech-lead-dotnet"},"res":{"statusCode":200},"responseTime":113}[39m
+[01:01:29] [32mINFO[39m (66336): [36mrequest completed[39m [90m{"req":{"id":"e8585f9f-cbac-4399-82ee-3758b901876e","method":"GET","url":"/sitemap.xml"},"res":{"statusCode":200},"responseTime":23}[39m
+[01:01:29] [32mINFO[39m (66336): [36mrequest completed[39m [90m{"req":{"id":"114668b0-f22a-443f-bed5-f9f98f75a5a0","method":"PATCH","url":"/api/admin/curated-profiles/cmw2tx2im0055ucis9gp33ig1"},"res":{"statusCode":200},"responseTime":218}[39m
+[01:01:29] [32mINFO[39m (66336): [36mrequest completed[39m [90m{"req":{"id":"0abdefe4-9318-4002-820f-819cfff567dc","method":"GET","url":"/sitemap.xml"},"res":{"statusCode":200},"responseTime":40}[39m
+FAIL test/views-updated-at.e2e-spec.ts (13.46 s)
+  ● Las visitas no mueven updatedAt (e2e) › una visita HUMAN suma en views y deja updatedAt y el <lastmod> intactos
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "2026-01-15T12:00:00.000Z"
+    Received: "2026-11-05T01:01:28.947Z"
+
+      at Object.<anonymous> (test/D:/projects/portfolio-msaavedra/wt-polish/backend/test/views-updated-at.e2e-spec.ts:76:43)
+
+  ● Las visitas no mueven updatedAt (e2e) › views:reclassify escribe views sin mover updatedAt
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "2026-01-15T12:00:00.000Z"
+    Received: "2026-11-05T01:01:29.466Z"
+
+      at Object.<anonymous> (test/D:/projects/portfolio-msaavedra/wt-polish/backend/test/views-updated-at.e2e-spec.ts:114:43)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 1 passed, 3 total
+Snapshots:   0 total
+Time:        13.778 s
+Ran all test suites matching views-updated-at.

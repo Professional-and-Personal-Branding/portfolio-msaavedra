@@ -1,0 +1,33 @@
+== lint
+
+> portfolio-frontend@0.1.0 lint
+> eslint .
+
+== typecheck
+
+> portfolio-frontend@0.1.0 typecheck
+> tsc -b
+
+== build
+dist/assets/BackofficeApp-CPejA8rF.js       246.44 kB │ gzip:  65.56 kB
+dist/assets/index-ClzOn7t3.js               481.24 kB │ gzip: 150.58 kB
+
+[32m✓ built in 5.78s[39m
+== perf:budget
+
+> portfolio-frontend@0.1.0 perf:budget
+> node scripts/check-bundle-budget.mjs
+
+# Presupuesto de JS del arranque público
+
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-ClzOn7t3.js | módulo | 148.9 |
+| /profile-prefetch.js | clásico | 1.2 |
+| **Total** | | **150.1** |
+
+Presupuesto: 155 KB.
+
+== test
+ Test Files  65 passed (65)
+      Tests  981 passed (981)
