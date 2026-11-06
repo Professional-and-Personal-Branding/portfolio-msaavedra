@@ -1,0 +1,112 @@
+TC-44 pasos 1 a 5 (2026-11-04). Imagen portfolio-web:sd (frontend/Dockerfile) en localhost:8097, API de esta rama en localhost:3343, base descartable portfolio_sd_example sembrada con el ejemplo (SEED_DISPOSABLE_DB=1 npm run seed:example).
+FRONTEND_URL de la API = http://localhost:8097, asi que los canonical y los @id salen con ese origen. El token de ejemplo-protegido (valor del ejemplo) se leyo de la base y se muestra como <token>.
+
+## Pasos 1 a 4: curl del HTML inicial (cada linea: respuesta, cantidad de application/ld+json y robots)
+home  GET http://localhost:8097/  -> HTTP/1.1 200 OK  ld+json=1  <meta name="robots" content="index, follow"
+backend-es  GET http://localhost:8097/ejemplo-backend  -> HTTP/1.1 200 OK  ld+json=1  <meta name="robots" content="index, follow"
+backend-en  GET http://localhost:8097/ejemplo-backend?lang=en  -> HTTP/1.1 200 OK  ld+json=1  <meta name="robots" content="index, follow"
+backend-via  GET http://localhost:8097/ejemplo-backend?via=k7m2q9xw4t&src=linkedin  -> HTTP/1.1 200 OK  ld+json=1  <meta name="robots" content="index, follow"
+dirigido  GET http://localhost:8097/ejemplo-dirigido  -> HTTP/1.1 200 OK  ld+json=1  <meta name="robots" content="index, follow"
+protegido  GET http://localhost:8097/ejemplo-protegido  -> HTTP/1.1 200 OK  ld+json=0  <meta name="robots" content="noindex, nofollow"
+protegido-tok  GET http://localhost:8097/ejemplo-protegido?token=<token>  -> HTTP/1.1 200 OK  ld+json=0  <meta name="robots" content="noindex, nofollow"
+privado  GET http://localhost:8097/ejemplo-borrador  -> HTTP/1.1 200 OK  ld+json=0  <meta name="robots" content="noindex, nofollow"
+archivado  GET http://localhost:8097/ejemplo-archivado  -> HTTP/1.1 200 OK  ld+json=0  <meta name="robots" content="noindex, nofollow"
+inexistente  GET http://localhost:8097/no-existe-jamas  -> HTTP/1.1 200 OK  ld+json=0  <meta name="robots" content="noindex, nofollow"
+
+## Comparacion de los bloques (ejemplo-backend, es)
+{
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  "url": "http://localhost:8097/ejemplo-backend",
+  "name": "Ingeniera Backend Java · Alex Rivera Duarte",
+  "description": "Perfil que filtra por tags: solo muestra lo relacionado con Java y microservicios, con un acento oscuro.",
+  "inLanguage": "es",
+  "mainEntity": {
+    "@type": "Person",
+    "@id": "http://localhost:8097/#person",
+    "url": "http://localhost:8097/",
+    "name": "Alex Rivera Duarte",
+    "jobTitle": "Ingeniera Backend Java · Spring Boot · Microservicios",
+    "email": "mailto:alex.rivera@example.com",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Ciudad Ejemplo, Ejemplandia"
+    },
+    "sameAs": [
+      "https://github.example.com/alexrivera-ejemplo",
+      "https://linkedin.example.com/in/alex-rivera-ejemplo",
+      "https://youtube.example.com/@alexrivera-charlas"
+    ],
+    "knowsAbout": [
+      "Java 21",
+      "TypeScript",
+      "Python",
+      "SQL",
+      "Kotlin",
+      "Spring Boot",
+      "Apache Kafka",
+      "PostgreSQL",
+      "Docker",
+      "Kubernetes",
+      "Terraform",
+      "GitHub Actions"
+    ],
+    "alumniOf": [
+      {
+        "@type": "EducationalOrganization",
+        "name": "Universidad Ejemplo"
+      },
+      {
+        "@type": "EducationalOrganization",
+        "name": "Instituto Tecnológico de Ejemplo"
+      }
+    ],
+    "hasCredential": [
+      {
+        "@type": "EducationalOccupationalCredential",
+        "name": "Arquitecto de Soluciones en la Nube",
+        "recognizedBy": {
+          "@type": "Organization",
+          "name": "Consorcio Cloud Ejemplo"
+        },
+        "url": "https://example.org/credenciales/arquitecto-nube-2023",
+        "identifier": "EJ-2023-0042",
+        "expires": "2029-06"
+      },
+      {
+        "@type": "EducationalOccupationalCredential",
+        "name": "Liderazgo técnico para equipos de ingeniería",
+        "recognizedBy": {
+          "@type": "Organization",
+          "name": "Escuela de Líderes Demo"
+        },
+        "expires": "2025-12"
+      }
+    ]
+  }
+}
+--- title: Ingeniera Backend Java · Alex Rivera Duarte | canonical: http://localhost:8097/ejemplo-backend
+url==canonical: true | name==title: true
+via identico a es: true
+en: inLanguage en | name Java Backend Engineer · Alex Rivera Duarte | jobTitle Java Backend Engineer · Spring Boot · Microservices
+en credenciales: ["Cloud Solutions Architect","Technical leadership for engineering teams"]
+home vs backend @id/url: true true http://localhost:8097/#person
+dateModified/dateCreated: false
+script de cierre </script en el bloque: 0 | chars < > & en el bloque: false
+protegido | title: Manuel Saavedra · Portafolio profesional | ProfilePage: false
+protegido-tok | title: Manuel Saavedra · Portafolio profesional | ProfilePage: false
+privado | title: Manuel Saavedra · Portafolio profesional | ProfilePage: false
+archivado | title: Manuel Saavedra · Portafolio profesional | ProfilePage: false
+inexistente | title: Manuel Saavedra · Portafolio profesional | ProfilePage: false
+protegido sin y con token identicos: true | privado == inexistente == archivado: true
+1 solo bloque en cada publico: 1,1,1,1,1
+
+## Paso 5: Chrome (panel del navegador, sin cuenta) sobre http://localhost:8097/ejemplo-backend
+- Elements: 1 solo <script type="application/ld+json">, con data-managed-meta (el cliente reutilizo el del servidor); @type ProfilePage, mainEntity Person, url = canonical, robots "index, follow". El navegador estaba en ingles, asi que el cliente reescribio los textos (title "Java Backend Engineer · Alex Rivera Duarte", inLanguage en) sin duplicar el bloque.
+- Navegacion dentro de la SPA a /ejemplo-secciones (popstate): sigue habiendo 1 solo bloque, con url y canonical de /ejemplo-secciones y las 11 claves del Person en el orden de D2.
+- Console: sin errores ni violaciones de CSP (la CSP de Caddy es script-src 'self' sin unsafe-inline, D9).
+- Validador de schema.org (https://validator.schema.org, "Fragmento de codigo"): se pego el JSON-LD de ejemplo-backend (es) dentro de un HTML minimo. Resultado: ProfilePage, 0 errores, 0 advertencias; tipos detectados: ProfilePage, Person, PostalAddress, EducationalOrganization x2, EducationalOccupationalCredential x2, Organization x2. Datos ficticios, sin cuenta.
+- No se abrio en el navegador un perfil PROTECTED con token (el valor del token no se tipea ni se imprime): la rama queda cubierta por los tests unitarios del cliente (document-meta.spec.ts, "PROTECTED con token quita el bloque") y por el paso 4 del curl.
+
+## Pasos 6 y 7: pendientes
+Rich Results Test y validador de schema.org con "Fetch URL" necesitan el sitio desplegado en una URL publica: quedan como paso manual posterior al deploy (TC-44, pasos 6 y 7; D11).

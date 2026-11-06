@@ -1,0 +1,14 @@
+Cierre (2026-11-04), rama feat/profile-structured-data. Base de e2e descartable portfolio_sd_e2e (migrada y sembrada con docs/cv-data.json).
+backend  npm run lint            sin avisos (eslint + prettier)
+backend  npm run typecheck       sin errores
+backend  npm test                94 suites, 925 tests, verde        (antes: 909; +16)
+backend  npm run build           ok
+backend  npm run openapi:export  43 rutas, 69 schemas; git diff --exit-code -- openapi.json: sin cambios
+backend  npm run test:e2e        14 suites, 250 tests, verde        (antes: 244; +6)
+frontend npm run lint            sin avisos
+frontend npm run typecheck       sin errores (tsc -b)
+frontend npm test -- --run       64 archivos, 972 tests, verde      (antes: 960; +12). Una corrida intermedia (con la maquina cargada) dio 1 test fallido; las dos siguientes, 972 de 972.
+frontend npm run build           ok
+frontend npm run perf:budget     150.1 KB gzip (148.9 + 1.2), tope 155; antes 149.7; un solo JS de modulo
+frontend npm run manual:check    ok: 43 casos alineados, 46 imagenes (3.38 MB), index.html 244 KB (main tiene 42 casos; con el TC-43 del #46 serian 44)
+git diff --exit-code backend/openapi.json frontend/src/shared/types/api.d.ts: sin cambios (D10)

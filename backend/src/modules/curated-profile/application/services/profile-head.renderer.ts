@@ -37,6 +37,9 @@ export const OG_IMAGE = {
 
 const DESCRIPTION_MAX = 300;
 
+/** Tope de `knowsAbout`, para acotar el tamaño del head (D3). */
+export const KNOWS_ABOUT_MAX = 50;
+
 export interface HeadMeta {
   title: string;
   description: string;
@@ -53,16 +56,23 @@ export function headMetaFromProfile(
   baseUrl: string,
 ): HeadMeta {
   const name = data.profile?.fullName ?? GENERIC_HEAD[locale].title;
+  const title = `${data.title} · ${name}`;
+  const description = truncate(
+    data.description || data.headline || data.profile?.summary || '',
+    DESCRIPTION_MAX,
+  );
+  const canonical = `${origin(baseUrl)}${profilePath(data.slug)}`;
+  const noindex = data.visibility !== 'PUBLIC';
   return {
-    title: `${data.title} · ${name}`,
-    description: truncate(
-      data.description || data.headline || data.profile?.summary || '',
-      DESCRIPTION_MAX,
-    ),
-    canonical: `${origin(baseUrl)}${profilePath(data.slug)}`,
+    title,
+    description,
+    canonical,
     locale,
-    noindex: data.visibility !== 'PUBLIC',
-    jsonLd: personJsonLd(data),
+    noindex,
+    // Solo una página indexable lleva datos estructurados (D6).
+    jsonLd: noindex
+      ? undefined
+      : profilePageJsonLd(data, { title, description, canonical, locale, origin: origin(baseUrl) }),
   };
 }
 
@@ -76,19 +86,92 @@ export function genericHeadMeta(locale: Locale, baseUrl: string): HeadMeta {
   };
 }
 
-/** `schema.org/Person`, idéntico al que escribe el cliente. */
-export function personJsonLd(data: CuratedProfileOutput): Record<string, unknown> | undefined {
+/** Textos ya derivados para `<title>`, la meta `description` y el canonical, más el idioma y el origen (sin `/` final). */
+export interface ProfilePageContext {
+  title: string;
+  description: string;
+  canonical: string;
+  locale: Locale;
+  origin: string;
+}
+
+/**
+ * `schema.org/ProfilePage` con el `Person` en `mainEntity` (D1 y D2). Idéntico al que
+ * escribe el cliente (`profilePageJsonLd` de `document-meta.ts`), con las claves en el
+ * mismo orden: el fixture compartido compara también la serialización.
+ */
+export function profilePageJsonLd(
+  data: CuratedProfileOutput,
+  context: ProfilePageContext,
+): Record<string, unknown> | undefined {
   const profile = data.profile;
   if (!profile) return undefined;
 
+  const knowsAbout = data.sections.includes('skills') ? skillNames(data) : [];
+  const alumniOf = data.sections.includes('education') ? institutionNames(data) : [];
+  const credentials = data.sections.includes('certifications')
+    ? data.certifications.map(credentialJsonLd)
+    : [];
+
   return {
     '@context': 'https://schema.org',
-    '@type': 'Person',
-    name: profile.fullName,
-    jobTitle: data.headline || profile.headline,
-    email: `mailto:${profile.email}`,
-    address: { '@type': 'PostalAddress', addressLocality: profile.location },
-    ...(data.socialLinks.length > 0 ? { sameAs: data.socialLinks.map((link) => link.url) } : {}),
+    '@type': 'ProfilePage',
+    url: context.canonical,
+    name: context.title,
+    description: context.description,
+    inLanguage: context.locale,
+    mainEntity: {
+      '@type': 'Person',
+      '@id': `${context.origin}/#person`,
+      url: `${context.origin}/`,
+      name: profile.fullName,
+      jobTitle: data.headline || profile.headline,
+      email: `mailto:${profile.email}`,
+      address: { '@type': 'PostalAddress', addressLocality: profile.location },
+      ...(data.socialLinks.length > 0 ? { sameAs: data.socialLinks.map((link) => link.url) } : {}),
+      ...(knowsAbout.length > 0 ? { knowsAbout } : {}),
+      ...(alumniOf.length > 0
+        ? { alumniOf: alumniOf.map((name) => ({ '@type': 'EducationalOrganization', name })) }
+        : {}),
+      ...(credentials.length > 0 ? { hasCredential: credentials } : {}),
+    },
+  };
+}
+
+/** Skills de las categorías ya resueltas: en orden, sin repetidos y hasta `KNOWS_ABOUT_MAX` (D3). */
+function skillNames(data: CuratedProfileOutput): string[] {
+  return distinct(data.skillCategories.flatMap((category) => category.skills)).slice(
+    0,
+    KNOWS_ABOUT_MAX,
+  );
+}
+
+function institutionNames(data: CuratedProfileOutput): string[] {
+  return distinct(data.education.map((item) => item.institution));
+}
+
+/** Conserva la primera aparición, tal como está escrita; compara sin mayúsculas ni espacios en los extremos. */
+function distinct(values: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const value of values) {
+    const text = value.trim();
+    const key = text.toLowerCase();
+    if (!text || seen.has(key)) continue;
+    seen.add(key);
+    result.push(text);
+  }
+  return result;
+}
+
+function credentialJsonLd(item: CuratedProfileOutput['certifications'][number]) {
+  return {
+    '@type': 'EducationalOccupationalCredential',
+    name: item.name,
+    recognizedBy: { '@type': 'Organization', name: item.issuer },
+    ...(item.verificationUrl ? { url: item.verificationUrl } : {}),
+    ...(item.credentialId ? { identifier: item.credentialId } : {}),
+    ...(item.expiresAt ? { expires: item.expiresAt } : {}),
   };
 }
 
@@ -143,7 +226,13 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
-/** JSON dentro de `<script>`: `<` escapado para que ningún texto pueda cerrar la etiqueta. */
+/**
+ * JSON dentro de `<script>`: `<`, `>`, `&`, U+2028 y U+2029 salen como `\uXXXX` (D8), así
+ * que ningún texto puede cerrar la etiqueta ni abrir un comentario. Sigue siendo JSON válido.
+ */
 function safeJson(data: Record<string, unknown>): string {
-  return JSON.stringify(data).replace(/</g, '\\u003c');
+  return JSON.stringify(data).replace(
+    /[<>&\u2028\u2029]/g,
+    (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`,
+  );
 }

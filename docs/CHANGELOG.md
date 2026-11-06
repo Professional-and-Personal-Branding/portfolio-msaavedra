@@ -1,5 +1,17 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`upgrade-profile-structured-data`)
+
+El head de cada perfil público emite `ProfilePage` con el `Person` adentro, en el servidor y en el cliente.
+
+- **Forma (D1, D2).** El único `<script type="application/ld+json">` pasa de `Person` a `ProfilePage`: `url` (el canonical, sin query), `name` y `description` (los de `<title>` y la meta), `inLanguage` y `mainEntity`. El `Person` conserva `name`, `jobTitle`, `email`, `address` y `sameAs`, y suma `@id` y `url` iguales en todos los perfiles (la home).
+- **Lo que sabe, estudió y acredita (D3, D4).** `knowsAbout` (skills del perfil, sin repetidos, hasta 50), `alumniOf` (instituciones distintas) y `hasCredential` (certificaciones, con `url`, `identifier` y `expires` si existen), solo si su sección se muestra. Sin consultas ni datos nuevos.
+- **Sin `dateModified` (D5, P1).** `CuratedProfile.updatedAt` se mueve con cada visita humana; publicarlo sería falso. P1 resuelta con la opción A: el arreglo de `updatedAt` (y del `<lastmod>` del sitemap) va en un change aparte, `fix-curated-profile-updated-at`.
+- **Solo donde la página es indexable (D6).** `PUBLIC` no archivado emite el bloque; `PROTECTED`, `PRIVATE`, archivado e inexistente, no. El cliente deja de escribirlo con `noindex` y quita el que trajo el servidor.
+- **Paridad y escape (D7, D8).** El fixture `docs/fixtures/profile-head-consistency.json` es el snapshot del bloque para los dos lados (igualdad profunda y orden de claves). `safeJson` escapa `<`, `>`, `&`, U+2028 y U+2029.
+- **Sin cambios** en CSP, `openapi.json`, `api.d.ts`, base, migraciones ni dependencias; el arranque público crece 0,4 KB gzip.
+- **Docs.** `docs/MANUAL.md` e `index.html` (TC-44), `docs/DEPLOY.md` § 9.5, `docs/DEPLOY-RAILWAY.md`, `docs/RELEASE-1.0.0-CHECKLIST.md`.
+
 ## Update — Octubre 2026 (`add-builder-skill-project-overrides`)
 
 El constructor incluye y excluye skills y proyectos, no solo experiencias. Solo frontend: sin cambios de dominio, de API, del OpenAPI ni de la base.

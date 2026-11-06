@@ -1,15 +1,45 @@
 {
-  "_comment": "Fixture compartido del change add-server-rendered-head. Lo leen backend/src/modules/curated-profile/application/services/profile-head.consistency.spec.ts y frontend/src/shared/lib/document-meta.consistency.spec.ts: los dos derivan título, descripción y canonical del mismo perfil y tienen que llegar a `expected`. Incluye caracteres que se escapan, espacios repetidos y una descripción más larga que el límite de 300.",
+  "_comment": "Fixture compartido de los changes add-server-rendered-head y upgrade-profile-structured-data. Lo leen backend/src/modules/curated-profile/application/services/profile-head.consistency.spec.ts y frontend/src/shared/lib/document-meta.consistency.spec.ts: los dos derivan título, descripción, canonical y el JSON-LD ProfilePage del mismo perfil y tienen que llegar a `expected` (el JSON-LD se compara por igualdad profunda y por JSON.stringify, así que también cuenta el orden de las claves). Es el snapshot versionado del bloque: un caso sin `jsonLd` es un perfil que no emite nada. Datos ficticios; incluye caracteres que se escapan, espacios repetidos, una descripción más larga que 300, más de 50 skills y un título con </script>.",
   "origin": "https://manuel.dev/",
   "cases": [
     {
       "locale": "es",
       "profile": {
-        "slug": "tech-lead-dotnet",
-        "title": "Tech Lead .NET & <Arquitectura>",
         "headline": "Titular \"con comillas\"",
         "description": "Liderazgo   técnico\ny arquitectura .NET.",
         "visibility": "PUBLIC",
+        "sections": [
+          "hero",
+          "skills",
+          "education",
+          "certifications"
+        ],
+        "skillCategories": [
+          {
+            "name": "Backend",
+            "skills": [
+              ".NET",
+              "C#"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "degree": "Ingeniería de Sistemas",
+            "institution": "Universidad Ejemplo"
+          }
+        ],
+        "certifications": [
+          {
+            "name": "Scrum Foundation",
+            "issuer": "CertifPro",
+            "year": null,
+            "verificationUrl": null,
+            "credentialId": null,
+            "expiresAt": null
+          }
+        ],
+        "socialLinks": [],
         "profile": {
           "fullName": "Ada Ejemplo",
           "headline": "h",
@@ -17,22 +47,73 @@
           "email": "ada@example.com",
           "location": "SCZ"
         },
-        "socialLinks": []
+        "slug": "tech-lead-dotnet",
+        "title": "Tech Lead .NET & <Arquitectura>"
       },
       "expected": {
         "title": "Tech Lead .NET & <Arquitectura> · Ada Ejemplo",
         "description": "Liderazgo técnico y arquitectura .NET.",
-        "canonical": "https://manuel.dev/tech-lead-dotnet"
+        "canonical": "https://manuel.dev/tech-lead-dotnet",
+        "jsonLd": {
+          "@context": "https://schema.org",
+          "@type": "ProfilePage",
+          "url": "https://manuel.dev/tech-lead-dotnet",
+          "name": "Tech Lead .NET & <Arquitectura> · Ada Ejemplo",
+          "description": "Liderazgo técnico y arquitectura .NET.",
+          "inLanguage": "es",
+          "mainEntity": {
+            "@type": "Person",
+            "@id": "https://manuel.dev/#person",
+            "url": "https://manuel.dev/",
+            "name": "Ada Ejemplo",
+            "jobTitle": "Titular \"con comillas\"",
+            "email": "mailto:ada@example.com",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "SCZ"
+            },
+            "knowsAbout": [
+              ".NET",
+              "C#"
+            ],
+            "alumniOf": [
+              {
+                "@type": "EducationalOrganization",
+                "name": "Universidad Ejemplo"
+              }
+            ],
+            "hasCredential": [
+              {
+                "@type": "EducationalOccupationalCredential",
+                "name": "Scrum Foundation",
+                "recognizedBy": {
+                  "@type": "Organization",
+                  "name": "CertifPro"
+                }
+              }
+            ]
+          }
+        }
       }
     },
     {
       "locale": "en",
       "profile": {
-        "slug": "all",
-        "title": "Full Profile",
         "headline": "Senior Software Engineer",
         "description": "",
         "visibility": "PUBLIC",
+        "sections": [
+          "hero",
+          "contact"
+        ],
+        "skillCategories": [],
+        "education": [],
+        "certifications": [],
+        "socialLinks": [
+          {
+            "url": "https://github.com/ada-ejemplo"
+          }
+        ],
         "profile": {
           "fullName": "Ada Ejemplo",
           "headline": "h",
@@ -40,22 +121,49 @@
           "email": "ada@example.com",
           "location": "SCZ"
         },
-        "socialLinks": []
+        "slug": "all",
+        "title": "Full Profile"
       },
       "expected": {
         "title": "Full Profile · Ada Ejemplo",
         "description": "Senior Software Engineer",
-        "canonical": "https://manuel.dev/"
+        "canonical": "https://manuel.dev/",
+        "jsonLd": {
+          "@context": "https://schema.org",
+          "@type": "ProfilePage",
+          "url": "https://manuel.dev/",
+          "name": "Full Profile · Ada Ejemplo",
+          "description": "Senior Software Engineer",
+          "inLanguage": "en",
+          "mainEntity": {
+            "@type": "Person",
+            "@id": "https://manuel.dev/#person",
+            "url": "https://manuel.dev/",
+            "name": "Ada Ejemplo",
+            "jobTitle": "Senior Software Engineer",
+            "email": "mailto:ada@example.com",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "SCZ"
+            },
+            "sameAs": [
+              "https://github.com/ada-ejemplo"
+            ]
+          }
+        }
       }
     },
     {
       "locale": "es",
       "profile": {
-        "slug": "largo",
-        "title": "Largo",
         "headline": "",
         "description": "palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra",
         "visibility": "PUBLIC",
+        "sections": [],
+        "skillCategories": [],
+        "education": [],
+        "certifications": [],
+        "socialLinks": [],
         "profile": {
           "fullName": "Ada Ejemplo",
           "headline": "h",
@@ -63,12 +171,469 @@
           "email": "ada@example.com",
           "location": "SCZ"
         },
-        "socialLinks": []
+        "slug": "largo",
+        "title": "Largo"
       },
       "expected": {
         "title": "Largo · Ada Ejemplo",
         "description": "palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra pal…",
-        "canonical": "https://manuel.dev/largo"
+        "canonical": "https://manuel.dev/largo",
+        "jsonLd": {
+          "@context": "https://schema.org",
+          "@type": "ProfilePage",
+          "url": "https://manuel.dev/largo",
+          "name": "Largo · Ada Ejemplo",
+          "description": "palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra pal…",
+          "inLanguage": "es",
+          "mainEntity": {
+            "@type": "Person",
+            "@id": "https://manuel.dev/#person",
+            "url": "https://manuel.dev/",
+            "name": "Ada Ejemplo",
+            "jobTitle": "h",
+            "email": "mailto:ada@example.com",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "SCZ"
+            }
+          }
+        }
+      }
+    },
+    {
+      "locale": "es",
+      "profile": {
+        "headline": "Ingeniera de software",
+        "description": "Un perfil con todo.",
+        "visibility": "PUBLIC",
+        "sections": [
+          "hero",
+          "skills",
+          "education",
+          "certifications",
+          "contact"
+        ],
+        "skillCategories": [
+          {
+            "name": "Lenguajes",
+            "skills": [
+              "TypeScript",
+              "C#",
+              "typescript",
+              "Go"
+            ]
+          },
+          {
+            "name": "Plataforma",
+            "skills": [
+              "Docker",
+              "c# ",
+              "Kubernetes",
+              "Tecnología 01",
+              "Tecnología 02",
+              "Tecnología 03",
+              "Tecnología 04",
+              "Tecnología 05",
+              "Tecnología 06",
+              "Tecnología 07",
+              "Tecnología 08",
+              "Tecnología 09",
+              "Tecnología 10",
+              "Tecnología 11",
+              "Tecnología 12",
+              "Tecnología 13",
+              "Tecnología 14",
+              "Tecnología 15",
+              "Tecnología 16",
+              "Tecnología 17",
+              "Tecnología 18",
+              "Tecnología 19",
+              "Tecnología 20",
+              "Tecnología 21",
+              "Tecnología 22",
+              "Tecnología 23",
+              "Tecnología 24",
+              "Tecnología 25",
+              "Tecnología 26",
+              "Tecnología 27",
+              "Tecnología 28",
+              "Tecnología 29",
+              "Tecnología 30",
+              "Tecnología 31",
+              "Tecnología 32",
+              "Tecnología 33",
+              "Tecnología 34",
+              "Tecnología 35",
+              "Tecnología 36",
+              "Tecnología 37",
+              "Tecnología 38",
+              "Tecnología 39",
+              "Tecnología 40",
+              "Tecnología 41",
+              "Tecnología 42",
+              "Tecnología 43",
+              "Tecnología 44",
+              "Tecnología 45",
+              "Tecnología 46",
+              "Tecnología 47",
+              "Tecnología 48",
+              "Tecnología 49",
+              "Tecnología 50",
+              "Tecnología 51",
+              "Tecnología 52",
+              "Tecnología 53",
+              "Tecnología 54",
+              "Tecnología 55",
+              "Tecnología 56",
+              "Tecnología 57",
+              "Tecnología 58",
+              "Tecnología 59",
+              "Tecnología 60",
+              "Tecnología 61",
+              "Tecnología 62",
+              "Tecnología 63",
+              "Tecnología 64",
+              "Tecnología 65",
+              "Tecnología 66",
+              "Tecnología 67",
+              "Tecnología 68",
+              "Tecnología 69",
+              "Tecnología 70"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "degree": "Ingeniería de Sistemas",
+            "institution": "Universidad Ejemplo"
+          },
+          {
+            "degree": "Diplomado en Gestión",
+            "institution": "Instituto Muestra"
+          },
+          {
+            "degree": "Maestría en Software",
+            "institution": "universidad ejemplo"
+          }
+        ],
+        "certifications": [
+          {
+            "name": "Scrum Foundation",
+            "issuer": "CertifPro",
+            "year": "2021",
+            "verificationUrl": "https://example.org/credenciales/EJ-2023-0042",
+            "credentialId": "EJ-2023-0042",
+            "expiresAt": "2029-06"
+          },
+          {
+            "name": "Cloud Practitioner",
+            "issuer": "Nube Ejemplo",
+            "year": "2022",
+            "verificationUrl": null,
+            "credentialId": null,
+            "expiresAt": null
+          }
+        ],
+        "socialLinks": [
+          {
+            "url": "https://github.com/ada-ejemplo"
+          },
+          {
+            "url": "https://www.linkedin.com/in/ada-ejemplo"
+          }
+        ],
+        "profile": {
+          "fullName": "Ada Ejemplo",
+          "headline": "h",
+          "summary": "s",
+          "email": "ada@example.com",
+          "location": "SCZ"
+        },
+        "slug": "perfil-rico",
+        "title": "Perfil rico"
+      },
+      "expected": {
+        "title": "Perfil rico · Ada Ejemplo",
+        "description": "Un perfil con todo.",
+        "canonical": "https://manuel.dev/perfil-rico",
+        "jsonLd": {
+          "@context": "https://schema.org",
+          "@type": "ProfilePage",
+          "url": "https://manuel.dev/perfil-rico",
+          "name": "Perfil rico · Ada Ejemplo",
+          "description": "Un perfil con todo.",
+          "inLanguage": "es",
+          "mainEntity": {
+            "@type": "Person",
+            "@id": "https://manuel.dev/#person",
+            "url": "https://manuel.dev/",
+            "name": "Ada Ejemplo",
+            "jobTitle": "Ingeniera de software",
+            "email": "mailto:ada@example.com",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "SCZ"
+            },
+            "sameAs": [
+              "https://github.com/ada-ejemplo",
+              "https://www.linkedin.com/in/ada-ejemplo"
+            ],
+            "knowsAbout": [
+              "TypeScript",
+              "C#",
+              "Go",
+              "Docker",
+              "Kubernetes",
+              "Tecnología 01",
+              "Tecnología 02",
+              "Tecnología 03",
+              "Tecnología 04",
+              "Tecnología 05",
+              "Tecnología 06",
+              "Tecnología 07",
+              "Tecnología 08",
+              "Tecnología 09",
+              "Tecnología 10",
+              "Tecnología 11",
+              "Tecnología 12",
+              "Tecnología 13",
+              "Tecnología 14",
+              "Tecnología 15",
+              "Tecnología 16",
+              "Tecnología 17",
+              "Tecnología 18",
+              "Tecnología 19",
+              "Tecnología 20",
+              "Tecnología 21",
+              "Tecnología 22",
+              "Tecnología 23",
+              "Tecnología 24",
+              "Tecnología 25",
+              "Tecnología 26",
+              "Tecnología 27",
+              "Tecnología 28",
+              "Tecnología 29",
+              "Tecnología 30",
+              "Tecnología 31",
+              "Tecnología 32",
+              "Tecnología 33",
+              "Tecnología 34",
+              "Tecnología 35",
+              "Tecnología 36",
+              "Tecnología 37",
+              "Tecnología 38",
+              "Tecnología 39",
+              "Tecnología 40",
+              "Tecnología 41",
+              "Tecnología 42",
+              "Tecnología 43",
+              "Tecnología 44",
+              "Tecnología 45"
+            ],
+            "alumniOf": [
+              {
+                "@type": "EducationalOrganization",
+                "name": "Universidad Ejemplo"
+              },
+              {
+                "@type": "EducationalOrganization",
+                "name": "Instituto Muestra"
+              }
+            ],
+            "hasCredential": [
+              {
+                "@type": "EducationalOccupationalCredential",
+                "name": "Scrum Foundation",
+                "recognizedBy": {
+                  "@type": "Organization",
+                  "name": "CertifPro"
+                },
+                "url": "https://example.org/credenciales/EJ-2023-0042",
+                "identifier": "EJ-2023-0042",
+                "expires": "2029-06"
+              },
+              {
+                "@type": "EducationalOccupationalCredential",
+                "name": "Cloud Practitioner",
+                "recognizedBy": {
+                  "@type": "Organization",
+                  "name": "Nube Ejemplo"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "locale": "es",
+      "profile": {
+        "headline": "Ingeniera de software",
+        "description": "Oculta skills, formación y certificaciones.",
+        "visibility": "PUBLIC",
+        "sections": [
+          "hero",
+          "contact"
+        ],
+        "skillCategories": [
+          {
+            "name": "Backend",
+            "skills": [
+              ".NET",
+              "C#"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "degree": "Ingeniería de Sistemas",
+            "institution": "Universidad Ejemplo"
+          }
+        ],
+        "certifications": [
+          {
+            "name": "Scrum Foundation",
+            "issuer": "CertifPro",
+            "year": null,
+            "verificationUrl": null,
+            "credentialId": null,
+            "expiresAt": null
+          }
+        ],
+        "socialLinks": [],
+        "profile": {
+          "fullName": "Ada Ejemplo",
+          "headline": "h",
+          "summary": "s",
+          "email": "ada@example.com",
+          "location": "SCZ"
+        },
+        "slug": "sin-secciones",
+        "title": "Sin secciones"
+      },
+      "expected": {
+        "title": "Sin secciones · Ada Ejemplo",
+        "description": "Oculta skills, formación y certificaciones.",
+        "canonical": "https://manuel.dev/sin-secciones",
+        "jsonLd": {
+          "@context": "https://schema.org",
+          "@type": "ProfilePage",
+          "url": "https://manuel.dev/sin-secciones",
+          "name": "Sin secciones · Ada Ejemplo",
+          "description": "Oculta skills, formación y certificaciones.",
+          "inLanguage": "es",
+          "mainEntity": {
+            "@type": "Person",
+            "@id": "https://manuel.dev/#person",
+            "url": "https://manuel.dev/",
+            "name": "Ada Ejemplo",
+            "jobTitle": "Ingeniera de software",
+            "email": "mailto:ada@example.com",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "SCZ"
+            }
+          }
+        }
+      }
+    },
+    {
+      "locale": "es",
+      "profile": {
+        "headline": "Ingeniera de software",
+        "description": "Solo con token.",
+        "visibility": "PROTECTED",
+        "sections": [
+          "hero",
+          "skills"
+        ],
+        "skillCategories": [
+          {
+            "name": "Backend",
+            "skills": [
+              ".NET"
+            ]
+          }
+        ],
+        "education": [],
+        "certifications": [],
+        "socialLinks": [],
+        "profile": {
+          "fullName": "Ada Ejemplo",
+          "headline": "h",
+          "summary": "s",
+          "email": "ada@example.com",
+          "location": "SCZ"
+        },
+        "slug": "protegido",
+        "title": "Protegido"
+      },
+      "expected": {
+        "title": "Protegido · Ada Ejemplo",
+        "description": "Solo con token.",
+        "canonical": "https://manuel.dev/protegido"
+      }
+    },
+    {
+      "locale": "es",
+      "profile": {
+        "headline": "Ingeniera de software",
+        "description": "Textos que intentan romper el HTML.",
+        "visibility": "PUBLIC",
+        "sections": [
+          "hero",
+          "skills"
+        ],
+        "skillCategories": [
+          {
+            "name": "Lenguajes",
+            "skills": [
+              "C# & <F#>",
+              "línea separada"
+            ]
+          }
+        ],
+        "education": [],
+        "certifications": [],
+        "socialLinks": [],
+        "profile": {
+          "fullName": "Ada Ejemplo",
+          "headline": "h",
+          "summary": "s",
+          "email": "ada@example.com",
+          "location": "SCZ"
+        },
+        "slug": "escape",
+        "title": "</script><script>alert(1)</script>"
+      },
+      "expected": {
+        "title": "</script><script>alert(1)</script> · Ada Ejemplo",
+        "description": "Textos que intentan romper el HTML.",
+        "canonical": "https://manuel.dev/escape",
+        "jsonLd": {
+          "@context": "https://schema.org",
+          "@type": "ProfilePage",
+          "url": "https://manuel.dev/escape",
+          "name": "</script><script>alert(1)</script> · Ada Ejemplo",
+          "description": "Textos que intentan romper el HTML.",
+          "inLanguage": "es",
+          "mainEntity": {
+            "@type": "Person",
+            "@id": "https://manuel.dev/#person",
+            "url": "https://manuel.dev/",
+            "name": "Ada Ejemplo",
+            "jobTitle": "Ingeniera de software",
+            "email": "mailto:ada@example.com",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "SCZ"
+            },
+            "knowsAbout": [
+              "C# & <F#>",
+              "línea separada"
+            ]
+          }
+        }
       }
     }
   ]

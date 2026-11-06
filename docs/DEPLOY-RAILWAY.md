@@ -233,6 +233,7 @@ curl.exe -sI -H 'Origin: https://otro-sitio.com' $API/api/profile | Select-Strin
 ## 8. Vistas previas de los links
 
 - [ ] Pegar dos perfiles públicos distintos en el [Post Inspector de LinkedIn](https://www.linkedin.com/post-inspector/) y en un canal de Slack. Las tarjetas tienen que mostrar **títulos distintos** y la imagen (tarea 5.4 de `add-server-rendered-head`). Si salen genéricas, ver *Si algo falla*.
+- [ ] Pasar la home y un perfil público por el [Rich Results Test](https://search.google.com/test/rich-results) y por el [validador de schema.org](https://validator.schema.org): `ProfilePage` sin errores y el mismo `@id` del `Person` en los dos (TC-44, pasos 6 y 7 de `docs/MANUAL.md`).
 
 Al primer deploy no hay visitas que reclasificar. Cuando suba la versión de la lista de bots, hacé el `pg_dump` de arriba y corré `railway run npm run views:reclassify` (simulación, no escribe) y, si el informe cierra, `railway run npm run views:reclassify -- --apply` (`docs/DEPLOY.md` § 7).
 

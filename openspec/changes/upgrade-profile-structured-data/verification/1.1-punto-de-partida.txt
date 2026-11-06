@@ -1,0 +1,6 @@
+Punto de partida sobre main 2d8c221 (rama feat/profile-structured-data, diseño 22ff97d), 2026-11-04.
+Confirmado en el código: personJsonLd en profile-head.renderer.ts y en document-meta.ts con la forma de design.md; metaFromProfile devuelve jsonLd aunque noindex sea true; safeJson escapa solo "<"; el fixture compara título, descripción y canonical.
+backend  npm test:      94 suites, 909 tests, verde
+backend  npm run test:e2e (base descartable portfolio_sd_e2e): 14 suites, 244 tests, verde
+frontend npm test -- --run: 64 archivos, 960 tests, verde
+frontend npm run perf:budget: index-*.js 148.5 KB + profile-prefetch.js 1.2 KB = 149.7 KB gzip (tope 155)

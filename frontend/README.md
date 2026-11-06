@@ -128,7 +128,7 @@ El panel usa siempre el preset `modern-dark` para su propia interfaz: cambiar el
 
 ## SEO (spec `public-seo`)
 
-Al resolver un perfil, la vista pública escribe en el documento el título, la descripción, el `canonical`, las etiquetas OpenGraph y Twitter Card y un bloque JSON-LD `Person` (`shared/lib/document-meta.ts`). Cambian con el perfil y con el idioma, y se restauran al salir. Los perfiles `PRIVATE`/`PROTECTED` y todo `/admin` van con `noindex`.
+Al resolver un perfil, la vista pública escribe en el documento el título, la descripción, el `canonical`, las etiquetas OpenGraph y Twitter Card y un bloque JSON-LD `ProfilePage` con el `Person` en `mainEntity` (`shared/lib/document-meta.ts`; solo en perfiles públicos, igual que el del servidor). Cambian con el perfil y con el idioma, y se restauran al salir. Los perfiles `PRIVATE`/`PROTECTED` y todo `/admin` van con `noindex`.
 
 `robots.txt` y `sitemap.xml` los sirve el **backend**, que es quien conoce los perfiles públicos.
 

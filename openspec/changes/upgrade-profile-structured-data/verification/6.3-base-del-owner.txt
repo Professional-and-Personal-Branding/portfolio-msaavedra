@@ -1,0 +1,6 @@
+6.3 Limpieza y base del owner (2026-11-04)
+
+Ningun comando de esta tarea se conecto a 'portfolio': cada npm/prisma/psql uso DATABASE_URL explicita hacia portfolio_sd_e2e o portfolio_sd_example (el backend/.env copiado apunta a 'portfolio' y por eso la variable de entorno se fijo siempre antes). No se corrio 'npm run seed' ni 'admin:bootstrap' sobre ella, y no se hizo ninguna consulta.
+
+Bases en el contenedor al cerrar (conectado a la base de mantenimiento 'postgres'; las descartables portfolio_sd_e2e y portfolio_sd_example se borraron):
+portfolio
