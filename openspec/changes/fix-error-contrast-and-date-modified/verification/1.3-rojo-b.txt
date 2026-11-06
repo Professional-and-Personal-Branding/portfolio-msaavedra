@@ -1,0 +1,3 @@
+Desvío: el rojo previo de la parte B no se capturó por separado. Al sumar `updatedAt` al DTO fallaron, hasta actualizarlos, tres specs que fijaban el contrato anterior:
+- curated-profile.e2e-spec (lista exacta de claves), backoffice.e2e-spec (preview igual a la ruta pública salvo updatedAt) y hardening.e2e-spec (el bloque no tenía dateModified), además del tipo CuratedProfileOutput en profile-head.renderer.spec.
+El paso del sitemap del e2e nuevo (control) pasa sin cambios: el <lastmod> ya era el día de updatedAt.

@@ -1730,15 +1730,15 @@ PATCH /api/admin/certifications/:id {"verificationUrl":null}                    
 7. Pasá esas dos URLs por el validador de schema.org (**Obtener la URL**).
 
 **Resultado esperado:**
-1. Hay un solo bloque. Es un `ProfilePage` con `url` igual al `canonical` (sin query), `name` igual al `<title>`, `inLanguage` `es` y un `mainEntity` `Person` con el nombre de la persona ficticia, `knowsAbout` con las skills que muestra el perfil, `alumniOf` y `hasCredential` (la credencial verificable trae `url`, `identifier` y `expires`). No hay `dateModified`.
+1. Hay un solo bloque. Es un `ProfilePage` con `url` igual al `canonical` (sin query), `name` igual al `<title>`, `inLanguage` `es` y un `mainEntity` `Person` con el nombre de la persona ficticia, `knowsAbout` con las skills que muestra el perfil, `alumniOf` y `hasCredential` (la credencial verificable trae `url`, `identifier` y `expires`). `dateModified` es el día de la última edición del perfil (`AAAA-MM-DD`), el mismo que su `<lastmod>` en `/sitemap.xml`.
 2. Con `lang=en` los textos de `name`, `description`, `jobTitle` y las credenciales están en inglés e `inLanguage` es `en`. Con `via` y `src` el bloque es idéntico al del paso 1.
 3. El `@id` y la `url` del `Person` son los mismos en los dos (la home).
 4. Ninguna de las dos respuestas tiene `application/ld+json` ni el título del perfil; `robots` es `noindex, nofollow`.
 5. Hay un solo `<script type="application/ld+json">` y la consola no muestra errores ni violaciones de CSP. El validador no informa errores y detecta `ProfilePage` y `Person`.
-6. La prueba detecta **Página de perfil** (*Profile page*) sin errores. Las advertencias por campos recomendados (`dateModified`, `image`) son esperables (P1 de `design.md` de `upgrade-profile-structured-data`).
+6. La prueba detecta **Página de perfil** (*Profile page*) sin errores. La advertencia por `image` (campo recomendado) es esperable.
 7. Sin errores; los dos `Person` tienen el mismo `@id`.
 
-**Errores típicos:** si el bloque no aparece, el borde entregó el head de fallback (API caída o lenta, ver *Qué falla y por qué*): el sitio sigue funcionando y la SPA escribe el bloque al cargar, pero los validadores que no ejecutan JavaScript no lo ven. Un perfil `PROTECTED`, `PRIVATE`, archivado o inexistente nunca tiene bloque, y es a propósito. Si cambiaste un texto y el bloque sigue con el anterior, esperá un minuto (caché del head). Google tarda días en reflejar los datos estructurados en los resultados: el Rich Results Test es la comprobación inmediata.
+**Errores típicos:** si el bloque no aparece, el borde entregó el head de fallback (API caída o lenta, ver *Qué falla y por qué*): el sitio sigue funcionando y la SPA escribe el bloque al cargar, pero los validadores que no ejecutan JavaScript no lo ven. Un perfil `PROTECTED`, `PRIVATE`, archivado o inexistente nunca tiene bloque, y es a propósito. Si cambiaste un texto y el bloque sigue con el anterior, esperá un minuto (caché del head). Si `dateModified` no coincide con el `<lastmod>`, revisá que no estés mirando el head en caché (un minuto) después de editar el perfil. Google tarda días en reflejar los datos estructurados en los resultados: el Rich Results Test es la comprobación inmediata.
 
 **Por la API:**
 

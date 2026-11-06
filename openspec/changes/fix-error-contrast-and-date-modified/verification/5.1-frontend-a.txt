@@ -1,0 +1,1 @@
+Parte A completa (frontend): lint ok, typecheck ok, build ok, npm test -- --run en verde (corrida completa final: 68 archivos, 1041 tests), perf:budget: JS de arranque 148.9 KB gzip (+ profile-prefetch.js 1.2 KB, total 150.1 KB) contra el tope de 155 KB.

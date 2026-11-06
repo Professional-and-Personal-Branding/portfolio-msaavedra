@@ -1,0 +1,6 @@
+== TZ=America/La_Paz
+ Test Files  2 passed (2)
+      Tests  31 passed (31)
+== TZ=Pacific/Auckland
+ Test Files  2 passed (2)
+      Tests  31 passed (31)

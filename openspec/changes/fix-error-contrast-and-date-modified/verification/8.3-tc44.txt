@@ -1,0 +1,17 @@
+== Bloque JSON-LD de GET /ejemplo-backend (HTML servido por Caddy)
+"inLanguage":"es","dateModified":"2026-11-06"
+== lastmod en /sitemap.xml
+<loc>http://localhost:8100/ejemplo-backend</loc>    <lastmod>2026-11-06</lastmod>
+== updatedAt de la API
+"updatedAt":"2026-11-06T04:41:37.175Z"
+== views antes / después de una visita humana y dateModified
+30|2026-11-06 04:41:37.175
+31|2026-11-06 04:41:37.175
+"dateModified":"2026-11-06"
+== updatedAt fijado en 2026-01-15T12:00Z en la base descartable
+head (curl al HTML):  "dateModified":"2026-01-15"
+sitemap:              lastmod 2026-01-15
+API:                  "updatedAt":"2026-01-15T12:00:00.000Z"
+bloques: 1 · dateModified del cliente: 2026-01-15
+== tras una visita humana (views + updatedAt en la base)
+33|2026-01-15 12:00:00

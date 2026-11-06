@@ -1,0 +1,3 @@
+Procesos: API propia (node dist/main.js, puerto 3346) detenida; contenedores portfolio-fix-web y portfolio-fix-web-rojo eliminados, imágenes portfolio-fix-web y portfolio-fix-web-rojo eliminadas.
+Bases: portfolio_fix_e2e y portfolio_fix_example eliminadas. `select datname from pg_database` -> portfolio, postgres, template0, template1 (la base del owner sin tocar).
+Archivos: backend/.env copiado al worktree borrado; credenciales y logs scratch borrados.
