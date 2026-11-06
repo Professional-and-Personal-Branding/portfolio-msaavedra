@@ -57,7 +57,7 @@
 - [x] 7.1 `docs/MANUAL.md` § 2 (después de TC-40, y de TC-43 si ya está fusionado): **TC-44** con el texto de `verification.md`, estado 🔍 hasta correr los pasos 6 y 7 con el sitio desplegado; fila en la tabla de la suite de regresión (§ 6); espejo en `docs/manual/index.html`. Verificar: `npm run manual:check` verde.
 - [x] 7.2 `docs/DEPLOY.md` § 9.5 y `docs/DEPLOY-RAILWAY.md` (lista posterior al deploy): una línea con el Rich Results Test y el validador de schema.org sobre dos perfiles públicos (TC-44, pasos 6 y 7). `docs/RELEASE-1.0.0-CHECKLIST.md`: «JSON-LD `Person`» pasa a «JSON-LD `ProfilePage` (con el `Person`)». Verificar: diff revisado.
 - [x] 7.3 `docs/CHANGELOG.md`: entrada con D2 a D6 en una línea cada una y la nota de P1. Verificar: diff revisado.
-- [ ] 7.4 Al archivar: la línea de `upgrade-profile-structured-data` en el roadmap de `CLAUDE.md` (fecha de archivado, `ProfilePage` con `knowsAbout`, `alumniOf` y `hasCredential`, sin `dateModified` por P1, cliente sin bloque con `noindex`). Verificar: diff revisado en el PR de archivado.
+- [x] 7.4 Al archivar: la línea de `upgrade-profile-structured-data` en el roadmap de `CLAUDE.md` (fecha de archivado, `ProfilePage` con `knowsAbout`, `alumniOf` y `hasCredential`, sin `dateModified` por P1, cliente sin bloque con `noindex`). Verificar: diff revisado en el PR de archivado.
 
 ## 8. Cierre
 

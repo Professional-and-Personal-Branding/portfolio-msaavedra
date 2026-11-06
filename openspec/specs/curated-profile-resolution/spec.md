@@ -70,6 +70,18 @@ El sistema SHALL aplicar a las skills la misma regla de tags y overrides que a l
 - **WHEN** se resuelve el perfil `all`
 - **THEN** aparecen las 12 categorías con sus 108 skills
 
+#### Scenario: includeIds de una skill hace aparecer su categoría
+- **WHEN** ninguna skill de una categoría matchea por tag y el id de una de ellas está en `includeIds`
+- **THEN** la categoría aparece con esa sola skill
+
+#### Scenario: excludeIds quita una skill que matchea
+- **WHEN** una skill comparte tag con `filterTags` y su id está en `excludeIds`
+- **THEN** la skill no aparece y su categoría conserva las demás skills seleccionadas
+
+#### Scenario: Id de categoría en los overrides
+- **WHEN** `excludeIds` contiene el id de una categoría y no el de sus skills
+- **THEN** la categoría y sus skills se resuelven como si ese id no estuviera
+
 ### Requirement: Orden cronológico de las experiencias
 Las experiencias seleccionadas SHALL ordenarse por `startDate` descendente (más reciente primero); a igual `startDate`, por `order` ascendente.
 
@@ -207,6 +219,18 @@ Los proyectos visibles SHALL seleccionarse con la misma regla que las experienci
 #### Scenario: Datos seed
 - **WHEN** se resuelve `tech-lead-dotnet`
 - **THEN** `projects` contiene los 2 proyectos del JSON (ambos intersectan) y `devops-platform` devuelve 0
+
+#### Scenario: includeIds fuerza un proyecto sin intersección
+- **WHEN** un proyecto visible no comparte tags con `filterTags` y su id está en `includeIds`
+- **THEN** el proyecto se incluye, en su posición según `order`
+
+#### Scenario: includeIds no fuerza un proyecto oculto
+- **WHEN** un proyecto tiene `visible = false` y su id está en `includeIds`
+- **THEN** no se incluye
+
+#### Scenario: Datos de ejemplo — ejemplo-overrides
+- **WHEN** se resuelve `ejemplo-overrides` sobre `docs/examples/cv-data.example.json`
+- **THEN** `projects` contiene Plataforma de Reservas y Herramienta Interna de Métricas, ninguna categoría contiene Kotlin y Prototipo en Pausa no aparece
 
 ### Requirement: Secciones informativas sin filtrar
 La vista resuelta SHALL incluir educación, certificaciones y enlaces sociales visibles, sin filtrado por tags (no tienen tags), ordenados por `order` y resueltos al locale, con la misma forma que `public-portfolio-sections-api`.

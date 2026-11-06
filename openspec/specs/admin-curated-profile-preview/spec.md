@@ -31,6 +31,10 @@ El preview SHALL aplicar la selección por tags con overrides, el orden canónic
 - **WHEN** el borrador tiene `filterTags: ["java"]`, `excludeIds: [<id de una experiencia java>]` e `includeIds: [<id de una experiencia no java>]`
 - **THEN** la experiencia excluida no aparece y la incluida sí
 
+#### Scenario: Overrides de skills y proyectos
+- **WHEN** el borrador tiene `filterTags: ["java"]`, `excludeIds` con el id de una skill java e `includeIds` con el id de una skill y el de un proyecto visible que no comparten tags
+- **THEN** la skill excluida no aparece, la incluida aparece en su categoría, el proyecto incluido aparece y el resultado es igual al de la ruta pública tras guardar esos criterios
+
 ### Requirement: Visibilidad y token no aplican al preview
 El preview SHALL resolver el borrador independientemente de su `visibility`: un borrador `PRIVATE` o `PROTECTED` MUST devolver 200 sin exigir token de acceso, porque el llamador ya está autenticado como administrador.
 

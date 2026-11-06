@@ -58,7 +58,7 @@
 - [x] 7.2 `docs/manual/index.html` alineado con `MANUAL.md` (caso, índice lateral, `td.msg` con los mensajes nuevos, imágenes). Verificar: `npm run manual:check` verde.
 - [x] 7.3 `docs/DATA-POPULATION.md`: la fila de `includeRefs`/`excludeRefs` (§ 12) y la nota de § 96 dicen que skills y proyectos también se ajustan desde **Selección**. Verificar: revisión del diff.
 - [x] 7.4 `docs/CHANGELOG.md` (entrada del change) y `docs/PROPUESTA-FEATURES.md` § 6.2 (fila marcada como hecha, con los requisitos ADDED y MODIFIED reales). Verificar: revisión del diff.
-- [ ] 7.5 Al archivar, `CLAUDE.md` § Roadmap suma la línea: `- [x] \`add-builder-skill-project-overrides\` — el constructor incluye y excluye skills (por skill, agrupadas por categoría y con buscador) y proyectos en los mismos \`includeIds\`/\`excludeIds\` (ids cuid compartidos), con Incluir y Excluir mutuamente excluyentes, ocultos marcados y referencias huérfanas visibles; solo frontend, sin cambios de contrato (archivado AAAA-MM-DD)`. Verificar: revisión del diff del archivado.
+- [x] 7.5 Al archivar, `CLAUDE.md` § Roadmap suma la línea: `- [x] \`add-builder-skill-project-overrides\` — el constructor incluye y excluye skills (por skill, agrupadas por categoría y con buscador) y proyectos en los mismos \`includeIds\`/\`excludeIds\` (ids cuid compartidos), con Incluir y Excluir mutuamente excluyentes, ocultos marcados y referencias huérfanas visibles; solo frontend, sin cambios de contrato (archivado AAAA-MM-DD)`. Verificar: revisión del diff del archivado.
 
 ## 8. Cierre
 

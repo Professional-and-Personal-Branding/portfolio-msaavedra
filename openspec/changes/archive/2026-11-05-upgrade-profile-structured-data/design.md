@@ -174,5 +174,6 @@ Ninguna bloqueante.
   - A) Change aparte `fix-curated-profile-updated-at`: el incremento de `views` deja de tocar `updatedAt` (`$executeRaw` sin `@updatedAt`, o el contador en otra tabla) y después `dateModified` y `<lastmod>` usan ese valor, sumándolo al DTO público.
   - B) Columna nueva `contentUpdatedAt`, movida por las ediciones del perfil curado y de su contenido.
   - C) Seguir sin `dateModified` y quitar `<lastmod>` del sitemap.
+  - **Resuelta (2026-11-05):** el arreglo de esta P1 lo hizo `polish-views-updated-at-and-builder` (el incremento de `views` ya no mueve `updatedAt`), no `fix-curated-profile-updated-at`.
 
   **Resuelta el 2026-11-04 con la opción A**: este change no emite `dateModified` (D5) y el arreglo de `updatedAt` va en un change aparte, `fix-curated-profile-updated-at`. `dateModified` y el `<lastmod>` del sitemap se corrigen ahí.

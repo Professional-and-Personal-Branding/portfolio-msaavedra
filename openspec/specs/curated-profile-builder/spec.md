@@ -17,11 +17,15 @@ El corazón del producto en modo edición: armar la vista que verá una empresa 
 - **THEN** se abre la ficha en blanco con los valores por defecto (layout `classic`, visibilidad `PUBLIC`, secciones por defecto)
 
 ### Requirement: Edición de los criterios de selección
-La ficha SHALL permitir editar `filterTags`, `includeIds` y `excludeIds`. Los tags SHALL ofrecerse desde el universo real de tags de los datos (experiencias, skills y proyectos), y las inclusiones y exclusiones SHALL elegirse desde la lista de experiencias identificadas por empresa y rol, nunca escribiendo ids a mano.
+La ficha SHALL permitir editar `filterTags`, `includeIds` y `excludeIds`. Los tags SHALL ofrecerse desde el universo real de tags de los datos (experiencias, skills y proyectos). Las inclusiones y exclusiones SHALL elegirse desde las listas de experiencias, skills y proyectos, nunca escribiendo ids a mano. Incluir un ítem MUST quitarlo de `excludeIds` y excluirlo MUST quitarlo de `includeIds`; un id presente en ambos SHALL mostrarse como excluido.
 
 #### Scenario: Elegir tags
 - **WHEN** se abre el selector de tags
 - **THEN** se ofrecen los tags existentes en los datos y se pueden agregar o quitar del perfil
+
+#### Scenario: Tags de proyectos en el universo
+- **WHEN** un proyecto tiene un tag que ninguna experiencia ni skill usa
+- **THEN** ese tag aparece entre los tags disponibles de la pestaña Selección
 
 #### Scenario: Excluir una experiencia
 - **WHEN** se marca una experiencia como excluida
@@ -30,6 +34,14 @@ La ficha SHALL permitir editar `filterTags`, `includeIds` y `excludeIds`. Los ta
 #### Scenario: Sin tags
 - **WHEN** `filterTags` queda vacío
 - **THEN** el preview muestra todas las experiencias visibles (regla de `filterTags` vacío = todo)
+
+#### Scenario: Incluir quita la exclusión
+- **WHEN** un ítem está excluido y se pulsa su botón Incluir
+- **THEN** su id queda en `includeIds`, sale de `excludeIds` y Excluir deja de estar presionado
+
+#### Scenario: Id en los dos arreglos
+- **WHEN** el perfil guardado trae el mismo id en `includeIds` y en `excludeIds`
+- **THEN** la fila del ítem muestra Excluir presionado e indica que la exclusión gana
 
 ### Requirement: Preview en vivo del resultado
 La ficha SHALL mostrar un panel de preview alimentado por `POST /api/admin/curated-profiles/preview` con el borrador actual. Cambiar tags, inclusiones, exclusiones, tema, layout o secciones SHALL actualizar el preview sin guardar y sin recargar la página; las peticiones SHALL agruparse con un retardo corto para no disparar una por pulsación. El preview SHALL indicar cuántas experiencias, categorías de skills y proyectos resultan.
@@ -221,3 +233,80 @@ Publicación SHALL ofrecer **Compartir en LinkedIn** solo para un perfil guardad
 #### Scenario: Falla la API
 - **WHEN** la API responde con error al pedir el enlace
 - **THEN** la pestaña nueva se cierra y se muestra el error
+
+### Requirement: Selección de skills y proyectos en el constructor
+La pestaña Selección SHALL ofrecer Incluir y Excluir para cada skill, agrupadas por categoría en su orden y con un buscador por nombre, y para cada proyecto. SHALL escribir solo ids de skills y proyectos en los mismos `includeIds`/`excludeIds`, nunca ids de categoría. El buscador MUST NOT cambiar el borrador ni el preview. Cada categoría SHALL indicar cuántas de sus skills están incluidas o excluidas.
+
+#### Scenario: Excluir una skill
+- **WHEN** en un perfil con `filterTags: ["java"]` se excluye la skill Kotlin, que matchea por tag
+- **THEN** el id de Kotlin queda en `excludeIds` y el preview muestra su categoría sin Kotlin
+
+#### Scenario: Incluir una skill sin tags comunes
+- **WHEN** se incluye React en un perfil cuyos tags no coinciden con ninguna skill de Frontend
+- **THEN** el id de React queda en `includeIds` y el preview muestra la categoría Frontend con esa sola skill
+
+#### Scenario: Excluir la última skill de una categoría
+- **WHEN** se excluye la única skill que una categoría aporta al perfil
+- **THEN** la categoría desaparece del preview
+
+#### Scenario: Buscar una skill
+- **WHEN** se escribe `kot` en el buscador de skills
+- **THEN** solo se lista Kotlin dentro de su categoría, las demás categorías se ocultan y no se pide un preview nuevo
+
+#### Scenario: Búsqueda sin resultados
+- **WHEN** se escribe un texto que no coincide con ninguna skill
+- **THEN** se indica que ninguna skill coincide y el borrador no cambia
+
+#### Scenario: La búsqueda no ensucia la ficha
+- **WHEN** solo se escribe en el buscador y se pulsa *Volver*
+- **THEN** se navega sin el diálogo de cambios sin guardar
+
+#### Scenario: Incluir un proyecto
+- **WHEN** se incluye un proyecto visible que no comparte tags con el perfil
+- **THEN** su id queda en `includeIds` y el preview lo muestra en la sección de proyectos
+
+#### Scenario: Excluir un proyecto
+- **WHEN** se excluye un proyecto que matchea por tag
+- **THEN** su id queda en `excludeIds` y desaparece del preview
+
+#### Scenario: Overrides guardados por seed o API
+- **WHEN** se abre `ejemplo-overrides`, que trae Kotlin excluida y un proyecto incluido desde el seed
+- **THEN** Kotlin muestra Excluir presionado, el proyecto muestra Incluir presionado y su categoría indica una skill excluida
+
+### Requirement: Ítems ocultos y referencias huérfanas en la selección
+Las experiencias y los proyectos ocultos SHALL listarse marcados como ocultos, con Incluir deshabilitado salvo para quitar una inclusión existente y Excluir habilitado. Los ids de `includeIds`/`excludeIds` sin ítem en las listas MUST conservarse al guardar; con las tres listas cargadas, la pestaña SHALL contarlos y ofrecer quitarlos del borrador.
+
+#### Scenario: Proyecto oculto
+- **WHEN** la lista de proyectos contiene uno con `visible: false` que no está incluido
+- **THEN** se muestra con la insignia de oculto y su botón Incluir está deshabilitado con el motivo
+
+#### Scenario: Quitar la inclusión de una experiencia oculta
+- **WHEN** una experiencia oculta ya figura en `includeIds`
+- **THEN** su botón Incluir está habilitado y presionado, y al pulsarlo el id sale de `includeIds`
+
+#### Scenario: Referencias huérfanas
+- **WHEN** el perfil guardado tiene en `excludeIds` un id que no corresponde a ninguna experiencia, skill ni proyecto
+- **THEN** la pestaña indica una referencia a un ítem que ya no existe y abrir la ficha no la marca con cambios sin guardar
+
+#### Scenario: Quitar las referencias huérfanas
+- **WHEN** se pulsa Quitar en el aviso de referencias huérfanas y se guarda
+- **THEN** el `PATCH` lleva `includeIds` y `excludeIds` sin esos ids y conserva los demás
+
+#### Scenario: Una lista no cargó
+- **WHEN** la lista de proyectos responde con error
+- **THEN** el bloque de proyectos muestra el error con reintento, no se informan referencias huérfanas y guardar no altera los ids existentes
+
+### Requirement: Contadores del preview en singular y plural
+Los contadores del preview (experiencias, categorías de skills y proyectos) SHALL concordar en número con la cantidad: singular para 1 y plural para cualquier otra cantidad, incluido 0. Los contadores son parte del panel y SHALL seguir en español aunque el preview muestre el contenido en inglés.
+
+#### Scenario: Un elemento de cada tipo
+- **WHEN** el preview resuelve 1 experiencia, 1 categoría y 1 proyecto
+- **THEN** el contador dice «1 experiencia · 1 categoría · 1 proyecto»
+
+#### Scenario: Cero y varios
+- **WHEN** el preview resuelve 2 experiencias, 3 categorías y 0 proyectos
+- **THEN** el contador dice «2 experiencias · 3 categorías · 0 proyectos»
+
+#### Scenario: Preview en inglés
+- **WHEN** el preview muestra la pestaña EN y resuelve 1 proyecto
+- **THEN** el contador sigue en español y dice «1 proyecto»
