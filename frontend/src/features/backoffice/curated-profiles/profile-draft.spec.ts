@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { makeAdminCuratedProfile } from '@/test/fixtures/admin';
-import type { AdminExperience, AdminSkillCategory } from '../shared/admin-types';
+import type { AdminExperience, AdminProject, AdminSkillCategory } from '../shared/admin-types';
 import {
   allSections,
   EMPTY_DRAFT,
@@ -121,8 +121,20 @@ describe('tagUniverse', () => {
     expect(tagUniverse(experiences, categories)).toEqual(['aws', 'dotnet', 'java', 'leadership']);
   });
 
+  it('suma los tags de los proyectos, aunque ninguna experiencia ni skill los use', () => {
+    const projects = [{ tags: ['react', 'java'] }, { tags: ['solo-proyecto'] }] as AdminProject[];
+    expect(tagUniverse(experiences, categories, projects)).toEqual([
+      'aws',
+      'dotnet',
+      'java',
+      'leadership',
+      'react',
+      'solo-proyecto',
+    ]);
+  });
+
   it('incluye los tags extra ya elegidos aunque no existan en los datos', () => {
-    expect(tagUniverse([], [], ['nuevo'])).toEqual(['nuevo']);
+    expect(tagUniverse([], [], [], ['nuevo'])).toEqual(['nuevo']);
     expect(tagUniverse()).toEqual([]);
   });
 });

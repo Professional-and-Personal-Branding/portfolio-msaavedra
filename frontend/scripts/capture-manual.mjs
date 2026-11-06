@@ -110,6 +110,20 @@ const MANIFEST = [
     pasos: [['click', 'aria/Selección[role="tab"]'], ['esperar', 900]],
   },
   {
+    // Change add-builder-skill-project-overrides: Skills (Kotlin excluida, «1 excluida» en su
+    // categoría) y Proyectos (con el oculto marcado) de ejemplo-overrides, con los overrides del seed.
+    id: 'tc43-overrides',
+    ruta: '/admin/perfiles/{id:ejemplo-overrides}',
+    sesion: true,
+    esperar: 'Slug',
+    pasos: [
+      ['click', 'aria/Selección[role="tab"]'],
+      ['esperar', 900],
+      ['verSeccion', '[role="region"][aria-label="Skills"]'],
+      ['esperar', 500],
+    ],
+  },
+  {
     id: 'tc14-secciones',
     ruta: '/admin/perfiles/{id:ejemplo-secciones}',
     sesion: true,

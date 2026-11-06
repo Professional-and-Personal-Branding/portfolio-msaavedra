@@ -1,0 +1,19 @@
+1.1 Punto de partida (main cbc1d9c + diseño 7fa648c), base portfolio_ovr_e2e
+backend npm test: Test Suites 94 passed, Tests 909 passed
+backend npm run test:e2e: Test Suites 14 passed, Tests 244 passed
+frontend npm test -- --run: Test Files 64 passed, Tests 960 passed
+perf:budget:
+
+> portfolio-frontend@0.1.0 perf:budget
+> node scripts/check-bundle-budget.mjs
+
+# Presupuesto de JS del arranque público
+
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-Dv4ot09Y.js | módulo | 148.5 |
+| /profile-prefetch.js | clásico | 1.2 |
+| **Total** | | **149.7** |
+
+Presupuesto: 155 KB.
+

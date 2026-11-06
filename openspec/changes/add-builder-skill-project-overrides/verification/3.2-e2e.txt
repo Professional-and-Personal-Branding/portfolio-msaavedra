@@ -1,0 +1,4 @@
+Test Suites: 1 passed, 1 total
+Tests:       16 skipped, 1 passed, 17 total
+
+Escenario: 'Overrides de skills y proyectos: el preview y la ruta publica coinciden tras guardar' (backend/test/backoffice.e2e-spec.ts). Corrida completa del archivo: 17 passed. Suite e2e completa en 8.1-cierre.txt.

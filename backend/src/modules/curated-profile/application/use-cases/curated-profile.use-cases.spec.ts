@@ -2,8 +2,14 @@ import { Logger } from '@nestjs/common';
 import { ProfileViewRepository } from '../../../analytics/domain/repositories/profile-view.repository';
 import { Certification } from '../../../education/domain/entities/certification.entity';
 import { Education } from '../../../education/domain/entities/education.entity';
+import {
+  CertificationRepository,
+  EducationRepository,
+} from '../../../education/domain/repositories/education.repository';
 import { Project } from '../../../project/domain/entities/project.entity';
+import { ProjectRepository } from '../../../project/domain/repositories/project.repository';
 import { SocialLink } from '../../../social-link/domain/entities/social-link.entity';
+import { SocialLinkRepository } from '../../../social-link/domain/repositories/social-link.repository';
 import { BackgroundTasks } from '../../../../shared/application/background-tasks';
 import { CuratedProfileComposer } from '../services/curated-profile.composer';
 import { PortfolioSectionsLoader } from '../services/portfolio-sections.loader';
@@ -205,11 +211,28 @@ const stubs = () => ({
   delete: jest.fn(),
 });
 
+/** Loader real con repositorios simulados: `findAllVisible` devuelve todo para probar su filtro. */
+function realLoader(projects: Project[]): PortfolioSectionsLoader {
+  const reader = <R>(items: unknown[]): R =>
+    ({ findAllVisible: jest.fn().mockResolvedValue(items) }) as unknown as R;
+  return new PortfolioSectionsLoader(
+    reader<EducationRepository>(EDUCATION),
+    reader<CertificationRepository>(CERTIFICATIONS),
+    reader<ProjectRepository>(projects),
+    reader<SocialLinkRepository>(SOCIAL_LINKS),
+  );
+}
+
 interface Deps {
   curated?: CuratedProfile | null;
   profile?: Profile | null;
   experiences?: Experience[];
   categories?: SkillCategory[];
+  /**
+   * Proyectos crudos del repositorio (visibles y ocultos): si se pasan, el loader es el real y
+   * es él quien descarta los ocultos, como en producción.
+   */
+  projects?: Project[];
   themes?: Theme[];
   record?: jest.Mock;
   findByCode?: jest.Mock;
@@ -278,14 +301,16 @@ function build(deps: Deps = {}) {
   };
   const isAdminSession = deps.isAdminSession ?? jest.fn().mockResolvedValue(false);
   const sessions = { isAdminSession };
-  const loader = {
-    load: jest.fn().mockResolvedValue({
-      education: EDUCATION,
-      certifications: CERTIFICATIONS,
-      projects: PROJECTS,
-      socialLinks: SOCIAL_LINKS,
-    }),
-  } as unknown as PortfolioSectionsLoader;
+  const loader = deps.projects
+    ? realLoader(deps.projects)
+    : ({
+        load: jest.fn().mockResolvedValue({
+          education: EDUCATION,
+          certifications: CERTIFICATIONS,
+          projects: PROJECTS,
+          socialLinks: SOCIAL_LINKS,
+        }),
+      } as unknown as PortfolioSectionsLoader);
   const composer = new CuratedProfileComposer(
     profileRepo,
     experienceRepo,
@@ -397,6 +422,58 @@ describe('ResolveCuratedProfileUseCase', () => {
   it('skills reagrupadas por categoría sin categorías vacías', async () => {
     const out = await resolveOk(build().useCase);
     expect(out.skillCategories).toEqual([{ name: 'Lenguajes', skills: ['Java'] }]);
+  });
+
+  // Change add-builder-skill-project-overrides (D11): overrides de skills y proyectos.
+  describe('overrides de skills y proyectos', () => {
+    const hidden = Project.create({
+      id: 'proj-oculto',
+      name: 'Oculto',
+      role: { es: 'Autor' },
+      period: '2025',
+      summary: { es: 'z' },
+      technologies: [],
+      tags: ['java'],
+      url: null,
+      order: 5,
+      visible: false,
+    });
+    const rawProjects = [...PROJECTS, hidden];
+
+    it('una skill en includeIds y otra en excludeIds se agrupan por categoría', async () => {
+      const out = await resolveOk(
+        build({ curated: curated({ includeIds: ['s-scrum'], excludeIds: ['s-java'] }) }).useCase,
+      );
+      expect(out.skillCategories).toEqual([{ name: 'Metodologías', skills: ['Scrum'] }]);
+    });
+
+    it('incluir una skill de otra categoría la hace aparecer junto a las que matchean', async () => {
+      const out = await resolveOk(build({ curated: curated({ includeIds: ['s-scrum'] }) }).useCase);
+      expect(out.skillCategories).toEqual([
+        { name: 'Lenguajes', skills: ['Java'] },
+        { name: 'Metodologías', skills: ['Scrum'] },
+      ]);
+    });
+
+    it('un proyecto visible sin intersección en includeIds aparece en su posición por order', async () => {
+      const out = await resolveOk(
+        build({ curated: curated({ includeIds: ['proj-web'] }), projects: rawProjects }).useCase,
+      );
+      // proj-web (order 0) antecede a proj-erp (order 1) aunque solo el segundo matchee el tag.
+      expect(out.projects.map((p) => p.id)).toEqual(['proj-web', 'proj-erp']);
+    });
+
+    it('un proyecto oculto en includeIds no aparece', async () => {
+      const out = await resolveOk(
+        build({ curated: curated({ includeIds: ['proj-oculto'] }), projects: rawProjects }).useCase,
+      );
+      expect(out.projects.map((p) => p.id)).toEqual(['proj-erp']);
+    });
+
+    it('un proyecto oculto que matchea por tag tampoco aparece', async () => {
+      const out = await resolveOk(build({ curated: curated(), projects: rawProjects }).useCase);
+      expect(out.projects.map((p) => p.id)).not.toContain('proj-oculto');
+    });
   });
 
   it('tema: sin themeId usa modern-dark; con themeId usa el propio; overrides se mergean', async () => {
