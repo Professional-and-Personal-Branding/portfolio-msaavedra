@@ -83,7 +83,7 @@ export function ExperienceForm({
                 onChange={(event) => set('company', event.target.value)}
               />
               {errors.company && (
-                <p role="alert" className="text-xs text-destructive">
+                <p role="alert" className="text-xs text-danger-ink">
                   {errors.company}
                 </p>
               )}
@@ -99,7 +99,7 @@ export function ExperienceForm({
                 onChange={(event) => set('location', event.target.value)}
               />
               {errors.location && (
-                <p role="alert" className="text-xs text-destructive">
+                <p role="alert" className="text-xs text-danger-ink">
                   {errors.location}
                 </p>
               )}
@@ -127,7 +127,7 @@ export function ExperienceForm({
                 onChange={(event) => set('startDate', event.target.value)}
               />
               {errors.startDate && (
-                <p role="alert" className="text-xs text-destructive">
+                <p role="alert" className="text-xs text-danger-ink">
                   {errors.startDate}
                 </p>
               )}

@@ -87,7 +87,7 @@ export function ChipListField({
                   type="button"
                   aria-label={`Quitar ${item}`}
                   onClick={() => removeAt(index)}
-                  className="rounded-full p-0.5 hover:text-destructive"
+                  className="rounded-full p-0.5 hover:text-danger-ink"
                 >
                   <X className="size-3" aria-hidden />
                 </button>

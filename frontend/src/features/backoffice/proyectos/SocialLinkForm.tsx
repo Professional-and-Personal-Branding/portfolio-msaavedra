@@ -132,7 +132,7 @@ export function SocialLinkForm({
               onChange={(event) => set('stats', event.target.value)}
             />
             {errors.stats ? (
-              <p role="alert" className="text-xs text-destructive">
+              <p role="alert" className="text-xs text-danger-ink">
                 {errors.stats}
               </p>
             ) : (

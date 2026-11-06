@@ -40,6 +40,7 @@
   --color-brand-ink: var(--t-accent-ink);
   --color-success: #00bc7d;
   --color-success-ink: var(--t-success-ink);
+  --color-danger-ink: var(--t-danger-ink);
   --color-brand-2: var(--t-accent2);
   --color-brand-2-ink: var(--t-accent2-ink);
   --color-brand-foreground: var(--t-accent-foreground);
@@ -91,6 +92,7 @@
   --t-accent-ink: #38bdf8;
   --t-accent2-ink: #818cf8;
   --t-success-ink: #00bc7d;
+  --t-danger-ink: #e45656;
   --t-text-dim: #7a879a;
   --t-ring: #38bdf8;
   --t-radius: 16px;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AA_TEXT, contrastRatio, mix, parseHex, toHex } from './contrast';
-import { fontStack, readableOn, SUCCESS, tokensToCssVars } from './css-vars';
+import { DANGER, fontStack, readableOn, SUCCESS, tokensToCssVars } from './css-vars';
 import { THEME_PRESETS } from './presets';
 import { DEFAULT_TOKENS, mergeTokens } from './tokens';
 
@@ -98,6 +98,41 @@ describe('--t-success-ink (fix-admin-contrast, D2)', () => {
     expect(ink).not.toBe(tokensToCssVars(light)['--t-success-ink']);
     for (const surface of [tokens.colors.bg, tokens.colors.bgSoft, tokens.colors.card]) {
       expect(contrastRatio(ink, surface)).toBeGreaterThanOrEqual(AA_TEXT);
+    }
+  });
+});
+
+describe('--t-danger-ink (fix-error-contrast-and-date-modified, D1)', () => {
+  const inkOf = (slug: string) =>
+    tokensToCssVars(THEME_PRESETS.find((p) => p.slug === slug)!.tokens)['--t-danger-ink'];
+
+  for (const preset of THEME_PRESETS) {
+    it(`${preset.slug}: mide >= 4,5:1 contra bg, bgSoft y card`, () => {
+      const { colors } = preset.tokens;
+      const ink = tokensToCssVars(preset.tokens)['--t-danger-ink'];
+      for (const surface of [colors.bg, colors.bgSoft, colors.card]) {
+        expect(contrastRatio(ink, surface)).toBeGreaterThanOrEqual(AA_TEXT);
+      }
+    });
+  }
+
+  it('en minimal la base ya cumple y se conserva; en modern-dark (el panel) se aclara', () => {
+    expect(inkOf('minimal')).toBe(DANGER);
+    expect(inkOf('modern-dark')).toBe('#e45656');
+  });
+
+  it('conserva el tono de la base (menos de 1 grado en HSL)', () => {
+    const hue = (hex: string) => {
+      const [r, g, b] = parseHex(hex)!.map((v) => v / 255) as [number, number, number];
+      const max = Math.max(r, g, b);
+      const d = max - Math.min(r, g, b);
+      if (d === 0) return 0;
+      const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      return (h * 60 + 360) % 360;
+    };
+    for (const preset of THEME_PRESETS) {
+      const ink = tokensToCssVars(preset.tokens)['--t-danger-ink'];
+      expect(Math.abs(hue(ink) - hue(DANGER))).toBeLessThan(1);
     }
   });
 });

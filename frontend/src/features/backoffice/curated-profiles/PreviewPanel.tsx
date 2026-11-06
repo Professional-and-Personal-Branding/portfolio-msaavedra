@@ -57,7 +57,7 @@ export function PreviewPanel({
       </header>
 
       {error && (
-        <p role="alert" className="surface px-4 py-3 text-sm text-destructive">
+        <p role="alert" className="surface px-4 py-3 text-sm text-danger-ink">
           No se pudo generar la vista previa: {error.message}
         </p>
       )}

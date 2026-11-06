@@ -76,7 +76,7 @@ function SavedShareLinks({ profile, dirty }: { profile: SavedProfileRef; dirty: 
         </p>
       )}
       {!resolves && (
-        <p role="status" className="flex items-start gap-1.5 text-xs text-destructive">
+        <p role="status" className="flex items-start gap-1.5 text-xs text-danger-ink">
           <TriangleAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden />
           {profile.archivedAt
             ? 'Los links no resuelven: el perfil está archivado y responde 404.'

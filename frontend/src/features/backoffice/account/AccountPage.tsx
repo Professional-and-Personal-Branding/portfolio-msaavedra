@@ -21,11 +21,6 @@ import {
  * `add-admin-password-change`). Ninguna contraseña ni token toca el almacenamiento del navegador,
  * y los campos quedan fuera del aviso de cambios sin guardar (no hay borrador que proteger).
  */
-// El rojo del tema (`text-destructive`) pesa 3,48:1 sobre la tarjeta oscura del panel y axe lo marca
-// (AA pide 4,5:1). Se aclara hacia el color de texto del tema, sin un color con nombre (regla de
-// `status-color-usage.spec.ts`): sigue derivando de los tokens.
-const ERROR_TEXT = 'text-[color-mix(in_srgb,var(--color-destructive)_60%,var(--t-text))]';
-
 export function AccountPage() {
   const { data: admin } = useSession();
   const changePassword = useChangePassword();
@@ -121,7 +116,7 @@ export function AccountPage() {
           />
 
           {apiMessage && (
-            <p role="alert" className={`text-sm ${ERROR_TEXT}`}>
+            <p role="alert" className="text-sm text-danger-ink">
               {apiMessage}
             </p>
           )}
@@ -163,7 +158,7 @@ function PasswordField({
         {...registration}
       />
       {error && (
-        <p id={`${id}-error`} role="alert" className={`text-xs ${ERROR_TEXT}`}>
+        <p id={`${id}-error`} role="alert" className="text-xs text-danger-ink">
           {error}
         </p>
       )}
