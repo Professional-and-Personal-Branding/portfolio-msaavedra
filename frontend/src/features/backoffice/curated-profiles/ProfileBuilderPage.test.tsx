@@ -2,7 +2,12 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { AppRouter } from '@/app/router';
-import { makeAdminCuratedProfile } from '@/test/fixtures/admin';
+import {
+  makeAdminCuratedProfile,
+  makeAdminProject,
+  OVERRIDES_CATEGORIES,
+} from '@/test/fixtures/admin';
+import type { AdminCuratedProfile } from '../shared/admin-types';
 import { makeCuratedProfile, makeExperience } from '@/test/fixtures/curated-profile';
 import { API, http, HttpResponse, server } from '@/test/msw';
 import { adminHandlers } from '@/test/msw-admin';
@@ -907,5 +912,300 @@ describe('ProfileBuilderPage — aviso de cambios sin guardar', () => {
 
     expect(await screen.findByLabelText(/Contraseña/)).toBeInTheDocument();
     expect(screen.queryByText(DIALOG_TITLE)).not.toBeInTheDocument();
+  });
+});
+
+// add-builder-skill-project-overrides: skills y proyectos en la pestaña Selección.
+describe('ProfileBuilderPage — overrides de skills y proyectos', () => {
+  /** El perfil guardado que carga la ficha: `filterTags: ['java']` más los overrides pedidos. */
+  const savedProfile = (overrides: Partial<AdminCuratedProfile> = {}) =>
+    http.get(`${API}/admin/curated-profiles`, () =>
+      HttpResponse.json([makeAdminCuratedProfile({ filterTags: ['java'], ...overrides })]),
+    );
+  const categories = http.get(`${API}/admin/skill-categories`, () =>
+    HttpResponse.json(OVERRIDES_CATEGORIES),
+  );
+  const patchCapture = (sent: Record<string, unknown>[]) =>
+    http.patch(`${API}/admin/curated-profiles/:id`, async ({ request }) => {
+      sent.push((await request.json()) as Record<string, unknown>);
+      return HttpResponse.json(makeAdminCuratedProfile());
+    });
+  const openSelection = async (user: ReturnType<typeof userEvent.setup>) => {
+    await openBuilder();
+    await user.click(screen.getByRole('tab', { name: 'Selección' }));
+  };
+  const button = (name: string) => screen.getByRole('button', { name });
+  const lastBody = (bodies: Record<string, unknown>[]) => bodies.at(-1);
+
+  it('excluir Kotlin manda su id en excludeIds', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    server.use(savedProfile(), categories, trackPreviews(bodies), ...adminHandlers);
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    await user.click(button('Excluir Kotlin'));
+
+    await waitFor(() => expect(lastBody(bodies)).toMatchObject({ excludeIds: ['sk-kotlin'] }), {
+      timeout: 3000,
+    });
+    expect(button('Excluir Kotlin')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('incluir React manda su id en includeIds', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    server.use(savedProfile(), categories, trackPreviews(bodies), ...adminHandlers);
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    await user.click(button('Incluir React'));
+
+    await waitFor(() => expect(lastBody(bodies)).toMatchObject({ includeIds: ['sk-react'] }), {
+      timeout: 3000,
+    });
+    expect(button('Incluir React')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('incluir un ítem excluido lo pasa a includeIds y apaga Excluir', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    server.use(
+      savedProfile({ excludeIds: ['sk-kotlin'] }),
+      categories,
+      trackPreviews(bodies),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openSelection(user);
+    expect(button('Excluir Kotlin')).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(button('Incluir Kotlin'));
+
+    expect(button('Excluir Kotlin')).toHaveAttribute('aria-pressed', 'false');
+    expect(button('Incluir Kotlin')).toHaveAttribute('aria-pressed', 'true');
+    await waitFor(
+      () => expect(lastBody(bodies)).toMatchObject({ includeIds: ['sk-kotlin'], excludeIds: [] }),
+      { timeout: 3000 },
+    );
+  });
+
+  it('un id en los dos arreglos se muestra excluido y aclara que la exclusión gana', async () => {
+    server.use(
+      savedProfile({ includeIds: ['sk-kotlin'], excludeIds: ['sk-kotlin'] }),
+      categories,
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    expect(button('Excluir Kotlin')).toHaveAttribute('aria-pressed', 'true');
+    expect(button('Incluir Kotlin')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText('Excluida: la exclusión gana sobre la inclusión')).toBeInTheDocument();
+  });
+
+  it('la categoría indica cuántas skills tiene excluidas (overrides que ya venían guardados)', async () => {
+    server.use(
+      savedProfile({ includeIds: ['sk-react'], excludeIds: ['sk-kotlin'] }),
+      categories,
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    const lenguajes = screen.getByRole('group', { name: /^Lenguajes/ });
+    expect(lenguajes).toHaveTextContent('Lenguajes · 1 excluida');
+    expect(screen.getByRole('group', { name: /^Frontend/ })).toHaveTextContent(
+      'Frontend · 1 incluida',
+    );
+    expect(button('Excluir Kotlin')).toHaveAttribute('aria-pressed', 'true');
+    expect(button('Incluir React')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('buscar «kot» deja solo Kotlin en su categoría y no pide un preview nuevo', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    server.use(savedProfile(), categories, trackPreviews(bodies), ...adminHandlers);
+    const user = userEvent.setup();
+    await openSelection(user);
+    await waitFor(() => expect(bodies).toHaveLength(1));
+
+    await user.type(screen.getByLabelText('Buscar skill'), 'kot');
+
+    const skills = screen.getByRole('region', { name: 'Skills' });
+    expect(within(skills).getByRole('button', { name: 'Incluir Kotlin' })).toBeInTheDocument();
+    expect(within(skills).queryByRole('button', { name: 'Incluir Java' })).not.toBeInTheDocument();
+    expect(within(skills).queryByRole('button', { name: 'Incluir React' })).not.toBeInTheDocument();
+    expect(within(skills).queryByText(/^Frontend/)).not.toBeInTheDocument();
+
+    // Más que el debounce del preview: si la búsqueda tocara el borrador, ya habría pedido otro.
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    expect(bodies).toHaveLength(1);
+
+    await user.clear(screen.getByLabelText('Buscar skill'));
+    expect(button('Incluir React')).toBeInTheDocument();
+  });
+
+  it('una búsqueda sin resultados lo dice y no cambia el borrador', async () => {
+    const sent: Record<string, unknown>[] = [];
+    server.use(savedProfile(), categories, patchCapture(sent), trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    await user.type(screen.getByLabelText('Buscar skill'), 'zzz');
+
+    expect(screen.getByText('Ninguna skill coincide con "zzz"')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Skills' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Guardar/ }));
+    await waitFor(() => expect(sent).toHaveLength(1));
+    expect(sent[0]).toMatchObject({ includeIds: [], excludeIds: [] });
+  });
+
+  it('solo buscar no ensucia la ficha: Volver navega sin diálogo', async () => {
+    server.use(savedProfile(), categories, trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    await user.type(screen.getByLabelText('Buscar skill'), 'kot');
+    await user.click(screen.getByRole('link', { name: /Volver/ }));
+
+    expect(await screen.findByRole('heading', { name: 'Perfiles curados' })).toBeInTheDocument();
+    expect(screen.queryByText('Tenés cambios sin guardar')).not.toBeInTheDocument();
+  });
+
+  it('incluir y excluir un proyecto se reflejan en los arreglos, sin quedar en los dos', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    server.use(savedProfile(), categories, trackPreviews(bodies), ...adminHandlers);
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    await user.click(button('Incluir Portafolio Administrable'));
+    await waitFor(() => expect(lastBody(bodies)).toMatchObject({ includeIds: ['proj-1'] }), {
+      timeout: 3000,
+    });
+
+    await user.click(button('Excluir Portafolio Administrable'));
+    expect(button('Incluir Portafolio Administrable')).toHaveAttribute('aria-pressed', 'false');
+    await waitFor(
+      () => expect(lastBody(bodies)).toMatchObject({ includeIds: [], excludeIds: ['proj-1'] }),
+      { timeout: 3000 },
+    );
+  });
+
+  it('un proyecto oculto lleva la insignia y no se puede incluir, con el motivo', async () => {
+    server.use(savedProfile(), categories, trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    const incluir = button('Incluir Bot de Pagos');
+    expect(incluir).toBeDisabled();
+    expect(incluir).toHaveAttribute('title', 'Oculto: no entra aunque lo incluyas');
+    expect(incluir).toHaveAccessibleDescription('Oculto: no entra aunque lo incluyas');
+    const fila = incluir.closest('li');
+    expect(fila).not.toBeNull();
+    expect(within(fila as HTMLElement).getByText('Oculto')).toBeInTheDocument();
+    // Excluir sigue disponible: protege el perfil si el proyecto vuelve a ser visible.
+    expect(button('Excluir Bot de Pagos')).toBeEnabled();
+  });
+
+  it('una experiencia oculta ya incluida permite quitar la inclusión', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    server.use(
+      savedProfile({ includeIds: ['exp-3'] }),
+      categories,
+      trackPreviews(bodies),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    const incluir = button('Incluir Initech');
+    expect(incluir).toBeEnabled();
+    expect(incluir).toHaveAttribute('aria-pressed', 'true');
+    expect(within(incluir.closest('li') as HTMLElement).getByText('Oculta')).toBeInTheDocument();
+
+    await user.click(incluir);
+
+    expect(button('Incluir Initech')).toHaveAttribute('aria-pressed', 'false');
+    expect(button('Incluir Initech')).toBeDisabled();
+    await waitFor(() => expect(lastBody(bodies)).toMatchObject({ includeIds: [] }), {
+      timeout: 3000,
+    });
+  });
+
+  it('una referencia a un ítem borrado se informa y no ensucia la ficha', async () => {
+    server.use(
+      savedProfile({ excludeIds: ['ya-no-existe'] }),
+      categories,
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    expect(await screen.findByText('1 referencia a un ítem que ya no existe')).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: /Volver/ }));
+    expect(await screen.findByRole('heading', { name: 'Perfiles curados' })).toBeInTheDocument();
+    expect(screen.queryByText('Tenés cambios sin guardar')).not.toBeInTheDocument();
+  });
+
+  it('Quitar saca las referencias huérfanas y el PATCH conserva los demás ids', async () => {
+    const sent: Record<string, unknown>[] = [];
+    server.use(
+      savedProfile({ includeIds: ['sk-react', 'viejo-a'], excludeIds: ['sk-kotlin', 'viejo-b'] }),
+      categories,
+      patchCapture(sent),
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    expect(await screen.findByText('2 referencias a ítems que ya no existen')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Quitar' }));
+    expect(screen.queryByText(/referencias? a/)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Guardar/ }));
+    await waitFor(() => expect(sent).toHaveLength(1));
+    expect(sent[0]).toMatchObject({ includeIds: ['sk-react'], excludeIds: ['sk-kotlin'] });
+  });
+
+  it('si la lista de proyectos falla: error con reintento, sin huérfanos y el PATCH no altera los ids', async () => {
+    const sent: Record<string, unknown>[] = [];
+    server.use(
+      savedProfile({ includeIds: ['proj-1'], excludeIds: ['ya-no-existe'] }),
+      categories,
+      http.get(`${API}/admin/projects`, () =>
+        HttpResponse.json({ statusCode: 500, message: 'Error', error: 'x' }, { status: 500 }),
+      ),
+      patchCapture(sent),
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    expect(await screen.findByRole('button', { name: 'Reintentar' })).toBeInTheDocument();
+    expect(screen.queryByText(/referencias? a/)).not.toBeInTheDocument();
+    // El resto de la ficha sigue usable.
+    expect(button('Incluir Kotlin')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Guardar/ }));
+    await waitFor(() => expect(sent).toHaveLength(1));
+    expect(sent[0]).toMatchObject({ includeIds: ['proj-1'], excludeIds: ['ya-no-existe'] });
+  });
+
+  it('el tag de un proyecto que nada más usa aparece entre los tags disponibles', async () => {
+    server.use(
+      savedProfile(),
+      categories,
+      http.get(`${API}/admin/projects`, () =>
+        HttpResponse.json([makeAdminProject({ id: 'proj-9', tags: ['solo-proyecto'] })]),
+      ),
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    expect(await screen.findByRole('button', { name: 'solo-proyecto' })).toBeInTheDocument();
   });
 });

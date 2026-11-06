@@ -1,0 +1,3 @@
+git diff --stat main -- backend/src backend/prisma backend/scripts:  .../use-cases/curated-profile.use-cases.spec.ts    | 93 ++++++++++++++++++++--  .../domain/services/select-by-tags.spec.ts         | 18 +++++  .../services/select-skill-categories.spec.ts       | 37 +++++++++  3 files changed, 140 insertions(+), 8 deletions(-)
+Base portfolio del owner: nunca usada (DATABASE_URL siempre apunto a portfolio_ovr_e2e o portfolio_ovr_example).
+Nota: el diff son solo 3 specs de test (add: 140 lineas); ningun archivo de codigo productivo, schema ni script cambio.

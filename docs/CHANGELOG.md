@@ -21,6 +21,18 @@ El head de cada perfil público emite `ProfilePage` con el `Person` adentro, en 
 - **Sin cambios** en CSP, `openapi.json`, `api.d.ts`, base, migraciones ni dependencias; el arranque público crece 0,4 KB gzip.
 - **Docs.** `docs/MANUAL.md` e `index.html` (TC-44), `docs/DEPLOY.md` § 9.5, `docs/DEPLOY-RAILWAY.md`, `docs/RELEASE-1.0.0-CHECKLIST.md`.
 
+## Update — Octubre 2026 (`add-builder-skill-project-overrides`)
+
+El constructor incluye y excluye skills y proyectos, no solo experiencias. Solo frontend: sin cambios de dominio, de API, del OpenAPI ni de la base.
+
+- **Selección.** La pestaña suma los bloques **Skills** (una fila por skill, agrupadas por categoría, con el buscador **Buscar skill** por nombre y el conteo «N incluidas · M excluidas» por categoría) y **Proyectos**. Las filas de experiencias, skills y proyectos son un solo componente.
+- **Mismo arreglo.** Skills y proyectos se guardan en los mismos `includeIds`/`excludeIds` que las experiencias, como ids cuid crudos; nunca ids de categoría (el núcleo los ignora).
+- **Exclusión mutua.** **Incluir** y **Excluir** de un ítem se apagan entre sí (también en las experiencias); un id en los dos arreglos, solo posible por API o seed, se muestra excluido y dice que la exclusión gana. El resultado del perfil no cambia: la exclusión ya ganaba.
+- **Ocultos y huérfanos.** Experiencias y proyectos con `visible: false` van al final con la insignia **Oculta**/**Oculto** y **Incluir** deshabilitado (salvo para quitar una inclusión existente). Los ids que no corresponden a ningún ítem se conservan al guardar; con las tres listas cargadas, la pestaña los cuenta y ofrece **Quitar**.
+- **Tags.** El universo de tags de la pestaña suma los de los proyectos.
+- **Núcleo.** Tests de regresión (sin tocar su código): include/exclude de skills, ids de categoría sin efecto, proyectos forzados y ocultos, e2e del preview igual a la ruta pública con overrides de skills y proyectos, y los datos de `ejemplo-overrides`.
+- **Docs.** `docs/MANUAL.md` e `index.html` (TC-43, B10 sin la «Limitación vigente», TC-13, C3, R1, glosario; `tc43-overrides.jpg` nueva y `tc13-seleccion.jpg` regenerada), `docs/DATA-POPULATION.md` § 12 y `docs/PROPUESTA-FEATURES.md` § 6.2.
+
 ## Update — Octubre 2026 (`add-certification-verification`)
 
 Cada certificación puede llevar el enlace a su credencial, su ID y su vencimiento.

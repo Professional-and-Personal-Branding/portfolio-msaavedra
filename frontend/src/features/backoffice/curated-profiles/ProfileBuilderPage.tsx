@@ -51,8 +51,10 @@ import {
   useSkillCategories,
   useThemes,
 } from '../shared/use-admin-api';
+import { useProjects } from '../proyectos/use-proyectos-api';
 import { MissingTranslationsNotice } from './MissingTranslationsNotice';
 import { PreviewPanel } from './PreviewPanel';
+import { ExperiencesBlock, ProjectsBlock, SkillsBlock } from './SelectionBlocks';
 import { ShareLinksPanel } from './ShareLinksPanel';
 import type { SavedProfileRef } from './share-link-url';
 import { ShareOnLinkedInButton } from './ShareOnLinkedInButton';
@@ -66,6 +68,12 @@ import {
   validateDraft,
   type ProfileDraft,
 } from './profile-draft';
+import {
+  orphanOverrideIds,
+  removeOverrideIds,
+  setOverride,
+  type OverrideMode,
+} from './selection-overrides';
 import { usePreview } from './use-preview';
 
 const VISIBILITIES: { value: Visibility; label: string }[] = [
@@ -109,6 +117,7 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
   const navigate = useNavigate();
   const experiences = useExperiences();
   const categories = useSkillCategories();
+  const projects = useProjects();
   const themes = useThemes();
   const save = useSaveCuratedProfile();
   const archive = useArchiveCuratedProfile();
@@ -151,8 +160,18 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
   const hasOverrides = draft.themeOverrides !== null;
 
   const tags = useMemo(
-    () => tagUniverse(experiences.data, categories.data, draft.filterTags),
-    [experiences.data, categories.data, draft.filterTags],
+    () => tagUniverse(experiences.data, categories.data, projects.data, draft.filterTags),
+    [experiences.data, categories.data, projects.data, draft.filterTags],
+  );
+
+  // Referencias a ítems borrados (D7): solo se informan con las tres listas cargadas, porque con
+  // una ausente no se puede saber de qué lista era cada id.
+  const orphans = useMemo(
+    () =>
+      experiences.data && categories.data && projects.data
+        ? orphanOverrideIds(draft, experiences.data, categories.data, projects.data)
+        : [],
+    [draft, experiences.data, categories.data, projects.data],
   );
 
   const update = <K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) =>
@@ -162,7 +181,7 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
    * Alterna un valor en una lista partiendo SIEMPRE del estado vigente: varios
    * clics en la misma tanda de renderizado no se pisan entre sí.
    */
-  const toggleIn = <K extends 'filterTags' | 'includeIds' | 'excludeIds' | 'sectionsHidden'>(
+  const toggleIn = <K extends 'filterTags' | 'sectionsHidden'>(
     key: K,
     value: ProfileDraft[K][number],
   ) =>
@@ -173,6 +192,10 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
         [key]: list.includes(value) ? list.filter((item) => item !== value) : [...list, value],
       };
     });
+
+  /** Fija el override de un ítem partiendo del estado vigente (exclusión mutua, D5). */
+  const applyOverride = (itemId: string, mode: OverrideMode) =>
+    setDraft((current) => setOverride(current, itemId, mode));
 
   // Lo que los enlaces de seguimiento usan del perfil: siempre lo guardado, nunca el borrador.
   const savedRef: SavedProfileRef | undefined = saved
@@ -347,49 +370,30 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
               </div>
             )}
 
-            <div>
-              <p className="mb-2 text-sm font-semibold">Experiencias</p>
-              <p className="mb-3 text-xs text-text-dim">
-                Forzá la inclusión de una experiencia que no comparte tags, o excluí una que sí.
-              </p>
-              <ul className="flex max-h-72 flex-col gap-1 overflow-y-auto pr-1">
-                {(experiences.data ?? []).map((experience) => {
-                  const included = draft.includeIds.includes(experience.id);
-                  const excluded = draft.excludeIds.includes(experience.id);
-                  return (
-                    <li
-                      key={experience.id}
-                      className="flex items-center gap-2 rounded-theme-sm border border-border px-3 py-2"
-                    >
-                      <span className="min-w-0 flex-1 truncate text-sm">
-                        {experience.company}
-                        <span className="text-text-dim"> · {experience.role.es}</span>
-                      </span>
-                      <Button
-                        type="button"
-                        size="xs"
-                        variant={included ? 'default' : 'outline'}
-                        aria-pressed={included}
-                        aria-label={`Incluir ${experience.company}`}
-                        onClick={() => toggleIn('includeIds', experience.id)}
-                      >
-                        Incluir
-                      </Button>
-                      <Button
-                        type="button"
-                        size="xs"
-                        variant={excluded ? 'destructive' : 'outline'}
-                        aria-pressed={excluded}
-                        aria-label={`Excluir ${experience.company}`}
-                        onClick={() => toggleIn('excludeIds', experience.id)}
-                      >
-                        Excluir
-                      </Button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+            {orphans.length > 0 && (
+              <div
+                role="status"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-theme-sm border border-border px-3 py-2 text-xs text-text-dim"
+              >
+                <span>
+                  {orphans.length === 1
+                    ? '1 referencia a un ítem que ya no existe'
+                    : `${orphans.length} referencias a ítems que ya no existen`}
+                </span>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="outline"
+                  onClick={() => setDraft((current) => removeOverrideIds(current, orphans))}
+                >
+                  Quitar
+                </Button>
+              </div>
+            )}
+
+            <ExperiencesBlock draft={draft} query={experiences} onOverride={applyOverride} />
+            <SkillsBlock draft={draft} query={categories} onOverride={applyOverride} />
+            <ProjectsBlock draft={draft} query={projects} onOverride={applyOverride} />
           </TabsContent>
 
           <TabsContent value="diseno" className="surface flex flex-col gap-6 p-card">

@@ -2,6 +2,7 @@ import { isSectionId, SECTION_IDS, type SectionId } from '@/themes/layouts/secti
 import type {
   AdminCuratedProfile,
   AdminExperience,
+  AdminProject,
   AdminSkillCategory,
   CreateCuratedProfileBody,
   LocalizedText,
@@ -167,14 +168,16 @@ export function validateDraft(draft: ProfileDraft): DraftErrors {
   return errors;
 }
 
-/** Universo de tags disponible, tomado de los datos reales. */
+/** Universo de tags disponible, tomado de los datos reales (experiencias, skills y proyectos). */
 export function tagUniverse(
   experiences: readonly AdminExperience[] = [],
   categories: readonly AdminSkillCategory[] = [],
+  projects: readonly AdminProject[] = [],
   extra: readonly string[] = [],
 ): string[] {
   const tags = new Set<string>(extra);
   for (const experience of experiences) for (const tag of experience.tags) tags.add(tag);
+  for (const project of projects) for (const tag of project.tags) tags.add(tag);
   for (const category of categories) {
     for (const skill of category.skills) for (const tag of skill.tags) tags.add(tag);
   }
