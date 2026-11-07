@@ -1,5 +1,16 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`fix-error-contrast-and-date-modified`)
+
+Los mensajes de error del panel cumplen contraste AA y el JSON-LD del perfil declara cuándo se modificó.
+
+- **Token `--t-danger-ink`.** Derivado de `#dc2626` con `accentInk` contra `bg`, `bgSoft` y `card` (≥ 4,5:1 en todos los presets). Reemplaza a `text-destructive` en los formularios, `form.tsx`, el login y el panel; `AccountPage` deja `ERROR_TEXT` y usa `text-danger-ink`.
+- **Regla `danger`.** `status-color-usage.spec.ts` detecta `text-destructive` (con o sin variante) y `text-[…destructive…]`.
+- **`a11y:check` con errores a la vista.** Parámetro `prepare(page)` y entradas `admin-login-error` y `admin-experiencias-error`, que auditan los formularios con sus mensajes de error visibles.
+- **`dateModified`.** El JSON-LD del perfil (servidor y cliente) lo toma de `CuratedProfile.updatedAt` con `isoDay` (día UTC), el mismo valor que el `<lastmod>` del sitemap.
+- **Contrato.** `updatedAt` (`string | null`, `date-time`) en `CuratedProfileOutput` y `CuratedProfileResponse`; `openapi.json` y `api.d.ts` regenerados. Sin migraciones.
+- **Manual.** TC-44 actualizado con la verificación de `dateModified` (`docs/MANUAL.md` e `index.html`).
+
 ## Update — Noviembre 2026 (`add-admin-password-change`)
 
 El administrador cambia su contraseña desde el panel y el cambio revoca las demás sesiones.
