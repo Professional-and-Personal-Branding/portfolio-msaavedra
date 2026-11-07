@@ -270,7 +270,9 @@ export function useAnalytics(from: string, to: string) {
 export function useCvConsistency() {
   return useQuery({
     queryKey: adminKeys.consistency,
-    queryFn: async (): Promise<CvConsistency> => unwrap(await api.GET('/api/admin/consistency')),
+    // El panel está en español: sin locale el backend usaría el Accept-Language del navegador.
+    queryFn: async (): Promise<CvConsistency> =>
+      unwrap(await api.GET('/api/admin/consistency', { params: { query: { locale: 'es' } } })),
     staleTime: 0,
     refetchOnMount: 'always',
   });

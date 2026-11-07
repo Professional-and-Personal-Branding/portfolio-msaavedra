@@ -30,6 +30,20 @@ describe('RevisionPage', () => {
     ).toBeInTheDocument();
   });
 
+  it('pide los textos en español aunque el navegador esté en otro idioma', async () => {
+    let locale: string | null = null;
+    server.use(
+      http.get(`${API}/admin/consistency`, ({ request }) => {
+        locale = new URL(request.url).searchParams.get('locale');
+        return HttpResponse.json(makeCvConsistency());
+      }),
+      ...adminHandlers,
+    );
+    await open();
+    await screen.findByRole('heading', { name: 'Errores' });
+    expect(locale).toBe('es');
+  });
+
   it('agrupa en Errores, Avisos y Sugerencias en ese orden', async () => {
     server.use(...adminHandlers);
     await open();
