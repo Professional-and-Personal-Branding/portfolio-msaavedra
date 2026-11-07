@@ -65,6 +65,8 @@ export interface SourceCount {
 export interface ShareLinkOpens {
   readonly shareLinkId: string;
   readonly opens: number;
+  /** Primera apertura `HUMAN` (D8 de `add-application-tracking`); `null` sin aperturas. */
+  readonly firstOpenedAt: Date | null;
   readonly lastOpenedAt: Date | null;
 }
 
@@ -85,7 +87,7 @@ export interface ProfileViewRepository {
   /** Visitas `HUMAN` del rango con `source`, descendente. */
   countBySource(range: DateRange): Promise<SourceCount[]>;
   /**
-   * Aperturas `HUMAN` y última apertura de cada enlace pedido, en toda su historia. Los enlaces
+   * Aperturas `HUMAN`, primera y última apertura de cada enlace pedido, en toda su historia. Los enlaces
    * sin aperturas pueden faltar en el resultado.
    */
   countOpensByShareLink(shareLinkIds: readonly string[]): Promise<ShareLinkOpens[]>;
