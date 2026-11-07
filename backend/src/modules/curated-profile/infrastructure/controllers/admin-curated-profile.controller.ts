@@ -8,9 +8,13 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import type { Response } from 'express';
+import { APP_CONFIG, AppConfig } from '../../../../config/configuration';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -20,6 +24,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiProduces,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -31,6 +36,8 @@ import { LocaleQueryDto } from '../../../../shared/infrastructure/http/locale-qu
 import { RequestLocale } from '../../../../shared/infrastructure/http/request-locale.decorator';
 import { JwtAuthGuard } from '../../../auth/infrastructure/security/jwt-auth.guard';
 import { AdminCuratedProfileOutput } from '../../application/dto/curated-profile.admin-output';
+import { JsonResumeOutput } from '../../application/dto/json-resume.output';
+import { ExportCuratedProfileResumeForAdminUseCase } from '../../application/use-cases/export-curated-profile-resume.use-case';
 import {
   CreateCuratedProfileUseCase,
   DeleteCuratedProfileUseCase,
@@ -48,6 +55,11 @@ import {
   PreviewCuratedProfileUseCase,
 } from '../../application/use-cases/admin/preview-curated-profile.use-case';
 import { AdminCuratedProfileResponse } from './docs/admin-curated-profile.response';
+import {
+  JSON_RESUME_RESPONSE_SCHEMA,
+  RESUME_RESPONSE_HEADERS,
+  setResumeHeaders,
+} from './resume-http';
 import { PreviewCuratedProfileResponse } from './docs/preview-curated-profile.response';
 import {
   CreateCuratedProfileDto,
@@ -76,6 +88,8 @@ export class AdminCuratedProfileController {
     private readonly duplicateOne: DuplicateCuratedProfileUseCase,
     private readonly archiveOne: ArchiveCuratedProfileUseCase,
     private readonly unarchiveOne: UnarchiveCuratedProfileUseCase,
+    private readonly exportResume: ExportCuratedProfileResumeForAdminUseCase,
+    private readonly config: ConfigService,
   ) {}
 
   @Post('preview')
@@ -103,6 +117,30 @@ export class AdminCuratedProfileController {
   @ApiOkResponse({ type: [AdminCuratedProfileResponse] })
   async list(): Promise<AdminCuratedProfileOutput[]> {
     return (await this.listAll.execute()).value;
+  }
+
+  @Get(':id/resume.json')
+  @ApiOperation({
+    summary: 'Exportar un perfil curado como JSON Resume v1.0.0',
+    description:
+      'Lo guardado del perfil, en el idioma pedido, con el mismo composer y el mismo mapper que la ruta pública ' +
+      '(`GET /curated-profiles/{slug}/resume.json`) pero sin evaluar visibilidad ni archivado: el administrador ' +
+      'exporta también perfiles PRIVATE, PROTECTED y archivados. No registra visita. `Cache-Control: private, no-store`.',
+  })
+  @ApiProduces('application/json')
+  @ApiOkResponse({ schema: JSON_RESUME_RESPONSE_SCHEMA, headers: RESUME_RESPONSE_HEADERS })
+  @ApiNotFoundResponse({ type: ErrorResponseDto })
+  async resume(
+    @Param('id') id: string,
+    @Query() _query: LocaleQueryDto,
+    @RequestLocale() locale: Locale,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<JsonResumeOutput> {
+    const { frontendUrl } = this.config.getOrThrow<AppConfig>(APP_CONFIG);
+    const result = await this.exportResume.execute({ id, locale, baseUrl: frontendUrl });
+    if (!result.ok) throw toHttpException(result.error);
+    setResumeHeaders(res, { slug: result.value.slug, locale, cache: 'private' });
+    return result.value.document;
   }
 
   @Get(':id')

@@ -1,0 +1,51 @@
+## backend lint
+
+> portfolio-backend@0.1.0 lint
+> eslint "{src,test,scripts}/**/*.ts"
+
+## backend typecheck
+
+> portfolio-backend@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+## backend test
+Test Suites: 99 passed, 99 total
+Tests:       972 passed, 972 total
+## frontend lint
+
+> portfolio-frontend@0.1.0 lint
+> eslint .
+
+## frontend test
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  68 passed (68) [la primera corrida dio 2 fallos intermitentes con la CPU compartida con el backend; la repeticion, 68/68]
+      Tests  1041 passed (1041)
+## frontend build + perf:budget
+dist/assets/index-Dz6G3h_t.js               481.37 kB │ gzip: 150.60 kB
+
+[32m✓ built in 4.80s[39m
+
+> portfolio-frontend@0.1.0 perf:budget
+> node scripts/check-bundle-budget.mjs
+
+# Presupuesto de JS del arranque público
+
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-Dz6G3h_t.js | módulo | 148.9 |
+| /profile-prefetch.js | clásico | 1.2 |
+| **Total** | | **150.1** |
+
+Presupuesto: 155 KB.
+
+## openspec validate --all --strict
+✓ spec/runtime-theming
+✓ spec/share-links
+✓ spec/site-security-policy
+✓ spec/theme-customizer
+✓ spec/theme-resolution
+✓ spec/web-accessibility
+✓ spec/web-performance
+Totals: 39 passed, 0 failed (39 items)
+## commit base: 030f3aa
+e2e baseline: 17 suites, 277 tests

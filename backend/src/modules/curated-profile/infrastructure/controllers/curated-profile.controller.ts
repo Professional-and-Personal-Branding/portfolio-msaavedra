@@ -6,6 +6,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiProduces,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -22,6 +23,8 @@ import {
   CuratedProfileOutput,
   CuratedProfileSummaryOutput,
 } from '../../application/dto/curated-profile.output';
+import { JsonResumeOutput } from '../../application/dto/json-resume.output';
+import { ExportCuratedProfileResumeUseCase } from '../../application/use-cases/export-curated-profile-resume.use-case';
 import { ListCuratedProfilesUseCase } from '../../application/use-cases/list-curated-profiles.use-case';
 import {
   ResolveCuratedProfileUseCase,
@@ -33,6 +36,13 @@ import {
   CuratedProfileSummaryResponse,
 } from './docs/curated-profile.response';
 import { CuratedProfileQueryDto } from './dto/curated-profile.query';
+import { ResumeQueryDto } from './dto/resume.query';
+import {
+  cacheFor,
+  JSON_RESUME_RESPONSE_SCHEMA,
+  RESUME_RESPONSE_HEADERS,
+  setResumeHeaders,
+} from './resume-http';
 
 const CONTENT_LANGUAGE_HEADER = {
   'Content-Language': { description: 'Locale servido', schema: { type: 'string' } },
@@ -46,13 +56,17 @@ function firstHeader(value: string | string[] | undefined): string | undefined {
 @Controller('curated-profiles')
 export class CuratedProfileController {
   private readonly analyticsSalt: string;
+  private readonly frontendUrl: string;
 
   constructor(
     private readonly listCuratedProfiles: ListCuratedProfilesUseCase,
     private readonly resolveCuratedProfile: ResolveCuratedProfileUseCase,
+    private readonly exportResume: ExportCuratedProfileResumeUseCase,
     config: ConfigService,
   ) {
-    this.analyticsSalt = config.getOrThrow<AppConfig>(APP_CONFIG).analyticsSalt;
+    const appConfig = config.getOrThrow<AppConfig>(APP_CONFIG);
+    this.analyticsSalt = appConfig.analyticsSalt;
+    this.frontendUrl = appConfig.frontendUrl;
   }
 
   @Get()
@@ -67,6 +81,62 @@ export class CuratedProfileController {
   ): Promise<CuratedProfileSummaryOutput[]> {
     const result = await this.listCuratedProfiles.execute({ locale });
     return result.value;
+  }
+
+  @Get(':slug/resume.json')
+  @ApiOperation({
+    summary: 'Exportar el perfil curado como JSON Resume v1.0.0',
+    description:
+      'El mismo perfil que `GET /curated-profiles/{slug}` (mismos filtros, overrides, orden y secciones) traducido a JSON Resume, en el idioma pedido (un archivo por idioma). ' +
+      'Mismos códigos que el detalle: 404 para slug inexistente, PRIVATE o archivado; 401 para PROTECTED sin token válido (`X-Access-Token` o `token`). ' +
+      'No registra visita ni atribuye `via`/`src`. Un slug anterior resuelve con `Content-Location` al canónico. ' +
+      'Responde como descarga (`Content-Disposition: attachment`), `X-Robots-Tag: noindex` y `Cache-Control: no-cache` (PUBLIC) o `private, no-store` (PROTECTED).',
+  })
+  @ApiParam({ name: 'slug', example: 'tech-lead-dotnet' })
+  @ApiHeader({
+    name: 'X-Access-Token',
+    required: false,
+    description: 'Token de acceso para perfiles PROTECTED (prioridad sobre `?token=`).',
+  })
+  @ApiProduces('application/json')
+  @ApiOkResponse({
+    schema: JSON_RESUME_RESPONSE_SCHEMA,
+    headers: {
+      ...RESUME_RESPONSE_HEADERS,
+      'Content-Location': {
+        description: 'Solo si se pidió un slug anterior: ruta del slug canónico',
+        schema: { type: 'string' },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({ type: ErrorResponseDto, description: 'PROTECTED sin token válido' })
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    description: 'Slug inexistente, perfil PRIVATE o archivado',
+  })
+  async resume(
+    @Param('slug') slug: string,
+    @Query() _query: ResumeQueryDto,
+    @RequestLocale() locale: Locale,
+    @AccessToken() accessToken: string | undefined,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<JsonResumeOutput> {
+    const result = await this.exportResume.execute({
+      slug,
+      locale,
+      accessToken,
+      baseUrl: this.frontendUrl,
+    });
+    if (!result.ok) throw toHttpException(result.error);
+    const { document, slug: canonical, visibility } = result.value;
+    setResumeHeaders(res, { slug: canonical, locale, cache: cacheFor(visibility) });
+    if (canonical !== slug) {
+      res.setHeader(
+        'Content-Location',
+        `/api/curated-profiles/${encodeURIComponent(canonical)}/resume.json`,
+      );
+    }
+    return document;
   }
 
   @Get(':slug')

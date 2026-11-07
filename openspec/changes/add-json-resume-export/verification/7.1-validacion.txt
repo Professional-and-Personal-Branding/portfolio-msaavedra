@@ -1,0 +1,17 @@
+## validate --all --strict
+✓ spec/public-portfolio-frontend
+✓ spec/public-portfolio-sections-api
+✓ spec/public-profile-api
+✓ spec/public-seo
+✓ spec/runtime-theming
+✓ spec/share-links
+✓ spec/site-security-policy
+✓ spec/theme-customizer
+✓ spec/theme-resolution
+✓ spec/web-accessibility
+✓ spec/web-performance
+Totals: 39 passed, 0 failed (39 items)
+## validate add-json-resume-export --strict
+Change 'add-json-resume-export' is valid
+## list
+  add-json-resume-export     ✓ Complete    just now
