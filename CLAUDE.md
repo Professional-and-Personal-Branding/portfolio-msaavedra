@@ -193,6 +193,7 @@ npm run perf:check -- <base>   # Lighthouse mobile, mediana de PERF_CHECK_RUNS (
 - [x] `upgrade-profile-structured-data` — el JSON-LD del perfil pasa a `ProfilePage` con el `Person` (`knowsAbout`, `alumniOf` y `hasCredential`), sin `dateModified` por la P1 y con el cliente sin bloque y `noindex` (archivado 2026-11-05)
 - [x] `polish-views-updated-at-and-builder` — el incremento de `views` ya no mueve `CuratedProfile.updatedAt` (`UPDATE` crudo en la misma transacción) y se pulen detalles del constructor; resolvió la P1 de `upgrade-profile-structured-data` (archivado 2026-11-05)
 - [x] `add-admin-password-change` — cambio de contraseña desde **Cuenta**, `sessionVersion` en el JWT que revoca las demás sesiones, límite propio y `admin:bootstrap` como recuperación (archivado 2026-11-05)
+- [x] `fix-error-contrast-and-date-modified` — mensajes de error con `--t-danger-ink` (≥ 4,5:1 en todos los presets) y regla `danger`, `a11y:check` con formularios con errores a la vista, y `dateModified` en el JSON-LD desde `CuratedProfile.updatedAt` (día UTC, igual al `<lastmod>`), con `updatedAt` en el DTO público (archivado 2026-11-07)
 
 ---
 
