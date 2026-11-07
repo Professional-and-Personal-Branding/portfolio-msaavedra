@@ -30,6 +30,9 @@ export const adminKeys = {
   projects: ['admin', 'projects'] as const,
   socialLinks: ['admin', 'social-links'] as const,
   shareLinks: (profileId: string) => ['admin', 'share-links', profileId] as const,
+  applications: ['admin', 'applications'] as const,
+  applicationList: (status: string) => ['admin', 'applications', 'list', status] as const,
+  applicationSummary: ['admin', 'applications', 'summary'] as const,
   analytics: (from: string, to: string) => ['admin', 'analytics', from, to] as const,
   preview: (draftKey: string, locale: string) => ['admin', 'preview', draftKey, locale] as const,
 };

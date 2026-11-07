@@ -33,6 +33,19 @@ describe('AdminLayout responsive', () => {
     expect(nav).toHaveClass('min-w-0', 'overflow-x-auto');
   });
 
+  // add-application-tracking, D11: la barra pasa a ocho ítems. jsdom no mide el desborde (se mide
+  // en Chrome, `verification/8.5-barra.txt`); aquí se fija que el ítem está y que, si no entrara,
+  // la barra se desplaza dentro de sí misma en vez de estirar el header.
+  it('la barra incluye Postulaciones con ícono y sin acortar su texto', async () => {
+    const header = await renderHeader();
+    const nav = within(header).getByRole('navigation', { name: 'Secciones' });
+    const link = within(nav).getByRole('link', { name: 'Postulaciones' });
+    expect(link).toHaveAttribute('href', '/admin/postulaciones');
+    expect(link.querySelector('svg')).not.toBeNull();
+    expect(within(nav).getAllByRole('link')).toHaveLength(8);
+    expect(nav).toHaveClass('overflow-x-auto');
+  });
+
   it('las acciones conservan su nombre accesible cuando muestran solo el ícono', async () => {
     const header = await renderHeader();
     const portfolio = within(header).getByRole('link', { name: 'Ver portafolio' });
