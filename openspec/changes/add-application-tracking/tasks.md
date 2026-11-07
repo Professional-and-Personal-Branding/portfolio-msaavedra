@@ -44,15 +44,15 @@
 
 > Crea sus propios perfiles y enlaces de prueba en `beforeAll` y los borra en `afterAll`; las visitas se insertan directo con Prisma con el `kind` que cada caso necesita.
 
-- [ ] 6.1 CRUD y filtro: crear (201, `portal` normalizado), leer, `PATCH` parcial, listar con `status=APPLIED,INTERVIEWING` y orden por `updatedAt`, borrar (204) y leer (404); `status=HIRED` → 400; campo desconocido (`contactEmail`) → 400; sin sesión → 401 en las siete rutas. Verificar: `npm run test:e2e` verde.
-- [ ] 6.2 Transiciones: `APPLIED → INTERVIEWING` → 200 con `nextStatuses`; `DRAFT → OFFER` → 422 con `error: "Unprocessable Entity"` y sin `stack`; `ACCEPTED → APPLIED` → 422; `PATCH` con notas y transición inválida → 422 y notas sin cambios en la base; `REJECTED → APPLIED` conserva `appliedAt`; `DRAFT` con `appliedAt` → 400. Verificar: `npm run test:e2e` verde.
-- [ ] 6.3 Vínculos y aperturas: enlace de otro perfil, `LINKEDIN_POST` o sin perfil → 400; segundo uso del mismo enlace → 409; enlace revocado → 201; con visitas `OWNER` (día 1), `HUMAN` (días 3 y 5) y `BOT` → `opens: 2`, `firstOpenedAt` del día 3 y `lastOpenedAt` del día 5; borrar el perfil deja la postulación sin perfil ni enlace. Verificar: `npm run test:e2e` verde.
-- [ ] 6.4 Resumen y CSV: `summary` con ceros y `active`; export con cabeceras exactas (`text/csv; charset=utf-8`, `attachment; filename="postulaciones-<fecha UTC>.csv"`, `no-store`), BOM, una empresa `=1+1` exportada como `"'=1+1"`, filtro aplicado; sin sesión → 401 JSON. Verificar: `npm run test:e2e` verde.
-- [ ] 6.5 Sin rutas públicas: `GET /api/applications` y `GET /api/applications/export` → 404; `GET /api/curated-profiles/:slug` de un perfil con postulaciones devuelve el mismo cuerpo que antes de crearlas; `sitemap.xml` sin cambios. Verificar: `npm run test:e2e` verde; salida completa del archivo en `verification/6-e2e.txt`.
+- [x] 6.1 CRUD y filtro: crear (201, `portal` normalizado), leer, `PATCH` parcial, listar con `status=APPLIED,INTERVIEWING` y orden por `updatedAt`, borrar (204) y leer (404); `status=HIRED` → 400; campo desconocido (`contactEmail`) → 400; sin sesión → 401 en las siete rutas. Verificar: `npm run test:e2e` verde.
+- [x] 6.2 Transiciones: `APPLIED → INTERVIEWING` → 200 con `nextStatuses`; `DRAFT → OFFER` → 422 con `error: "Unprocessable Entity"` y sin `stack`; `ACCEPTED → APPLIED` → 422; `PATCH` con notas y transición inválida → 422 y notas sin cambios en la base; `REJECTED → APPLIED` conserva `appliedAt`; `DRAFT` con `appliedAt` → 400. Verificar: `npm run test:e2e` verde.
+- [x] 6.3 Vínculos y aperturas: enlace de otro perfil, `LINKEDIN_POST` o sin perfil → 400; segundo uso del mismo enlace → 409; enlace revocado → 201; con visitas `OWNER` (día 1), `HUMAN` (días 3 y 5) y `BOT` → `opens: 2`, `firstOpenedAt` del día 3 y `lastOpenedAt` del día 5; borrar el perfil deja la postulación sin perfil ni enlace. Verificar: `npm run test:e2e` verde.
+- [x] 6.4 Resumen y CSV: `summary` con ceros y `active`; export con cabeceras exactas (`text/csv; charset=utf-8`, `attachment; filename="postulaciones-<fecha UTC>.csv"`, `no-store`), BOM, una empresa `=1+1` exportada como `"'=1+1"`, filtro aplicado; sin sesión → 401 JSON. Verificar: `npm run test:e2e` verde.
+- [x] 6.5 Sin rutas públicas: `GET /api/applications` y `GET /api/applications/export` → 404; `GET /api/curated-profiles/:slug` de un perfil con postulaciones devuelve el mismo cuerpo que antes de crearlas; `sitemap.xml` sin cambios. Verificar: `npm run test:e2e` verde; salida completa del archivo en `verification/6-e2e.txt`.
 
 ## 7. Contrato
 
-- [ ] 7.1 `npm run openapi:export` y, en `frontend/`, `npm run api:types`: aparecen las siete rutas de `/api/admin/applications`, `ApplicationStatus` como enum y la respuesta 422. Verificar: el test de deriva del frontend verde y `git diff --exit-code` tras un segundo export.
+- [x] 7.1 `npm run openapi:export` y, en `frontend/`, `npm run api:types`: aparecen las siete rutas de `/api/admin/applications`, `ApplicationStatus` como enum y la respuesta 422. Verificar: el test de deriva del frontend verde y `git diff --exit-code` tras un segundo export.
 
 ## 8. Panel (D11, D12)
 
