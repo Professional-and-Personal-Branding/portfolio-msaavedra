@@ -1,0 +1,20 @@
+Tarea 1.2 — schema JSON Resume v1.0.0 (2026-11-07)
+Origen: https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json
+Tag v1.0.0 -> commit 7095651fbbb593d2c5dc2db3095412b170d74d2e (api.github.com)
+SHA-256: ff6e39e79cfe6dedddf7c1e313ddb4da346bde8b055a884d7f6d849965dc27a6 (dos descargas dan el mismo hash)
+Tamano: 14945 bytes, LF, sin reformatear. .gitattributes del directorio: `-text` (evita conversion CRLF en Windows).
+Licencia: LICENSE.md del tag = MIT (Copyright 2014 JSON Resume). package.json del tag declara BSD-2-Clause (discrepancia del origen, anotada en SOURCE.md).
+
+Contraste con design.md § Context (todo confirmado, sin diferencias que contradigan D4):
+- $schema = http://json-schema.org/draft-04/schema# ............ confirmado
+- raiz additionalProperties:false y propiedad `$schema` (format uri) declarada ... confirmado
+- propiedades de raiz: $schema,basics,work,volunteer,education,awards,certificates,publications,skills,languages,interests,references,projects,meta
+- objetos internos additionalProperties:true ................... confirmado
+- definitions.iso8601: patron AAAA-MM-DD | AAAA-MM | AAAA ........ confirmado
+- certificates[].date: format "date" (fecha completa) .......... confirmado
+- meta.lastModified: type string, descripcion YYYY-MM-DDThh:mm:ss, sin `format` ... confirmado
+- meta.canonical format uri; meta.version string ............... confirmado
+- basics.email format email; basics.url/profiles[].url format uri ... confirmado
+- work.{name,position,location,startDate,endDate,summary,highlights}, education.{institution,area,startDate,endDate},
+  skills.{name,keywords}, languages.{language,fluency}, projects.{name,description,keywords,startDate,endDate,url,roles} ... confirmado
+Decisiones de preguntas (owner, 2026-11-07): P1 -> A (sin certificates[].date); P2 -> no (sin ruta fuera de /api).

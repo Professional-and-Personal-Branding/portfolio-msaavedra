@@ -23,6 +23,10 @@ import {
   DuplicateCuratedProfileUseCase,
   UnarchiveCuratedProfileUseCase,
 } from './application/use-cases/admin/curated-profile-lifecycle.use-cases';
+import {
+  ExportCuratedProfileResumeForAdminUseCase,
+  ExportCuratedProfileResumeUseCase,
+} from './application/use-cases/export-curated-profile-resume.use-case';
 import { PreviewCuratedProfileUseCase } from './application/use-cases/admin/preview-curated-profile.use-case';
 import {
   CreateShareLinkUseCase,
@@ -97,6 +101,8 @@ import { CryptoShareCodeGenerator } from './infrastructure/security/crypto-share
     GetOrCreateLinkedInShareLinkUseCase,
     BuildSitemapUseCase,
     GetProfileHeadUseCase,
+    ExportCuratedProfileResumeUseCase,
+    ExportCuratedProfileResumeForAdminUseCase,
     // Una sola instancia por proceso: la caché vive lo que vive la API.
     { provide: ProfileHeadCache, useValue: new ProfileHeadCache() },
   ],

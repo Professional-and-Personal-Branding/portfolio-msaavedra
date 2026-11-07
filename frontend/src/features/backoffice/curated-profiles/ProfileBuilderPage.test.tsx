@@ -1209,3 +1209,79 @@ describe('ProfileBuilderPage — overrides de skills y proyectos', () => {
     expect(await screen.findByRole('button', { name: 'solo-proyecto' })).toBeInTheDocument();
   });
 });
+
+// add-json-resume-export (D8): descarga del JSON Resume en la pestaña Publicación.
+describe('ProfileBuilderPage — Descargar JSON Resume', () => {
+  const openPublicacion = async (
+    user: ReturnType<typeof userEvent.setup>,
+    route = '/admin/perfiles/cp-1',
+  ) => {
+    renderWithProviders(<AppRouter />, { route });
+    await screen.findByRole('tab', { name: 'Publicación' });
+    await user.click(screen.getByRole('tab', { name: 'Publicación' }));
+    return screen.getByRole('group', { name: 'Descargar JSON Resume' });
+  };
+
+  it('un perfil guardado ofrece ES y EN a la exportación del panel por id, como descarga', async () => {
+    server.use(trackPreviews([]), ...adminHandlers);
+    const grupo = await openPublicacion(userEvent.setup());
+
+    const es = within(grupo).getByRole('link', { name: 'Descargar JSON Resume en español' });
+    const en = within(grupo).getByRole('link', { name: 'Descargar JSON Resume en inglés' });
+    expect(es).toHaveAttribute('href', `${API}/admin/curated-profiles/cp-1/resume.json?locale=es`);
+    expect(es).toHaveAttribute('download', 'acme-backend.es.resume.json');
+    expect(en).toHaveAttribute('href', `${API}/admin/curated-profiles/cp-1/resume.json?locale=en`);
+    expect(en).toHaveAttribute('download', 'acme-backend.en.resume.json');
+    expect(within(grupo).getByText('ES')).toBeInTheDocument();
+    expect(within(grupo).getByText('EN')).toBeInTheDocument();
+    expect(screen.queryByText('Se exporta la última versión guardada')).not.toBeInTheDocument();
+  });
+
+  it('un perfil privado exporta igual y la URL no lleva token', async () => {
+    server.use(
+      http.get(`${API}/admin/curated-profiles/:id`, () =>
+        HttpResponse.json(makeAdminCuratedProfile({ visibility: 'PRIVATE' })),
+      ),
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const grupo = await openPublicacion(userEvent.setup());
+
+    const es = within(grupo).getByRole('link', { name: 'Descargar JSON Resume en español' });
+    expect(es.getAttribute('href')).not.toContain('token');
+  });
+
+  it('un perfil nuevo tiene los dos enlaces deshabilitados y pide guardarlo', async () => {
+    server.use(trackPreviews([]), ...adminHandlers);
+    const grupo = await openPublicacion(userEvent.setup(), '/admin/perfiles/nuevo');
+
+    expect(
+      within(grupo).queryByRole('link', { name: /Descargar JSON Resume/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(grupo).getByRole('button', { name: 'Descargar JSON Resume en español' }),
+    ).toBeDisabled();
+    expect(
+      within(grupo).getByRole('button', { name: 'Descargar JSON Resume en inglés' }),
+    ).toBeDisabled();
+    expect(screen.getByText('Guardá el perfil para exportarlo')).toBeInTheDocument();
+  });
+
+  it('con cambios sin guardar avisa que se exporta lo guardado', async () => {
+    server.use(trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openPublicacion(user);
+    expect(screen.queryByText('Se exporta la última versión guardada')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Identidad' }));
+    await user.type(screen.getByLabelText('Título (es)'), ' X');
+    await user.click(screen.getByRole('tab', { name: 'Publicación' }));
+
+    expect(screen.getByText('Se exporta la última versión guardada')).toBeInTheDocument();
+    // Los enlaces siguen apuntando al perfil guardado.
+    expect(screen.getByRole('link', { name: 'Descargar JSON Resume en español' })).toHaveAttribute(
+      'href',
+      `${API}/admin/curated-profiles/cp-1/resume.json?locale=es`,
+    );
+  });
+});

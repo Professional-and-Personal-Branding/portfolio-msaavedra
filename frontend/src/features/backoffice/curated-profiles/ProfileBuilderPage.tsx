@@ -54,6 +54,7 @@ import {
 import { useProjects } from '../proyectos/use-proyectos-api';
 import { MissingTranslationsNotice } from './MissingTranslationsNotice';
 import { PreviewPanel } from './PreviewPanel';
+import { ResumeDownload } from './ResumeDownload';
 import { ExperiencesBlock, ProjectsBlock, SkillsBlock } from './SelectionBlocks';
 import { ShareLinksPanel } from './ShareLinksPanel';
 import type { SavedProfileRef } from './share-link-url';
@@ -624,6 +625,8 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
                 pending={preview.isPlaceholderData}
               />
             </div>
+
+            <ResumeDownload profile={savedRef} dirty={dirty} />
 
             <div className="flex flex-col gap-2">
               <Label>Compartir</Label>

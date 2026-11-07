@@ -1,6 +1,7 @@
 import { Locale } from '../../../../shared/domain/i18n';
 import { CuratedProfileOutput } from '../dto/curated-profile.output';
-import { isoDay, profilePath } from './sitemap.builder';
+import { profilePath } from './profile-path';
+import { isoDay } from './sitemap.builder';
 
 /**
  * Fragmento de `<head>` por perfil (spec `public-seo`, change
