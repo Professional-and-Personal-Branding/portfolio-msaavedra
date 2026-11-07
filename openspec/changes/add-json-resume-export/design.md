@@ -177,5 +177,7 @@ Sin migraciones ni datos nuevos. Despliegue normal (`preDeployCommand` sin cambi
 
 ## Open Questions
 
-- **P1 [no bloqueante] — Año de las certificaciones.** Opciones: **A)** omitir `date` (esta propuesta; documento válido, sin año); **B)** `date: "AAAA-01-01"` (válido, pero afirma un día que no se conoce); **C)** `date: "AAAA"` (lo aceptan muchos temas, pero no valida con formatos). Recomendación: **A** ahora; si el owner quiere el año, el camino limpio es un change que guarde la fecha completa de emisión (`issuedAt` `AAAA-MM-DD`), con migración.
-- **P2 [no bloqueante] — Ruta en el sitio fuera de `/api`.** Si el owner prefiere `/{slug}/resume.json` (la fila de la propuesta), es un agregado al `Caddyfile` sin tocar la API (D1). Recomendación: no por ahora; actualizar la fila de `docs/PROPUESTA-FEATURES.md` § 6.2 a la ruta de D1 cuando se archive (ese archivo lo edita otro change en paralelo).
+- **P1 [resuelta 2026-11-07: A] — Año de las certificaciones.** Opciones: **A)** omitir `date` (esta propuesta; documento válido, sin año); **B)** `date: "AAAA-01-01"` (válido, pero afirma un día que no se conoce); **C)** `date: "AAAA"` (lo aceptan muchos temas, pero no valida con formatos). Recomendación: **A** ahora; si el owner quiere el año, el camino limpio es un change que guarde la fecha completa de emisión (`issuedAt` `AAAA-MM-DD`), con migración.
+- **P2 [resuelta 2026-11-07: no] — Ruta en el sitio fuera de `/api`.** Si el owner prefiere `/{slug}/resume.json` (la fila de la propuesta), es un agregado al `Caddyfile` sin tocar la API (D1). Recomendación: no por ahora; actualizar la fila de `docs/PROPUESTA-FEATURES.md` § 6.2 a la ruta de D1 cuando se archive (ese archivo lo edita otro change en paralelo).
+
+**Resolución (owner, 2026-11-07).** P1 → **A**: las certificaciones salen sin `date`; un `issuedAt` completo sería otro change. P2 → **no**: no hay ruta en el sitio fuera de `/api`; la URL es la de D1.
