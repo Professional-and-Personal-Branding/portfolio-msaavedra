@@ -176,6 +176,8 @@ Alternativas descartadas:
   - vacío: `Todavía no registraste postulaciones` (con `Todas`) y `No hay postulaciones con este estado` (con otro filtro)
 - **Exportar CSV**: botón en el encabezado que descarga con `fetch` (cookie de sesión), toma el nombre de `Content-Disposition` y dispara la descarga con un `URL.createObjectURL` temporal; un 401 manda al login como el resto del panel y otro error muestra `No se pudo exportar. Intentá de nuevo.`
 
+**Resuelto (2026-11-07):** header `max-w-7xl` y acciones solo con ícono desde `lg` (el `<main>` sigue en `max-w-6xl`); el criterio de arriba se cumple en 1280, 1440, 1536 y 1920 px, sin achicar etiquetas ni íconos (`verification/8.5-barra.txt`). La salida `2xl` queda descartada: a 1536 px no alcanzaba. Para que entre también con un noveno ítem (`add-cv-consistency-rules` suma «Revisión»), los enlaces de la barra bajan a `xl:px-1.5` con `gap-0.5` y `whitespace-nowrap`: nueve ítems miden 983 px de 1008 disponibles; el menú lateral por debajo de `xl` conserva su padding.
+
 Alternativas descartadas:
 - **Enlace directo `<a href download>`.** Con la sesión vencida, el navegador guardaría el JSON del 401 como archivo.
 - **Página de detalle aparte.** El diálogo alcanza para once campos y sigue el patrón de las demás pantallas.

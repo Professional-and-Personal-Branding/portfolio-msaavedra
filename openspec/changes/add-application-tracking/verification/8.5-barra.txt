@@ -1,10 +1,16 @@
-1280x800: siete items scrollWidth=853; scrollWidth=944 clientWidth=880 desborda=true alturaEnlaces=36-56
-1536x900: siete items scrollWidth=799; scrollWidth=944 clientWidth=556 desborda=true alturaEnlaces=36-56
+Medidas de la nav "Secciones" (header max-w-7xl, acciones solo con icono desde lg, enlaces con xl:px-1.5, gap-0.5 y whitespace-nowrap), imagen de frontend/Dockerfile, Chrome.
+scrollWidth == clientWidth: la nav toma el ancho de su contenido y este cabe en el disponible (1008 px: el max-w-7xl menos marca y acciones).
 
-Medidas en Chrome (puppeteer-core) sobre la imagen de frontend/Dockerfile, nav "Secciones" de la barra horizontal.
-Con ocho items la barra se desborda en 1280 (944 > 880) y en 1536 (944 > 556). Con siete items (Postulaciones oculto):
-1280: 853 <= 880 (entraba); 1536: 799 > 556 (ya se desbordaba antes de este change; por debajo de 2xl las acciones
-del header son solo iconos, pero desde 2xl muestran su texto y le quitan ancho a la barra).
-El plan de D11 (pasar la barra completa a 2xl) no resuelve el criterio: el contenedor mide max-w-6xl tambien desde 2xl
-y a 1536 la barra tiene aun menos lugar. Queda como PENDIENTE de decision del arquitecto; no se cambio el layout.
-La barra se desplaza dentro de si misma (overflow-x-auto), sin estirar la pagina ni desbordar el viewport.
+OCHO items (los reales):
+1280x800: scrollWidth=889 clientWidth=889 entra=true alturaEnlaces=36-36 paginaSinScrollHorizontal=true
+1440x900: scrollWidth=889 clientWidth=889 entra=true alturaEnlaces=36-36 paginaSinScrollHorizontal=true
+1536x900: scrollWidth=889 clientWidth=889 entra=true alturaEnlaces=36-36 paginaSinScrollHorizontal=true
+1920x1080: scrollWidth=889 clientWidth=889 entra=true alturaEnlaces=36-36 paginaSinScrollHorizontal=true
+
+NUEVE items (noveno item 'Revision' agregado solo en el DOM de la medicion, sin commitear):
+1280x800: scrollWidth=983 clientWidth=983 entra=true alturaEnlaces=36-36 paginaSinScrollHorizontal=true
+1440x900: scrollWidth=983 clientWidth=983 entra=true alturaEnlaces=36-36 paginaSinScrollHorizontal=true
+1536x900: scrollWidth=983 clientWidth=983 entra=true alturaEnlaces=36-36 paginaSinScrollHorizontal=true
+1920x1080: scrollWidth=983 clientWidth=983 entra=true alturaEnlaces=36-36 paginaSinScrollHorizontal=true
+
+Historia: con ocho items y solo header max-w-7xl + acciones con icono ya entraba (999 px) sin tocar el padding. Con nueve eso daba 1053 > 1008 (con etiquetas que envuelven). Con padding 8 px y gap 2 px: 1019 > 1008. Con padding 6 px (xl:px-1.5) y gap 2 px (gap-0.5): 983 <= 1008. Antes de todo (ocho items, header max-w-6xl y acciones con texto desde 2xl): 1280 -> 944 > 880; 1536 -> 944 > 556.

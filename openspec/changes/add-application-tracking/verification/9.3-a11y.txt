@@ -66,7 +66,7 @@ admin-builder.desktop: sin violaciones · teclado: ok (30 controles)
 
 # a11y:check · axe-core 4.13.0
 
-Base: http://localhost:8102 · 2026-11-07T20:01:57.938Z · 60 cargas (con panel)
+Base: http://localhost:8102 · 2026-11-07T20:33:48.552Z · 60 cargas (con panel)
 
 | Regla | Impacto | Nodos | Páginas | Ejemplo |
 |---|---|---|---|---|
