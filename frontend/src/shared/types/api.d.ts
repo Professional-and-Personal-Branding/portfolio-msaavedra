@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 69bac1211f725eea8f2ac83f856f6f238b9fc2a3f44cc32cb8b8245c19de5520
+// openapi-sha256: 496bca8ceb851c83689e8c9066ac8f9a90869de6cb82708c72f476fcc4262e8d
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -219,6 +219,26 @@ export interface paths {
          * @description Copia la configuración con un slug derivado (`-2`, `-3`, …). El duplicado nace PRIVATE y no enumerado, sin token, sin visitas y sin archivar. El cuerpo no lleva nada.
          */
         post: operations["AdminCuratedProfileController_duplicate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/curated-profiles/{id}/resume.json": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Exportar un perfil curado como JSON Resume v1.0.0
+         * @description Lo guardado del perfil, en el idioma pedido, con el mismo composer y el mismo mapper que la ruta pública (`GET /curated-profiles/{slug}/resume.json`) pero sin evaluar visibilidad ni archivado: el administrador exporta también perfiles PRIVATE, PROTECTED y archivados. No registra visita. `Cache-Control: private, no-store`.
+         */
+        get: operations["AdminCuratedProfileController_resume"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -792,6 +812,26 @@ export interface paths {
          * @description Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash) con su tipo: propia si trae una sesión del panel válida, de bot según el User-Agent, o de una persona; solo estas últimas suman en `views`. Los parámetros opcionales `via` (enlace de seguimiento) y `src` (portal) solo atribuyen la visita: no cambian la respuesta. Un slug anterior (renombrado) también resuelve: el cuerpo trae el slug canónico y `Content-Location` su ruta. Un perfil archivado responde 404.
          */
         get: operations["CuratedProfileController_findBySlug"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/curated-profiles/{slug}/resume.json": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Exportar el perfil curado como JSON Resume v1.0.0
+         * @description El mismo perfil que `GET /curated-profiles/{slug}` (mismos filtros, overrides, orden y secciones) traducido a JSON Resume, en el idioma pedido (un archivo por idioma). Mismos códigos que el detalle: 404 para slug inexistente, PRIVATE o archivado; 401 para PROTECTED sin token válido (`X-Access-Token` o `token`). No registra visita ni atribuye `via`/`src`. Un slug anterior resuelve con `Content-Location` al canónico. Responde como descarga (`Content-Disposition: attachment`), `X-Robots-Tag: noindex` y `Cache-Control: no-cache` (PUBLIC) o `private, no-store` (PROTECTED).
+         */
+        get: operations["CuratedProfileController_resume"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3162,6 +3202,59 @@ export interface operations {
             };
         };
     };
+    AdminCuratedProfileController_resume: {
+        parameters: {
+            query?: {
+                /** @description Alias de `locale`. */
+                lang?: "es" | "en";
+                /** @description Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`). */
+                locale?: "es" | "en";
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    /** @description `no-cache` (PUBLIC) o `private, no-store` (PROTECTED y panel) */
+                    "Cache-Control"?: string;
+                    /** @description Descarga como `<slug canónico>.<locale>.resume.json` */
+                    "Content-Disposition"?: string;
+                    /** @description Locale servido */
+                    "Content-Language"?: string;
+                    /** @description `noindex`: lo indexable es la página */
+                    "X-Robots-Tag"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
     AdminShareLinkController_list: {
         parameters: {
             query?: never;
@@ -5115,6 +5208,67 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CuratedProfileResponse"];
+                };
+            };
+            /** @description PROTECTED sin token válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Slug inexistente, perfil PRIVATE o archivado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    CuratedProfileController_resume: {
+        parameters: {
+            query?: {
+                /** @description Alias de `locale`. */
+                lang?: "es" | "en";
+                /** @description Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`). */
+                locale?: "es" | "en";
+                /** @description Token de acceso para perfiles PROTECTED (alternativa al header `X-Access-Token`, que tiene prioridad). */
+                token?: string;
+            };
+            header?: {
+                /** @description Token de acceso para perfiles PROTECTED (prioridad sobre `?token=`). */
+                "X-Access-Token"?: string;
+            };
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    /** @description `no-cache` (PUBLIC) o `private, no-store` (PROTECTED y panel) */
+                    "Cache-Control"?: string;
+                    /** @description Descarga como `<slug canónico>.<locale>.resume.json` */
+                    "Content-Disposition"?: string;
+                    /** @description Locale servido */
+                    "Content-Language"?: string;
+                    /** @description Solo si se pidió un slug anterior: ruta del slug canónico */
+                    "Content-Location"?: string;
+                    /** @description `noindex`: lo indexable es la página */
+                    "X-Robots-Tag"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description PROTECTED sin token válido */

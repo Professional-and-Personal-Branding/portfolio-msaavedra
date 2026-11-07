@@ -1,4 +1,5 @@
 import { isPubliclyListed, ListingState } from '../../domain/services/publicly-listed';
+import { HOME_SLUG, profilePath } from './profile-path';
 
 /** Entrada del sitemap: URL absoluta y su última modificación. */
 export interface SitemapEntry {
@@ -12,16 +13,9 @@ export interface SitemapProfile extends ListingState {
   updatedAt?: Date;
 }
 
-const HOME_SLUG = 'all';
-
 /** Día UTC (`AAAA-MM-DD`) de una fecha: lo comparten el `<lastmod>` del sitemap y `dateModified` del head. */
 export function isoDay(date: Date): string {
   return date.toISOString().slice(0, 10);
-}
-
-/** Ruta pública de un perfil: la home es `all`. La comparten el sitemap y el head. */
-export function profilePath(slug: string): string {
-  return slug === HOME_SLUG ? '/' : `/${slug}`;
 }
 
 /**

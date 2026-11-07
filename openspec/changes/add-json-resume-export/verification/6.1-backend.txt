@@ -1,0 +1,18 @@
+## lint
+> eslint "{src,test,scripts}/**/*.ts"
+
+## typecheck
+> tsc --noEmit -p tsconfig.json
+
+## test
+Test Suites: 103 passed, 103 total
+Tests:       1029 passed, 1029 total
+## build
+> nest build
+
+## test:e2e
+Test Suites: 18 passed, 18 total
+Tests:       298 passed, 298 total
+## openapi:export + git diff --exit-code
+OpenAPI exportado a openapi.json: 46 rutas, 70 schemas
+sin deriva

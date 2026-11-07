@@ -1209,6 +1209,142 @@
         ]
       }
     },
+    "/api/curated-profiles/{slug}/resume.json": {
+      "get": {
+        "description": "El mismo perfil que `GET /curated-profiles/{slug}` (mismos filtros, overrides, orden y secciones) traducido a JSON Resume, en el idioma pedido (un archivo por idioma). Mismos códigos que el detalle: 404 para slug inexistente, PRIVATE o archivado; 401 para PROTECTED sin token válido (`X-Access-Token` o `token`). No registra visita ni atribuye `via`/`src`. Un slug anterior resuelve con `Content-Location` al canónico. Responde como descarga (`Content-Disposition: attachment`), `X-Robots-Tag: noindex` y `Cache-Control: no-cache` (PUBLIC) o `private, no-store` (PROTECTED).",
+        "operationId": "CuratedProfileController_resume",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "tech-lead-dotnet",
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "token",
+            "required": false,
+            "in": "query",
+            "description": "Token de acceso para perfiles PROTECTED (alternativa al header `X-Access-Token`, que tiene prioridad).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Access-Token",
+            "in": "header",
+            "description": "Token de acceso para perfiles PROTECTED (prioridad sobre `?token=`).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "headers": {
+              "Content-Language": {
+                "description": "Locale servido",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Disposition": {
+                "description": "Descarga como `<slug canónico>.<locale>.resume.json`",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Robots-Tag": {
+                "description": "`noindex`: lo indexable es la página",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "`no-cache` (PUBLIC) o `private, no-store` (PROTECTED y panel)",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Location": {
+                "description": "Solo si se pidió un slug anterior: ruta del slug canónico",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Documento JSON Resume v1.0.0 (https://jsonresume.org/schema), con `$schema` apuntando al schema del tag v1.0.0. Solo claves del schema; las listas y los textos vacíos se omiten.",
+                  "additionalProperties": true,
+                  "externalDocs": {
+                    "description": "JSON Schema de JSON Resume v1.0.0",
+                    "url": "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "PROTECTED sin token válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Slug inexistente, perfil PRIVATE o archivado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Exportar el perfil curado como JSON Resume v1.0.0",
+        "tags": [
+          "curated-profiles"
+        ]
+      }
+    },
     "/api/curated-profiles/{slug}": {
       "get": {
         "description": "Experiencias y skills filtradas por intersección de tags con overrides, orden cronológico, tema resuelto y secciones. Perfiles PROTECTED requieren el token por header `X-Access-Token` o query `token`. Cada respuesta 200 registra una visita (analítica, IP solo como hash) con su tipo: propia si trae una sesión del panel válida, de bot según el User-Agent, o de una persona; solo estas últimas suman en `views`. Los parámetros opcionales `via` (enlace de seguimiento) y `src` (portal) solo atribuyen la visita: no cambian la respuesta. Un slug anterior (renombrado) también resuelve: el cuerpo trae el slug canónico y `Content-Location` su ruta. Un perfil archivado responde 404.",
@@ -1527,6 +1663,122 @@
           }
         ],
         "summary": "Crear perfil curado",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/curated-profiles/{id}/resume.json": {
+      "get": {
+        "description": "Lo guardado del perfil, en el idioma pedido, con el mismo composer y el mismo mapper que la ruta pública (`GET /curated-profiles/{slug}/resume.json`) pero sin evaluar visibilidad ni archivado: el administrador exporta también perfiles PRIVATE, PROTECTED y archivados. No registra visita. `Cache-Control: private, no-store`.",
+        "operationId": "AdminCuratedProfileController_resume",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "headers": {
+              "Content-Language": {
+                "description": "Locale servido",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Disposition": {
+                "description": "Descarga como `<slug canónico>.<locale>.resume.json`",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Robots-Tag": {
+                "description": "`noindex`: lo indexable es la página",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "`no-cache` (PUBLIC) o `private, no-store` (PROTECTED y panel)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Documento JSON Resume v1.0.0 (https://jsonresume.org/schema), con `$schema` apuntando al schema del tag v1.0.0. Solo claves del schema; las listas y los textos vacíos se omiten.",
+                  "additionalProperties": true,
+                  "externalDocs": {
+                    "description": "JSON Schema de JSON Resume v1.0.0",
+                    "url": "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Exportar un perfil curado como JSON Resume v1.0.0",
         "tags": [
           "admin"
         ]

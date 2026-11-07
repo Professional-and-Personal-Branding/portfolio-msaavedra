@@ -1,0 +1,2 @@
+# El schema se versiona byte a byte: sin conversion de fin de linea (el test fija su SHA-256).
+schema-v1.0.0.json -text
