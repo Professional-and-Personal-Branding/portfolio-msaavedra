@@ -32,7 +32,7 @@ Cada petición SHALL recibir un `requestId` (el de la cabecera `X-Request-Id` si
 - **THEN** el `requestId` del cuerpo de error coincide con el del log donde está el detalle completo
 
 ### Requirement: Redacción de datos sensibles
-Los logs MUST NOT contener contraseñas, JWT, cookies de sesión ni tokens de acceso. SHALL redactarse las cabeceras `authorization`, `cookie`, `set-cookie` y `x-access-token`, el parámetro de consulta `token` y los campos `password` y `accessToken` de los cuerpos.
+Los logs MUST NOT contener contraseñas, JWT, cookies de sesión ni tokens de acceso. SHALL redactarse las cabeceras `authorization`, `cookie`, `set-cookie` y `x-access-token`, el parámetro de consulta `token` y los campos `password`, `currentPassword`, `newPassword` y `accessToken` de los cuerpos.
 
 #### Scenario: Login
 - **WHEN** se procesa `POST /api/auth/login` con una contraseña
@@ -45,3 +45,7 @@ Los logs MUST NOT contener contraseñas, JWT, cookies de sesión ni tokens de ac
 #### Scenario: Respuesta de sesión
 - **WHEN** el login responde con `Set-Cookie`
 - **THEN** el log no contiene el JWT emitido
+
+#### Scenario: Cambio de contraseña
+- **WHEN** se procesa `POST /api/auth/password`, con éxito, con la actual incorrecta y con una nueva demasiado corta
+- **THEN** ninguna línea de log contiene la contraseña actual, la nueva ni el JWT reemitido

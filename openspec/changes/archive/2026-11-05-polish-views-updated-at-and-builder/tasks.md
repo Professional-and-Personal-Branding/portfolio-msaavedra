@@ -53,5 +53,5 @@
 ## 8. Cierre
 
 - [x] 8.1 `npx -y @fission-ai/openspec@1.14.1 validate --all --strict` y `validate polish-views-updated-at-and-builder --strict`, sin avisos «Archive would refuse». Verificar: salida en `verification/8.1-validacion.txt`.
-- [ ] 8.2 Completar `verification.md` con la tabla de resultados y abrir el PR (con el `merge-base` revisado si la rama sigue apilada). Verificar: CI verde en el PR (`Backend · e2e…` y `Frontend · lint, tipos, tests y build`); enlace a la corrida en `verification.md`.
-- [ ] 8.3 Al archivar: roadmap de `CLAUDE.md` con una línea del change. Si `upgrade-profile-structured-data` todavía no se archivó, avisar en su PR que el arreglo de su P1 lo hizo este change y no `fix-curated-profile-updated-at`; los changes ya archivados no se editan. Verificar: revisión del diff del PR de archivado.
+- [x] 8.2 Completar `verification.md` con la tabla de resultados y abrir el PR (con el `merge-base` revisado si la rama sigue apilada). Verificar: CI verde en el PR (`Backend · e2e…` y `Frontend · lint, tipos, tests y build`); enlace a la corrida en `verification.md`. **Nota:** PR #48 fusionado.
+- [x] 8.3 Al archivar: roadmap de `CLAUDE.md` con una línea del change. Si `upgrade-profile-structured-data` todavía no se archivó, avisar en su PR que el arreglo de su P1 lo hizo este change y no `fix-curated-profile-updated-at`; los changes ya archivados no se editan. Verificar: revisión del diff del PR de archivado.
