@@ -406,7 +406,7 @@ La escritura de caché cuesta 1,25x y el Batch tiene un 50 % de descuento.
 - **14. Cobertura en público:** A, solo en el panel.
 - **15. Datos de reclutadores en el CRM:** A, empresa, puesto y notas, sin contacto.
 
-Siguen abiertas las demás; las bloqueantes para 1.3 y 2.0 (3, 4, 6, 12) se responden al abrir esas fases.
+Siguen abiertas las demás; la única bloqueante abierta es la 4 (tope de IA, para 2.0) y se responde al abrir esa fase. La 12 quedó diferida a después del deploy.
 
 1. **Orden de arranque.**
    - A) 1.0.x y después 1.2 sin IA.

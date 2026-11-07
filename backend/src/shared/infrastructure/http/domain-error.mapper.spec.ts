@@ -4,15 +4,24 @@ import {
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import {
   AccessDeniedError,
   ConflictError,
   DomainError,
   NotFoundError,
+  RuleViolationError,
   ValidationError,
 } from '../../domain/errors';
 import { toHttpException } from './domain-error.mapper';
+
+class SampleRuleViolation extends RuleViolationError {
+  readonly code = 'SAMPLE_RULE';
+  constructor() {
+    super('Transición de estado inválida: DRAFT → OFFER');
+  }
+}
 
 class WeirdError extends DomainError {
   readonly code = 'WEIRD';
@@ -52,6 +61,16 @@ describe('toHttpException', () => {
     const ex = toHttpException(new ConflictError('Perfil curado', 'slug "all" ya existe'));
     expect(ex).toBeInstanceOf(ConflictException);
     expect(ex.getResponse()).toMatchObject({ statusCode: 409, error: 'Conflict' });
+  });
+
+  it('RuleViolationError (subclase) → 422 Unprocessable Entity sin stack', () => {
+    const ex = toHttpException(new SampleRuleViolation());
+    expect(ex).toBeInstanceOf(UnprocessableEntityException);
+    expect(ex.getResponse()).toEqual({
+      statusCode: 422,
+      message: 'Transición de estado inválida: DRAFT → OFFER',
+      error: 'Unprocessable Entity',
+    });
   });
 
   it('error de dominio no previsto → 500 sin filtrar detalles', () => {
