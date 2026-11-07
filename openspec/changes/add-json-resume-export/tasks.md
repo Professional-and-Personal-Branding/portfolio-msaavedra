@@ -31,9 +31,9 @@
 
 ## 4. Contrato (D10)
 
-- [ ] 4.1 Decoradores Swagger de las dos rutas según D10 (`@ApiProduces`, parámetros, 200/401/404, cabeceras, cuerpo como objeto con `externalDocs`). Verificar: `GET /api/docs-json` local muestra las dos rutas.
-- [ ] 4.2 Test de OpenAPI (el existente o uno nuevo): la ruta pública declara `locale`, `X-Access-Token` y `token` y no declara `via` ni `src`. Verificar: verde.
-- [ ] 4.3 `npm run openapi:export` y, en el frontend, `npm run api:types`. Verificar: `backend/openapi.json` y `frontend/src/shared/types/api.d.ts` con las dos rutas; test de deriva del frontend verde.
+- [x] 4.1 Decoradores Swagger de las dos rutas según D10 (`@ApiProduces`, parámetros, 200/401/404, cabeceras, cuerpo como objeto con `externalDocs`). Verificar: `GET /api/docs-json` local muestra las dos rutas.
+- [x] 4.2 Test de OpenAPI (el existente o uno nuevo): la ruta pública declara `locale`, `X-Access-Token` y `token` y no declara `via` ni `src`. Verificar: verde.
+- [x] 4.3 `npm run openapi:export` y, en el frontend, `npm run api:types`. Verificar: `backend/openapi.json` y `frontend/src/shared/types/api.d.ts` con las dos rutas; test de deriva del frontend verde.
 
 ## 5. Constructor (D8)
 
