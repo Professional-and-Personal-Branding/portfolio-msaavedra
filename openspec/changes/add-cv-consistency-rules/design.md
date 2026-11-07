@@ -284,7 +284,7 @@ Sin cambios en `schema.prisma`, sin variables de entorno y sin dependencias de r
 
 ## Open Questions
 
-Ninguna bloqueante. No bloqueante:
+Ninguna bloqueante. Las dos no bloqueantes quedaron resueltas el 2026-11-07 (P1 → A, P2 → A). Detalle:
 
 1. **Tarjeta resumen en el Dashboard** (D12 la deja fuera). Opciones:
    - A) No, por ahora.
@@ -292,8 +292,12 @@ Ninguna bloqueante. No bloqueante:
 
    **Recomiendo A**, y revisar B después de unas semanas de uso. **[no bloqueante]**
 
+   **Resuelta el 2026-11-07: A** (sin tarjeta en el Dashboard).
+
 2. **`yearsOfExperience` del ejemplo** (Risks). Desde diciembre de 2026 el ejemplo da el aviso de años. Opciones:
    - A) Dejarlo: sirve para mostrar el aviso en el manual.
    - B) Subirlo a 12 en el mismo PR.
 
    **Recomiendo A**: los datos de ejemplo no se tocan en este change, y TC-47 fuerza el aviso de todos modos con un valor propio. **[no bloqueante]**
+
+   **Resuelta el 2026-11-07: A** (no se toca el `yearsOfExperience` del ejemplo).

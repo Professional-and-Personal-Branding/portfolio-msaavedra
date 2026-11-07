@@ -31,7 +31,7 @@ Un conjunto de reglas puras, con un código estable y el ítem exacto al que apu
 - **`npm run cv:lint`** (D13): corre las mismas reglas sobre un archivo del seed (por defecto `docs/cv-data.json`), sin base. Sale con **1** si hay algún `error` y con **2** si el archivo no se puede leer. Corre en el job `backend` del CI con los dos archivos.
 - **Errores independientes de la fecha** (D11): ninguna regla de severidad `error` depende de `asOf`, así el CI no cambia de resultado con el calendario.
 - **Tests:** `fast-check` como devDependency del backend (D14), con propiedades sobre `computeYearsOfExperience` y la regla de años, y un fixture con un error sembrado por código: tiene que detectarse el 100 %.
-- **Contrato y docs:** `backend/openapi.json` y `frontend/src/shared/types/api.d.ts` regenerados; `docs/MANUAL.md` e `index.html` (**TC-47**, B15 nueva), `docs/DATA-POPULATION.md` (cómo usar `cv:lint` antes de sembrar), `docs/CHANGELOG.md` y la línea del roadmap en `CLAUDE.md` al archivar.
+- **Contrato y docs:** `backend/openapi.json` y `frontend/src/shared/types/api.d.ts` regenerados; `docs/MANUAL.md` e `index.html` (**TC-47**, B16 nueva), `docs/DATA-POPULATION.md` (cómo usar `cv:lint` antes de sembrar), `docs/CHANGELOG.md` y la línea del roadmap en `CLAUDE.md` al archivar.
 
 ## Non-goals
 

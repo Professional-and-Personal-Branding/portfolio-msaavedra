@@ -740,6 +740,58 @@ Ruta: `/admin/cuenta`. Se llega con el botón **Cuenta** de la barra superior (a
 
 ![Cuenta con el aviso de repetición distinta](manual/bo-cuenta.jpg)
 
+### B16 — Revisión
+
+Ruta: `/admin/revision`. Se llega con el ítem **Revisión** del menú (después de **Perfiles curados**). Contrasta el CV consigo mismo y lista lo que se contradice, con el ítem exacto y un enlace **Abrir** para corregirlo. **Es solo lectura: nada se corrige solo.** La pantalla vuelve a pedir los hallazgos cada vez que se entra; mientras está abierta, **Volver a revisar** actualiza la lista después de corregir.
+
+Arriba, el resumen («1 error · 2 avisos · 1 sugerencia», en singular cuando el número es 1) y una línea de experiencia: «Experiencia: 11 años declarados; las fechas suman 11 años y 11 meses». Debajo, los hallazgos en tres bloques —**Errores**, **Avisos** y **Sugerencias**— y, dentro de cada uno, por tipo de ítem; los bloques vacíos no se muestran. Cada severidad se distingue por su título y su ícono, no solo por el color.
+
+| Severidad | Qué significa |
+|---|---|
+| Error | El dato viola una regla que la API del panel rechazaría, o rompe el render. Solo puede venir del seed, de SQL directo o de datos anteriores a una validación. |
+| Aviso | Probablemente es un descuido y lo ve un reclutador. |
+| Sugerencia | Conviene mirarlo, pero suele ser legítimo (una certificación vencida, dos trabajos «actuales»). |
+
+**Las 14 reglas:**
+
+| Código | Severidad | Qué detecta |
+|---|---|---|
+| `profile.years-mismatch` | aviso | Los años declarados en Portada quedan fuera de [piso, techo] de los años que suman las experiencias cargadas (ocultas incluidas). |
+| `date.invalid-format` | error | Una fecha fuera de AAAA-MM (experiencia) o de AAAA-MM / AAAA (formación y vencimiento), o un año de certificación que no es AAAA. |
+| `date.end-before-start` | error | La fecha de fin es anterior a la de inicio. |
+| `date.ongoing-with-end` | error | Una experiencia «actual» o una formación «en curso» que además tiene fecha de fin. |
+| `experience.multiple-current` | sugerencia | Más de una experiencia visible marcada como actual. |
+| `i18n.missing-translation` | aviso | Un campo bilingüe vacío en un idioma y con contenido en el otro (el mismo criterio que el aviso del constructor). |
+| `i18n.highlights-count-mismatch` | aviso | Los logros de una experiencia tienen distinta cantidad en español y en inglés. |
+| `url.invalid` | error | Una URL que no es http(s) en un proyecto o enlace; en una certificación, cualquiera que no sea https. |
+| `url.not-https` | aviso | Una URL http (válida) en un proyecto o enlace social. |
+| `certification.expired` | sugerencia | Una certificación visible con vencimiento anterior al mes actual. |
+| `curated.orphan-reference` | aviso | Un id de includeIds o excludeIds que no es ninguna experiencia, skill ni proyecto. |
+| `curated.conflicting-reference` | sugerencia | El mismo id en includeIds y excludeIds (gana la exclusión). |
+| `curated.unmatched-filter-tag` | aviso | Un tag de filtro que ningún ítem visible tiene. |
+| `curated.no-experiences` | aviso | Con sus criterios, el perfil curado no muestra ninguna experiencia. |
+
+| Texto del hallazgo (ejemplos) | Regla |
+|---|---|
+| Declarás {declared} años de experiencia, pero las experiencias cargadas suman {años} años y {meses} meses. | Perfil |
+| {campo} no tiene un formato válido (AAAA-MM): «{valor}». · La fecha de fin ({fin}) es anterior a la de inicio ({inicio}). · Está marcada como actual y además tiene fecha de fin ({fin}). | Fechas |
+| Falta el texto en inglés de summary. · Los logros tienen 4 ítems en español y 3 en inglés. | Traducciones |
+| url no es una URL válida. · url usa http; conviene https. · Venció en 2025-12: el sitio la muestra como «Vencida». | Enlaces |
+| Con sus criterios actuales no muestra ninguna experiencia. · El tag «cobol» no coincide con ninguna experiencia, skill ni proyecto visible. | Perfiles curados |
+
+| Mensaje | Cuándo |
+|---|---|
+| No hay hallazgos: el CV es consistente. | La API no devolvió ningún hallazgo. |
+| El ítem ya no existe. | Se abrió `/admin/<pantalla>?editar=<id>` con un id que ya no está en la lista (por ejemplo, el ítem se borró). No se abre ningún diálogo. |
+
+**Años de experiencia.** `yearsOfExperience` se carga a mano en **Portada**; la revisión solo avisa si contradice las fechas de las experiencias cargadas (fusiona los trabajos que se solapan y cuenta ambos meses extremos; admite redondear para arriba o para abajo). Un aviso con tus datos reales no es un error de la plataforma: si falta experiencia anterior, cargala; si no, ajustá el número. **El valor declarado no se modifica nunca.**
+
+**Abrir.** Lleva a la pantalla del ítem y abre su diálogo de edición (`?editar=<id>`, que sale de la URL al abrirse): **Experiencias**, **Skills** (categoría o skill), **Formación** (formación o certificación) y **Proyectos** (proyecto o enlace). Para el perfil base y los idiomas abre **Portada**; para un perfil curado, su ficha. Los hallazgos de errores no bloquean nada: el panel no deja guardar un dato inválido, así que un error solo puede venir de afuera del panel.
+
+**Misma revisión, sin base.** `npm run cv:lint` corre las mismas reglas sobre el archivo del seed (por defecto `docs/cv-data.json`; otro con `-- --file <ruta>`) y sale con **0** sin errores (los avisos y sugerencias no fallan), **1** con algún error y **2** si el archivo no existe o el seed lo rechaza. El CI lo corre sobre `docs/cv-data.json` y sobre el ejemplo.
+
+![Revisión con un aviso y una sugerencia](manual/bo-revision.jpg)
+
 ---
 
 ## 2. Casos de la vista pública
@@ -1629,6 +1681,68 @@ rm -f a.jar a-vieja.jar b.jar c.jar
 
 ![Cuenta con el aviso de repetición distinta](manual/bo-cuenta.jpg)
 
+### TC-47 — Revisar la consistencia del CV ✅
+
+**Precondición:** base de ejemplo **descartable** (nunca `portfolio`) sembrada con `npm run seed:example`, con la API y el frontend levantados (de preferencia la imagen de `frontend/Dockerfile`) y una sesión de administrador. El ejemplo declara 11 años y sus experiencias van de 2015-01 al mes actual (`cobalto` es actual): en noviembre de 2026 suman 143 meses (11 años y 11 meses) y no hay aviso de años; desde diciembre de 2026 suman 12 años o más y el aviso aparece desde el paso 1, lo que también es correcto. Tiene una certificación vencida (`2025-12`) y el perfil `ejemplo-borrador` sin la descripción en inglés, a propósito.
+
+**Pasos (panel):**
+1. Entrá a `/admin` y pulsá **Revisión** en el menú.
+2. Mirá el resumen y los bloques **Avisos** y **Sugerencias**.
+3. En **Portada**, cambiá los años de experiencia a `15` y guardá. Volvé a **Revisión** y pulsá **Volver a revisar**.
+4. En el hallazgo de años, pulsá **Abrir**.
+5. Volvé a poner `11` en **Portada**, guardá y volvé a **Revisión**.
+6. En **Experiencias**, editá una experiencia visible: borrá el **Resumen (EN)** y guardá. Volvé a **Revisión**.
+7. En ese hallazgo, pulsá **Abrir**.
+8. Restaurá el resumen en inglés, guardá y volvé a **Revisión**.
+9. Abrí a mano `/admin/formacion?editar=inexistente`.
+
+**Resultado esperado:**
+1. Se abre `/admin/revision` con el ítem **Revisión** marcado como activo.
+2. El resumen dice «0 errores · 1 aviso · 1 sugerencia» y «Experiencia: 11 años declarados; las fechas suman {años} años y {meses} meses», con los del mes actual (11 y 11 en noviembre de 2026; desde diciembre, un aviso más por los años). En **Avisos** está `ejemplo-borrador` con «Falta el texto en inglés de description.»; en **Sugerencias**, la certificación vencida con «Venció en 2025-12: el sitio la muestra como «Vencida».».
+3. En **Avisos** aparece «Declarás 15 años de experiencia, pero las experiencias cargadas suman {años} años y {meses} meses.» (los mismos números del paso 2) y el resumen pasa a «0 errores · 2 avisos · 1 sugerencia».
+4. Se abre **Portada**.
+5. El aviso de 15 años desaparece y el resumen vuelve al del paso 2.
+6. Aparece en **Avisos** un hallazgo de esa experiencia: «Falta el texto en inglés de summary.».
+7. Se abre **Experiencias** con el diálogo de edición de esa experiencia, y la URL ya no tiene `?editar=`.
+8. El hallazgo desaparece y el resumen vuelve al del paso 2.
+9. Aparece «El ítem ya no existe.» y no se abre ningún diálogo.
+
+**Errores típicos:** si el resumen no cambia después de editar, pulsá **Volver a revisar** (la pantalla vuelve a pedir al entrar, pero no mientras está abierta). Un aviso de años con tus datos reales no es un error de la plataforma: `yearsOfExperience` se carga a mano y la revisión solo compara con las experiencias cargadas. Si falta experiencia anterior, cargala o ajustá el número. La revisión nunca corrige nada sola.
+
+**Por la API** (Bash, con la cookie de sesión del login de § 0 en `jar`):
+
+```bash
+API=http://localhost:3300
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/admin/consistency                 # 401
+curl -s -b jar $API/api/admin/consistency | node -e "
+  const r=JSON.parse(require('fs').readFileSync(0,'utf8'));
+  console.log(r.asOf, JSON.stringify(r.experience), JSON.stringify(r.summary));
+  for (const i of r.issues) console.log(i.severity, i.code, i.entityType, i.entityId, '-', i.message);"
+                                                                                  # 0 errores; certification.expired y el borrador sin traducir
+curl -s -b jar "$API/api/admin/consistency?locale=en" | node -e "
+  const r=JSON.parse(require('fs').readFileSync(0,'utf8')); console.log(r.issues[0].code, '|', r.issues[0].message);"
+                                                                                  # mismo code, mensaje en inglés
+curl -s -D - -o /dev/null -b jar $API/api/admin/consistency | grep -i cache-control  # no-store
+```
+
+**Por la línea de comandos** (sin base):
+
+```bash
+cd backend
+npm run cv:lint; echo "salida: $?"                                                 # aviso de años (10 contra 8 años y 7 meses); salida: 0
+npm run cv:lint -- --file ../docs/examples/cv-data.example.json; echo "salida: $?"  # borrador sin traducir y vencida (y aviso de años desde 2026-12); salida: 0
+node -e "const f=require('fs');const d=JSON.parse(f.readFileSync('../docs/examples/cv-data.example.json','utf8'));
+  d.experiences[1].current=true; d.experiences[1].endDate='2024-05';
+  f.writeFileSync(require('os').tmpdir()+'/cv-roto.json',JSON.stringify(d))"
+npm run cv:lint -- --file "$(node -p "require('os').tmpdir()")/cv-roto.json"; echo "salida: $?"
+                                                                                  # ERROR date.ongoing-with-end experience:<clave>; salida: 1
+npm run cv:lint -- --file no-existe.json; echo "salida: $?"                        # salida: 2
+```
+
+**Observado** (7 de noviembre de 2026, imagen de `frontend/Dockerfile` en `localhost:8103`, API de producción de la rama en `localhost:3349` y la base descartable `portfolio_lint_example`, sembrada con el ejemplo): los nueve pasos dieron lo esperado, con el resumen «0 errores · 1 aviso · 1 sugerencia» (143 meses derivados contra 11 declarados), «0 errores · 2 avisos · 1 sugerencia» con 15 años y con el resumen en inglés vacío, y de vuelta a «1 aviso · 1 sugerencia» al restaurar. Los cambios de datos de los pasos 3, 5, 6 y 8 se hicieron por la API con la misma sesión; la navegación, **Volver a revisar**, **Abrir** y el aviso salen del panel. Por la API: 401 sin sesión, `Cache-Control: no-store` y el mismo `code` en español e inglés. `cv:lint` salió con 0 y 0 sobre los dos archivos (con el aviso de años del CV real, 10 contra 8 años y 7 meses), con 1 sobre la copia rota y con 2 con la ruta inexistente. `a11y:check` con panel, incluida `/admin/revision`: 0 violaciones.
+
+![Revisión con un aviso y una sugerencia](manual/bo-revision.jpg)
+
 ## 4. Administrar el resto del contenido
 
 Desde el change `add-profile-content-admin`, todo lo que el sitio muestra se edita en el panel. El seed queda para **poblar una base vacía**, no para editar.
@@ -2021,7 +2135,7 @@ El umbral de Performance es 85 en CI porque el runner de GitHub es el equipo de 
 
 ## 6. Suite de regresión manual
 
-Antes de cada release, recorrer en este orden. Último caso ejecutado: **5 de noviembre de 2026** (TC-45, por la API y la sesión revocada en Chrome); antes, el 4 de noviembre (TC-44, pasos 1 a 5); antes, el 29 de octubre (TC-43, TC-42 y TC-41) y el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 46 capturas con `manual:capture` (TC-43 suma una y regenera la de TC-13). TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
+Antes de cada release, recorrer en este orden. Último caso ejecutado: **7 de noviembre de 2026** (TC-47, en la app real con la imagen de producción); antes, el 5 de noviembre (TC-45, por la API y la sesión revocada en Chrome); antes, el 4 de noviembre (TC-44, pasos 1 a 5); antes, el 29 de octubre (TC-43, TC-42 y TC-41) y el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 46 capturas con `manual:capture` (TC-43 suma una y regenera la de TC-13). TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
 
 Los casos del backoffice están automatizados en [`manual/suite-backoffice.ps1`](manual/suite-backoffice.ps1): ejecuta TC-12 a TC-20 contra la API, imprime el resultado real junto al esperado y borra todos los datos de prueba que crea, pase o falle.
 
@@ -2074,10 +2188,11 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-41 | Compartir un perfil con un enlace de seguimiento | ✅ | app real con la imagen de producción y Chrome no headless · e2e `share-links` y `share-links-admin` · tests de la petición temprana, del panel y del dashboard |
 | TC-44 | Los buscadores leen la página de perfil | 🔍 | `curl` del HTML de la imagen de producción (público, `PROTECTED`, privado, archivado e inexistente) · Chrome sin errores de CSP · validador de schema.org sin errores · e2e del fragmento y fixture compartido · pasos 6 y 7 (Rich Results Test) tras el deploy |
 | TC-45 | Cambiar la contraseña del panel | 🔍 | `curl` de la imagen de producción con dos sesiones (cambio, 401 de la anterior, límite y `admin:bootstrap`) · Chrome con la sesión revocada · `a11y:check` con Cuenta · e2e `admin-password` · pasos del panel con contraseñas reales sin ejecutar a mano |
+| TC-47 | Revisar la consistencia del CV | ✅ | app real con la imagen de producción y una base descartable · panel de punta a punta (resumen, Volver a revisar, Abrir, `?editar=`) · API (401, `no-store`, `locale`) · `cv:lint` con salidas 0, 1 y 2 · `a11y:check` con `/admin/revision` · e2e `cv-consistency` |
 | TC-42 | Verificar una certificación desde el sitio | ✅ | app real con la imagen de producción y Chrome no headless · API (400 con `http://`, 200, `null`) · PDF de una página con el enlace · `print:check` (ejemplo y CV) · tests de la sección, la hoja y el panel |
 | TC-43 | Ajustar skills y proyectos de un perfil | ✅ | app real con la imagen de producción y Chrome no headless · preview = ruta pública (API) · `a11y:check` con panel y axe sobre Selección · tests de las funciones puras, del constructor y del núcleo (unitarios y e2e) |
 
-**Pasan los 43 casos anteriores; TC-44 y TC-45 quedan en 🔍** (change `add-admin-password-change`: TC-45 se ejecutó el 5 de noviembre de 2026 en la app real con una base descartable, por la API y con la sesión revocada en Chrome, con la captura `bo-cuenta`; los pasos del panel que escriben contraseñas reales no se ejecutaron a mano; change `upgrade-profile-structured-data`: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado). TC-43 (change `add-builder-skill-project-overrides`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc43-overrides` nueva y la de `tc13-seleccion` regenerada con `manual:capture`. TC-42 (change `add-certification-verification`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc42-credencial` nueva y la del diálogo de certificación regenerada con `manual:capture`. TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 46 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
+**Pasan los 43 casos anteriores y TC-47; TC-44 y TC-45 quedan en 🔍** (change `add-cv-consistency-rules`: TC-47 se ejecutó el 7 de noviembre de 2026 en la app real con la imagen de `frontend/Dockerfile` y una base descartable, con la captura `bo-revision` nueva y `a11y:check` con `/admin/revision`; change `add-admin-password-change`: TC-45 se ejecutó el 5 de noviembre de 2026 en la app real con una base descartable, por la API y con la sesión revocada en Chrome, con la captura `bo-cuenta`; los pasos del panel que escriben contraseñas reales no se ejecutaron a mano; change `upgrade-profile-structured-data`: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado). TC-43 (change `add-builder-skill-project-overrides`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc43-overrides` nueva y la de `tc13-seleccion` regenerada con `manual:capture`. TC-42 (change `add-certification-verification`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc42-credencial` nueva y la del diálogo de certificación regenerada con `manual:capture`. TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 46 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
@@ -2218,5 +2333,7 @@ Cada término enlaza el concepto, el recorrido o el caso donde se usa.
 | **apertura** | Una visita de una persona atribuida a un enlace de seguimiento; las tuyas y las de bots no cuentan. | B12 (Constructor · Publicación), TC-41 |
 | **referencia huérfana** | Un id de `includeIds` o `excludeIds` que ya no corresponde a ninguna experiencia, skill ni proyecto (el ítem se borró). El sitio lo ignora; el constructor lo cuenta y deja quitarlo. | B10 (Constructor · Selección), TC-43 |
 | **credencial** | Lo que acredita una certificación en el emisor: el enlace de verificación, el ID y el vencimiento, los tres opcionales. | B6 (Formación), TC-42 |
+| **hallazgo** | Un dato del CV que contradice otro o una regla de la plataforma, detectado por la pantalla Revisión o por `npm run cv:lint`: lleva un código estable, una severidad y el ítem exacto. Nunca se corrige solo. | B16 (Revisión), TC-47 |
+| **severidad** | Qué tan grave es un hallazgo: error (la API lo rechazaría o rompe el render), aviso (probable descuido) o sugerencia (suele ser legítimo). Solo los errores hacen fallar `cv:lint`. | B16 (Revisión), TC-47 |
 | **versión de sesión** | Un número del administrador (`sessionVersion`) que el token del panel lleva como `sv`; cambiar la contraseña desde **Cuenta** o correr `admin:bootstrap` lo incrementa y los tokens con otra versión dejan de valer. | B14 (Cuenta), TC-45 |
 | **enlace de verificación** | La página pública de la credencial en el emisor (Credly, Accredible…); solo `https://`. El sitio lo muestra como «Ver credencial» y no comprueba que funcione. | B6 (Formación), TC-42 |

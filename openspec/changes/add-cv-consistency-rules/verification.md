@@ -4,17 +4,29 @@
 
 ## Resultado por tarea
 
+Implementado el 2026-11-07 en `feat/cv-consistency-rules`. Base de las suites: backend 99 suites / 972 tests y e2e 17 suites / 277 tests; frontend 1041 tests.
+
 | Tarea | Qué se comprueba | Resultado | Evidencia |
 |---|---|---|---|
-| 1.1 Punto de partida | Suites verdes antes de tocar nada; no hay `computeYearsOfExperience` ni `fast-check` | pendiente | `verification/1.1-punto-de-partida.txt` |
-| 2.1–2.4 Cálculo de años | Meses inclusivos, fusión, actual hasta `asOf`; propiedades 1 a 4; la mutación de meses exclusivos se detecta | pendiente | specs de `profile/domain/services`, `verification/2.4-mutacion.txt` |
-| 3.1–3.6 Dominio del linter | Predicado de traducción compartido sin cambiar expectativas; 14 códigos; el 100 % de los sembrados; cruce con los validadores; propiedad 5; errores iguales con dos `asOf` | pendiente | `verification/3.4-sembrados.txt` |
-| 4.1–4.5 Aplicación y API | Una consulta por repositorio, sin escrituras; orden; locale; 401 sin sesión; `no-store`; conteos de tablas intactos | pendiente | `verification/4.5-e2e.txt` |
-| 5.1–5.4 `cv:lint` y CI | Códigos 0, 1 y 2; sin base; los dos JSON dan 0; pasos en el CI | pendiente | `verification/5.3-cv-lint.txt` |
-| 6.1–6.5 Contrato y panel | Sin deriva de `api.d.ts`; `?editar=` en cuatro pantallas; pantalla Revisión; axe; `perf:budget` igual | pendiente | `verification/6.5-perf-budget.txt` |
-| 7.1–7.3 Calidad | Todo verde; `fast-check` fuera de `dist/` | pendiente | `verification/7.1-backend.txt`, `7.2-frontend.txt`, `7.3-dev-only.txt` |
-| 8.1–8.3 App real | TC-47 completo; captura; `a11y:check` con `/admin/revision` | pendiente | `verification/8.1-entorno.txt`, `8.2-tc47.txt`, `8.3-a11y.txt` |
-| 9.1–9.4 Docs y cierre | B15, TC-47, `manual:check`, validación estricta | pendiente | `verification/9.3-validacion.txt` |
+| 1.1 Punto de partida | Suites verdes antes de tocar nada; no hay `computeYearsOfExperience` ni `fast-check` | cumplida | `verification/1.1-punto-de-partida.txt` |
+| 2.1–2.4 Cálculo de años | Meses inclusivos, fusión, actual hasta `asOf`; propiedades 1 a 4; la mutación de meses exclusivos se detecta | cumplida: 18 tests (13 tabulares y 5 propiedades, `numRuns` 200, semilla 20261107); con la mutación fallan 12 de 18 | `verification/2.4-mutacion.txt` |
+| 3.1–3.6 Dominio del linter | Predicado de traducción compartido sin cambiar expectativas; 14 códigos; el 100 % de los sembrados; cruce con los validadores; propiedad 5; errores iguales con dos `asOf` | cumplida: los 14 códigos detectados sobre ítem y campo esperados; 11 casos cruzados con los 5 validadores; `detect-missing-translations`, `example-translations` y `seed-translations` verdes sin tocar | `verification/3.4-sembrados.txt` |
+| 4.1–4.5 Aplicación y API | Una consulta por repositorio, sin escrituras; orden; locale; 401 sin sesión; `no-store`; conteos de tablas intactos | cumplida: use case (7 tests), mensajes (47 tests) y e2e `cv-consistency` (6 tests) | `verification/4.5-e2e.txt` |
+| 5.1–5.4 `cv:lint` y CI | Códigos 0, 1 y 2; sin base; los dos JSON dan 0; pasos en el CI | cumplida: `cv-data.json` → 0 con el aviso de años (10 declarados, 8 años y 7 meses); el ejemplo → 0 con 1 aviso y 1 sugerencia; el workflow valida con `@action-validator/cli`; el CI del PR queda por ver | `verification/5.3-cv-lint.txt` |
+| 6.1–6.5 Contrato y panel | Sin deriva de `api.d.ts`; `?editar=` en cuatro pantallas; pantalla Revisión; axe; `perf:budget` igual | cumplida: 40 tests nuevos del frontend (1082 en total); `perf:budget` 150,1 KB antes y después | `verification/6.5-perf-budget.txt` |
+| 7.1–7.3 Calidad | Todo verde; `fast-check` fuera de `dist/` | cumplida: backend 117 suites / 1169 tests y e2e 18 suites / 283 tests; frontend 1082 tests; `dist/` sin `fast-check` (queda el 3.x transitivo de prisma, previo al change) | `verification/7.1-backend.txt`, `7.2-frontend.txt`, `7.3-dev-only.txt` |
+| 8.1–8.3 App real | TC-47 completo; captura; `a11y:check` con `/admin/revision` | cumplida contra la imagen de `frontend/Dockerfile`; base descartable `portfolio_lint_example` (no `portfolio_lint_check`); `a11y:check`: 58 cargas, 0 violaciones | `verification/8.1-entorno.txt`, `8.2-tc47.txt`, `8.3-a11y.txt` |
+| 9.1–9.3 Docs y cierre | B16, TC-47, `manual:check`, validación estricta | cumplida: `manual:check` 46 casos y 49 imágenes | `verification/9.3-validacion.txt` |
+| 9.4 Al archivar | Línea del roadmap en `CLAUDE.md` | pendiente: se hace al archivar | — |
+
+### Desvíos respecto del plan
+
+- **Pantalla B16, no B15:** `add-application-tracking` usa B15.
+- **TC-47, resumen inicial:** el plan decía «0 errores · 0 avisos · 1 sugerencia». El ejemplo trae además `ejemplo-borrador` sin `description.en` a propósito, así que el resumen real es «0 errores · 1 aviso · 1 sugerencia» (y «2 avisos» con 15 años o con el resumen en inglés vacío). El texto del manual usa los valores reales.
+- **Pasos 3, 5, 6 y 8 de TC-47:** los cambios de datos se hicieron por la API con la misma sesión, no por los formularios; la navegación, **Volver a revisar**, **Abrir** y el aviso salieron del panel.
+- **Idioma de la pantalla:** la primera corrida mostró los mensajes en inglés (el navegador estaba en inglés y el backend toma `Accept-Language`). `useCvConsistency` ahora pide `?locale=es` y hay un test que lo fija.
+- **Refactor de `readSeedFile`:** pasó a `scripts/lib/seed-file.ts` (sin Prisma, que `cv:lint` no puede importar) y `seed-runner` lo re-exporta; sin cambio de comportamiento.
+- **Guard de entorno del e2e:** corrió contra `portfolio_lint_e2e` (descartable), no contra la base de siempre.
 
 ## Criterios de aceptación de la propuesta (§ 6.2)
 

@@ -1,0 +1,21 @@
+Entorno de la app real (8.1), 2026-11-07T20:01Z
+Base descartable: portfolio_lint_example en localhost:5434 (contenedor portfolio-postgres); la base del owner (portfolio) no se toca.
+== prisma migrate deploy
+      
+All migrations have been successfully applied.
+== npm run prisma:status (antes de sembrar)
+8 migrations found in prisma/migrations
+
+Database schema is up to date!
+== seed:example
+👁️  Creando 14 visitas de ejemplo para ejemplo-archivado...
+👁️  Creando 6 visitas de ejemplo para ejemplo-protegido...
+✅ Seed completado con éxito.
+== seed:example:verify
+  ✅ ejemplo-dirigido         PUBLIC listed=false archivado=no layout=classic tema=modern-dark accent=undefined
+  ✅ ejemplo-archivado        PUBLIC listed=true archivado=sí layout=classic tema=modern-dark accent=undefined
+  ✅ ejemplo-renombrado       PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=undefined
+✅ La base coincide con D:\projects\portfolio-msaavedra\wt-lint\docs\examples\cv-data.example.json.
+== admin:bootstrap (credenciales aleatorias, no se imprimen)
+
+✅ Administrador creado: <email> (Lint Check) — hash $argon2id$…
