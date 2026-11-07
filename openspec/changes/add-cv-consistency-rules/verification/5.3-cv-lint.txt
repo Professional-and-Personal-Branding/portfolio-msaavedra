@@ -1,0 +1,58 @@
+$ DATABASE_URL= npm run cv:lint   (sin base: la variable vacía)
+
+> portfolio-backend@0.1.0 cv:lint
+> tsx scripts/cv-lint.ts
+
+WARNING profile.years-mismatch profile profile: Declarás 10 años de experiencia, pero las experiencias cargadas suman 8 años y 7 meses.
+Resumen (al 2026-11): 0 errores · 1 aviso · 0 sugerencias
+salida: 0
+
+$ DATABASE_URL= npm run cv:lint -- --file ../docs/examples/cv-data.example.json
+
+> portfolio-backend@0.1.0 cv:lint
+> tsx scripts/cv-lint.ts --file ../docs/examples/cv-data.example.json
+
+WARNING i18n.missing-translation curatedProfile ejemplo-borrador: Falta el texto en inglés de description.
+INFO certification.expired certification certification#1: Venció en 2025-12: el sitio la muestra como «Vencida».
+Resumen (al 2026-11): 0 errores · 1 aviso · 1 sugerencia
+salida: 0
+
+$ npm run cv:lint -- --format json (cv-data.json, primeras líneas)
+
+> portfolio-backend@0.1.0 cv:lint
+> tsx scripts/cv-lint.ts --format json
+
+{
+  "asOf": "2026-11",
+  "experience": {
+    "declaredYears": 10,
+    "derivedMonths": 103
+  },
+  "summary": {
+    "error": 0,
+    "warning": 1,
+    "info": 0
+  },
+  "issues": [
+    {
+      "code": "profile.years-mismatch",
+      "severity": "warning",
+      "entityType": "profile",
+      "entityId": "profile",
+      "entityLabel": "Manuel Joaquín Saavedra Severiche",
+      "field": "yearsOfExperience",
+      "message": "Declarás 10 años de experiencia, pero las experiencias cargadas suman 8 años y 7 meses.",
+      "params": {
+        "declared": 10,
+        "months": 103,
+        "years": 8,
+        "remainderMonths": 7
+      }
+
+$ npm run cv:lint -- --file no-existe.json
+
+> portfolio-backend@0.1.0 cv:lint
+> tsx scripts/cv-lint.ts --file no-existe.json
+
+❌ no existe el archivo D:\projects\portfolio-msaavedra\wt-lint\backend\no-existe.json
+salida: 2

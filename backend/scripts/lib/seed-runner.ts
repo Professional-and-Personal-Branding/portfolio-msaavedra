@@ -8,7 +8,6 @@
  * contenido sin `--overwrite`).
  */
 import { Prisma, PrismaClient } from '@prisma/client';
-import * as fs from 'fs';
 import * as path from 'path';
 import { fail, ok, Result } from '../../src/shared/domain/result';
 import { SECTION_IDS } from '../../src/modules/curated-profile/domain/services/resolve-sections';
@@ -39,8 +38,8 @@ import {
   SeedGuardFailure,
 } from './seed-guard';
 
-/** Fuente por defecto: la trayectoria real del owner, relativa a `backend/scripts/`. */
-export const DEFAULT_SEED_FILE = path.resolve(__dirname, '../../../docs/cv-data.json');
+// `readSeedFile` y `DEFAULT_SEED_FILE` viven en `seed-file.ts` (sin Prisma, para `cv:lint`); se re-exportan acá.
+export { DEFAULT_SEED_FILE, readSeedFile } from './seed-file';
 
 // ── Argumentos ───────────────────────────────────────────────────
 export interface SeedArgs {
@@ -76,16 +75,6 @@ export function parseSeedArgs(argv: readonly string[], cwd: string): Result<Seed
     );
   }
   return ok(file === undefined ? { overwrite } : { overwrite, file: path.resolve(cwd, file) });
-}
-
-/** Lee el archivo y lo parsea como JSON; no valida el formato. */
-export function readSeedFile(filePath: string): Result<unknown, string> {
-  if (!fs.existsSync(filePath)) return fail(`no existe el archivo ${filePath}`);
-  try {
-    return ok(JSON.parse(fs.readFileSync(filePath, 'utf-8')) as unknown);
-  } catch (e) {
-    return fail(`${filePath} no es JSON válido: ${e instanceof Error ? e.message : String(e)}`);
-  }
 }
 
 // ── Orquestador ──────────────────────────────────────────────────

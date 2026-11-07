@@ -32,6 +32,7 @@
     "seed:example:verify": "tsx scripts/verify-seed.ts --file ../docs/examples/cv-data.example.json",
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
     "views:reclassify": "tsx scripts/reclassify-views.ts",
+    "cv:lint": "tsx scripts/cv-lint.ts",
     "openapi:export": "ts-node --transpile-only -P tsconfig.json scripts/export-openapi.ts"
   },
   "prisma": {

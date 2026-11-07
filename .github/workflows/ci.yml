@@ -42,6 +42,13 @@ jobs:
       - run: npm run prisma:generate
       - run: npm run lint
       - run: npm run typecheck
+      # Revisión de consistencia del CV sobre los archivos del seed, sin base (add-cv-consistency-rules).
+      # Falla solo con un hallazgo `error` (salida 1) o con un archivo inválido (salida 2); los avisos
+      # (p. ej. los años declarados contra las fechas) se imprimen y no frenan el CI.
+      - name: Consistencia del CV · docs/cv-data.json
+        run: npm run cv:lint
+      - name: Consistencia del CV · datos de ejemplo
+        run: npm run cv:lint -- --file ../docs/examples/cv-data.example.json
       - run: npm test
       - run: npm run build
       # openapi.json se versiona y es la fuente de los tipos del frontend: si el

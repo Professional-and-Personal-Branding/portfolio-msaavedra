@@ -94,7 +94,7 @@ function build(
   };
   const clock: Clock = { now: () => overrides.now ?? new Date('2026-11-15T12:00:00Z') };
   const useCase = new RunCvConsistencyCheckUseCase(
-    repos.profile as never,
+    repos.profile,
     repos.experience as never,
     repos.skills as never,
     repos.education as never,
