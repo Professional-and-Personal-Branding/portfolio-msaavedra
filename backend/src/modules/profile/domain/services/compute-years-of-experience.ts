@@ -46,9 +46,9 @@ export function computeYearsOfExperience(
   for (const interval of intervals) {
     if (!YEAR_MONTH_REGEX.test(interval.startDate)) continue;
     const ongoing = interval.current || interval.endDate === null;
-    if (!ongoing && !YEAR_MONTH_REGEX.test(interval.endDate as string)) continue;
+    if (!ongoing && !YEAR_MONTH_REGEX.test(interval.endDate)) continue;
     const start = monthIndex(interval.startDate);
-    const end = Math.min(ongoing ? limit : monthIndex(interval.endDate as string), limit);
+    const end = Math.min(ongoing ? limit : monthIndex(interval.endDate), limit);
     if (start > limit || end < start) continue;
     spans.push([start, end]);
   }

@@ -19,7 +19,7 @@ export function hasSourceText(value: LocalizedText | string): boolean {
  * Compara dos fechas con distinta precisión al nivel de la menor: `2021` y
  * `2021-03` cuentan como el mismo período y no se consideran desordenadas.
  */
-function isAfter(start: string, end: string): boolean {
+export function isAfter(start: string, end: string): boolean {
   const precision = Math.min(start.length, end.length);
   return start.slice(0, precision) > end.slice(0, precision);
 }

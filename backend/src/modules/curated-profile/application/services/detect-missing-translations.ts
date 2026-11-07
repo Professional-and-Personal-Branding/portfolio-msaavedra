@@ -1,9 +1,4 @@
-import {
-  Locale,
-  LocalizedList,
-  LocalizedText,
-  SUPPORTED_LOCALES,
-} from '../../../../shared/domain/i18n';
+import { Locale, LocalizedField, isMissingTranslation } from '../../../../shared/domain/i18n';
 import { Certification } from '../../../education/domain/entities/certification.entity';
 import { Education } from '../../../education/domain/entities/education.entity';
 import { Experience } from '../../../experience/domain/entities/experience.entity';
@@ -49,27 +44,6 @@ export interface MissingTranslationsInput {
   socialLinks: readonly SocialLink[];
 }
 
-type Localized = LocalizedText | LocalizedList | string | string[] | null | undefined;
-
-const isBlank = (value: string | string[] | undefined): boolean =>
-  value === undefined ||
-  (typeof value === 'string' ? value.trim() === '' : value.every((item) => item.trim() === ''));
-
-/**
- * Regla D4 (`add-bilingual-builder-parity`): un campo falta cuando está ausente,
- * vacío o es una lista vacía en `locale` Y tiene contenido en otro idioma.
- * - Igual al otro idioma NO es faltante (`Tech Lead`, `.NET`).
- * - Vacío en todos los idiomas (opcional sin llenar, p. ej. el headline del
- *   perfil curado `all`, que hereda el del perfil base) NO es faltante.
- * - Un dato plano legado (string / string[]) no se reporta.
- */
-function isMissing(field: Localized, locale: Locale): boolean {
-  if (field == null || typeof field === 'string' || Array.isArray(field)) return false;
-  const byLocale = field as Partial<Record<Locale, string | string[]>>;
-  if (!isBlank(byLocale[locale])) return false;
-  return SUPPORTED_LOCALES.some((other) => other !== locale && !isBlank(byLocale[other]));
-}
-
 /**
  * Detecta los campos bilingües sin contenido en el idioma pedido. Función pura
  * (sin Prisma ni Nest). Campos cubiertos por entidad:
@@ -91,10 +65,10 @@ export function detectMissingTranslations(input: MissingTranslationsInput): Miss
   const check = (
     entity: MissingTranslationEntity,
     id: string,
-    fields: Record<string, Localized>,
+    fields: Record<string, LocalizedField>,
   ): void => {
     for (const [field, value] of Object.entries(fields)) {
-      if (isMissing(value, locale)) found.push({ entity, id, field });
+      if (isMissingTranslation(value, locale)) found.push({ entity, id, field });
     }
   };
 
