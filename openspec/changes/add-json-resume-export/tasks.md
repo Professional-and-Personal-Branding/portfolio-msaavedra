@@ -37,9 +37,9 @@
 
 ## 5. Constructor (D8)
 
-- [ ] 5.1 `ProfileBuilderPage.tsx`, pestaña **Publicación**: «Descargar JSON Resume» con **ES** y **EN** (`<a href download>` a `/api/admin/curated-profiles/<id>/resume.json?locale=`), deshabilitados con «Guardá el perfil para exportarlo» si no hay id, y «Se exporta la última versión guardada» con cambios sin guardar (reusar el estado de cambios del aviso de `polish-builder-and-edge`). Mensajes con `text-text-muted` o el token que ya use la pestaña (sin colores literales; regla de `status-color-usage`). Verificar: 5.2 en verde.
-- [ ] 5.2 `ProfileBuilderPage.test.tsx`: los dos `href` y el atributo `download` con un perfil guardado; deshabilitados y el texto con un perfil nuevo; el aviso con un cambio sin guardar. Verificar: `npm test -- ProfileBuilderPage` verde.
-- [ ] 5.3 Frontend completo: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` y `npm run perf:budget`. Verificar: `perf:budget` igual al de 1.1 (la vista pública no cambia); salida en `verification/5.3-frontend.txt`.
+- [x] 5.1 `ProfileBuilderPage.tsx`, pestaña **Publicación**: «Descargar JSON Resume» con **ES** y **EN** (`<a href download>` a `/api/admin/curated-profiles/<id>/resume.json?locale=`), deshabilitados con «Guardá el perfil para exportarlo» si no hay id, y «Se exporta la última versión guardada» con cambios sin guardar (reusar el estado de cambios del aviso de `polish-builder-and-edge`). Mensajes con `text-text-muted` o el token que ya use la pestaña (sin colores literales; regla de `status-color-usage`). Verificar: 5.2 en verde.
+- [x] 5.2 `ProfileBuilderPage.test.tsx`: los dos `href` y el atributo `download` con un perfil guardado; deshabilitados y el texto con un perfil nuevo; el aviso con un cambio sin guardar. Verificar: `npm test -- ProfileBuilderPage` verde.
+- [x] 5.3 Frontend completo: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` y `npm run perf:budget`. Verificar: `perf:budget` igual al de 1.1 (la vista pública no cambia); salida en `verification/5.3-frontend.txt`.
 
 ## 6. Final y app real
 

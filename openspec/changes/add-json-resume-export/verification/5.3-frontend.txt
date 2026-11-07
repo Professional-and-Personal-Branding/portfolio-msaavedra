@@ -1,0 +1,25 @@
+## lint
+
+> portfolio-frontend@0.1.0 lint
+> eslint .
+
+## typecheck
+> portfolio-frontend@0.1.0 typecheck
+> tsc -b
+
+## test
+ Test Files  68 passed (68)
+      Tests  1045 passed (1045)
+## build
+dist/assets/index-BrdDM5S2.js               481.37 kB │ gzip: 150.60 kB
+[32m✓ built in 4.29s[39m
+## perf:budget
+
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-BrdDM5S2.js | módulo | 148.9 |
+| /profile-prefetch.js | clásico | 1.2 |
+| **Total** | | **150.1** |
+
+Presupuesto: 155 KB.
+
