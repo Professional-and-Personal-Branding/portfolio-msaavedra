@@ -11,6 +11,7 @@ import type {
   CreateShareLinkBody,
   CreateSkillBody,
   CreateSkillCategoryBody,
+  CvConsistency,
   ProfileViews,
   ShareLink,
   UpdateCuratedProfileBody,
@@ -30,6 +31,7 @@ export const adminKeys = {
   projects: ['admin', 'projects'] as const,
   socialLinks: ['admin', 'social-links'] as const,
   shareLinks: (profileId: string) => ['admin', 'share-links', profileId] as const,
+  consistency: ['admin', 'consistency'] as const,
   analytics: (from: string, to: string) => ['admin', 'analytics', from, to] as const,
   preview: (draftKey: string, locale: string) => ['admin', 'preview', draftKey, locale] as const,
 };
@@ -257,6 +259,20 @@ export function useAnalytics(from: string, to: string) {
     queryKey: adminKeys.analytics(from, to),
     queryFn: async (): Promise<ProfileViews> =>
       unwrap(await api.GET('/api/admin/analytics/views', { params: { query: { from, to } } })),
+  });
+}
+
+// ── Revisión del CV (add-cv-consistency-rules) ─────────────────────────────
+/**
+ * Hallazgos de consistencia. Con `staleTime: 0` y `refetchOnMount: 'always'` se vuelve a pedir cada
+ * vez que se entra a la pantalla, porque el resultado depende de lo último que se editó.
+ */
+export function useCvConsistency() {
+  return useQuery({
+    queryKey: adminKeys.consistency,
+    queryFn: async (): Promise<CvConsistency> => unwrap(await api.GET('/api/admin/consistency')),
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 

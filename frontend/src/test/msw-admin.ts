@@ -7,6 +7,7 @@ import {
   ADMIN_THEMES,
   ANALYTICS,
   makeAdminCuratedProfile,
+  makeCvConsistency,
 } from './fixtures/admin';
 import { makeCuratedProfile } from './fixtures/curated-profile';
 import { ADMIN_PROJECTS, ADMIN_SOCIAL_LINKS } from './fixtures/admin';
@@ -35,6 +36,7 @@ export const adminHandlers: HttpHandler[] = [
   http.get(`${API}/admin/certifications`, () => HttpResponse.json(ADMIN_CERTIFICATIONS)),
   http.get(`${API}/admin/projects`, () => HttpResponse.json(ADMIN_PROJECTS)),
   http.get(`${API}/admin/social-links`, () => HttpResponse.json(ADMIN_SOCIAL_LINKS)),
+  http.get(`${API}/admin/consistency`, () => HttpResponse.json(makeCvConsistency())),
 ];
 
 /** Handlers sin sesión: `/auth/me` responde 401. */

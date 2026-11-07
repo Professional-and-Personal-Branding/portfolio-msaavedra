@@ -4,6 +4,7 @@ import {
   GraduationCap,
   IdCard,
   LayoutDashboard,
+  ListChecks,
   LogOut,
   Menu,
   Palette,
@@ -38,6 +39,7 @@ const NAV = [
   { to: '/admin/formacion', label: 'Formación', icon: GraduationCap, end: false },
   { to: '/admin/proyectos', label: 'Proyectos', icon: FolderGit2, end: false },
   { to: '/admin/perfiles', label: 'Perfiles curados', icon: Palette, end: false },
+  { to: '/admin/revision', label: 'Revisión', icon: ListChecks, end: false },
 ] as const;
 
 /** Texto de las acciones del header: oculto en móvil y por debajo de `2xl` desde `lg`. */

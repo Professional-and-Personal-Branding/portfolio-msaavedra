@@ -379,3 +379,73 @@ export const ADMIN_SOCIAL_LINKS: AdminSocialLinkFixture[] = [
     visible: false,
   }),
 ];
+
+// ── Revisión del CV (add-cv-consistency-rules) ─────────────────────────────
+type CvConsistencyFixture = components['schemas']['CvConsistencyResponse'];
+type CvIssueFixture = components['schemas']['CvIssueResponse'];
+
+export function makeCvIssue(overrides: Partial<CvIssueFixture> = {}): CvIssueFixture {
+  return {
+    code: 'profile.years-mismatch',
+    severity: 'warning',
+    entityType: 'profile',
+    entityId: 'profile-1',
+    entityLabel: 'Ada Administradora',
+    field: 'yearsOfExperience',
+    message:
+      'Declarás 10 años de experiencia, pero las experiencias cargadas suman 8 años y 7 meses.',
+    params: { declared: 10, months: 103, years: 8, remainderMonths: 7 },
+    ...overrides,
+  };
+}
+
+/** Un hallazgo por severidad, sobre entidades distintas. */
+export const CV_ISSUES: CvIssueFixture[] = [
+  makeCvIssue({
+    code: 'date.end-before-start',
+    severity: 'error',
+    entityType: 'experience',
+    entityId: 'exp-2',
+    entityLabel: 'Globex',
+    field: 'endDate',
+    message: 'La fecha de fin (2018-05) es anterior a la de inicio (2019-01).',
+    params: { start: '2019-01', end: '2018-05' },
+  }),
+  makeCvIssue(),
+  makeCvIssue({
+    code: 'i18n.missing-translation',
+    entityType: 'experience',
+    entityId: 'exp-1',
+    entityLabel: 'Acme Corp',
+    field: 'summary',
+    message: 'Falta el texto en inglés de summary.',
+    params: { locale: 'en' },
+  }),
+  makeCvIssue({
+    code: 'certification.expired',
+    severity: 'info',
+    entityType: 'certification',
+    entityId: 'cert-1',
+    entityLabel: 'Scrum Master',
+    field: 'expiresAt',
+    message: 'Venció en 2025-12: el sitio la muestra como «Vencida».',
+    params: { expiresAt: '2025-12' },
+  }),
+];
+
+export function makeCvConsistency(
+  overrides: Partial<CvConsistencyFixture> = {},
+): CvConsistencyFixture {
+  const issues = overrides.issues ?? CV_ISSUES;
+  return {
+    asOf: '2026-11',
+    experience: { declaredYears: 10, derivedMonths: 103 },
+    summary: {
+      error: issues.filter((i) => i.severity === 'error').length,
+      warning: issues.filter((i) => i.severity === 'warning').length,
+      info: issues.filter((i) => i.severity === 'info').length,
+    },
+    issues,
+    ...overrides,
+  };
+}

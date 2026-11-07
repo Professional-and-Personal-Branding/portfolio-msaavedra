@@ -12,6 +12,7 @@ import { HiddenBadge } from '../shared/HiddenBadge';
 import { PageHeader } from '../shared/PageHeader';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
 import { notifyError, notifySuccess } from '../shared/use-admin-api';
+import { useEditParam } from '../shared/use-edit-param';
 import { CertificationForm, EducationForm } from './FormacionForms';
 import {
   toCertificationValues,
@@ -36,6 +37,19 @@ interface Editing<V> {
 
 /** Educación y certificaciones (spec `admin-content-management` § /admin/formacion). */
 export function FormacionPage() {
+  // Cada sección abre su propio ítem con `?editar=<id>`; el aviso «El ítem ya no existe.» lo da la
+  // página porque es la única que ve las dos listas (los hooks de datos comparten caché).
+  const education = useEducation();
+  const certifications = useCertifications();
+  useEditParam({
+    ready: education.isSuccess && certifications.isSuccess,
+    find: (id) =>
+      education.data?.some((item) => item.id === id) ||
+      certifications.data?.some((item) => item.id === id)
+        ? true
+        : undefined,
+    onFound: () => undefined,
+  });
   return (
     <>
       <PageHeader
@@ -55,6 +69,19 @@ function EducationSection() {
   const save = useSaveEducation();
   const remove = useDeleteEducation();
   const [editing, setEditing] = useState<Editing<EducationFormValues> | null>(null);
+
+  const openEdit = (item: AdminEducation) =>
+    setEditing({
+      id: item.id,
+      values: toEducationValues(item),
+      title: `Editar ${item.degree.es}`,
+    });
+  useEditParam({
+    ready: education.isSuccess,
+    find: (id) => education.data?.find((item) => item.id === id),
+    onFound: openEdit,
+    reportMissing: false,
+  });
 
   const handleSubmit = (body: CreateEducationBody) => {
     save.mutate(
@@ -108,13 +135,7 @@ function EducationSection() {
               order={item.order}
               deleteTitle="Borrar formación"
               deleteDescription={`Se borrará "${item.degree.es}" de ${item.institution}. Esta acción no se puede deshacer; si solo querés sacarla del sitio, ocultala.`}
-              onEdit={() =>
-                setEditing({
-                  id: item.id,
-                  values: toEducationValues(item),
-                  title: `Editar ${item.degree.es}`,
-                })
-              }
+              onEdit={() => openEdit(item)}
               onDelete={() => handleDelete(item)}
             />
           ))}
@@ -141,6 +162,19 @@ function CertificationsSection() {
   const save = useSaveCertification();
   const remove = useDeleteCertification();
   const [editing, setEditing] = useState<Editing<CertificationFormValues> | null>(null);
+
+  const openEdit = (item: AdminCertification) =>
+    setEditing({
+      id: item.id,
+      values: toCertificationValues(item),
+      title: `Editar ${item.name.es}`,
+    });
+  useEditParam({
+    ready: certifications.isSuccess,
+    find: (id) => certifications.data?.find((item) => item.id === id),
+    onFound: openEdit,
+    reportMissing: false,
+  });
 
   const handleSubmit = (body: CreateCertificationBody) => {
     save.mutate(
@@ -195,13 +229,7 @@ function CertificationsSection() {
               order={item.order}
               deleteTitle="Borrar certificación"
               deleteDescription={`Se borrará "${item.name.es}". Esta acción no se puede deshacer; si solo querés sacarla del sitio, ocultala.`}
-              onEdit={() =>
-                setEditing({
-                  id: item.id,
-                  values: toCertificationValues(item),
-                  title: `Editar ${item.name.es}`,
-                })
-              }
+              onEdit={() => openEdit(item)}
               onDelete={() => handleDelete(item)}
             />
           ))}

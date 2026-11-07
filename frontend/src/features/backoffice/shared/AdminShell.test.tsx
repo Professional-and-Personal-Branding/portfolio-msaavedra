@@ -10,7 +10,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('AdminShell', () => {
-  it('la navegación ofrece las siete secciones, agrupadas por frecuencia de cambio', async () => {
+  it('la navegación ofrece las ocho secciones, agrupadas por frecuencia de cambio', async () => {
     server.use(...adminHandlers);
     renderWithProviders(<AppRouter />, { route: '/admin' });
     await screen.findByRole('heading', { name: 'Dashboard' });
@@ -26,7 +26,12 @@ describe('AdminShell', () => {
       'Formación',
       'Proyectos',
       'Perfiles curados',
+      'Revisión',
     ]);
+    expect(within(nav!).getByRole('link', { name: 'Revisión' })).toHaveAttribute(
+      'href',
+      '/admin/revision',
+    );
     expect(within(nav!).getByRole('link', { name: 'Formación' })).toHaveAttribute(
       'href',
       '/admin/formacion',

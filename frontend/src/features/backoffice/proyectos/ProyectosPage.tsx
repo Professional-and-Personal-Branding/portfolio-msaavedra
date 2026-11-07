@@ -13,6 +13,7 @@ import { HiddenBadge } from '../shared/HiddenBadge';
 import { PageHeader } from '../shared/PageHeader';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
 import { notifyError, notifySuccess } from '../shared/use-admin-api';
+import { useEditParam } from '../shared/use-edit-param';
 import { ProjectForm } from './ProjectForm';
 import {
   toProjectValues,
@@ -38,6 +39,18 @@ interface Editing<T> {
 
 /** Proyectos destacados y enlaces sociales (spec `admin-content-management`). */
 export function ProyectosPage() {
+  // Cada sección abre su propio ítem con `?editar=<id>`; el aviso «El ítem ya no existe.» lo da la
+  // página porque es la única que ve las dos listas (los hooks de datos comparten caché).
+  const projects = useProjects();
+  const links = useSocialLinks();
+  useEditParam({
+    ready: projects.isSuccess && links.isSuccess,
+    find: (id) =>
+      projects.data?.some((item) => item.id === id) || links.data?.some((item) => item.id === id)
+        ? true
+        : undefined,
+    onFound: () => undefined,
+  });
   return (
     <>
       <PageHeader
@@ -58,6 +71,19 @@ function ProjectsSection() {
   const save = useSaveProject();
   const remove = useDeleteProject();
   const [editing, setEditing] = useState<Editing<ProjectFormValues> | null>(null);
+
+  const openEdit = (project: AdminProject) =>
+    setEditing({
+      id: project.id,
+      values: toProjectValues(project),
+      title: `Editar ${project.name}`,
+    });
+  useEditParam({
+    ready: projects.isSuccess,
+    find: (id) => projects.data?.find((item) => item.id === id),
+    onFound: openEdit,
+    reportMissing: false,
+  });
 
   const handleSubmit = (body: CreateProjectBody) => {
     save.mutate(
@@ -140,13 +166,7 @@ function ProjectsSection() {
                 variant="outline"
                 size="icon-sm"
                 aria-label={`Editar ${project.name}`}
-                onClick={() =>
-                  setEditing({
-                    id: project.id,
-                    values: toProjectValues(project),
-                    title: `Editar ${project.name}`,
-                  })
-                }
+                onClick={() => openEdit(project)}
               >
                 <Pencil aria-hidden />
               </Button>
@@ -185,6 +205,15 @@ function SocialLinksSection() {
   const save = useSaveSocialLink();
   const remove = useDeleteSocialLink();
   const [editing, setEditing] = useState<Editing<SocialLinkFormValues> | null>(null);
+
+  const openEdit = (link: AdminSocialLink) =>
+    setEditing({ id: link.id, values: toSocialLinkValues(link), title: `Editar ${link.label.es}` });
+  useEditParam({
+    ready: links.isSuccess,
+    find: (id) => links.data?.find((item) => item.id === id),
+    onFound: openEdit,
+    reportMissing: false,
+  });
 
   const handleSubmit = (body: CreateSocialLinkBody) => {
     save.mutate(
@@ -263,13 +292,7 @@ function SocialLinksSection() {
                 variant="outline"
                 size="icon-sm"
                 aria-label={`Editar enlace ${link.label.es}`}
-                onClick={() =>
-                  setEditing({
-                    id: link.id,
-                    values: toSocialLinkValues(link),
-                    title: `Editar ${link.label.es}`,
-                  })
-                }
+                onClick={() => openEdit(link)}
               >
                 <Pencil aria-hidden />
               </Button>

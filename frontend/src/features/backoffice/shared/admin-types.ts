@@ -42,6 +42,12 @@ export type UpdateSocialLinkBody = Schemas['UpdateSocialLinkDto'];
 export type ShareLink = Schemas['ShareLinkResponse'];
 export type CreateShareLinkBody = Schemas['CreateShareLinkDto'];
 
+// add-cv-consistency-rules: revisión de consistencia del CV.
+export type CvConsistency = Schemas['CvConsistencyResponse'];
+export type CvIssue = Schemas['CvIssueResponse'];
+export type CvSeverity = Schemas['CvSeverity'];
+export type CvEntityType = Schemas['CvEntityType'];
+
 export type AdminTheme = Schemas['ThemeResponse'];
 export type ProfileViews = Schemas['ProfileViewsResponse'];
 export type Visibility = AdminCuratedProfile['visibility'];

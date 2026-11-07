@@ -21,6 +21,7 @@ import { ChipListField } from '../shared/fields/ChipListField';
 import { LocalizedField } from '../shared/fields/LocalizedField';
 import { PageHeader } from '../shared/PageHeader';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
+import { useEditParam } from '../shared/use-edit-param';
 import {
   notifyError,
   notifySuccess,
@@ -52,6 +53,34 @@ export function SkillsPage() {
     setSkillBase(draft);
     setSkillDraft(draft);
   };
+  const editCategory = (category: AdminSkillCategory) =>
+    openCategory({
+      id: category.id,
+      name: { es: category.name.es, en: category.name.en ?? '' },
+      order: category.order,
+    });
+  const editSkill = (category: AdminSkillCategory, skill: AdminSkill) =>
+    openSkill({
+      id: skill.id,
+      categoryId: category.id,
+      categoryName: category.name.es,
+      name: skill.name,
+      tags: [...skill.tags],
+      order: skill.order,
+    });
+  // `?editar=<id>` (enlace «Abrir» de la pantalla Revisión): el id puede ser de una categoría o de una skill.
+  useEditParam({
+    ready: categories.isSuccess,
+    find: (id) => {
+      for (const category of categories.data ?? []) {
+        if (category.id === id) return { category };
+        const skill = category.skills.find((candidate) => candidate.id === id);
+        if (skill) return { category, skill };
+      }
+      return undefined;
+    },
+    onFound: ({ category, skill }) => (skill ? editSkill(category, skill) : editCategory(category)),
+  });
   const categoryGuard = useDialogDiscardGuard({
     dirty:
       categoryDraft !== null &&
@@ -132,13 +161,7 @@ export function SkillsPage() {
             <CategoryCard
               key={category.id}
               category={category}
-              onEdit={() =>
-                openCategory({
-                  id: category.id,
-                  name: { es: category.name.es, en: category.name.en ?? '' },
-                  order: category.order,
-                })
-              }
+              onEdit={() => editCategory(category)}
               onDelete={() =>
                 deleteCategory.mutate(category.id, {
                   onSuccess: () => notifySuccess('Categoría borrada'),
@@ -154,16 +177,7 @@ export function SkillsPage() {
                   order: category.skills.length,
                 })
               }
-              onEditSkill={(skill) =>
-                openSkill({
-                  id: skill.id,
-                  categoryId: category.id,
-                  categoryName: category.name.es,
-                  name: skill.name,
-                  tags: [...skill.tags],
-                  order: skill.order,
-                })
-              }
+              onEditSkill={(skill) => editSkill(category, skill)}
               onDeleteSkill={(skill) =>
                 deleteSkill.mutate(skill.id, {
                   onSuccess: () => notifySuccess('Skill borrada'),
