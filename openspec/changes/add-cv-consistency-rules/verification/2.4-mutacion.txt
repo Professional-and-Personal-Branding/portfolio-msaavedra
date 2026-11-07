@@ -1,0 +1,10 @@
+Mutación deliberada: meses exclusivos (fin - inicio) en lugar de inclusivos, en compute-years-of-experience.ts
+Resultado con la mutación (revertida después; git diff del archivo vacío):
+    Property failed after 30 tests
+    { seed: 20261107, path: "29:0:0", endOnFailure: true }
+        Property failed by returning false
+    Property failed after 1 tests
+    { seed: 20261107, path: "0:1:1:1", endOnFailure: true }
+        Property failed by returning false
+Tests:       12 failed, 6 passed, 18 total
+Fallan las propiedades 1 y 3 (y con ellas casi todos los casos tabulares): la mutación se detecta.
