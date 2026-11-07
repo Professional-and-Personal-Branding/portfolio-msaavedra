@@ -18,6 +18,8 @@ export interface CvProfileSnapshot {
 
 export interface CvLanguageSnapshot {
   readonly id: string;
+  /** Nombre canónico (no traducible): etiqueta de respaldo si falta `nameI18n`. */
+  readonly name: string;
   readonly nameI18n: LocalizedField;
   readonly level: LocalizedField;
   readonly detail: LocalizedField;

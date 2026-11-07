@@ -92,6 +92,7 @@ export function cleanSnapshot(): CvSnapshot {
     languages: [
       {
         id: 'lang-1',
+        name: 'Español',
         nameI18n: both('Español', 'Spanish'),
         level: both('Nativo', 'Native'),
         detail: both('Lengua materna', 'Mother tongue'),

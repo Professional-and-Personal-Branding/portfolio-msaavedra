@@ -1,1 +1,15 @@
-Tests:       18 passed, 18 total
+código | severidad | entidad:id:campo esperado | detectado
+profile.years-mismatch | warning | profile:profile-1:yearsOfExperience | sí
+date.invalid-format | error | experience:exp-b:startDate | sí
+date.end-before-start | error | experience:exp-a:endDate | sí
+date.ongoing-with-end | error | experience:exp-b:endDate | sí
+experience.multiple-current | info | experience:exp-a:current | sí
+i18n.missing-translation | warning | experience:exp-a:summary | sí
+i18n.highlights-count-mismatch | warning | experience:exp-a:highlights | sí
+url.invalid | error | project:proj-1:url | sí
+url.not-https | warning | socialLink:link-1:url | sí
+certification.expired | info | certification:cert-1:expiresAt | sí
+curated.orphan-reference | warning | curatedProfile:cp-1:excludeIds | sí
+curated.conflicting-reference | info | curatedProfile:cp-1:includeIds | sí
+curated.unmatched-filter-tag | warning | curatedProfile:cp-1:filterTags | sí
+curated.no-experiences | warning | curatedProfile:cp-1:null | sí

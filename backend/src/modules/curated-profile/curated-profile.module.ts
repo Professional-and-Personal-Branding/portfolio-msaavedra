@@ -100,6 +100,6 @@ import { CryptoShareCodeGenerator } from './infrastructure/security/crypto-share
     // Una sola instancia por proceso: la caché vive lo que vive la API.
     { provide: ProfileHeadCache, useValue: new ProfileHeadCache() },
   ],
-  exports: [ResolveCuratedProfileUseCase, ListCuratedProfilesUseCase],
+  exports: [ResolveCuratedProfileUseCase, ListCuratedProfilesUseCase, CURATED_PROFILE_REPOSITORY],
 })
 export class CuratedProfileModule {}
