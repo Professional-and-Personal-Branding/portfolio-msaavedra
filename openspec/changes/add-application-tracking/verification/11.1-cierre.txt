@@ -1,0 +1,10 @@
+Cierre (rama feat/application-tracking), base descartable portfolio_apps_e2e migrada y sembrada:
+backend  npm run lint / typecheck / build: sin errores
+backend  npm test:      104 suites, 1096 tests (antes 99 / 972)
+backend  test:e2e:      18 suites, 311 tests (antes 17 / 277)
+backend  openapi:export + git diff --exit-code -- openapi.json: sin deriva
+backend  prisma migrate diff --from-migrations --to-schema-datamodel (shadow descartable): No difference detected
+frontend npm run lint / typecheck / build: sin errores
+frontend npm test -- --run: 71 archivos, 1090 tests (antes 1041); una corrida aislada con la maquina cargada fallo 4 tests por tiempo y la repeticion dio todo en verde
+frontend perf:budget: 150.1 KB (igual al de 1.1), tope 155
+frontend manual:check: 46 casos alineados, 49 imagenes, index.html 281 KB

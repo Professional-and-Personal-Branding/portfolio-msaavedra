@@ -6,17 +6,17 @@
 
 | Tarea | Qué se comprueba | Resultado | Evidencia |
 |---|---|---|---|
-| 1.1 Punto de partida | Suites verdes antes de tocar nada | pendiente | `verification/1.1-punto-de-partida.txt` |
-| 2.1–2.4 Dominio | `RuleViolationError` → 422; tabla de transiciones completa; reglas de campos y fechas | pendiente | specs de `domain/` y del mapper |
-| 3.1–3.3 Esquema y migración | Migración solo aditiva; una consulta con `include`; `firstOpenedAt` en el mismo `groupBy` | pendiente | `verification/3.1-migracion.sql` |
-| 4.1–4.3 Aplicación | Casos de uso con repos simulados; una sola llamada de aperturas; CSV puro con neutralización | pendiente | specs de `application/` |
-| 5.1 HTTP | Rutas, guard, validación y cabeceras del CSV | pendiente | e2e |
-| 6.1–6.5 E2e | CRUD, 422, vínculos, aperturas humanas, CSV, sin rutas públicas | pendiente | `verification/6-e2e.txt` |
-| 7.1 Contrato | `api.d.ts` sin deriva | pendiente | test de deriva |
-| 8.1–8.6 Panel | Pantalla, diálogo, filtro en la URL, descarga, franja del dashboard, barra de ocho ítems, arranque público igual | pendiente | `verification/8.5-barra.txt`, `8.6-perf-budget.txt` |
-| 9.1–9.3 App real | TC-46, CSV abierto en una planilla, `a11y:check` de la pantalla y del diálogo con errores | pendiente | `verification/9.1-entorno.txt`, `9.2-tc46.txt`, `9.2-csv.png`, `9.3-a11y.txt` |
-| 10.1–10.4 Docs | TC-46, pantalla Postulaciones, captura, arquitectura, changelog, `manual:check` | pendiente (10.4 al archivar) | diff, `verification/10.2-captura.txt` |
-| 11.1–11.3 Cierre | Todo verde, validación estricta, base del owner intacta | pendiente | `verification/11.1-cierre.txt`, `11.2-validacion.txt`, `11.3-base-del-owner.txt` |
+| 1.1 Punto de partida | Suites verdes antes de tocar nada | ok: backend 99 suites / 972 tests, e2e 17 / 277, frontend 1041, arranque 150.1 KB | `verification/1.1-punto-de-partida.txt` |
+| 2.1–2.4 Dominio | `RuleViolationError` → 422; tabla de transiciones completa; reglas de campos y fechas | ok: 14 transiciones validas, 28 invalidas y 7 iguales (49 combinaciones), 422 en el mapper | specs de `domain/` y del mapper |
+| 3.1–3.3 Esquema y migración | Migración solo aditiva; una consulta con `include`; `firstOpenedAt` en el mismo `groupBy` | ok: solo CREATE TYPE/TABLE/INDEX y FK; migrate diff sin diferencias con shadow descartable | `verification/3.1-migracion.sql` |
+| 4.1–4.3 Aplicación | Casos de uso con repos simulados; una sola llamada de aperturas; CSV puro con neutralización | ok: una llamada de aperturas por lista; CSV con ida y vuelta RFC 4180 | specs de `application/` |
+| 5.1 HTTP | Rutas, guard, validación y cabeceras del CSV | ok: cubierto por los e2e | e2e |
+| 6.1–6.5 E2e | CRUD, 422, vínculos, aperturas humanas, CSV, sin rutas públicas | ok: 34 tests (18 suites / 311 en total) | `verification/6-e2e.txt` |
+| 7.1 Contrato | `api.d.ts` sin deriva | ok: openapi.json sin deriva; api.d.ts regenerado | test de deriva |
+| 8.1–8.6 Panel | Pantalla, diálogo, filtro en la URL, descarga, franja del dashboard, barra de ocho ítems, arranque público igual | ok salvo 8.5: la barra de ocho items se desborda en 1280 y 1536 y el plan de D11 (2xl) no lo resuelve; pendiente de decision (ver 8.5-barra.txt). Arranque publico 150.1 KB, igual | `verification/8.5-barra.txt`, `8.6-perf-budget.txt` |
+| 9.1–9.3 App real | TC-46, CSV abierto en una planilla, `a11y:check` de la pantalla y del diálogo con errores | ok: TC-46 completo (API, 9 pasos en Chrome, CSV en Excel 16), a11y:check con panel 0 violaciones en 60 cargas | `verification/9.1-entorno.txt`, `9.2-tc46.txt`, `9.2-csv.png`, `9.3-a11y.txt` |
+| 10.1–10.4 Docs | TC-46, pantalla Postulaciones, captura, arquitectura, changelog, `manual:check` | ok 10.1 a 10.3 (manual:check: 46 casos); 10.4 al archivar | diff, `verification/10.2-captura.txt` |
+| 11.1–11.3 Cierre | Todo verde, validación estricta, base del owner intacta | ok: todo verde, validate --all --strict 39 passed, base del owner intacta | `verification/11.1-cierre.txt`, `11.2-validacion.txt`, `11.3-base-del-owner.txt` |
 
 ## TC-46 — Registrar una postulación y ver si abrieron el enlace
 

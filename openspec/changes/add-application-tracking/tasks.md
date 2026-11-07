@@ -78,6 +78,6 @@
 
 ## 11. Cierre
 
-- [ ] 11.1 Todo verde: `npm test`, `npm run test:e2e`, `npm run lint` y `npm run typecheck` en `backend/`; `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`, `npm run perf:budget` y `npm run manual:check` en `frontend/`. Verificar: conteos en `verification/11.1-cierre.txt`.
-- [ ] 11.2 `npx -y @fission-ai/openspec@1.14.1 validate --all --strict` sin fallos y sin avisos «Archive would refuse» para este change. Verificar: salida en `verification/11.2-validacion.txt`.
-- [ ] 11.3 Borrar `portfolio_apps_check` y confirmar que `portfolio` no tiene la migración (`prisma migrate status` contra ella la muestra pendiente). Verificar: `verification/11.3-base-del-owner.txt`.
+- [x] 11.1 Todo verde: `npm test`, `npm run test:e2e`, `npm run lint` y `npm run typecheck` en `backend/`; `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`, `npm run perf:budget` y `npm run manual:check` en `frontend/`. Verificar: conteos en `verification/11.1-cierre.txt`.
+- [x] 11.2 `npx -y @fission-ai/openspec@1.14.1 validate --all --strict` sin fallos y sin avisos «Archive would refuse» para este change. Verificar: salida en `verification/11.2-validacion.txt`.
+- [x] 11.3 Borrar `portfolio_apps_check` y confirmar que `portfolio` no tiene la migración (`prisma migrate status` contra ella la muestra pendiente). Verificar: `verification/11.3-base-del-owner.txt`.
