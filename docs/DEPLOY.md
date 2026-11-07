@@ -328,12 +328,14 @@ En la pestaña **Routing** las reglas son ordenadas, gana la primera y se evalú
 
 ### 9.5 Railway — campo por campo (**el proveedor elegido**)
 
-Un proyecto con **tres servicios**: `api`, `Postgres` y `web`. Lo que es configuración vive en el repo; en el panel solo se ponen variables y dominios.
+Un proyecto con **tres servicios**: `api`, `Postgres` y `web`. Lo que es configuración vive en el repo; en el panel solo se ponen variables y dominios. Los diagramas de todo el despliegue (topología, reparto de Caddy, flujo de una visita y del login, fases de cada deploy, variables, migraciones, respaldos y dominio) están en [`DEPLOY-ARCHITECTURE.md`](DEPLOY-ARCHITECTURE.md).
+
+Las **8 migraciones** de la 1.0.0, en orden: `init`, `curated_profile_lifecycle`, `retire_accent_color` (destructiva, ver abajo), `localize_language_level` (de datos, ver abajo), `classify_profile_views`, `add_share_links`, `add_certification_credential` y `add_admin_session_version`. Las cuatro últimas solo agregan tablas o columnas con valor por defecto. Qué hace cada una: `DEPLOY-ARCHITECTURE.md` § 10.
 
 | Archivo | Servicio | Qué fija |
 |---|---|---|
-| `backend/railway.json` | `api` | build, `preDeployCommand`, start y `healthcheckPath` |
-| `frontend/railway.json` | `web` | `builder: DOCKERFILE` |
+| `backend/railway.json` | `api` | builder Railpack, build con `prisma generate`, `watchPatterns` `/backend/**`, `preDeployCommand` (300 s), start, `healthcheckPath` `/health` (300 s), drenaje de 10 s y reinicio `ON_FAILURE` |
+| `frontend/railway.json` | `web` | `builder: DOCKERFILE`, `watchPatterns` `/frontend/**`, `healthcheckPath` `/` y reinicio `ON_FAILURE` |
 | `frontend/Dockerfile` | `web` | build con Node + runtime con Caddy |
 | `frontend/Caddyfile` | `web` | fallback de la SPA, proxy a la API y cabeceras de caché |
 
