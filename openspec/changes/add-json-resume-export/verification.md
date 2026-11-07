@@ -2,21 +2,21 @@
 
 > Plan de verificación del change. Se completa al implementarlo, con la evidencia en `verification/`. Todas las escrituras van contra bases descartables (la del e2e y una sembrada con `seed:example`); la base `portfolio` del owner no se toca. Ninguna contraseña de prueba se imprime ni se escribe acá ni en `verification/`.
 
-Estado: **propuesto** (2026-11-07). Rama `feat/json-resume-export`, desde `main` en `e337efd`.
+Estado: **implementado** (2026-11-07). Rama `feat/json-resume-export`, desde `main` en `e337efd`. Preguntas resueltas por el owner el 2026-11-07: P1 → A (certificaciones sin `date`), P2 → no (sin ruta fuera de `/api`).
 
 ## Resultado por tarea
 
 | Tarea | Qué se comprueba | Resultado | Evidencia |
 |---|---|---|---|
-| 1.1 Punto de partida | Suites verdes, `perf:budget` y `Totals:` antes de tocar nada | pendiente | `1.1-punto-de-partida.txt` |
-| 1.2 Schema | Copia byte a byte del tag `v1.0.0`, SHA-256 y licencia; supuestos de D4 confirmados | pendiente | `1.2-schema.txt` |
-| 1.3–1.4 Validador | `ajv`/`ajv-formats` declarados sin paquetes nuevos; el helper acepta lo válido y rechaza `date: "2023"` y claves de raíz desconocidas | pendiente | `json-resume-validator` spec |
-| 2.1–2.5 Mapper | Tabla de D4, regla de `sections`, orden de claves, sin vacíos ni extensiones | pendiente | `json-resume.mapper.spec.ts` |
-| 3.1–3.5 Rutas | 200 válido por perfil e idioma; 404/401 como el detalle; alias; cabeceras; sin visita; panel con `PRIVATE` y paridad | pendiente | `3.5-e2e.txt` |
-| 4.1–4.3 Contrato | Dos rutas en `openapi.json` y `api.d.ts`; sin `via`/`src` en la exportación; sin deriva | pendiente | test de OpenAPI y de deriva |
-| 5.1–5.3 Constructor | Enlaces ES/EN, estados sin guardar y con cambios; `perf:budget` sin cambios | pendiente | `5.3-frontend.txt` |
-| 6.1–6.3 Final y app real | Backend completo; TC-48 por Caddy y en Chrome; `manual:check` con un caso más | pendiente | `6.1-backend.txt`, `6.3-tc48.md` |
-| 7.1 Cierre | `validate --all --strict` sin fallos ni «Archive would refuse» | pendiente | `7.1-validacion.txt` |
+| 1.1 Punto de partida | Suites verdes, `perf:budget` y `Totals:` antes de tocar nada | **ok**: backend 99 suites / 972 tests, e2e 17 / 277, frontend 68 / 1041, `perf:budget` 148,9 KB (total 150,1), `Totals: 39 passed` | `1.1-punto-de-partida.txt` |
+| 1.2 Schema | Copia byte a byte del tag `v1.0.0`, SHA-256 y licencia; supuestos de D4 confirmados | **ok**: SHA-256 `ff6e39e7…c27a6`, todos los supuestos de D4 confirmados; licencia MIT en `LICENSE.md` (el `package.json` del tag dice BSD-2-Clause) | `1.2-schema.txt` |
+| 1.3–1.4 Validador | `ajv`/`ajv-formats` declarados sin paquetes nuevos; el helper acepta lo válido y rechaza `date: "2023"` y claves de raíz desconocidas | **ok**: el lockfile solo suma las dos declaraciones (`1.3-lockfile.txt`); 7 tests del helper | `json-resume-validator` spec |
+| 2.1–2.5 Mapper | Tabla de D4, regla de `sections`, orden de claves, sin vacíos ni extensiones | **ok**: 21 tests del mapper y 18 de `parseProjectPeriod` (incluye los `period` del seed y del ejemplo) | `json-resume.mapper.spec.ts` |
+| 3.1–3.5 Rutas | 200 válido por perfil e idioma; 404/401 como el detalle; alias; cabeceras; sin visita; panel con `PRIVATE` y paridad | **ok**: 8 tests de los casos de uso y 21 e2e | `3.5-e2e.txt` |
+| 4.1–4.3 Contrato | Dos rutas en `openapi.json` y `api.d.ts`; sin `via`/`src` en la exportación; sin deriva | **ok**: 3 tests nuevos en `swagger.spec.ts`; `openapi.json` +252 líneas, `api.d.ts` regenerado, deriva del frontend verde | test de OpenAPI y de deriva |
+| 5.1–5.3 Constructor | Enlaces ES/EN, estados sin guardar y con cambios; `perf:budget` sin cambios | **ok**: 4 tests nuevos; frontend 68 / 1045; `perf:budget` idéntico (148,9 KB; total 150,1) | `5.3-frontend.txt` |
+| 6.1–6.3 Final y app real | Backend completo; TC-48 por Caddy y en Chrome; `manual:check` con un caso más | **ok con reservas**: backend 103 suites / 1029 tests, e2e 18 / 298, `openapi:export` sin deriva, `manual:check` 46 casos, `a11y:check` con panel 0 violaciones (56 cargas); los pasos del panel con sesión no se ejecutaron a mano (ver Desvíos) | `6.1-backend.txt`, `6.3-tc48.md` |
+| 7.1 Cierre | `validate --all --strict` sin fallos ni «Archive would refuse» | **ok**: `Totals: 39 passed, 0 failed (39 items)` | `7.1-validacion.txt` |
 
 ## TC-48 — Exportar un perfil curado como JSON Resume (texto para el manual)
 
@@ -60,4 +60,10 @@ Antes y después de los `curl`, el contador de visitas de `ejemplo-backend` en *
 
 ## Desvíos
 
-Ninguno todavía.
+1. **Pasos del panel de TC-48 sin ejecutar a mano.** Pedían una sesión iniciada en el navegador y las credenciales de prueba no se escriben en un navegador. Se cubren con el test del constructor (`ProfileBuilderPage.test.tsx`), el e2e de la ruta del panel y el `curl` con la misma cookie; TC-48 queda en 🔍, como estaba previsto en este plan. En Chrome se comprobó lo que no pide sesión (la vista pública sin enlace y la descarga por `fetch`).
+2. **Sin captura nueva en el manual.** Ni el change ni el diseño la exigen (el enlace es texto en una pestaña ya capturada) y no se regeneró `tc16-publicacion` con `manual:capture`.
+3. **`a11y:check` no abre la pestaña Publicación.** La matriz recorre el constructor en su primera pestaña (0 violaciones, teclado ok); lo agregado vive en Publicación y se cubre con los tests del componente (roles, nombres accesibles y estados deshabilitados).
+4. **Dos líneas de `Cache-Control` por el contenedor `web`.** El `Caddyfile` pone `no-cache` a todo lo que no sea `/assets/*` o `/fonts/*`, también a `/api/*`: un `PROTECTED` llega con `no-cache` y `private, no-store` (la segunda sigue presente, y lo mismo ocurre con el detalle desde antes). Directo contra la API la cabecera es la de D6. No se tocó el `Caddyfile` (D1 lo excluye); decidir si `/api/*` sale de `@noCache` queda para el owner.
+5. **Discrepancia de licencia en el origen del schema.** `LICENSE.md` del tag es MIT y su `package.json` declara BSD-2-Clause; anotado en `SOURCE.md`. No cambia el uso (solo tests).
+6. **`ajv` y `ajv-formats` con versión exacta** (`8.18.0` y `3.0.1`, como pide D9) en `devDependencies`; el `package-lock.json` solo suma las dos declaraciones. Además se agregó `json-resume-validator` al `testRegex` de Jest del backend para que corra su spec (vive en `test/`).
+7. **Un test del frontend falló dos veces de forma intermitente** (una vez en el punto de partida y una al correr `ProfileBuilderPage` con la CPU compartida); repetidos, pasan. Sin relación con el change.

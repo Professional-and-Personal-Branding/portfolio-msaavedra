@@ -43,10 +43,10 @@
 
 ## 6. Final y app real
 
-- [ ] 6.1 Backend completo: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`, y `npm run openapi:export` sin deriva. Verificar: salida en `verification/6.1-backend.txt`.
-- [ ] 6.2 TC-48 en `docs/MANUAL.md` y `docs/manual/index.html` con el texto de `verification.md`; fila en la tabla de casos; glosario solo si hace falta. Verificar: `npm run manual:check` verde con un caso más.
-- [ ] 6.3 Ejecutar TC-48 contra una base descartable sembrada con `seed:example`, con la imagen de `frontend/Dockerfile` (para probar que `/api/...` llega por Caddy) y Chrome: descarga desde el constructor (ES y EN, `PRIVATE` incluido) y los `curl` de los códigos y cabeceras; validar los archivos bajados con el helper de 1.4 (script de una línea con `node`). `a11y:check` con panel no debe sumar violaciones en el constructor. Borrar la base y los contenedores. Verificar: evidencia en `verification/6.3-tc48.md`.
+- [x] 6.1 Backend completo: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`, y `npm run openapi:export` sin deriva. Verificar: salida en `verification/6.1-backend.txt`.
+- [x] 6.2 TC-48 en `docs/MANUAL.md` y `docs/manual/index.html` con el texto de `verification.md`; fila en la tabla de casos; glosario solo si hace falta. Verificar: `npm run manual:check` verde con un caso más.
+- [x] 6.3 Ejecutar TC-48 contra una base descartable sembrada con `seed:example`, con la imagen de `frontend/Dockerfile` (para probar que `/api/...` llega por Caddy) y Chrome: descarga desde el constructor (ES y EN, `PRIVATE` incluido) y los `curl` de los códigos y cabeceras; validar los archivos bajados con el helper de 1.4 (script de una línea con `node`). `a11y:check` con panel no debe sumar violaciones en el constructor. Borrar la base y los contenedores. Verificar: evidencia en `verification/6.3-tc48.md`.
 
 ## 7. Cierre
 
-- [ ] 7.1 `npx -y @fission-ai/openspec@1.14.1 validate --all --strict` y `validate add-json-resume-export --strict`, sin fallos ni «Archive would refuse». Completar `verification.md`. Verificar: salida en `verification/7.1-validacion.txt`. CHANGELOG, roadmap de `CLAUDE.md` y la fila de `docs/PROPUESTA-FEATURES.md` § 6.2 (ruta de D1) quedan para el archivado.
+- [x] 7.1 `npx -y @fission-ai/openspec@1.14.1 validate --all --strict` y `validate add-json-resume-export --strict`, sin fallos ni «Archive would refuse». Completar `verification.md`. Verificar: salida en `verification/7.1-validacion.txt`. CHANGELOG, roadmap de `CLAUDE.md` y la fila de `docs/PROPUESTA-FEATURES.md` § 6.2 (ruta de D1) quedan para el archivado.
