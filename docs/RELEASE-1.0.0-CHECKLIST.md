@@ -54,7 +54,7 @@
 
 **Todo lo que es código está cerrado.** Los 6 bloqueantes de hardening, el ajuste de empaquetado del CLI de Prisma y la configuración de despliegue. De los importantes queda uno, backups, que no es código y se cierra al desplegar. **Proveedor elegido: Railway** (`docs/DEPLOY.md` § 9.5). Lo que queda para el 1.0.0:
 
-1. Crear el proyecto en Railway y seguir **`docs/DEPLOY-RAILWAY.md`** (la guía corta, con checkboxes). El detalle de cada paso está en `docs/DEPLOY.md`.
+1. Crear el proyecto en Railway y seguir **`docs/DEPLOY-RAILWAY.md`** (la guía corta, con checkboxes). El detalle de cada paso está en `docs/DEPLOY.md`, y los diagramas de cómo encaja todo, en `docs/DEPLOY-ARCHITECTURE.md`.
 2. Activar backups, hacer un **dump fuera de Railway** y **probar una restauración** (paso 9 de la guía y § 7), y anotar la fecha en este documento.
 3. Correr la verificación posterior al despliegue (§ 5), incluida la prueba de IP real del paso 7.
 4. Pendientes de la ronda 1.1 que necesitan el sitio arriba:

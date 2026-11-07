@@ -200,7 +200,7 @@ export function describePgDumpCommand(databaseUrl: string | undefined, now: Date
   const lines = [`  pg_dump "${uri}" -Fc -f ${base === '' ? 'portfolio' : base}-${date}.dump`];
   if (url.hostname.endsWith('.railway.internal')) {
     lines.push(
-      'Esa dirección es la red privada de Railway: desde tu máquina usá DATABASE_PUBLIC_URL del servicio Postgres (docs/DEPLOY-RAILWAY.md § 7).',
+      'Esa dirección es la red privada de Railway: desde tu máquina usá DATABASE_PUBLIC_URL del servicio Postgres (docs/DEPLOY-RAILWAY.md, paso 4).',
     );
   }
   return lines;

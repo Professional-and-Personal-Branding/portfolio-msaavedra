@@ -8,10 +8,16 @@
 
 **Arquitectura:** tres servicios en un proyecto. `web` (Caddy) sirve la SPA y hace de **proxy** de `/api/*`, `/health*`, `/robots.txt` y `/sitemap.xml` hacia `api` por la red privada. Un solo origen → cookie `SameSite=strict`, sin CORS, `VITE_API_URL` vacío. (§ 0, § 9.5)
 
+```mermaid
+flowchart LR
+  N["Navegador"] -->|HTTPS| E["Borde de Railway<br/>TLS y X-Real-IP"]
+  E --> W["web: Caddy<br/>SPA + proxy"]
+  W -->|"/api/*, /health*,<br/>/robots.txt, /sitemap.xml"| A["api: NestJS<br/>:8080, red privada"]
+  A --> P[("Postgres<br/>red privada")]
+  W -->|"todo lo demás"| S["dist/ con fallback<br/>a index.html"]
 ```
-navegador → [web: Caddy] ──/api/*──▶ [api: NestJS] ──privada──▶ [Postgres]
-                   └── todo lo demás → dist/ con fallback a index.html
-```
+
+> **¿Querés entender el despliegue completo antes de empezar?** [`DEPLOY-ARCHITECTURE.md`](DEPLOY-ARCHITECTURE.md) tiene los diagramas de topología, el reparto de Caddy, una visita y un login de punta a punta, las fases de cada deploy, el mapa de variables, las migraciones y los respaldos. Esta guía es la lista para hacerlo; aquel documento explica por qué funciona así.
 
 ---
 
@@ -19,6 +25,8 @@ navegador → [web: Caddy] ──/api/*──▶ [api: NestJS] ──privada─�
 
 - [ ] Cuenta de Railway con el plan **Hobby** (USD 5 incluidos; el costo es por uso).
 - [ ] El repositorio conectado a Railway (GitHub) y `main` al día con este cambio.
+- [ ] **El CI del último commit de `main` en verde** (pestaña *Actions* de GitHub: backend, frontend y `web-quality`). Railway despliega lo que haya en `main`, pase o no el CI: en este repo privado no hay *required checks* que lo impidan.
+- [ ] Sin changes de OpenSpec a medio implementar en `main`: `openspec/changes/` tiene que quedar solo con `archive/`.
 - [ ] En tu máquina: Node 22, `git`, **Docker** (para la prueba de restauración del paso 9) y el `.env` de `backend/` apuntando a **tu base local**, nunca a producción.
 - [ ] Un gestor de contraseñas abierto: ahí van los secretos del paso 1.
 - [ ] Cuenta de GitHub para pedir `mjsaavedra.is-a.dev` (paso 6). Mientras el PR de is-a.dev no esté aprobado, los pasos 1 a 5 y 7 se pueden hacer con el dominio `*.up.railway.app` del servicio `web`; el paso 6 y el `FRONTEND_URL` definitivo quedan para cuando exista.
@@ -42,7 +50,7 @@ New-Secret 32   # ANALYTICS_SALT   (distinta del JWT_SECRET)
 New-Secret 24   # contraseña del administrador (ADMIN_PASSWORD en el paso 4)
 ```
 
-La contraseña de `admin:bootstrap` puede ser la de siempre, pero conviene cambiarla después desde **Cuenta** en el panel (`/admin/cuenta`); `admin:bootstrap` queda como recuperación.
+La de 24 bytes da 32 caracteres. `admin:bootstrap` acepta desde 8, pero el cambio desde **Cuenta** (`/admin/cuenta`) exige entre 12 y 256, así que usá una de al menos 12 desde el principio. La rotación de rutina se hace después desde **Cuenta**; `admin:bootstrap` queda como recuperación.
 
 En producción la API **no arranca** si el `JWT_SECRET` es el del `.env.example`, tiene menos de 32 caracteres, coincide con `ANALYTICS_SALT`, o si `FRONTEND_URL` no usa https.
 
@@ -60,7 +68,22 @@ En producción la API **no arranca** si el `JWT_SECRET` es el del `.env.example`
 
 - [ ] New → GitHub Repo → **Settings → Root Directory: `backend`**.
 - [ ] **Settings → Config-as-code → Config file path: `/backend/railway.json`**. Es una ruta **absoluta desde la raíz del repo**: el Root Directory no la reubica, y con `railway.json` a secas Railway no encuentra el archivo y usa sus valores por defecto (build sin `prisma generate`, sin pre-deploy ni healthcheck).
-- [ ] No tocar Build / Start / Pre-deploy / Healthcheck: los toma de `backend/railway.json` (`buildCommand` con `prisma generate`, `startCommand: node dist/main`, `preDeployCommand`, `preDeployTimeoutSeconds: 300`, `healthcheckPath: /health`, `drainingSeconds: 10`). Comprobá en el panel que esos campos figuren como definidos por el archivo y que el **Pre-deploy Timeout** diga `300`.
+- [ ] No tocar Build / Start / Pre-deploy / Healthcheck: los toma de `backend/railway.json`:
+
+  | Campo | Valor versionado |
+  |---|---|
+  | Builder | `RAILPACK` |
+  | Build command | `npm run prisma:generate && npm run build` |
+  | Watch paths | `/backend/**` |
+  | Pre-deploy command | `npm run prisma:deploy` (= `prisma migrate deploy`) |
+  | Pre-deploy timeout | `300` s |
+  | Start command | `node dist/main` |
+  | Healthcheck path | `/health` |
+  | Healthcheck timeout | `300` s |
+  | Draining | `10` s |
+  | Restart policy | `ON_FAILURE` |
+
+  Comprobá en el panel que esos campos figuren como definidos por el archivo y que el **Pre-deploy Timeout** diga `300`.
 - [ ] **App Sleeping apagado** (Settings → Serverless). Si el servicio durmiera, la primera visita del día pagaría el arranque.
 - [ ] Variables → Raw Editor, pegar y completar:
 
@@ -87,7 +110,7 @@ FRONTEND_URL=https://mjsaavedra.is-a.dev
 **Cómo verificar el deploy** (pestaña Deployments → logs):
 
 1. En el **build**: aparece `prisma generate` (“Generated Prisma Client”) y después `nest build`, sin errores de TypeScript.
-2. En el **pre-deploy**: `prisma migrate deploy` aplica las **4 migraciones** (`init`, `curated_profile_lifecycle`, `retire_accent_color`, `localize_language_level`).
+2. En el **pre-deploy**: `prisma migrate deploy` aplica las **8 migraciones**, en este orden: `init`, `curated_profile_lifecycle`, `retire_accent_color`, `localize_language_level`, `classify_profile_views`, `add_share_links`, `add_certification_credential` y `add_admin_session_version`. El log termina con «All migrations have been successfully applied». La tabla con lo que hace cada una está en [`DEPLOY-ARCHITECTURE.md` § 10](DEPLOY-ARCHITECTURE.md#10-datos-base-migraciones-y-respaldos).
 3. El **healthcheck** `/health` pasa y la versión entra. En los logs, JSON con `reqId`, sin contraseñas ni tokens.
 
 **Si falla:**
@@ -99,7 +122,7 @@ FRONTEND_URL=https://mjsaavedra.is-a.dev
 - *“healthcheck failed”* → la base no responde (`/health` devuelve 503 a propósito) o `PORT` distinto de `8080`.
 - Una migración que falla **detiene el deploy y la versión vieja sigue sirviendo**: ver *Si algo falla* al final.
 
-> Las migraciones `retire_accent_color` y `localize_language_level` son inocuas sobre una base **vacía** (este primer deploy). Si algún día un deploy las aplica sobre una base con datos, hacé un respaldo antes (§ 9.5).
+> Las migraciones `retire_accent_color` (destructiva) y `localize_language_level` (de datos) son inocuas sobre una base **vacía**, como la de este primer deploy. Las demás solo agregan tablas o columnas con valor por defecto. Si algún día un deploy aplica una migración destructiva o de datos sobre una base con contenido, hacé un respaldo antes (§ 9.5 y [«Deploys siguientes»](#deploys-siguientes)).
 
 - [ ] Opcional: **Settings → Networking → Generate Domain** en `api`, para mirar la API cruda en el paso 7. Se puede borrar después.
 
@@ -235,7 +258,18 @@ curl.exe -sI -H 'Origin: https://otro-sitio.com' $API/api/profile | Select-Strin
 - [ ] Pegar dos perfiles públicos distintos en el [Post Inspector de LinkedIn](https://www.linkedin.com/post-inspector/) y en un canal de Slack. Las tarjetas tienen que mostrar **títulos distintos** y la imagen (tarea 5.4 de `add-server-rendered-head`). Si salen genéricas, ver *Si algo falla*.
 - [ ] Pasar la home y un perfil público por el [Rich Results Test](https://search.google.com/test/rich-results) y por el [validador de schema.org](https://validator.schema.org): `ProfilePage` sin errores y el mismo `@id` del `Person` en los dos (TC-44, pasos 6 y 7 de `docs/MANUAL.md`).
 
-Al primer deploy no hay visitas que reclasificar. Cuando suba la versión de la lista de bots, hacé el `pg_dump` de arriba y corré `railway run npm run views:reclassify` (simulación, no escribe) y, si el informe cierra, `railway run npm run views:reclassify -- --apply` (`docs/DEPLOY.md` § 7).
+Al primer deploy no hay visitas que reclasificar. Cuando suba la versión de la lista de bots, se corre desde tu máquina contra la base pública, igual que el poblado del paso 4 (no con `railway run`: la `DATABASE_URL` privada no resuelve desde tu PC). Primero el dump del paso 9 y, con Public Access encendido:
+
+```powershell
+cd backend
+$env:DATABASE_URL = '<DATABASE_PUBLIC_URL>'
+$env:NODE_ENV = 'production'
+npm run views:reclassify               # simulación: informa cuántas cambiarían, no escribe
+npm run views:reclassify -- --apply    # solo si el informe cierra
+Remove-Item Env:DATABASE_URL, Env:NODE_ENV
+```
+
+Después, apagar Public Access (`docs/DEPLOY.md` § 7).
 
 ---
 
@@ -275,6 +309,60 @@ Remove-Item Env:PGURL
 - [ ] Verificar que el redeploy es selectivo: un cambio trivial en `backend/` (p. ej. un comentario) y push a `main` tiene que redesplegar **solo `api`**, no `web` (por los `watchPatterns` `/backend/**` y `/frontend/**`).
 - [ ] `git tag v1.0.0 && git push --tags`.
 - [ ] Leer [`MANUAL.md`](MANUAL.md): cómo se usa la plataforma, caso por caso.
+
+---
+
+## Deploys siguientes
+
+Después del primero, cada push a `main` que toque `backend/` o `frontend/` despliega solo el servicio afectado. Lo que pasa en cada fase está dibujado en [`DEPLOY-ARCHITECTURE.md` § 7](DEPLOY-ARCHITECTURE.md#7-qué-pasa-en-cada-deploy).
+
+**Antes de fusionar a `main`:**
+
+- [ ] El CI del PR en verde.
+- [ ] ¿Trae migraciones nuevas? Mirá `backend/prisma/migrations/` en el diff:
+  - **Solo agrega** tablas, columnas con valor por defecto o índices: no hace falta nada más.
+  - **Borra o transforma datos** (`DROP`, `UPDATE`, `ALTER COLUMN … TYPE`): hacé el dump del paso 9 **antes de fusionar**, y anotá en el PR cómo se vuelve atrás.
+- [ ] ¿Cambia una variable de entorno? Cargala en el panel **antes** de fusionar. Si la API la exige y falta, la versión nueva no arranca y queda la anterior sirviendo.
+
+**Después del deploy:**
+
+- [ ] Deployments del servicio: build, pre-deploy y healthcheck en verde.
+- [ ] Desde PowerShell, el chequeo rápido:
+
+```powershell
+$SITIO = 'https://mjsaavedra.is-a.dev'
+curl.exe -s $SITIO/health                                         # JSON con status ok
+curl.exe -s -o NUL -w "%{http_code}`n" $SITIO/                    # 200
+curl.exe -s $SITIO/tech-lead-dotnet | Select-String 'og:title'    # el título del perfil, no el genérico
+```
+
+- [ ] Si algo no cierra: **Rollback** al despliegue anterior (72 h en Hobby). Si la versión nueva aplicó una migración, el rollback no la revierte: el código viejo tiene que funcionar con la base nueva, o hay que restaurar el dump.
+
+**Migraciones de la 1.0.0 y su riesgo.** Todas corren en el primer deploy, sobre una base vacía:
+
+| Migración | Tipo | Sobre una base con datos |
+|---|---|---|
+| `init`, `curated_profile_lifecycle` | esquema | aditivas |
+| `retire_accent_color` | **destructiva** | respaldo antes; rollback restaurando (`DEPLOY.md` § 9.5) |
+| `localize_language_level` | **de datos** | respaldo antes; hay rollback por SQL que pierde el inglés (`DEPLOY.md` § 9.5) |
+| `classify_profile_views`, `add_share_links`, `add_certification_credential`, `add_admin_session_version` | aditivas | nada; las sesiones abiertas siguen válidas |
+
+---
+
+## Operación
+
+| Cada | Qué | Cómo |
+|---|---|---|
+| deploy | chequeo rápido | [«Deploys siguientes»](#deploys-siguientes) |
+| semana, el primer mes | uso y costo | panel de uso de Railway; la alerta del paso 10 avisa si se pasa |
+| mes | dump fuera de Railway y **prueba de restauración** | paso 9; anotar la fecha en `RELEASE-1.0.0-CHECKLIST.md` |
+| mes | logs de `api` | buscar `"level":50` (error) y 5xx repetidos |
+| cuando haga falta | rotar la contraseña del administrador | **Cuenta** en el panel; si se perdió, `admin:bootstrap` (paso 4) |
+| cuando haga falta | reclasificar visitas | paso 8, con dump previo |
+
+**Rotar secretos.** Cambiar `JWT_SECRET` en el panel y redesplegar `api` cierra **todas** las sesiones: sirve si se sospecha que el secreto se filtró. Cambiar `ANALYTICS_SALT` hace que, desde ese momento, las mismas IP den otro `ipHash`. No rompe nada, pero corta la continuidad de visitantes únicos. Generá los valores nuevos con la función del paso 1 y guardalos en el gestor antes de pegarlos.
+
+**Monitoreo.** Hasta que exista el change `add-uptime-monitoring`, el único aviso automático es el del propio Railway cuando falla un deploy. Si el sitio se cae entre deploys, nadie avisa: conviene abrirlo de vez en cuando. `/health/live` en `200` con `/health` en `503` significa que la API vive pero no llega a la base.
 
 ---
 
@@ -326,6 +414,11 @@ Descartados: `manuelsaavedra.com` y `msaavedra.com` (registrados); `.top`, `.xyz
 | Todos los perfiles se previsualizan iguales (**cards genéricas**) | el head del servidor no llega: `api` caída o lenta (el sitio degrada al genérico a propósito) o `index.html` sin pasar por `templates`. LinkedIn y Slack guardan en caché la tarjeta anterior: reintentá en Post Inspector | `curl.exe -s https://mjsaavedra.is-a.dev/<slug> \| Select-String og:title` · § 9.5 |
 | `canonical` u `og:image` apuntan a `localhost` o a otro dominio | `FRONTEND_URL` de `api` sin el dominio público | § 9.5 |
 | El HTML responde 500 | un error dentro del template de `index.html`: se tocó una acción `<!--# … -->` o se quitó el `handle_errors` del `Caddyfile` | `frontend/Caddyfile` |
+| `/health/live` da 200 y `/health` da 503 | la API vive pero no llega a la base: Postgres caído, reiniciándose o con la `DATABASE_URL` cambiada | servicio Postgres en el panel |
+| Se cerraron las sesiones del panel en todos los dispositivos | alguien cambió la contraseña desde **Cuenta**, corrió `admin:bootstrap` o cambió `JWT_SECRET`. Es lo esperado | [«Operación»](#operación) |
+| Una edición del perfil no aparece en la vista previa de LinkedIn | el fragmento del head se cachea **1 minuto** en la API, y LinkedIn guarda su propia copia | esperar un minuto y pedir de nuevo en Post Inspector |
+| La API se cae al arrancar con una variable nueva | la versión nueva exige una variable que no se cargó en el panel; la anterior sigue sirviendo | cargarla y redesplegar ([«Deploys siguientes»](#deploys-siguientes)) |
+| `npm run seed` desde la PC dice que la dirección es la red privada | se usó la `DATABASE_URL` del servicio en lugar de `DATABASE_PUBLIC_URL` | paso 4 |
 
 **Rollback.** Deployments → el despliegue anterior → *Rollback*. En el plan Hobby alcanza a los despliegues de las últimas **72 h**; más viejo que eso se vuelve a desplegar desde el commit. Un rollback **no revierte la base**.
 
