@@ -223,16 +223,20 @@ describe('Postulaciones: API del panel (e2e)', () => {
     });
 
     it('las siete rutas dan 401 sin sesión', async () => {
+      // De a una, no con Promise.all: cada request() abre su propio servidor efímero y el guard
+      // responde 401 sin leer el cuerpo del POST/PATCH; en paralelo, el runner de CI llegó a
+      // cortar una conexión a mitad del envío (ECONNRESET) aunque la API respondiera bien.
       const calls = [
-        request(server()).get(apps),
-        request(server()).get(`${apps}/summary`),
-        request(server()).get(`${apps}/export`),
-        request(server()).post(apps).send(body()),
-        request(server()).get(`${apps}/abc`),
-        request(server()).patch(`${apps}/abc`).send({ notes: 'x' }),
-        request(server()).delete(`${apps}/abc`),
+        () => request(server()).get(apps),
+        () => request(server()).get(`${apps}/summary`),
+        () => request(server()).get(`${apps}/export`),
+        () => request(server()).post(apps).send(body()),
+        () => request(server()).get(`${apps}/abc`),
+        () => request(server()).patch(`${apps}/abc`).send({ notes: 'x' }),
+        () => request(server()).delete(`${apps}/abc`),
       ];
-      const statuses = await Promise.all(calls.map(async (call) => (await call).status));
+      const statuses: number[] = [];
+      for (const call of calls) statuses.push((await call()).status);
       expect(statuses).toEqual([401, 401, 401, 401, 401, 401, 401]);
     });
   });
