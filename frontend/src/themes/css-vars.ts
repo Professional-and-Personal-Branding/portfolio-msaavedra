@@ -30,6 +30,9 @@ const SERIF_FAMILIES = new Set([
 /** Verde base de los estados positivos («Actual»); el derivado legible sale de `--t-success-ink`. */
 export const SUCCESS = '#00bc7d';
 
+/** Rojo de error: la base de `--color-destructive`; el derivado legible sale de `--t-danger-ink`. */
+export const DANGER = '#dc2626';
+
 export interface ThemeCssVars {
   '--t-bg': string;
   '--t-bg-soft': string;
@@ -44,6 +47,8 @@ export interface ThemeCssVars {
   '--t-accent-ink': string;
   /** Verde de estado como texto (≥ 4,5:1): derivado como el acento, no se guarda. */
   '--t-success-ink': string;
+  /** Rojo de error como texto (≥ 4,5:1): derivado como el verde, no se guarda. */
+  '--t-danger-ink': string;
   /** El segundo acento como texto (títulos de categoría de skills), con el mismo criterio. */
   '--t-accent2-ink': string;
   /** Texto atenuado con contraste AA garantizado. */
@@ -78,6 +83,7 @@ export function tokensToCssVars(tokens: ThemeTokens): ThemeCssVars {
     '--t-accent-foreground': readableOn(colors.accent),
     '--t-accent-ink': ink,
     '--t-success-ink': accentInk(SUCCESS, inkSurfaces(tokens, SUCCESS, 0.15), tokens.mode),
+    '--t-danger-ink': accentInk(DANGER, [colors.bg, colors.bgSoft, colors.card], tokens.mode),
     '--t-accent2-ink': accentInk(
       colors.accent2,
       [colors.bg, colors.bgSoft, colors.card],

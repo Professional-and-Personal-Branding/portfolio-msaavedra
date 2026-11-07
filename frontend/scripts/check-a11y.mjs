@@ -11,6 +11,9 @@
  * layout, `?lang=en`, los perfiles cuyo acento no llega a 4,5:1 contra su fondo, el 404 y
  * `/admin/login`, en mobile y escritorio; y un recorrido de teclado (salto al contenido como
  * primer foco, foco que llega al contenido y contraste ≥ 3:1 del indicador de cada control).
+ * Dos entradas abren un mensaje de error a la vista (D4 de `fix-error-contrast-and-date-modified`):
+ * `admin-login-error` (el POST del login se responde 401 desde el navegador, sin tocar la API) y,
+ * con panel, `admin-experiencias-error` («Guardar» vacío: validación del cliente, sin POST).
  * Con A11Y_CHECK_ADMIN_EMAIL y A11Y_CHECK_ADMIN_PASSWORD también audita el panel: la sesión
  * se abre con `fetch('/api/auth/login')` desde la página, sin escribir la contraseña en un campo.
  *
@@ -310,20 +313,104 @@ const browser = await puppeteer.launch({
 const consoleNotes = [];
 const results = [];
 
+/** Espera hasta 5 s a que `check` se cumpla en la página; si no, devuelve false. */
+async function waitFor(page, check, ...args) {
+  return page
+    .waitForFunction(check, { timeout: 5000 }, ...args)
+    .then(() => true)
+    .catch(() => false);
+}
+
+/** Pulsa el primer botón visible cuyo texto es exactamente `label`; false si no existe. */
+function clickButton(page, label) {
+  return page.evaluate((text) => {
+    const button = [...document.querySelectorAll('button')].find(
+      (b) => b.textContent?.trim() === text && b.offsetParent !== null,
+    );
+    button?.click();
+    return Boolean(button);
+  }, label);
+}
+
+/**
+ * Entradas con un mensaje de error a la vista (change `fix-error-contrast-and-date-modified`, D4):
+ * `setup(page)` corre antes de navegar y `prepare(page)` después de `settle` y antes de axe;
+ * devuelve la lista de problemas (vacía si el mensaje esperado apareció).
+ */
+const ERROR_ENTRIES = {
+  // Login: el POST a /api/auth/login se responde 401 desde el navegador (no llega a la API, no
+  // gasta el límite de intentos) y el formulario se envía vacío: no se escribe nada en los campos.
+  'admin-login-error': {
+    async setup(page) {
+      await page.setRequestInterception(true);
+      page.on('request', (request) => {
+        if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/auth/login') {
+          void request.respond({
+            status: 401,
+            contentType: 'application/json',
+            body: JSON.stringify({ statusCode: 401, message: 'Unauthorized' }),
+          });
+        } else {
+          void request.continue();
+        }
+      });
+    },
+    async prepare(page) {
+      if (!(await clickButton(page, 'Entrar'))) return ['no hay botón «Entrar»'];
+      const seen = await waitFor(page, () =>
+        [...document.querySelectorAll('[role="alert"]')].some((e) =>
+          /Email o contraseña incorrectos/.test(e.textContent ?? ''),
+        ),
+      );
+      return seen ? [] : ['no apareció «Email o contraseña incorrectos»'];
+    },
+  },
+  // Diálogo de experiencias: «Guardar» vacío valida en el cliente y muestra los errores; no sale
+  // ningún POST a /api/admin/ (se cuenta).
+  'admin-experiencias-error': {
+    async setup(page) {
+      page.adminPosts = 0;
+      page.on('request', (request) => {
+        if (request.method() === 'POST' && request.url().includes('/api/admin/')) page.adminPosts++;
+      });
+    },
+    async prepare(page) {
+      if (!(await clickButton(page, 'Nueva experiencia')))
+        return ['no hay botón «Nueva experiencia»'];
+      if (!(await waitFor(page, () => document.querySelector('[role="dialog"]'))))
+        return ['no se abrió el diálogo'];
+      if (!(await clickButton(page, 'Guardar'))) return ['no hay botón «Guardar»'];
+      const seen = await waitFor(page, () =>
+        document.querySelector('[role="dialog"] [role="alert"]'),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const problems = seen ? [] : ['no apareció ningún mensaje de error en el diálogo'];
+      if (page.adminPosts !== 0) problems.push(`salieron ${page.adminPosts} POST a /api/admin/`);
+      return problems;
+    },
+  },
+};
+
 async function audit(entry, viewportName, { keyboard = false, skipLink = true } = {}) {
   const page = await browser.newPage();
   await page.setViewport(VIEWPORTS[viewportName]);
+  const errorEntry = ERROR_ENTRIES[entry.id];
+  await errorEntry?.setup(page);
   page.on('console', (m) => {
     if (m.type() === 'error')
       consoleNotes.push({ page: `${entry.id}.${viewportName}`, text: m.text().slice(0, 200) });
   });
   await page.goto(BASE + entry.path, { waitUntil: 'domcontentloaded' });
   await settle(page);
+  const prepareProblems = (await errorEntry?.prepare(page)) ?? [];
   const violations = await runAxe(page);
   const row = { page: entry.id, path: entry.path, viewport: viewportName, violations };
+  if (prepareProblems.length > 0) row.prepareProblems = prepareProblems;
   if (keyboard) row.keyboard = await keyboardWalk(page, { expectSkipLink: skipLink });
   results.push(row);
   const summary = violations.map((v) => `${v.id}(${v.impact})x${v.nodes.length}`).join(', ');
+  if (prepareProblems.length > 0)
+    console.log(`  ${entry.id}.${viewportName}: ${prepareProblems.join('; ')}`);
   const kb = row.keyboard
     ? ` · teclado: ${row.keyboard.problems.length === 0 ? `ok (${row.keyboard.focusables} controles)` : `${row.keyboard.problems.length} problema(s)`}`
     : '';
@@ -346,6 +433,7 @@ const publicPages = [
   },
   { id: 'not-found', path: '/no-existe-este-perfil' },
   { id: 'admin-login', path: '/admin/login', skipLink: false },
+  { id: 'admin-login-error', path: '/admin/login', skipLink: false },
   ...PRESETS.flatMap((preset) =>
     LAYOUTS.map((layout) => ({
       id: `preset-${preset}-${layout}`,
@@ -397,6 +485,7 @@ if (ADMIN_EMAIL && ADMIN_PASSWORD) {
     ['admin', '/admin'],
     ['admin-portada', '/admin/portada'],
     ['admin-experiencias', '/admin/experiencias'],
+    ['admin-experiencias-error', '/admin/experiencias'],
     ['admin-skills', '/admin/skills'],
     ['admin-formacion', '/admin/formacion'],
     ['admin-proyectos', '/admin/proyectos'],
@@ -440,6 +529,10 @@ const blocking = rules.filter((r) => BLOCKING.has(r.impact));
 const keyboardProblems = results.flatMap((r) =>
   (r.keyboard?.problems ?? []).map((p) => `${r.page}.${r.viewport}: ${p}`),
 );
+// Una entrada con error a la vista que no vio el error no prueba nada: cuenta como problema.
+const failedPrepare = results.flatMap((r) =>
+  (r.prepareProblems ?? []).map((p) => `${r.page}.${r.viewport}: ${p}`),
+);
 
 let md = `# a11y:check · axe-core ${axeVersion}\n\nBase: ${BASE} · ${new Date().toISOString()} · ${results.length} cargas${adminAudited ? ' (con panel)' : ' (sin panel)'}\n\n`;
 md += '| Regla | Impacto | Nodos | Páginas | Ejemplo |\n|---|---|---|---|---|\n';
@@ -450,6 +543,8 @@ if (rules.length === 0) md += '| (ninguna) | | 0 | | |\n';
 md += `\nViolaciones serious/critical: ${blocking.reduce((n, r) => n + r.nodes, 0)} nodos en ${blocking.length} regla(s).\n`;
 md += `Recorrido de teclado: ${keyboardProblems.length === 0 ? 'sin problemas' : `${keyboardProblems.length} problema(s)`}.\n`;
 for (const p of keyboardProblems) md += `- ${p}\n`;
+md += `Entradas con error a la vista: ${failedPrepare.length === 0 ? 'sin problemas' : `${failedPrepare.length} problema(s)`}.\n`;
+for (const p of failedPrepare) md += `- ${p}\n`;
 
 console.log(`\n${md}`);
 if (OUT) {
@@ -464,4 +559,6 @@ if (OUT) {
   );
   writeReport(OUT, 'a11y-summary.md', md);
 }
-process.exit(blocking.length > 0 || keyboardProblems.length > 0 ? 1 : 0);
+process.exit(
+  blocking.length > 0 || keyboardProblems.length > 0 || failedPrepare.length > 0 ? 1 : 0,
+);

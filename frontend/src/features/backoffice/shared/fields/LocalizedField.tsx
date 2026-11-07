@@ -83,7 +83,7 @@ export function LocalizedField({
       ))}
       {description && !error && <p className="text-xs text-text-dim">{description}</p>}
       {error && (
-        <p role="alert" className="text-xs text-destructive">
+        <p role="alert" className="text-xs text-danger-ink">
           {error}
         </p>
       )}

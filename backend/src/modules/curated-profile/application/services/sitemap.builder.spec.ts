@@ -1,6 +1,7 @@
 import {
   buildRobotsTxt,
   buildSitemapXml,
+  isoDay,
   toSitemapEntries,
   type SitemapProfile,
 } from './sitemap.builder';
@@ -80,5 +81,12 @@ describe('buildRobotsTxt', () => {
     expect(robots).toContain('Allow: /');
     expect(robots).toContain('Disallow: /admin');
     expect(robots).toContain('Sitemap: https://portafolio.example.com/sitemap.xml');
+  });
+});
+
+describe('isoDay', () => {
+  it('es el día UTC, aunque la hora caiga tarde', () => {
+    expect(isoDay(new Date('2026-03-01T23:30:00.000Z'))).toBe('2026-03-01');
+    expect(isoDay(new Date('2026-01-15T00:00:00.000Z'))).toBe('2026-01-15');
   });
 });

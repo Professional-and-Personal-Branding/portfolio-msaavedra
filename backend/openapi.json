@@ -5499,6 +5499,13 @@
             ],
             "example": "PUBLIC"
           },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Última edición del perfil curado (UTC). Las visitas no la mueven; null solo en el preview de un borrador.",
+            "example": "2026-01-15T12:00:00.000Z"
+          },
           "sections": {
             "example": [
               "hero",
@@ -5587,6 +5594,7 @@
           "techFocus",
           "layout",
           "visibility",
+          "updatedAt",
           "sections",
           "hiddenSections",
           "theme",
@@ -5802,6 +5810,13 @@
             ],
             "example": "PUBLIC"
           },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Última edición del perfil curado (UTC). Las visitas no la mueven; null solo en el preview de un borrador.",
+            "example": "2026-01-15T12:00:00.000Z"
+          },
           "sections": {
             "example": [
               "hero",
@@ -5897,6 +5912,7 @@
           "techFocus",
           "layout",
           "visibility",
+          "updatedAt",
           "sections",
           "hiddenSections",
           "theme",

@@ -1,0 +1,5 @@
+backend:  lint ok · typecheck ok · npm test 99 suites / 972 tests · build ok · test:e2e 17 suites / 277 tests (base descartable portfolio_fix_e2e migrada y sembrada)
+          openapi:export + git diff --exit-code -- openapi.json: sin deriva tras commitear el regenerado.
+frontend: lint ok · typecheck ok · npm test -- --run 68 archivos / 1041 tests · build ok · perf:budget 148.9 KB gzip (tope 155) · manual:check ok (45 casos, 48 imágenes)
+          print:check contra la imagen: 20 casos (5 perfiles), 0 con problemas, contraste mínimo 9.74:1 (7.1-print-check.txt)
+          Vitest de la paridad también con TZ America/La_Paz y Pacific/Auckland (6.5-zonas-horarias.txt).

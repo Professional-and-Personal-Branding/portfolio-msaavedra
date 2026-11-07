@@ -1,0 +1,3 @@
+Desvío: el rojo previo de la parte A no se capturó por separado (código y tests se escribieron en la misma pasada).
+La prueba de que los controles no son vacuos está en 4.4-rojo-a11y.txt (con text-destructive en LoginPage y ExperienceForm, a11y:check marca color-contrast en las dos entradas nuevas) y en el detector de status-color-usage.spec (el caso `danger` atrapa text-destructive y text-[color-mix(...destructive...)] en líneas de prueba).
+Al introducir la regla `danger`, la corrida sobre las carpetas listó 20 líneas incumplidoras (19 text-destructive de features/ más ERROR_TEXT y su comentario) antes del reemplazo.

@@ -193,6 +193,7 @@ describe('Perfiles curados (e2e)', () => {
           'techFocus',
           'layout',
           'visibility',
+          'updatedAt',
           'sections',
           'hiddenSections',
           'theme',

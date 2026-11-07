@@ -99,6 +99,8 @@ export function profilePageJsonLd(
     name: context.title,
     description: context.description,
     inLanguage: context.locale,
+    // Día UTC del ISO (nunca `new Date` con métodos locales: en una zona negativa caería en otro día).
+    ...(data.updatedAt ? { dateModified: data.updatedAt.slice(0, 10) } : {}),
     mainEntity: {
       '@type': 'Person',
       '@id': `${context.origin}/#person`,

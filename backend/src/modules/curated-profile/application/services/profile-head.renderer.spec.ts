@@ -20,6 +20,7 @@ function output(overrides: Partial<CuratedProfileOutput> = {}): CuratedProfileOu
     techFocus: '.NET',
     layout: 'classic',
     visibility: 'PUBLIC',
+    updatedAt: null,
     sections: [],
     hiddenSections: [],
     theme: null,
@@ -255,10 +256,32 @@ describe('JSON-LD ProfilePage (upgrade-profile-structured-data)', () => {
     ]);
   });
 
-  it('no emite dateModified ni dateCreated (P1)', () => {
-    const html = render(full());
+  it('sin fecha de edición (preview de un borrador) no emite dateModified, ni nunca dateCreated', () => {
+    const html = render(full({ updatedAt: null }));
     expect(html).not.toContain('dateModified');
     expect(html).not.toContain('dateCreated');
+    expect(render(full({ updatedAt: '2026-01-15T12:00:00.000Z' }))).not.toContain('dateCreated');
+  });
+
+  it('dateModified: el día UTC de updatedAt, entre inLanguage y mainEntity (D6, D8)', () => {
+    const ld = jsonLd(render(full({ updatedAt: '2026-01-15T12:00:00.000Z' })));
+    expect(ld?.dateModified).toBe('2026-01-15');
+    expect(Object.keys(ld ?? {})).toEqual([
+      '@context',
+      '@type',
+      'url',
+      'name',
+      'description',
+      'inLanguage',
+      'dateModified',
+      'mainEntity',
+    ]);
+  });
+
+  it('dateModified usa el día UTC aunque la hora caiga tarde: 23:30 UTC sigue siendo ese día', () => {
+    expect(jsonLd(render(full({ updatedAt: '2026-03-01T23:30:00.000Z' })))?.dateModified).toBe(
+      '2026-03-01',
+    );
   });
 
   it('un perfil no público no lleva el bloque, y sin perfil base tampoco', () => {

@@ -8,6 +8,7 @@
         "headline": "Titular \"con comillas\"",
         "description": "Liderazgo   técnico\ny arquitectura .NET.",
         "visibility": "PUBLIC",
+        "updatedAt": "2026-01-15T12:00:00.000Z",
         "sections": [
           "hero",
           "skills",
@@ -61,6 +62,7 @@
           "name": "Tech Lead .NET & <Arquitectura> · Ada Ejemplo",
           "description": "Liderazgo técnico y arquitectura .NET.",
           "inLanguage": "es",
+          "dateModified": "2026-01-15",
           "mainEntity": {
             "@type": "Person",
             "@id": "https://manuel.dev/#person",
@@ -102,6 +104,7 @@
         "headline": "Senior Software Engineer",
         "description": "",
         "visibility": "PUBLIC",
+        "updatedAt": "2026-03-01T23:30:00.000Z",
         "sections": [
           "hero",
           "contact"
@@ -135,6 +138,7 @@
           "name": "Full Profile · Ada Ejemplo",
           "description": "Senior Software Engineer",
           "inLanguage": "en",
+          "dateModified": "2026-03-01",
           "mainEntity": {
             "@type": "Person",
             "@id": "https://manuel.dev/#person",
@@ -159,6 +163,7 @@
         "headline": "",
         "description": "palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra",
         "visibility": "PUBLIC",
+        "updatedAt": "2026-02-10T08:00:00.000Z",
         "sections": [],
         "skillCategories": [],
         "education": [],
@@ -185,6 +190,7 @@
           "name": "Largo · Ada Ejemplo",
           "description": "palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra pal…",
           "inLanguage": "es",
+          "dateModified": "2026-02-10",
           "mainEntity": {
             "@type": "Person",
             "@id": "https://manuel.dev/#person",
@@ -206,6 +212,7 @@
         "headline": "Ingeniera de software",
         "description": "Un perfil con todo.",
         "visibility": "PUBLIC",
+        "updatedAt": "2026-02-20T15:45:00.000Z",
         "sections": [
           "hero",
           "skills",
@@ -363,6 +370,7 @@
           "name": "Perfil rico · Ada Ejemplo",
           "description": "Un perfil con todo.",
           "inLanguage": "es",
+          "dateModified": "2026-02-20",
           "mainEntity": {
             "@type": "Person",
             "@id": "https://manuel.dev/#person",
@@ -471,6 +479,7 @@
         "headline": "Ingeniera de software",
         "description": "Oculta skills, formación y certificaciones.",
         "visibility": "PUBLIC",
+        "updatedAt": null,
         "sections": [
           "hero",
           "contact"
@@ -543,6 +552,7 @@
         "headline": "Ingeniera de software",
         "description": "Solo con token.",
         "visibility": "PROTECTED",
+        "updatedAt": "2026-02-12T09:30:00.000Z",
         "sections": [
           "hero",
           "skills"
@@ -580,6 +590,7 @@
         "headline": "Ingeniera de software",
         "description": "Textos que intentan romper el HTML.",
         "visibility": "PUBLIC",
+        "updatedAt": "2026-02-28T10:00:00.000Z",
         "sections": [
           "hero",
           "skills"
@@ -617,6 +628,7 @@
           "name": "</script><script>alert(1)</script> · Ada Ejemplo",
           "description": "Textos que intentan romper el HTML.",
           "inLanguage": "es",
+          "dateModified": "2026-02-28",
           "mainEntity": {
             "@type": "Person",
             "@id": "https://manuel.dev/#person",

@@ -1,6 +1,6 @@
 import { Locale } from '../../../../shared/domain/i18n';
 import { CuratedProfileOutput } from '../dto/curated-profile.output';
-import { profilePath } from './sitemap.builder';
+import { isoDay, profilePath } from './sitemap.builder';
 
 /**
  * Fragmento de `<head>` por perfil (spec `public-seo`, change
@@ -120,6 +120,8 @@ export function profilePageJsonLd(
     name: context.title,
     description: context.description,
     inLanguage: context.locale,
+    // Día UTC de la última edición del perfil curado, el mismo que su `<lastmod>`; sin fila, sin clave.
+    ...(data.updatedAt ? { dateModified: isoDay(new Date(data.updatedAt)) } : {}),
     mainEntity: {
       '@type': 'Person',
       '@id': `${context.origin}/#person`,

@@ -78,6 +78,16 @@ export class CuratedProfileResponse
   @ApiProperty({ enum: CURATED_VISIBILITIES, example: 'PUBLIC' })
   visibility!: CuratedVisibility;
 
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    format: 'date-time',
+    description:
+      'Última edición del perfil curado (UTC). Las visitas no la mueven; null solo en el preview de un borrador.',
+    example: '2026-01-15T12:00:00.000Z',
+  })
+  updatedAt!: string | null;
+
   @ApiProperty({ type: [String], example: ['hero', 'stats', 'experience', 'skills', 'contact'] })
   sections!: string[];
 

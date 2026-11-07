@@ -34,6 +34,11 @@ export interface SkillCategoryOutput {
 /** Vista resuelta, lista para el frontend (spec `curated-profile-resolution`). */
 export interface CuratedProfileOutput extends CuratedProfileSummaryOutput {
   visibility: CuratedVisibility;
+  /**
+   * Última edición del perfil curado (ISO 8601 UTC). `null` solo en el preview de un borrador, que
+   * no tiene fila. Alimenta `dateModified` del JSON-LD (D7 de `fix-error-contrast-and-date-modified`).
+   */
+  updatedAt: string | null;
   sections: string[];
   hiddenSections: string[];
   theme: ResolvedThemeOutput | null;

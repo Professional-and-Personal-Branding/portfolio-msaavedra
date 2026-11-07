@@ -42,7 +42,7 @@ export function AccessTokenForm({ invalid, onSubmit }: AccessTokenFormProps) {
         <Button type="submit">{t('token.submit')}</Button>
       </form>
       {invalid && (
-        <p role="alert" className="mt-4 text-sm text-destructive">
+        <p role="alert" className="mt-4 text-sm text-danger-ink">
           {t('token.invalid')}
         </p>
       )}

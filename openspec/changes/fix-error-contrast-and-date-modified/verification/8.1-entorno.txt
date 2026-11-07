@@ -1,0 +1,3 @@
+Base descartable sembrada con seed:example: portfolio_fix_example (la del owner, portfolio, no se tocó)
+API de la rama: node dist/main.js en el puerto 3346; web: imagen de frontend/Dockerfile en el 8100 (API_ORIGIN=host.docker.internal:3346)
+Administrador de prueba creado con npm run admin:bootstrap (credencial aleatoria, solo en un archivo scratch fuera del repo; no se imprime)

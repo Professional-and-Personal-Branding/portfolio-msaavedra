@@ -217,6 +217,7 @@ function heroData(profile: ProfilePreview): CuratedProfile {
     techFocus: null,
     layout: 'classic',
     visibility: 'PUBLIC',
+    updatedAt: null,
     sections: ['hero'],
     hiddenSections: [],
     theme: null,
@@ -269,7 +270,7 @@ function HeroPreview({
         </p>
       )}
       {error && (
-        <p role="alert" className="surface px-4 py-3 text-sm text-destructive">
+        <p role="alert" className="surface px-4 py-3 text-sm text-danger-ink">
           No se pudo generar la vista previa: {error.message}
         </p>
       )}
@@ -319,7 +320,7 @@ function TextField({ id, label, value, onChange, type = 'text', required, error 
         onChange={(event) => onChange(event.target.value)}
       />
       {error && (
-        <p role="alert" className="text-xs text-destructive">
+        <p role="alert" className="text-xs text-danger-ink">
           {error}
         </p>
       )}
@@ -477,7 +478,7 @@ function LanguagesSection() {
                 onChange={(value) => setDraft({ ...draft, detail: editableText(value) })}
               />
               {error && (
-                <p role="alert" className="text-xs text-destructive">
+                <p role="alert" className="text-xs text-danger-ink">
                   {error}
                 </p>
               )}

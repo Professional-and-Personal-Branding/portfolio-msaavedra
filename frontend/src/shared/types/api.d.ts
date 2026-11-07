@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 2c3900b561255710ebbabb8b56fef4bbc458cb038235ab9e429eff71bd964d37
+// openapi-sha256: 76f02e198fc92be03e01158f57521f05b44fe9ad828883a2b44505778e245be3
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -1392,6 +1392,12 @@ export interface components {
              */
             title: string;
             /**
+             * Format: date-time
+             * @description Última edición del perfil curado (UTC). Las visitas no la mueven; null solo en el preview de un borrador.
+             * @example 2026-01-15T12:00:00.000Z
+             */
+            updatedAt: string | null;
+            /**
              * @example PUBLIC
              * @enum {string}
              */
@@ -1661,6 +1667,12 @@ export interface components {
              * @example Tech Lead · .NET
              */
             title: string;
+            /**
+             * Format: date-time
+             * @description Última edición del perfil curado (UTC). Las visitas no la mueven; null solo en el preview de un borrador.
+             * @example 2026-01-15T12:00:00.000Z
+             */
+            updatedAt: string | null;
             /**
              * @example PUBLIC
              * @enum {string}

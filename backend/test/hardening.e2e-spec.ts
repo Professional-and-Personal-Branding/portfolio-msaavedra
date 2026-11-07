@@ -320,7 +320,9 @@ describe('Hardening de producción (e2e)', () => {
           expect(knows.length).toBeGreaterThan(0);
           expect(knows.length).toBeLessThanOrEqual(50);
           expect(new Set(knows.map((skill) => skill.toLowerCase())).size).toBe(knows.length);
-          expect(JSON.stringify(ld)).not.toMatch(/dateModified|dateCreated/);
+          // fix-error-contrast-and-date-modified: la fecha de edición (día UTC) sí; la de creación, nunca.
+          expect(ld?.dateModified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+          expect(JSON.stringify(ld)).not.toContain('dateCreated');
         },
       );
 

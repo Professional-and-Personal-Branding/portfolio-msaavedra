@@ -285,7 +285,7 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
                 onChange={(event) => update('slug', event.target.value)}
               />
               {errors.slug ? (
-                <p role="alert" className="text-xs text-destructive">
+                <p role="alert" className="text-xs text-danger-ink">
                   {errors.slug}
                 </p>
               ) : (
@@ -516,7 +516,7 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
                   onChange={(event) => update('accessToken', event.target.value)}
                 />
                 {errors.accessToken && (
-                  <p role="alert" className="text-xs text-destructive">
+                  <p role="alert" className="text-xs text-danger-ink">
                     {errors.accessToken}
                   </p>
                 )}
@@ -611,7 +611,7 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
                 </Button>
               </div>
               {!linkResolves && (
-                <p role="status" className="flex items-start gap-1.5 text-xs text-destructive">
+                <p role="status" className="flex items-start gap-1.5 text-xs text-danger-ink">
                   <TriangleAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden />
                   {archivedAt
                     ? 'Este link no resuelve: el perfil está archivado y responde 404.'

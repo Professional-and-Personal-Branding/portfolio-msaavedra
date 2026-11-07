@@ -140,7 +140,9 @@ describe('Backoffice: preview y catálogo de temas (e2e)', () => {
       // todo igual salvo el informe de faltantes, que solo existe en el preview
       const { missingTranslations, ...vista } = previewed.body;
       expect(Array.isArray(missingTranslations)).toBe(true);
-      expect(vista).toEqual(publico.body);
+      // y `updatedAt`: el borrador no tiene fila, así que el preview lo informa en null
+      expect(typeof publico.body.updatedAt).toBe('string');
+      expect(vista).toEqual({ ...publico.body, updatedAt: null });
       expect(publico.body).not.toHaveProperty('missingTranslations');
     });
 
