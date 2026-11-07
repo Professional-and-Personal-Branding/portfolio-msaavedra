@@ -18,11 +18,14 @@
  *   - exige MANUAL_CAPTURE_DISPOSABLE_DB=1: las cargas públicas registran visitas;
  *   - `GET /api/profile` debe devolver el `fullName` de `docs/examples/cv-data.example.json`.
  *
- * Sin escrituras, salvo dos: el inicio de sesión (`fetch('/api/auth/login')` desde la página, con
- * credenciales de prueba por variables de entorno) y, para la captura `tc41-enlaces` (change
+ * Sin escrituras, salvo tres: el inicio de sesión (`fetch('/api/auth/login')` desde la página, con
+ * credenciales de prueba por variables de entorno); para la captura `tc41-enlaces` (change
  * `add-share-links`), la creación de UN enlace de seguimiento de ejemplo por la API del panel
  * (`POST /api/admin/curated-profiles/:id/share-links`, solo si el perfil todavía no tiene uno con
- * esa etiqueta). El script no hace ningún otro POST, PATCH ni DELETE, y
+ * esa etiqueta); y, para `bo-postulaciones` y la franja del dashboard (change
+ * `add-application-tracking`, D14), tres postulaciones ficticias (`POST /api/admin/applications`,
+ * cada una solo si todavía no existe una postulación con esa empresa). El script no hace ningún
+ * otro POST, PATCH ni DELETE, y
  * nunca escribe una contraseña real en un campo: la captura del error de credenciales usa un
  * email inexistente y un valor de relleno que no pertenece a nadie, y la de Cuenta (`bo-cuenta`)
  * solo valores de relleno que la validación del cliente rechaza sin enviar nada. Los errores de validación
@@ -284,6 +287,15 @@ const MANIFEST = [
     pasos: [['verSeccion', '#certifications'], ['esperar', 700]],
     recorte: { fullPage: false },
   },
+  // Postulaciones (change `add-application-tracking`, D14): la lista con el filtro `Todas` y las
+  // tres postulaciones ficticias que el script crea de forma idempotente al abrir la sesión.
+  {
+    id: 'bo-postulaciones',
+    ruta: '/admin/postulaciones?estado=todas',
+    sesion: true,
+    esperar: 'Atlas Demo',
+    pasos: [['esperarTexto', 'Sin abrir'], ['esperar', 500]],
+  },
   { id: 'tc27-proyectos', ruta: '/admin/proyectos', sesion: true, esperar: 'Plataforma de Reservas' },
   {
     id: 'bo-enlace-stats',
@@ -468,6 +480,50 @@ async function ensureExampleLink(page, profileId) {
   );
 }
 
+/**
+ * Tres postulaciones ficticias (D14), con empresas del archivo de ejemplo: una en entrevistas con
+ * el enlace de ejemplo de `ejemplo-backend`, una postulada sin enlace y una rechazada. Cada una se
+ * crea solo si todavía no existe una postulación con esa empresa; no hay PATCH ni DELETE.
+ */
+const EXAMPLE_APPLICATIONS = [
+  { company: 'Cobalto Ejemplo', role: 'Backend Senior', status: 'INTERVIEWING', portal: 'linkedin', withLink: true },
+  { company: 'Atlas Demo', role: 'Líder técnico', status: 'APPLIED', portal: 'get-on-board' },
+  { company: 'Nimbus Ejemplo', role: 'Ingeniero de plataforma', status: 'REJECTED' },
+];
+
+async function ensureExampleApplications(page, profileId) {
+  await page.evaluate(
+    async (id, example, applications) => {
+      const json = async (path, init) => {
+        const response = await fetch(path, { credentials: 'same-origin', ...init });
+        if (!response.ok) throw new Error(`${init?.method ?? 'GET'} ${path}: ${response.status}`);
+        return response.json();
+      };
+      const post = (path, body) =>
+        json(path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+      const existing = await json('/api/admin/applications');
+      const links = await json(`/api/admin/curated-profiles/${id}/share-links`);
+      const link =
+        links.find((item) => item.label === example.label) ??
+        (await post(`/api/admin/curated-profiles/${id}/share-links`, example));
+      for (const { withLink, ...application } of applications) {
+        if (existing.some((item) => item.company === application.company)) continue;
+        await post('/api/admin/applications', {
+          ...application,
+          ...(withLink ? { curatedProfileId: id, shareLinkId: link.id } : {}),
+        });
+      }
+    },
+    profileId,
+    EXAMPLE_LINK,
+    EXAMPLE_APPLICATIONS,
+  );
+}
+
 async function waitForText(page, ...candidates) {
   await page.waitForFunction(
     (texts) => texts.some((t) => document.body.innerText.includes(t)),
@@ -527,7 +583,10 @@ for (const entry of selected) {
       await loginInto(page);
       loggedIn = true;
     }
-    if (entry.sesion) ids ??= await profileIds(page);
+    if (entry.sesion && !ids) {
+      ids = await profileIds(page);
+      await ensureExampleApplications(page, ids['ejemplo-backend']);
+    }
     const route = entry.ruta.replace(/\{id:([^}]+)\}/g, (_m, slug) => {
       if (!ids?.[slug]) throw new Error(`No existe el perfil ${slug} en la base de ejemplo`);
       return ids[slug];

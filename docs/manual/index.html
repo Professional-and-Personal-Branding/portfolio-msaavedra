@@ -377,6 +377,7 @@
     <a href="#tc42"><span class="dot ok"></span><span class="id">TC-42</span> Credencial verificable</a>
     <a href="#tc44"><span class="dot part"></span><span class="id">TC-44</span> Datos estructurados</a>
     <a href="#tc45"><span class="dot part"></span><span class="id">TC-45</span> Cambiar la contraseña</a>
+    <a href="#tc46"><span class="dot ok"></span><span class="id">TC-46</span> Postulaciones</a>
     <a href="#tc27"><span class="dot ok"></span><span class="id">TC-27</span> Proyectos</a>
     <a href="#tc28"><span class="dot ok"></span><span class="id">TC-28</span> Aviso en el constructor</a>
     <a href="#tc29"><span class="dot ok"></span><span class="id">TC-29</span> Aviso en la Portada</a>
@@ -507,17 +508,17 @@ $env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del o
     <!-- ───────────── Resumen ───────────── -->
     <section id="resumen" class="block">
       <h2>Resumen de la última ejecución</h2>
-      <p class="lede">Último caso ejecutado el 5 de noviembre de 2026 (TC-45, por la API y la sesión revocada en Chrome); antes, el 4 de noviembre (TC-44, pasos 1 a 5); antes, el 29 de octubre (TC-43, TC-42 y TC-41), el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias): suite <code>suite-backoffice.ps1</code>, recorridos y casos de lectura por API, <code>print:check</code> y las 46 capturas con <code>manual:capture</code> (TC-43 suma una y regenera la de TC-13). TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real.</p>
+      <p class="lede">Último caso ejecutado el 7 de noviembre de 2026 (TC-46, por la API y en Chrome contra la imagen de producción); antes, el 5 de noviembre (TC-45, por la API y la sesión revocada en Chrome); antes, el 4 de noviembre (TC-44, pasos 1 a 5); antes, el 29 de octubre (TC-43, TC-42 y TC-41), el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias): suite <code>suite-backoffice.ps1</code>, recorridos y casos de lectura por API, <code>print:check</code> y las 46 capturas con <code>manual:capture</code> (TC-43 suma una y regenera la de TC-13). TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real.</p>
 
       <div class="stats">
-        <div class="stat"><b>45</b><span>casos</span></div>
-        <div class="stat ok"><b>38</b><span>pasan</span></div>
+        <div class="stat"><b>46</b><span>casos</span></div>
+        <div class="stat ok"><b>39</b><span>pasan</span></div>
         <div class="stat part"><b>7</b><span>parciales</span></div>
         <div class="stat"><b>2</b><span>defectos corregidos</span></div>
-        <div class="stat"><b>48</b><span>capturas</span></div>
+        <div class="stat"><b>49</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Pasan los 43 casos anteriores; TC-44 y TC-45 quedan parciales</b> (<code>add-admin-password-change</code>: TC-45 se ejecutó el 5 de noviembre de 2026 en la app real con una base descartable, por la API y con la sesión revocada en Chrome, con la captura <code>bo-cuenta</code>; los pasos del panel que escriben contraseñas reales no se ejecutaron a mano) (<code>upgrade-profile-structured-data</code>: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado) (31 con captura; 10 verificados contra la API o con e2e, sin captura de la pantalla). TC-43 (ajustar skills y proyectos de un perfil), con <code>add-builder-skill-project-overrides</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable), con la captura <code>tc43-overrides</code> nueva y la de <code>tc13-seleccion</code> regenerada con <code>manual:capture</code>. TC-42 (verificar una certificación desde el sitio), con <code>add-certification-verification</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable), con la captura <code>tc42-credencial</code> nueva y la del diálogo de certificación regenerada con <code>manual:capture</code>. TC-41 (compartir un perfil con un enlace de seguimiento), con <code>add-share-links</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable); el Dashboard con <b>Por enlace</b> y <b>Por portal</b> es la captura de TC-18, regenerada con <code>manual:capture</code>. TC-39 (las visitas propias y de bots no suman), con <code>classify-profile-views</code>, se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por <code>POST /api/auth/login</code>; el Dashboard con <b>Por tipo</b> es la captura de TC-18. TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-40 (ítems ocultos e insignias legibles), con <code>fix-admin-contrast</code>, el 28 de octubre contra la imagen de producción del frontend y bases descartables; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Pasan los 43 casos anteriores y TC-46; TC-44 y TC-45 quedan parciales</b> (<code>add-application-tracking</code>: TC-46 se ejecutó completo el 7 de noviembre de 2026 en la app real con una base descartable, con la captura <code>bo-postulaciones</code>; el Dashboard de TC-18 se regeneró con la franja de postulaciones) (<code>add-admin-password-change</code>: TC-45 se ejecutó el 5 de noviembre de 2026 en la app real con una base descartable, por la API y con la sesión revocada en Chrome, con la captura <code>bo-cuenta</code>; los pasos del panel que escriben contraseñas reales no se ejecutaron a mano) (<code>upgrade-profile-structured-data</code>: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado) (31 con captura; 10 verificados contra la API o con e2e, sin captura de la pantalla). TC-43 (ajustar skills y proyectos de un perfil), con <code>add-builder-skill-project-overrides</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable), con la captura <code>tc43-overrides</code> nueva y la de <code>tc13-seleccion</code> regenerada con <code>manual:capture</code>. TC-42 (verificar una certificación desde el sitio), con <code>add-certification-verification</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable), con la captura <code>tc42-credencial</code> nueva y la del diálogo de certificación regenerada con <code>manual:capture</code>. TC-41 (compartir un perfil con un enlace de seguimiento), con <code>add-share-links</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable); el Dashboard con <b>Por enlace</b> y <b>Por portal</b> es la captura de TC-18, regenerada con <code>manual:capture</code>. TC-39 (las visitas propias y de bots no suman), con <code>classify-profile-views</code>, se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por <code>POST /api/auth/login</code>; el Dashboard con <b>Por tipo</b> es la captura de TC-18. TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-40 (ítems ocultos e insignias legibles), con <code>fix-admin-contrast</code>, el 28 de octubre contra la imagen de producción del frontend y bases descartables; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -617,7 +618,8 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         <p><b>El origen casi nunca llega.</b> El sitio no reenvía de dónde vino la persona (<code>Referrer-Policy: no-referrer</code>) y LinkedIn, Gmail o el chat tampoco lo mandan, así que en producción <b>Por origen</b> da casi siempre <code>directo</code>. Lo que sí viaja es el link: un <b>enlace de seguimiento</b> (<code>?via=&lt;código&gt;</code>, uno por destinatario o portal, con etiqueta y revocación) o un <b>portal</b> genérico (<code>?src=&lt;portal&gt;</code>). Cada <b>apertura</b> de una persona se cuenta en el enlace y en el portal, y se ve en <b>Por enlace</b> y <b>Por portal</b>. Un enlace revocado deja de atribuir, pero el link sigue abriendo el perfil.</p>
         <p><span class="lbl">En el ejemplo</span> · 105 visitas sintéticas en 5 perfiles (<code>all</code>, <code>ejemplo-backend</code>, <code>ejemplo-secciones</code>, <code>ejemplo-archivado</code>, <code>ejemplo-protegido</code>), con orígenes directo, LinkedIn, buscador y un dominio de <code>example.com</code>. Ninguna trae enlace ni portal: las tablas <b>Por enlace</b> y <b>Por portal</b> arrancan con su estado vacío.</p>
         <p><span class="lbl">Dónde se edita</span> · <a href="#b2">B2 · Dashboard</a>; los enlaces se crean en <a href="#b12">B12 · Constructor · Publicación</a></p>
-        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a>, <a href="#tc41">TC-41</a></p>
+        <p><span class="lbl">Postulaciones</span> · el CRM del panel (<a href="#b15">B15</a>) usa estas aperturas para mostrar «Abierto el…» en cada postulación con enlace.</p>
+        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a>, <a href="#tc41">TC-41</a>, <a href="#tc46">TC-46</a></p>
       </article>
 
     </section>
@@ -743,7 +745,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         </ol>
         <p><span class="lbl">Resultado esperado</span> · Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos, 2 idiomas, y los orígenes directo, linkedin.com, google.com y empleos.example.com. <b>Por enlace</b> y <b>Por portal</b> quedan con su estado vacío hasta que se envíe un link con código.</p>
         <p><span class="lbl">Errores típicos</span> · Las visitas de hoy cuentan (defecto D-01 corregido). La vista previa del panel y la carga de otra persona de <code>/admin</code> no suman visitas. Tus propias visitas (con la sesión del panel) y las de bots tampoco suman en el total: están en <b>Por tipo</b>. Si <b>Por origen</b> dice <code>directo</code> para todo, es lo esperado: mirá <b>Por enlace</b> y <b>Por portal</b>.</p>
-        <p><span class="lbl">Casos</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a>, <a href="#tc41">TC-41</a></p>
+        <p><span class="lbl">Casos</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a>, <a href="#tc41">TC-41</a>, <a href="#tc46">TC-46</a></p>
       </article>
 
     </section>
@@ -777,7 +779,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 
       <article class="screen" id="b2">
         <h3>Dashboard</h3>
-        <p><span class="lbl">Ruta</span> · <code>/admin</code>. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales (de <b>personas</b>), <b>Visitas por día</b>, <b>Por perfil</b> (con enlaces al constructor y a la vista pública y la marca <code>archivado</code>), <b>Por idioma</b>, <b>Por origen</b> (con la aclaración de que casi siempre da <code>directo</code>), <b>Por enlace</b> (etiqueta, perfil, portal, marca <code>revocado</code> y visitas, más una fila final <b>Sin enlace</b>), <b>Por portal</b> (con una fila final <b>Sin portal</b>) y <b>Por tipo</b> (<i>Personas</i>, <i>Tus visitas</i> y <i>Bots</i>, con la aclaración de que solo las de personas suman).</p>
+        <p><span class="lbl">Ruta</span> · <code>/admin</code>. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales (de <b>personas</b>), <b>Visitas por día</b>, <b>Por perfil</b> (con enlaces al constructor y a la vista pública y la marca <code>archivado</code>), <b>Por idioma</b>, <b>Por origen</b> (con la aclaración de que casi siempre da <code>directo</code>), <b>Por enlace</b> (etiqueta, perfil, portal, marca <code>revocado</code> y visitas, más una fila final <b>Sin enlace</b>), <b>Por portal</b> (con una fila final <b>Sin portal</b>) y <b>Por tipo</b> (<i>Personas</i>, <i>Tus visitas</i> y <i>Bots</i>, con la aclaración de que solo las de personas suman). Sobre los totales hay una franja con las postulaciones activas por estado y el enlace <b>Ver postulaciones</b> (<a href="#b15">B15</a>); muestra el estado de hoy y no cambia con el rango.</p>
 <div class="tablewrap"><table>
 <thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
 <tbody>
@@ -1164,6 +1166,65 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 </table></div>
         <p><span class="lbl">Acciones y avisos</span> · Si la sesión se revocó (otro dispositivo cambió la contraseña) o venció, la próxima petición del panel da 401 y vuelve al login. Los <code>curl</code> con un <code>TOKEN</code> anterior al cambio también dan 401 (ver «Sesión para los curl»). Si perdiste la contraseña, la recuperación es <code>npm run admin:bootstrap</code> desde la terminal: acepta contraseñas de 8 caracteres o más y también cierra todas las sesiones.</p>
         <figure class="shot" id="img-bo-cuenta"><img src="bo-cuenta.jpg" width="800" height="500" alt="Cuenta con el aviso de repetición distinta"></figure>
+      </article>
+
+      <article class="screen" id="b15">
+        <h3>Postulaciones</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/postulaciones</code>. Tu seguimiento personal de procesos: a quién te postulaste, en qué estado está y <b>si abrieron el enlace</b> que mandaste. Solo existe en el panel: ninguna ruta pública, el sitemap ni el head de un perfil muestran nada de esto. La lista se filtra por <b>Estado</b> (<b>Activas</b> por defecto, <b>Todas</b> o uno) y el filtro vive en la URL (<code>?estado=interviewing</code>), no en <code>localStorage</code>. Columnas: Empresa y puesto, Estado, Portal, Perfil, Enlace y Postulada; <b>Editar</b> y <b>Borrar</b> (con confirmación) por fila.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Empresa</td><td>texto</td><td>Sí</td><td>1 a 120 caracteres tras recortar</td><td>Cobalto Ejemplo</td></tr>
+<tr><td>Puesto</td><td>texto</td><td>Sí</td><td>1 a 160 caracteres</td><td>Backend Senior</td></tr>
+<tr><td>URL de la vacante</td><td>texto</td><td>No</td><td>URL absoluta <code>http://</code> o <code>https://</code>, hasta 2048 caracteres</td><td>https://empresa.example/jobs/1</td></tr>
+<tr><td>Estado</td><td>selector</td><td>Sí (<i>Por postular</i> por defecto)</td><td>Al crear, los siete. Al editar, el actual y los que la API manda en <code>nextStatuses</code> (tabla de abajo)</td><td>En entrevistas</td></tr>
+<tr><td>Fecha de postulación</td><td>fecha</td><td>No</td><td>Oculta con <i>Por postular</i>. Al elegir otro estado se completa con hoy; no puede ser futura. Vacía, el servidor pone hoy</td><td>2026-11-05</td></tr>
+<tr><td>Portal</td><td>texto</td><td>No</td><td>Minúsculas, números y guiones, hasta 32; no empieza con guion. Elegir un enlace con portal completa uno vacío</td><td>linkedin</td></tr>
+<tr><td>Perfil</td><td>selector</td><td>No</td><td>Un perfil curado existente (puede estar archivado)</td><td>ejemplo-backend</td></tr>
+<tr><td>Enlace</td><td>selector</td><td>No</td><td>Solo enlaces <code>MANUAL</code> del perfil elegido, activos o revocados; deshabilitado sin perfil. Un enlace solo puede estar en una postulación</td><td>Cobalto — Laura, RR. HH.</td></tr>
+<tr><td>Notas</td><td>texto largo</td><td>No</td><td>Hasta 5000 caracteres. No guardes datos de contacto de personas</td><td>Primera llamada con RR. HH.</td></tr>
+</tbody>
+</table></div>
+
+        <p><b>Transiciones de estado</b> · la tabla vive en el servidor; el selector solo ofrece las válidas y un cambio inválido da 422 sin guardar nada, ni siquiera las notas que se editaron en el mismo guardado.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Desde</th><th>Puede pasar a</th></tr></thead>
+<tbody>
+<tr><td>Por postular</td><td>Postulada, Retirada</td></tr>
+<tr><td>Postulada</td><td>En entrevistas, Oferta, Rechazada, Retirada</td></tr>
+<tr><td>En entrevistas</td><td>Oferta, Rechazada, Retirada</td></tr>
+<tr><td>Oferta</td><td>Aceptada, Rechazada, Retirada</td></tr>
+<tr><td>Aceptada</td><td>— (final)</td></tr>
+<tr><td>Rechazada</td><td>Postulada (reabrir)</td></tr>
+<tr><td>Retirada</td><td>Postulada (reabrir)</td></tr>
+</tbody>
+</table></div>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">Escribí la empresa</td><td>La empresa está vacía.</td></tr>
+<tr><td class="msg">Escribí el puesto</td><td>El puesto está vacío.</td></tr>
+<tr><td class="msg">Usá como máximo 120 caracteres</td><td>La empresa pasa de 120 caracteres.</td></tr>
+<tr><td class="msg">Usá como máximo 160 caracteres</td><td>El puesto pasa de 160 caracteres.</td></tr>
+<tr><td class="msg">Usá como máximo 5000 caracteres</td><td>Las notas pasan de 5000 caracteres.</td></tr>
+<tr><td class="msg">Usá una URL que empiece con http:// o https://</td><td>La URL de la vacante no empieza con <code>http://</code> o <code>https://</code>.</td></tr>
+<tr><td class="msg">Usá como máximo 2048 caracteres</td><td>La URL de la vacante pasa de 2048 caracteres.</td></tr>
+<tr><td class="msg">Usá solo minúsculas, números y guiones (hasta 32)</td><td>El portal tiene otros caracteres o más de 32.</td></tr>
+<tr><td class="msg">La fecha no puede ser futura</td><td>La fecha de postulación es posterior a hoy.</td></tr>
+<tr><td class="msg">Ese cambio de estado no está permitido. Elegí uno de la lista.</td><td>La API respondió 422: otra pestaña cambió el estado antes. El diálogo sigue abierto; recargá la lista.</td></tr>
+<tr><td class="msg">Ese enlace ya está asociado a otra postulación.</td><td>La API respondió 409. El diálogo sigue abierto; elegí otro enlace.</td></tr>
+<tr><td class="msg">Postulación creada</td><td>Aviso de éxito al crear.</td></tr>
+<tr><td class="msg">Postulación actualizada</td><td>Aviso de éxito al editar.</td></tr>
+<tr><td class="msg">Postulación borrada</td><td>Aviso de éxito al borrar (pide confirmación antes).</td></tr>
+<tr><td class="msg">No se pudo exportar. Intentá de nuevo.</td><td><b>Exportar CSV</b> falló (por ejemplo, un 500). No se descarga ningún archivo.</td></tr>
+<tr><td class="msg">Todavía no registraste postulaciones</td><td>No hay ninguna y el filtro es <b>Todas</b>.</td></tr>
+<tr><td class="msg">No hay postulaciones con este estado</td><td>No hay ninguna con el filtro elegido (<b>Activas</b> u otro estado).</td></tr>
+</tbody>
+</table></div>
+
+        <p><span class="lbl">Acciones y avisos</span> · <b>Abierto el…</b> es la fecha de la <b>primera apertura de una persona</b> del enlace asociado (<code>firstOpenedAt</code>), en tu fecha local, o <b>Sin abrir</b> si nadie lo abrió. No cuentan tus visitas con la sesión del panel ni las de bots, igual que en <b>Por enlace</b> del Dashboard; la cantidad de aperturas está en el <code>title</code> de la celda. Si mandaste el link antes de registrar la postulación, esas aperturas previas también cuentan: el enlace es de esa postulación. <b>Sin datos de contacto.</b> Bajo <b>Notas</b> el diálogo avisa «No guardes datos de contacto de personas»: la plataforma no tiene campos de nombre, email ni teléfono del reclutador y la API rechaza cualquier campo desconocido con 400. <b>Exportar CSV</b> descarga las postulaciones con el filtro vigente (<code>postulaciones-AAAA-MM-DD.csv</code>, 14 columnas: Empresa, Puesto, Estado, Portal, URL de la vacante, Fecha de postulación, Último cambio de estado, Perfil, Enlace, Abierto el, Aperturas, Notas, Creada y Actualizada). Está en UTF-8 con BOM, separado por comas y con todas las celdas entre comillas. Una celda que empieza con <code>=</code>, <code>+</code>, <code>-</code>, <code>@</code>, tabulación o retorno de carro lleva un apóstrofo delante, para que la planilla no la ejecute como fórmula: se ve <code>'=1+1</code> como texto. <b>Para abrirlo:</b> en Excel, <b>Datos → Desde texto/CSV</b>, origen UTF-8 y delimitador coma (con doble clic suele alcanzar); en Google Sheets o LibreOffice, <b>Archivo → Importar</b>. La franja del Dashboard (B2) resume el estado actual: «Postulaciones activas: 3 · 2 postuladas · 1 con oferta» con el enlace <b>Ver postulaciones</b>; no depende del rango de fechas.</p>
+        <figure class="shot" id="img-bo-postulaciones"><img src="bo-postulaciones.jpg" width="800" height="500" alt="Postulaciones con el filtro Todas"></figure>
       </article>
 
     </section>
@@ -1754,6 +1815,41 @@ login con la contraseña anterior / nueva   -&gt; 401 / 200</pre></div>
         <figure class="shot" id="img-bo-cuenta-tc45"><img src="bo-cuenta.jpg" width="800" height="500" alt="Cuenta con el aviso de repetición distinta"></figure>
               <fieldset class="run" data-run="tc45"><legend>Resultado de la corrida · TC-45</legend><label><input type="radio" name="r-tc45" value="pass"> pasa</label><label><input type="radio" name="r-tc45" value="fail"> falla</label><label><input type="radio" name="r-tc45" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-45"></fieldset>
 </article>
+      <article class="case" data-status="ok" id="tc46" data-area="backoffice" data-change="add-application-tracking">
+        <div class="case-head"><span class="case-id">TC-46</span><h3>Registrar una postulación y ver si abrieron el enlace</h3><span class="pill ok">ok</span></div>
+        <p><span class="lbl">Precondición</span> · base de ejemplo <b>descartable</b> (nunca <code>portfolio</code>), con la API y el frontend levantados (de preferencia la imagen de <code>frontend/Dockerfile</code>) y sesión en el panel. Sin postulaciones cargadas (si corriste <code>manual:capture</code> hay tres de ejemplo: el paso 1 mostrará la lista con ellas y el filtro <b>Activas</b>). El perfil <code>ejemplo-backend</code> tiene un enlace de seguimiento <code>MANUAL</code> activo (creálo en <b>Perfiles → ejemplo-backend → Publicación</b> con la etiqueta «Globex — RR. HH.» si no existe).</p>
+        <p><span class="lbl">Pasos</span> · (1) Pulsá <b>Postulaciones</b> en la navegación.; (2) Pulsá <b>Nueva postulación</b>, escribí <code>globex.example</code> en <b>URL de la vacante</b> y pulsá <b>Guardar</b> sin completar nada más.; (3) Completá <b>Empresa</b> <code>Globex</code>, <b>Puesto</b> <code>Backend Senior</code>, <b>URL de la vacante</b> <code>https://globex.example/jobs/1</code>, <b>Estado</b> <i>Postulada</i>, <b>Perfil</b> <code>ejemplo-backend</code> y <b>Enlace</b> «Globex — RR. HH.». Pulsá <b>Guardar</b>.; (4) En una <b>ventana privada</b> (sin sesión), abrí el link del enlace (<code>/ejemplo-backend?via=&lt;código&gt;</code>, copiálo desde <b>Publicación</b>). Volvé al panel y recargá <b>Postulaciones</b>.; (5) Editá la postulación y abrí el selector <b>Estado</b>.; (6) Elegí <i>En entrevistas</i> y guardá. Después elegí el filtro <b>Estado → En entrevistas</b> y recargá la página.; (7) Pulsá <b>Exportar CSV</b> y abrí el archivo en una planilla.; (8) Volvé al <b>Dashboard</b>.; (9) Borrá la postulación y confirmá.</p>
+        <p><span class="lbl">Esperado</span> · (1) Se abre <code>/admin/postulaciones</code> con el filtro <b>Activas</b> y, sin datos, «No hay postulaciones con este estado».; (2) Se ven «Escribí la empresa», «Escribí el puesto» y «Usá una URL que empiece con http:// o https://», y no sale ninguna petición (pestaña Red).; (3) Aparece «Postulación creada»; la fila muestra Globex, Backend Senior, <i>Postulada</i>, <code>ejemplo-backend</code>, «Sin abrir» y la fecha de hoy.; (4) La fila pasa a «Abierto el &lt;fecha de hoy&gt;».; (5) El selector ofrece solo <i>Postulada</i>, <i>En entrevistas</i>, <i>Oferta</i>, <i>Rechazada</i> y <i>Retirada</i>.; (6) Aparece «Postulación actualizada»; la URL lleva <code>?estado=interviewing</code> y tras recargar el filtro sigue elegido y la fila sigue en la lista.; (7) Se descarga <code>postulaciones-&lt;fecha&gt;.csv</code>; la planilla muestra las columnas Empresa, Puesto, Estado, …, Abierto el, Aperturas, Notas, Creada y Actualizada, con los acentos bien, y la fila de Globex con «En entrevistas».; (8) La franja dice «Postulaciones activas: 1 · 1 en entrevistas» con el enlace <b>Ver postulaciones</b>.; (9) Aparece «Postulación borrada» y la lista vuelve al estado vacío.</p>
+        <p><span class="lbl">Errores típicos</span> · «Ese enlace ya está asociado a otra postulación.»: el enlace ya está en otra fila; creá otro en <b>Publicación</b>. «Ese cambio de estado no está permitido. Elegí uno de la lista.»: otra pestaña cambió el estado antes; recargá. Si la visita del paso 4 no aparece, la abriste con la sesión del panel (cuenta como tuya, no como persona) o el enlace es <code>LINKEDIN_POST</code>. Si Excel muestra todo en una columna, importá con <i>Datos → Desde texto/CSV</i>, origen UTF-8 y delimitador coma.</p>
+        <div class="codewrap"><pre>API=http://localhost:3300
+PROFILE_ID=&lt;id de ejemplo-backend&gt;   # GET /api/admin/curated-profiles
+LINK_ID=&lt;id del enlace MANUAL&gt;       # GET /api/admin/curated-profiles/$PROFILE_ID/share-links
+
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/admin/applications                       # 401  sin sesión
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/applications                             # 404  sin rutas públicas
+
+ID=$(curl -s -b s.jar -H 'Content-Type: application/json' \
+  -d "{\"company\":\"Globex\",\"role\":\"Backend Senior\",\"status\":\"APPLIED\",\"curatedProfileId\":\"$PROFILE_ID\",\"shareLinkId\":\"$LINK_ID\"}" \
+  $API/api/admin/applications | node -pe 'JSON.parse(require("fs").readFileSync(0)).id')   # 201
+
+curl -s -o /dev/null -w '%{http_code}\n' -b s.jar -X PATCH -H 'Content-Type: application/json' \
+  -d '{"status":"ACCEPTED"}' $API/api/admin/applications/$ID                              # 422  APPLIED → ACCEPTED
+curl -s -o /dev/null -w '%{http_code}\n' -b s.jar -X PATCH -H 'Content-Type: application/json' \
+  -d '{"status":"INTERVIEWING"}' $API/api/admin/applications/$ID                          # 200
+curl -s -o /dev/null -w '%{http_code}\n' -b s.jar -H 'Content-Type: application/json' \
+  -d "{\"company\":\"Otra\",\"role\":\"X\",\"curatedProfileId\":\"$PROFILE_ID\",\"shareLinkId\":\"$LINK_ID\"}" \
+  $API/api/admin/applications                                                              # 409  enlace repetido
+curl -s -b s.jar $API/api/admin/applications/summary                                       # {"byStatus":{...,"INTERVIEWING":1,...},"active":1}
+curl -s -D - -o postulaciones.csv -b s.jar "$API/api/admin/applications/export?status=INTERVIEWING"
+# Content-Type: text/csv; charset=utf-8
+# Content-Disposition: attachment; filename="postulaciones-AAAA-MM-DD.csv"
+# Cache-Control: no-store
+curl -s -o /dev/null -w '%{http_code}\n' -b s.jar -X DELETE $API/api/admin/applications/$ID  # 204
+rm -f postulaciones.csv</pre></div>
+        <p><span class="lbl">Observado</span> · (7 de noviembre de 2026, imagen de <code>frontend/Dockerfile</code> en <code>localhost:8102</code>, API de la rama en <code>localhost:3348</code> y la base descartable <code>portfolio_apps_example</code>, sembrada con el ejemplo): el bloque <b>Por la API</b> dio los códigos esperados (401, 404, 201, 422 con <code>error: "Unprocessable Entity"</code> y sin <code>stack</code>, 200, 409, 400 con un campo <code>contactEmail</code>, 400 con <code>status=HIRED</code>, 204; el resumen dio <code>active: 1</code>; con una apertura de persona y otra de un bot, el enlace trajo <code>opens: 1</code>; el export respondió <code>text/csv; charset=utf-8</code>, <code>attachment; filename="postulaciones-2026-11-07.csv"</code> y <code>no-store</code>). Los nueve pasos del panel se ejecutaron en Chrome controlado con <code>puppeteer-core</code> (sesión abierta por <code>fetch</code>, sin escribir credenciales) con el resultado esperado de cada uno. El CSV se abrió en <b>Excel 16</b>: acentos correctos, 14 columnas y las celdas con fórmula (<code>=HYPERLINK(…)</code>, <code>+Lead</code>, <code>@usuario</code>) como texto con su apóstrofo, sin ninguna celda con fórmula. Además <code>a11y:check</code> con panel (60 cargas, con <code>/admin/postulaciones</code> y el diálogo con errores): 0 violaciones. Evidencia: <code>openspec/changes/add-application-tracking/verification/</code> (<code>9.2-tc46.txt</code>, <code>9.2-csv.png</code>, <code>9.3-a11y.txt</code>).</p>
+        <figure class="shot" id="img-bo-postulaciones-tc46"><img src="bo-postulaciones.jpg" width="800" height="500" alt="Postulaciones con el filtro Todas"></figure>
+        <fieldset class="run" data-run="tc46"><legend>Resultado de la corrida · TC-46</legend><label><input type="radio" name="r-tc46" value="pass"> pasa</label><label><input type="radio" name="r-tc46" value="fail"> falla</label><label><input type="radio" name="r-tc46" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-46"></fieldset>
+</article>
     </section>
 
     <!-- ───────────── Defectos ───────────── -->
@@ -2045,6 +2141,8 @@ echo "$SITIO/acme-tech-lead"</pre></div>
         <div class="g"><dt id="g-enlace-de-verificacion">enlace de verificación</dt><dd>La página pública de la credencial en el emisor (Credly, Accredible…); solo <code>https://</code>. El sitio lo muestra como «Ver credencial» y no comprueba que funcione. <span class="refs"><a href="#b6">B6 · Formación</a>, <a href="#tc42">TC-42</a></span></dd></div>
         <div class="g"><dt id="g-apertura">apertura</dt><dd>Una visita de una persona atribuida a un enlace de seguimiento; las tuyas y las de bots no cuentan. <span class="refs"><a href="#b12">B12 · Constructor · Publicación</a>, <a href="#tc41">TC-41</a></span></dd></div>
         <div class="g"><dt id="g-referencia-huerfana">referencia huérfana</dt><dd>Un id de <code>includeIds</code> o <code>excludeIds</code> que ya no corresponde a ninguna experiencia, skill ni proyecto (el ítem se borró). El sitio lo ignora; el constructor lo cuenta y deja quitarlo. <span class="refs"><a href="#b10">B10 · Constructor · Selección</a>, <a href="#tc43">TC-43</a></span></dd></div>
+        <div class="g"><dt id="g-postulaci-n">postulación</dt><dd>Un proceso de selección que registrás en el panel: empresa, puesto, estado, fecha y, si querés, el perfil y el enlace de seguimiento que mandaste. Es privada: no se publica en ningún lado. <span class="refs"><a href="#b15">B15 · Postulaciones</a>, <a href="#tc46">TC-46</a></span></dd></div>
+        <div class="g"><dt id="g-abierto-el">Abierto el</dt><dd>La fecha de la primera apertura de una persona del enlace asociado a una postulación, o «Sin abrir». Las tuyas y las de bots no cuentan. <span class="refs"><a href="#b15">B15 · Postulaciones</a>, <a href="#tc46">TC-46</a></span></dd></div>
       </dl>
     </section>
 </main>

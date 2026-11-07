@@ -1,0 +1,3 @@
+Antes (1.1) y despues (8.6) de la pantalla Postulaciones:
+  arranque publico: 150.1 KB gzip total (index 148.9 + profile-prefetch 1.2), tope 155 KB: igual
+  el codigo nuevo va en el chunk del panel: BackofficeApp 83.89 KB gzip

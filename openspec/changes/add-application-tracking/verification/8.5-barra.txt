@@ -1,0 +1,10 @@
+1280x800: siete items scrollWidth=853; scrollWidth=944 clientWidth=880 desborda=true alturaEnlaces=36-56
+1536x900: siete items scrollWidth=799; scrollWidth=944 clientWidth=556 desborda=true alturaEnlaces=36-56
+
+Medidas en Chrome (puppeteer-core) sobre la imagen de frontend/Dockerfile, nav "Secciones" de la barra horizontal.
+Con ocho items la barra se desborda en 1280 (944 > 880) y en 1536 (944 > 556). Con siete items (Postulaciones oculto):
+1280: 853 <= 880 (entraba); 1536: 799 > 556 (ya se desbordaba antes de este change; por debajo de 2xl las acciones
+del header son solo iconos, pero desde 2xl muestran su texto y le quitan ancho a la barra).
+El plan de D11 (pasar la barra completa a 2xl) no resuelve el criterio: el contenedor mide max-w-6xl tambien desde 2xl
+y a 1536 la barra tiene aun menos lugar. Queda como PENDIENTE de decision del arquitecto; no se cambio el layout.
+La barra se desplaza dentro de si misma (overflow-x-auto), sin estirar la pagina ni desbordar el viewport.

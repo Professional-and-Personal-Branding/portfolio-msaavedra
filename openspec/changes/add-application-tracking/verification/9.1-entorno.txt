@@ -1,0 +1,6 @@
+Entorno de la app real (sin credenciales):
+- Base descartable portfolio_apps_example en el contenedor portfolio-postgres (localhost:5434); prisma migrate status antes de escribir: destino portfolio_apps_example.
+- prisma:deploy aplico las 9 migraciones (incluida add_application_tracking); SEED_DISPOSABLE_DB=1 npm run seed:example; seed:example:verify ok.
+- admin:bootstrap con email de prueba y contrasena aleatoria de 18 bytes (base64url) que solo vive en un archivo temporal de scratch, borrado al final.
+- API de la rama (nest build + node dist/main) en localhost:3348; imagen de frontend/Dockerfile (portfolio-web:apps-check) en localhost:8102 con API_ORIGIN=http://host.docker.internal:3348.
+- La base del owner (portfolio) no se toco.
