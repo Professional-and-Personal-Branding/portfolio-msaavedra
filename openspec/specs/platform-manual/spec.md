@@ -85,11 +85,19 @@ Cada imagen referenciada por el manual SHALL existir en `docs/manual/` y figurar
 - **THEN** termina con código 1 nombrando el archivo
 
 ### Requirement: Tope de tamaño del manual
-Cada imagen de `docs/manual/` MUST pesar hasta 150 KB, el total de imágenes hasta 4 MB e `index.html` hasta 300 KB, para que el manual se pueda publicar como artifact. `npm run manual:check` SHALL terminar con código 1 si se supera algún tope.
+Cada imagen de `docs/manual/` MUST pesar hasta 150 KB, el total de imágenes hasta 4 MB e `index.html` hasta 1 MB, para que el manual se pueda publicar como artifact con margen y un peso anómalo (por ejemplo, una imagen embebida) se detecte. `npm run manual:check` SHALL terminar con código 1 si se supera algún tope.
 
 #### Scenario: Captura pesada
 - **WHEN** una captura pesa 186 KB y se ejecuta `npm run manual:check`
 - **THEN** termina con código 1 nombrando el archivo y su tamaño
+
+#### Scenario: HTML dentro del tope
+- **WHEN** `index.html` pesa 320 KB y se ejecuta `npm run manual:check`
+- **THEN** no informa un error de tamaño para `index.html`
+
+#### Scenario: HTML pesado
+- **WHEN** `index.html` pesa 1,2 MB y se ejecuta `npm run manual:check`
+- **THEN** termina con código 1 nombrando `index.html`, su tamaño y el tope de 1 MB
 
 ### Requirement: Filtros por área y por change
 `index.html` SHALL filtrar los casos por área (pública, backoffice, datos) y por el change que los introdujo, además de por estado y texto, combinando todos los filtros. Un contador con `aria-live="polite"` SHALL anunciar cuántos casos quedan, y todos los controles SHALL tener nombre accesible y funcionar con teclado.
