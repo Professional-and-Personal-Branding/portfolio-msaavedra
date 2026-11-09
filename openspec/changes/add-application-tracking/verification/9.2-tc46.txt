@@ -1,0 +1,47 @@
+# TC-46 por la API contra la imagen de frontend/Dockerfile (8102) con la API de la rama (3348), base descartable portfolio_apps_example
+# (sin credenciales ni cookies)
+GET /api/admin/applications sin sesion            -> 401
+GET /api/applications (sin rutas publicas)         -> 404
+GET /api/admin/applications (lista vacia)          -> []
+POST /api/admin/applications (APPLIED + enlace)    -> 201 id=<ok:25>
+PATCH status ACCEPTED (APPLIED -> ACCEPTED)        -> {"statusCode":422,"message":"Transición de estado inválida: APPLIED → ACCEPTED","error":"Unprocessable Entity","requestId":"6ffdd53d-c5aa-412e-b1be-f738843790e0","timestamp":"2026-11-07T19:53:07.008Z"} [422]
+PATCH status INTERVIEWING                          -> 200
+POST con el mismo enlace                           -> {"statusCode":409,"message":"Enlace de seguimiento: ya está asociado a otra postulación","error":"Conflict","requestId":"44c29849-f140-4fcb-a701-15ff69963d84","timestamp":"2026-11-07T19:53:07.130Z"} [409]
+POST con contactEmail                              -> 400
+GET ?status=HIRED                                  -> 400
+summary antes de abrir el enlace                   -> {"byStatus":{"DRAFT":0,"APPLIED":0,"INTERVIEWING":1,"OFFER":0,"ACCEPTED":0,"REJECTED":0,"WITHDRAWN":0},"active":1}
+abrir el enlace como persona (UA de navegador)     -> 200
+abrir el enlace como bot (sin User-Agent)          -> 200
+GET /:id (aperturas humanas del enlace)            -> {"status":"INTERVIEWING","appliedAt":"2026-11-07","nextStatuses":["OFFER","REJECTED","WITHDRAWN"],"shareLink":{"opens":1,"firstOpenedAt":true,"lastOpenedAt":true}}
+export/ cabeceras:
+HTTP/1.1 200 OK
+X-Content-Type-Options: nosniff
+Content-Type: text/csv; charset=utf-8
+Content-Disposition: attachment; filename="postulaciones-2026-11-07.csv"
+Cache-Control: no-store
+DELETE                                             -> 204
+
+## CSV abierto en Excel 16 por COM (9.2-csv.png): celdas con formula quedan como texto
+Excel 16.0 abrio el CSV: 3 filas x 14 columnas
+Cabecera: Empresa | Puesto | Estado | Portal | URL de la vacante | Fecha de postulación | Último cambio de estado | Perfil | Enlace | Abierto el | Aperturas | Notas | Creada | Actualizada
+Fila 2: Empresa=''=HYPERLINK("http://x.example","clic")' HasFormula=False | Puesto=''+Lead' HasFormula=False | Estado='Postulada' | Notas=''@usuario' HasFormula=False
+Fila 3: Empresa='Globex' HasFormula=False | Puesto='Backend Senior' HasFormula=False | Estado='En entrevistas' | Notas='Dijo "ok" / y nada m�s: -30 % de sueldo' HasFormula=False
+Captura guardada (2245x204)
+(el 'm?s' de la nota es de la entrada escrita desde la terminal de Windows, no del export)
+
+## Pasos del panel en Chrome (puppeteer-core, sesion por fetch, sin escribir credenciales)
+login por fetch: 200
+0 dashboard sin postulaciones: OK "Sin postulaciones activas"
+1 /admin/postulaciones: url=/admin/postulaciones; OK estado vacio con filtro Activas
+2 errores: Escribí la empresa=true, Escribí el puesto=true, Usá una URL que empiece con http:// o https://=true; POST enviados=0
+3 alta: OK toast "Postulación creada"
+  fila: Globex=true Postulada=true Sin abrir=true ejemplo-backend=true
+4 tras abrir el link en ventana sin sesion: OK "Abierto el <hoy>"
+5 selector Estado al editar: Postulada, En entrevistas, Oferta, Rechazada, Retirada
+6 OK toast "Postulación actualizada"
+  filtro En entrevistas: url=?estado=interviewing
+  tras recargar: filtro=interviewing fila Globex=true
+7 Exportar CSV: GET /api/admin/applications/export?status=INTERVIEWING -> 200 attachment; filename="postulaciones-2026-11-07.csv"
+8 dashboard: OK "Postulaciones activas: 1 · 1 en entrevistas"; enlace Ver postulaciones=true
+9 borrar: OK toast "Postulación borrada"
+  lista vacia de nuevo: true

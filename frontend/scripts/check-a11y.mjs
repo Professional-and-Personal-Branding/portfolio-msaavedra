@@ -13,9 +13,12 @@
  * primer foco, foco que llega al contenido y contraste ≥ 3:1 del indicador de cada control).
  * Dos entradas abren un mensaje de error a la vista (D4 de `fix-error-contrast-and-date-modified`):
  * `admin-login-error` (el POST del login se responde 401 desde el navegador, sin tocar la API) y,
- * con panel, `admin-experiencias-error` («Guardar» vacío: validación del cliente, sin POST).
+ * con panel, `admin-experiencias-error` («Guardar» vacío: validación del cliente, sin POST) y
+ * `admin-postulaciones-error` (lo mismo con «Nueva postulación», change `add-application-tracking`).
  * Con A11Y_CHECK_ADMIN_EMAIL y A11Y_CHECK_ADMIN_PASSWORD también audita el panel: la sesión
  * se abre con `fetch('/api/auth/login')` desde la página, sin escribir la contraseña en un campo.
+ * Para que `admin-postulaciones` audite una lista con filas, antes de recorrer el panel crea (por
+ * la API, una sola vez) cinco postulaciones de prueba «Auditoría a11y …» en la base descartable.
  *
  * Entorno:
  *   A11Y_CHECK_DISPOSABLE_DB=1  OBLIGATORIA: la API tiene que apuntar a una base descartable
@@ -332,6 +335,31 @@ function clickButton(page, label) {
   }, label);
 }
 
+/** Entrada que abre el diálogo `openLabel`, lo guarda vacío y espera sus mensajes, sin ningún POST. */
+function dialogErrorEntry(openLabel) {
+  return {
+    async setup(page) {
+      page.adminPosts = 0;
+      page.on('request', (request) => {
+        if (request.method() === 'POST' && request.url().includes('/api/admin/')) page.adminPosts++;
+      });
+    },
+    async prepare(page) {
+      if (!(await clickButton(page, openLabel))) return [`no hay botón «${openLabel}»`];
+      if (!(await waitFor(page, () => document.querySelector('[role="dialog"]'))))
+        return ['no se abrió el diálogo'];
+      if (!(await clickButton(page, 'Guardar'))) return ['no hay botón «Guardar»'];
+      const seen = await waitFor(page, () =>
+        document.querySelector('[role="dialog"] [role="alert"]'),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const problems = seen ? [] : ['no apareció ningún mensaje de error en el diálogo'];
+      if (page.adminPosts !== 0) problems.push(`salieron ${page.adminPosts} POST a /api/admin/`);
+      return problems;
+    },
+  };
+}
+
 /**
  * Entradas con un mensaje de error a la vista (change `fix-error-contrast-and-date-modified`, D4):
  * `setup(page)` corre antes de navegar y `prepare(page)` después de `settle` y antes de axe;
@@ -365,30 +393,10 @@ const ERROR_ENTRIES = {
       return seen ? [] : ['no apareció «Email o contraseña incorrectos»'];
     },
   },
-  // Diálogo de experiencias: «Guardar» vacío valida en el cliente y muestra los errores; no sale
+  // Diálogos del panel: «Guardar» vacío valida en el cliente y muestra los errores; no sale
   // ningún POST a /api/admin/ (se cuenta).
-  'admin-experiencias-error': {
-    async setup(page) {
-      page.adminPosts = 0;
-      page.on('request', (request) => {
-        if (request.method() === 'POST' && request.url().includes('/api/admin/')) page.adminPosts++;
-      });
-    },
-    async prepare(page) {
-      if (!(await clickButton(page, 'Nueva experiencia')))
-        return ['no hay botón «Nueva experiencia»'];
-      if (!(await waitFor(page, () => document.querySelector('[role="dialog"]'))))
-        return ['no se abrió el diálogo'];
-      if (!(await clickButton(page, 'Guardar'))) return ['no hay botón «Guardar»'];
-      const seen = await waitFor(page, () =>
-        document.querySelector('[role="dialog"] [role="alert"]'),
-      );
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const problems = seen ? [] : ['no apareció ningún mensaje de error en el diálogo'];
-      if (page.adminPosts !== 0) problems.push(`salieron ${page.adminPosts} POST a /api/admin/`);
-      return problems;
-    },
-  },
+  'admin-experiencias-error': dialogErrorEntry('Nueva experiencia'),
+  'admin-postulaciones-error': dialogErrorEntry('Nueva postulación'),
 };
 
 async function audit(entry, viewportName, { keyboard = false, skipLink = true } = {}) {
@@ -452,6 +460,46 @@ for (const viewport of Object.keys(VIEWPORTS)) {
   }
 }
 
+/**
+ * Cinco postulaciones de prueba (una por tono de insignia, una con enlace de seguimiento) para que
+ * `admin-postulaciones` audite una lista con filas. Idempotente: si ya existe alguna «Auditoría
+ * a11y», no escribe nada. Corre por la API con la sesión del panel, en la base descartable.
+ */
+async function seedApplications(page, profileId) {
+  await page.evaluate(async (profile) => {
+    const call = async (method, path, body) => {
+      const response = await fetch(path, {
+        method,
+        headers: body ? { 'Content-Type': 'application/json' } : undefined,
+        body: body ? JSON.stringify(body) : undefined,
+        credentials: 'same-origin',
+      });
+      return response.ok ? response.json() : null;
+    };
+    const existing = (await call('GET', '/api/admin/applications')) ?? [];
+    if (existing.some((a) => a.company.startsWith('Auditoría a11y'))) return;
+    const link = profile
+      ? await call('POST', `/api/admin/curated-profiles/${profile}/share-links`, {
+          label: 'Auditoría a11y — RR. HH.',
+        })
+      : null;
+    const rows = [
+      { status: 'DRAFT' },
+      { status: 'APPLIED', ...(link ? { curatedProfileId: profile, shareLinkId: link.id } : {}) },
+      { status: 'INTERVIEWING', portal: 'linkedin' },
+      { status: 'OFFER' },
+      { status: 'REJECTED' },
+    ];
+    for (const [i, row] of rows.entries()) {
+      await call('POST', '/api/admin/applications', {
+        company: `Auditoría a11y ${i + 1}`,
+        role: 'Backend Senior',
+        ...row,
+      });
+    }
+  }, profileId ?? null);
+}
+
 let adminAudited = false;
 if (ADMIN_EMAIL && ADMIN_PASSWORD) {
   const session = await browser.newPage();
@@ -480,6 +528,7 @@ if (ADMIN_EMAIL && ADMIN_PASSWORD) {
     (await fetch('/api/admin/curated-profiles', { credentials: 'same-origin' })).json(),
   );
   const first = (Array.isArray(profiles) ? profiles : (profiles.items ?? []))[0];
+  await seedApplications(session, first?.id);
   await session.close();
   const adminPages = [
     ['admin', '/admin'],
@@ -491,6 +540,8 @@ if (ADMIN_EMAIL && ADMIN_PASSWORD) {
     ['admin-proyectos', '/admin/proyectos'],
     ['admin-cuenta', '/admin/cuenta'],
     ['admin-perfiles', '/admin/perfiles'],
+    ['admin-postulaciones', '/admin/postulaciones?estado=todas'],
+    ['admin-postulaciones-error', '/admin/postulaciones'],
     ['admin-revision', '/admin/revision'],
     ...(first?.id ? [['admin-builder', `/admin/perfiles/${first.id}`]] : []),
   ].map(([id, path]) => ({ id, path, keyboard: id === 'admin' || id === 'admin-builder' }));

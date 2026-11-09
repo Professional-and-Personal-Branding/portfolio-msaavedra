@@ -306,7 +306,7 @@ Hay además un ajuste de configuración que no es un change: verificar `SESSION_
 |---|---|---|---|
 | `add-integrations-foundation` | Cola, cron, cifrado, flags y snapshots, sin un proveedor real | ADDED `integration-connectors` e `integration-sync` · MODIFIED `api-platform`, `api-observability` y `admin-backoffice-shell` | El e2e de la cola pasa: `SKIP LOCKED`, lock vencido e idempotencia. `sync` termina con código 0. Ningún token aparece en los logs. Un proveedor desactivado no exige su secreto. El clasificador mapea a `BudgetExhausted` las dos formas de error de Anthropic (test). |
 | `add-job-posting-intake` | De la URL o el texto a una sugerencia, y el borrador lo crea `curated-profile`. **Dn: portales cerrados** | ADDED `job-posting-intake` · MODIFIED `curated-profile-builder` | Con fixtures de los tres ATS y de JSON-LD se obtiene un `JobPosting`. Los hosts bloqueados responden «pegá el texto». Una IP privada o un redirect a una IP privada se rechaza. **`job-posting` no importa ningún repositorio de `curated-profile` (test de arquitectura).** El borrador queda PRIVATE con `filterTags` ⊆ vocabulario. |
-| `add-application-tracking` | CRM (MVP: tabla, estados y ShareLink) | ADDED `application-tracking` · MODIFIED `admin-analytics-dashboard` | CRUD bajo `/api/admin/applications`. Una transición inválida da 422. Muestra «abierto el…». Exporta a CSV. No tiene rutas públicas. |
+| `add-application-tracking` (en curso) | CRM (MVP: tabla, estados y ShareLink) | ADDED `application-tracking` · MODIFIED `admin-analytics-dashboard` | CRUD bajo `/api/admin/applications`. Una transición inválida da 422. Muestra «abierto el…». Exporta a CSV. No tiene rutas públicas. |
 | `add-featured-repositories` (necesita 0.3) | El módulo y la sección desde cero (1.2a) | ADDED `featured-repositories` · MODIFIED `curated-profile-resolution` (el requisito del catálogo de nueve ids), `layout-engine`, `printable-curated-profile`, `frontend-localization`, `public-portfolio-sections-api`, `api-contract-types` y `admin-content-management` | CRUD en el panel. La sección se oculta con menos de 2 repos. `print:check` da una hoja. No hay deriva de `openapi.json` ni de `api.d.ts`. Hay un TC-nn. |
 | `add-github-code-evidence` | Sync con GitHub (1.2b) | ADDED `code-evidence` | Con el fixture, se actualizan stars, lenguajes y topics. Un 304 autenticado no reescribe nada. Con el token vencido se sirve el último snapshot y el panel avisa. |
 | `add-cv-consistency-rules` | Linter, capa 1 | ADDED `cv-consistency` | Fast-check: ningún «años con X» contradice las fechas. **`Profile.yearsOfExperience` se contrasta con `computeYearsOfExperience`** (o se aplica la Dn de la pregunta 20). El 100 % de los errores sembrados se detecta. |
@@ -399,7 +399,14 @@ La escritura de caché cuesta 1,25x y el Batch tiene un 50 % de descuento.
 - **18. Estado del deploy:** todavía no está hecho; la Fase 1.0.x va antes que cualquier change.
 - **19. Semántica de `views`:** A. `views` cuenta solo visitas humanas de terceros; todas las filas se guardan con su `kind`.
 
-Siguen abiertas las demás; las bloqueantes para 1.3 y 2.0 (3, 4, 6, 12) se responden al abrir esas fases.
+**Resueltas el 2026-11-07:**
+- **3. Scheduler:** B, `@nestjs/schedule`, con la condición del owner de no generar cuellos de botella en los procesos de la app. El diseño de `add-integrations-foundation` tendrá que garantizarlo: trabajos fuera del event loop de las peticiones, una sola instancia ejecutora con lock en Postgres, timeouts y concurrencia acotada.
+- **6. Repos:** A. Hay repos públicos en GitHub; `add-featured-repositories` entra en 1.3.
+- **12. Dominio del remitente:** se decide más adelante; `add-open-notifications` queda después del deploy.
+- **14. Cobertura en público:** A, solo en el panel.
+- **15. Datos de reclutadores en el CRM:** A, empresa, puesto y notas, sin contacto.
+
+Siguen abiertas las demás; la única bloqueante abierta es la 4 (tope de IA, para 2.0) y se responde al abrir esa fase. La 12 quedó diferida a después del deploy.
 
 1. **Orden de arranque.**
    - A) 1.0.x y después 1.2 sin IA.

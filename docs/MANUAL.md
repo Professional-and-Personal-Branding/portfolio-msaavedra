@@ -132,6 +132,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq
 | `/admin/proyectos` | Proyectos destacados y enlaces sociales |
 | `/admin/perfiles` | Lista de perfiles curados |
 | `/admin/perfiles/:id` | **El constructor**: Identidad, Selección, Diseño y Publicación, con preview en vivo |
+| `/admin/postulaciones` | Postulaciones: estado de cada proceso, «Abierto el…» y export a CSV |
 
 ---
 
@@ -203,7 +204,8 @@ Cada carga de una ruta pública registra una **visita** (`ProfileView`): perfil,
 
 - **En el ejemplo:** 105 visitas sintéticas en 5 perfiles (`all`, `ejemplo-backend`, `ejemplo-secciones`, `ejemplo-archivado`, `ejemplo-protegido`), con orígenes directo, LinkedIn, buscador y un dominio de `example.com`. Ninguna trae enlace ni portal: las tablas **Por enlace** y **Por portal** arrancan con su estado vacío.
 - **Dónde se edita:** B2 (Dashboard); los enlaces se crean en B12 (Constructor · Publicación)
-- **Casos que lo verifican:** TC-18, TC-39, TC-41
+- **Postulaciones:** el CRM del panel (B15) usa estas aperturas para mostrar «Abierto el…» en cada postulación con enlace.
+- **Casos que lo verifican:** TC-18, TC-39, TC-41, TC-46
 
 
 ---
@@ -330,7 +332,7 @@ Nueve tareas reales, con los pasos por pantalla, lo que tiene que pasar, los err
 
 **Errores típicos:** Las visitas de hoy cuentan (defecto D-01 corregido). La vista previa del panel y la carga de otra persona de `/admin` no suman visitas. Tus propias visitas (con la sesión del panel) y las de bots tampoco suman en el total: están en **Por tipo**. Si **Por origen** dice `directo` para todo, es lo esperado: mirá **Por enlace** y **Por portal**.
 
-**Casos:** TC-18, TC-39, TC-41
+**Casos:** TC-18, TC-39, TC-41, TC-46
 
 
 ---
@@ -363,7 +365,7 @@ Para la guía y las capturas se usa un administrador de prueba (`npm run admin:b
 
 ### B2 — Dashboard
 
-Ruta: `/admin`. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales (de **personas**), **Visitas por día**, **Por perfil** (con enlaces al constructor y a la vista pública y la marca `archivado`), **Por idioma**, **Por origen** (con la aclaración de que casi siempre da `directo`), **Por enlace** (etiqueta, perfil, portal, marca `revocado` y visitas, más una fila final **Sin enlace**), **Por portal** (con una fila final **Sin portal**) y **Por tipo** (*Personas*, *Tus visitas* y *Bots*, con la aclaración de que solo las de personas suman).
+Ruta: `/admin`. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales (de **personas**), **Visitas por día**, **Por perfil** (con enlaces al constructor y a la vista pública y la marca `archivado`), **Por idioma**, **Por origen** (con la aclaración de que casi siempre da `directo`), **Por enlace** (etiqueta, perfil, portal, marca `revocado` y visitas, más una fila final **Sin enlace**), **Por portal** (con una fila final **Sin portal**) y **Por tipo** (*Personas*, *Tus visitas* y *Bots*, con la aclaración de que solo las de personas suman). Sobre los totales hay una franja con las postulaciones activas por estado y el enlace **Ver postulaciones** (B15); muestra el estado de hoy y no cambia con el rango.
 
 | Campo | Tipo | Obligatorio | Validación | Ejemplo |
 |---|---|---|---|---|
@@ -742,6 +744,58 @@ Ruta: `/admin/cuenta`. Se llega con el botón **Cuenta** de la barra superior (a
 **Acciones y avisos:** Si la sesión se revocó (otro dispositivo cambió la contraseña) o venció, la próxima petición del panel da 401 y vuelve al login. Los `curl` con un `TOKEN` anterior al cambio también dan 401 (ver § 0). Si perdiste la contraseña, la recuperación es `npm run admin:bootstrap` desde la terminal: acepta contraseñas de 8 caracteres o más y también cierra todas las sesiones.
 
 ![Cuenta con el aviso de repetición distinta](manual/bo-cuenta.jpg)
+
+### B15 — Postulaciones
+
+Ruta: `/admin/postulaciones`. Tu seguimiento personal de procesos: a quién te postulaste, en qué estado está y **si abrieron el enlace** que mandaste. Solo existe en el panel: ninguna ruta pública, el sitemap ni el head de un perfil muestran nada de esto. La lista se filtra por **Estado** (**Activas** por defecto, **Todas** o uno) y el filtro vive en la URL (`?estado=interviewing`), no en `localStorage`. Columnas: Empresa y puesto, Estado, Portal, Perfil, Enlace y Postulada; **Editar** y **Borrar** (con confirmación) por fila.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Empresa | texto | Sí | 1 a 120 caracteres tras recortar | Cobalto Ejemplo |
+| Puesto | texto | Sí | 1 a 160 caracteres | Backend Senior |
+| URL de la vacante | texto | No | URL absoluta `http://` o `https://`, hasta 2048 caracteres | https://empresa.example/jobs/1 |
+| Estado | selector | Sí (*Por postular* por defecto) | Al crear, los siete. Al editar, el actual y los que la API manda en `nextStatuses` (tabla de abajo) | En entrevistas |
+| Fecha de postulación | fecha | No | Oculta con *Por postular*. Al elegir otro estado se completa con hoy; no puede ser futura. Vacía, el servidor pone hoy | 2026-11-05 |
+| Portal | texto | No | Minúsculas, números y guiones, hasta 32; no empieza con guion. Elegir un enlace con portal completa uno vacío | linkedin |
+| Perfil | selector | No | Un perfil curado existente (puede estar archivado) | ejemplo-backend |
+| Enlace | selector | No | Solo enlaces `MANUAL` del perfil elegido, activos o revocados; deshabilitado sin perfil. Un enlace solo puede estar en una postulación | Cobalto — Laura, RR. HH. |
+| Notas | texto largo | No | Hasta 5000 caracteres. No guardes datos de contacto de personas | Primera llamada con RR. HH. |
+
+**Transiciones de estado** (la tabla vive en el servidor; el selector solo ofrece las válidas y un cambio inválido da 422 sin guardar nada, ni siquiera las notas que se editaron en el mismo guardado):
+
+| Desde | Puede pasar a |
+|---|---|
+| Por postular | Postulada, Retirada |
+| Postulada | En entrevistas, Oferta, Rechazada, Retirada |
+| En entrevistas | Oferta, Rechazada, Retirada |
+| Oferta | Aceptada, Rechazada, Retirada |
+| Aceptada | — (final) |
+| Rechazada | Postulada (reabrir) |
+| Retirada | Postulada (reabrir) |
+
+| Mensaje | Cuándo |
+|---|---|
+| Escribí la empresa | La empresa está vacía. |
+| Escribí el puesto | El puesto está vacío. |
+| Usá como máximo 120 caracteres | La empresa pasa de 120 caracteres. |
+| Usá como máximo 160 caracteres | El puesto pasa de 160 caracteres. |
+| Usá como máximo 5000 caracteres | Las notas pasan de 5000 caracteres. |
+| Usá una URL que empiece con http:// o https:// | La URL de la vacante no empieza con `http://` o `https://`. |
+| Usá como máximo 2048 caracteres | La URL de la vacante pasa de 2048 caracteres. |
+| Usá solo minúsculas, números y guiones (hasta 32) | El portal tiene otros caracteres o más de 32. |
+| La fecha no puede ser futura | La fecha de postulación es posterior a hoy. |
+| Ese cambio de estado no está permitido. Elegí uno de la lista. | La API respondió 422: otra pestaña cambió el estado antes. El diálogo sigue abierto; recargá la lista. |
+| Ese enlace ya está asociado a otra postulación. | La API respondió 409. El diálogo sigue abierto; elegí otro enlace. |
+| Postulación creada | Aviso de éxito al crear. |
+| Postulación actualizada | Aviso de éxito al editar. |
+| Postulación borrada | Aviso de éxito al borrar (pide confirmación antes). |
+| No se pudo exportar. Intentá de nuevo. | **Exportar CSV** falló (por ejemplo, un 500). No se descarga ningún archivo. |
+| Todavía no registraste postulaciones | No hay ninguna y el filtro es **Todas**. |
+| No hay postulaciones con este estado | No hay ninguna con el filtro elegido (**Activas** u otro estado). |
+
+**Acciones y avisos:** **Abierto el…** es la fecha de la **primera apertura de una persona** del enlace asociado (`firstOpenedAt`), en tu fecha local, o **Sin abrir** si nadie lo abrió. No cuentan tus visitas con la sesión del panel ni las de bots, igual que en **Por enlace** del Dashboard; la cantidad de aperturas está en el `title` de la celda. Si mandaste el link antes de registrar la postulación, esas aperturas previas también cuentan: el enlace es de esa postulación. **Sin datos de contacto.** Bajo **Notas** el diálogo avisa «No guardes datos de contacto de personas»: la plataforma no tiene campos de nombre, email ni teléfono del reclutador y la API rechaza cualquier campo desconocido con 400. **Exportar CSV** descarga las postulaciones con el filtro vigente (`postulaciones-AAAA-MM-DD.csv`, 14 columnas: Empresa, Puesto, Estado, Portal, URL de la vacante, Fecha de postulación, Último cambio de estado, Perfil, Enlace, Abierto el, Aperturas, Notas, Creada y Actualizada). Está en UTF-8 con BOM, separado por comas y con todas las celdas entre comillas. Una celda que empieza con `=`, `+`, `-`, `@`, tabulación o retorno de carro lleva un apóstrofo delante, para que la planilla no la ejecute como fórmula: se ve `'=1+1` como texto. **Para abrirlo:** en Excel, **Datos → Desde texto/CSV**, origen UTF-8 y delimitador coma (con doble clic suele alcanzar); en Google Sheets o LibreOffice, **Archivo → Importar**. La franja del Dashboard (B2) resume el estado actual: «Postulaciones activas: 3 · 2 postuladas · 1 con oferta» con el enlace **Ver postulaciones**; no depende del rango de fechas.
+
+![Postulaciones con el filtro Todas](manual/bo-postulaciones.jpg)
 
 ### B16 — Revisión
 
@@ -1684,6 +1738,68 @@ rm -f a.jar a-vieja.jar b.jar c.jar
 
 ![Cuenta con el aviso de repetición distinta](manual/bo-cuenta.jpg)
 
+### TC-46 — Registrar una postulación y ver si abrieron el enlace ✅
+
+**Precondición:** base de ejemplo **descartable** (nunca `portfolio`), con la API y el frontend levantados (de preferencia la imagen de `frontend/Dockerfile`) y sesión en el panel. Sin postulaciones cargadas (si corriste `manual:capture` hay tres de ejemplo: el paso 1 mostrará la lista con ellas y el filtro **Activas**). El perfil `ejemplo-backend` tiene un enlace de seguimiento `MANUAL` activo (creálo en **Perfiles → ejemplo-backend → Publicación** con la etiqueta «Globex — RR. HH.» si no existe).
+
+**Pasos (panel):**
+1. Pulsá **Postulaciones** en la navegación.
+2. Pulsá **Nueva postulación**, escribí `globex.example` en **URL de la vacante** y pulsá **Guardar** sin completar nada más.
+3. Completá **Empresa** `Globex`, **Puesto** `Backend Senior`, **URL de la vacante** `https://globex.example/jobs/1`, **Estado** *Postulada*, **Perfil** `ejemplo-backend` y **Enlace** «Globex — RR. HH.». Pulsá **Guardar**.
+4. En una **ventana privada** (sin sesión), abrí el link del enlace (`/ejemplo-backend?via=<código>`, copiálo desde **Publicación**). Volvé al panel y recargá **Postulaciones**.
+5. Editá la postulación y abrí el selector **Estado**.
+6. Elegí *En entrevistas* y guardá. Después elegí el filtro **Estado → En entrevistas** y recargá la página.
+7. Pulsá **Exportar CSV** y abrí el archivo en una planilla.
+8. Volvé al **Dashboard**.
+9. Borrá la postulación y confirmá.
+
+**Resultado esperado:**
+1. Se abre `/admin/postulaciones` con el filtro **Activas** y, sin datos, «No hay postulaciones con este estado».
+2. Se ven «Escribí la empresa», «Escribí el puesto» y «Usá una URL que empiece con http:// o https://», y no sale ninguna petición (pestaña Red).
+3. Aparece «Postulación creada»; la fila muestra Globex, Backend Senior, *Postulada*, `ejemplo-backend`, «Sin abrir» y la fecha de hoy.
+4. La fila pasa a «Abierto el <fecha de hoy>».
+5. El selector ofrece solo *Postulada*, *En entrevistas*, *Oferta*, *Rechazada* y *Retirada*.
+6. Aparece «Postulación actualizada»; la URL lleva `?estado=interviewing` y tras recargar el filtro sigue elegido y la fila sigue en la lista.
+7. Se descarga `postulaciones-<fecha>.csv`; la planilla muestra las columnas Empresa, Puesto, Estado, …, Abierto el, Aperturas, Notas, Creada y Actualizada, con los acentos bien, y la fila de Globex con «En entrevistas».
+8. La franja dice «Postulaciones activas: 1 · 1 en entrevistas» con el enlace **Ver postulaciones**.
+9. Aparece «Postulación borrada» y la lista vuelve al estado vacío.
+
+**Errores típicos:** «Ese enlace ya está asociado a otra postulación.»: el enlace ya está en otra fila; creá otro en **Publicación**. «Ese cambio de estado no está permitido. Elegí uno de la lista.»: otra pestaña cambió el estado antes; recargá. Si la visita del paso 4 no aparece, la abriste con la sesión del panel (cuenta como tuya, no como persona) o el enlace es `LINKEDIN_POST`. Si Excel muestra todo en una columna, importá con *Datos → Desde texto/CSV*, origen UTF-8 y delimitador coma.
+
+**Por la API** (Bash; con la cookie de sesión de § 0 del manual en `s.jar`):
+
+```bash
+API=http://localhost:3300
+PROFILE_ID=<id de ejemplo-backend>   # GET /api/admin/curated-profiles
+LINK_ID=<id del enlace MANUAL>       # GET /api/admin/curated-profiles/$PROFILE_ID/share-links
+
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/admin/applications                       # 401  sin sesión
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/applications                             # 404  sin rutas públicas
+
+ID=$(curl -s -b s.jar -H 'Content-Type: application/json' \
+  -d "{\"company\":\"Globex\",\"role\":\"Backend Senior\",\"status\":\"APPLIED\",\"curatedProfileId\":\"$PROFILE_ID\",\"shareLinkId\":\"$LINK_ID\"}" \
+  $API/api/admin/applications | node -pe 'JSON.parse(require("fs").readFileSync(0)).id')   # 201
+
+curl -s -o /dev/null -w '%{http_code}\n' -b s.jar -X PATCH -H 'Content-Type: application/json' \
+  -d '{"status":"ACCEPTED"}' $API/api/admin/applications/$ID                              # 422  APPLIED → ACCEPTED
+curl -s -o /dev/null -w '%{http_code}\n' -b s.jar -X PATCH -H 'Content-Type: application/json' \
+  -d '{"status":"INTERVIEWING"}' $API/api/admin/applications/$ID                          # 200
+curl -s -o /dev/null -w '%{http_code}\n' -b s.jar -H 'Content-Type: application/json' \
+  -d "{\"company\":\"Otra\",\"role\":\"X\",\"curatedProfileId\":\"$PROFILE_ID\",\"shareLinkId\":\"$LINK_ID\"}" \
+  $API/api/admin/applications                                                              # 409  enlace repetido
+curl -s -b s.jar $API/api/admin/applications/summary                                       # {"byStatus":{...,"INTERVIEWING":1,...},"active":1}
+curl -s -D - -o postulaciones.csv -b s.jar "$API/api/admin/applications/export?status=INTERVIEWING"
+# Content-Type: text/csv; charset=utf-8
+# Content-Disposition: attachment; filename="postulaciones-AAAA-MM-DD.csv"
+# Cache-Control: no-store
+curl -s -o /dev/null -w '%{http_code}\n' -b s.jar -X DELETE $API/api/admin/applications/$ID  # 204
+rm -f postulaciones.csv
+```
+
+**Ejecutado** (7 de noviembre de 2026, imagen de `frontend/Dockerfile` en `localhost:8102`, API de la rama en `localhost:3348` y la base descartable `portfolio_apps_example`, sembrada con el ejemplo): el bloque **Por la API** dio los códigos esperados (401, 404, 201, 422 con `error: "Unprocessable Entity"` y sin `stack`, 200, 409, 400 con un campo `contactEmail`, 400 con `status=HIRED`, 204; el resumen dio `active: 1`; con una apertura de persona y otra de un bot, el enlace trajo `opens: 1`; el export respondió `text/csv; charset=utf-8`, `attachment; filename="postulaciones-2026-11-07.csv"` y `no-store`). Los nueve pasos del panel se ejecutaron en Chrome controlado con `puppeteer-core` (sesión abierta por `fetch`, sin escribir credenciales) con el resultado esperado de cada uno. El CSV se abrió en **Excel 16**: acentos correctos, 14 columnas y las celdas con fórmula (`=HYPERLINK(…)`, `+Lead`, `@usuario`) como texto con su apóstrofo, sin ninguna celda con fórmula. Además `a11y:check` con panel (60 cargas, con `/admin/postulaciones` y el diálogo con errores): 0 violaciones. Evidencia: `openspec/changes/add-application-tracking/verification/` (`9.2-tc46.txt`, `9.2-csv.png`, `9.3-a11y.txt`).
+
+![Postulaciones con el filtro Todas](manual/bo-postulaciones.jpg)
+
 ### TC-47 — Revisar la consistencia del CV ✅
 
 **Precondición:** base de ejemplo **descartable** (nunca `portfolio`) sembrada con `npm run seed:example`, con la API y el frontend levantados (de preferencia la imagen de `frontend/Dockerfile`) y una sesión de administrador. El ejemplo declara 11 años y sus experiencias van de 2015-01 al mes actual (`cobalto` es actual): en noviembre de 2026 suman 143 meses (11 años y 11 meses) y no hay aviso de años; desde diciembre de 2026 suman 12 años o más y el aviso aparece desde el paso 1, lo que también es correcto. Tiene una certificación vencida (`2025-12`) y el perfil `ejemplo-borrador` sin la descripción en inglés, a propósito.
@@ -2178,7 +2294,7 @@ El umbral de Performance es 85 en CI porque el runner de GitHub es el equipo de 
 
 ## 6. Suite de regresión manual
 
-Antes de cada release, recorrer en este orden. Último caso ejecutado: **7 de noviembre de 2026** (TC-47, en la app real con la imagen de producción, y TC-48, por la API y el contenedor `web`); antes, el 5 de noviembre (TC-45, por la API y la sesión revocada en Chrome); antes, el 4 de noviembre (TC-44, pasos 1 a 5); antes, el 29 de octubre (TC-43, TC-42 y TC-41) y el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 46 capturas con `manual:capture` (TC-43 suma una y regenera la de TC-13). TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
+Antes de cada release, recorrer en este orden. Último caso ejecutado: **7 de noviembre de 2026** (TC-46, por la API y en Chrome contra la imagen de producción; TC-47, en la app real con la imagen de producción, y TC-48, por la API y el contenedor `web`); antes, el 5 de noviembre (TC-45, por la API y la sesión revocada en Chrome); antes, el 4 de noviembre (TC-44, pasos 1 a 5); antes, el 29 de octubre (TC-43, TC-42 y TC-41) y el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 46 capturas con `manual:capture` (TC-43 suma una y regenera la de TC-13). TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
 
 Los casos del backoffice están automatizados en [`manual/suite-backoffice.ps1`](manual/suite-backoffice.ps1): ejecuta TC-12 a TC-20 contra la API, imprime el resultado real junto al esperado y borra todos los datos de prueba que crea, pase o falle.
 
@@ -2232,11 +2348,12 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-44 | Los buscadores leen la página de perfil | 🔍 | `curl` del HTML de la imagen de producción (público, `PROTECTED`, privado, archivado e inexistente) · Chrome sin errores de CSP · validador de schema.org sin errores · e2e del fragmento y fixture compartido · pasos 6 y 7 (Rich Results Test) tras el deploy |
 | TC-48 | Exportar un perfil curado como JSON Resume | 🔍 | `curl` de la imagen de producción (público, `PROTECTED`, privado, archivado, alias y panel) · 8 archivos validados contra el schema de JSON Resume v1.0.0 · contador de visitas sin cambios · `a11y:check` con el constructor · e2e `json-resume-export` y test del constructor · pasos del panel con sesión sin ejecutar a mano |
 | TC-45 | Cambiar la contraseña del panel | 🔍 | `curl` de la imagen de producción con dos sesiones (cambio, 401 de la anterior, límite y `admin:bootstrap`) · Chrome con la sesión revocada · `a11y:check` con Cuenta · e2e `admin-password` · pasos del panel con contraseñas reales sin ejecutar a mano |
+| TC-46 | Registrar una postulación y ver si abrieron el enlace | ✅ | app real con la imagen de producción y Chrome controlado · API (401, 404, 422, 409, 400, CSV) · CSV abierto en Excel con las fórmulas como texto · `a11y:check` con panel · e2e `admin-applications` · tests de la pantalla, el diálogo y la descarga |
 | TC-47 | Revisar la consistencia del CV | ✅ | app real con la imagen de producción y una base descartable · panel de punta a punta (resumen, Volver a revisar, Abrir, `?editar=`) · API (401, `no-store`, `locale`) · `cv:lint` con salidas 0, 1 y 2 · `a11y:check` con `/admin/revision` · e2e `cv-consistency` |
 | TC-42 | Verificar una certificación desde el sitio | ✅ | app real con la imagen de producción y Chrome no headless · API (400 con `http://`, 200, `null`) · PDF de una página con el enlace · `print:check` (ejemplo y CV) · tests de la sección, la hoja y el panel |
 | TC-43 | Ajustar skills y proyectos de un perfil | ✅ | app real con la imagen de producción y Chrome no headless · preview = ruta pública (API) · `a11y:check` con panel y axe sobre Selección · tests de las funciones puras, del constructor y del núcleo (unitarios y e2e) |
 
-**Pasan los 43 casos anteriores y TC-47; TC-44, TC-45 y TC-48 quedan en 🔍** (change `add-json-resume-export`: TC-48 se ejecutó el 7 de noviembre de 2026 en la app real con una base descartable, por la API y con el contenedor `web`; los pasos del panel con sesión no se ejecutaron a mano; sin captura nueva) (change `add-cv-consistency-rules`: TC-47 se ejecutó el 7 de noviembre de 2026 en la app real con la imagen de `frontend/Dockerfile` y una base descartable, con la captura `bo-revision` nueva y `a11y:check` con `/admin/revision`; change `add-admin-password-change`: TC-45 se ejecutó el 5 de noviembre de 2026 en la app real con una base descartable, por la API y con la sesión revocada en Chrome, con la captura `bo-cuenta`; los pasos del panel que escriben contraseñas reales no se ejecutaron a mano; change `upgrade-profile-structured-data`: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado). TC-43 (change `add-builder-skill-project-overrides`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc43-overrides` nueva y la de `tc13-seleccion` regenerada con `manual:capture`. TC-42 (change `add-certification-verification`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc42-credencial` nueva y la del diálogo de certificación regenerada con `manual:capture`. TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 46 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
+**Pasan los 43 casos anteriores, TC-46 y TC-47; TC-44, TC-45 y TC-48 quedan en 🔍** (change `add-application-tracking`: TC-46 se ejecutó completo el 7 de noviembre de 2026 en la app real con una base descartable, con la captura `bo-postulaciones`; el Dashboard de TC-18 se regeneró con la franja de postulaciones) (change `add-json-resume-export`: TC-48 se ejecutó el 7 de noviembre de 2026 en la app real con una base descartable, por la API y con el contenedor `web`; los pasos del panel con sesión no se ejecutaron a mano; sin captura nueva) (change `add-cv-consistency-rules`: TC-47 se ejecutó el 7 de noviembre de 2026 en la app real con la imagen de `frontend/Dockerfile` y una base descartable, con la captura `bo-revision` nueva y `a11y:check` con `/admin/revision`; change `add-admin-password-change`: TC-45 se ejecutó el 5 de noviembre de 2026 en la app real con una base descartable, por la API y con la sesión revocada en Chrome, con la captura `bo-cuenta`; los pasos del panel que escriben contraseñas reales no se ejecutaron a mano; change `upgrade-profile-structured-data`: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado). TC-43 (change `add-builder-skill-project-overrides`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc43-overrides` nueva y la de `tc13-seleccion` regenerada con `manual:capture`. TC-42 (change `add-certification-verification`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc42-credencial` nueva y la del diálogo de certificación regenerada con `manual:capture`. TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 46 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
@@ -2382,3 +2499,5 @@ Cada término enlaza el concepto, el recorrido o el caso donde se usa.
 | **versión de sesión** | Un número del administrador (`sessionVersion`) que el token del panel lleva como `sv`; cambiar la contraseña desde **Cuenta** o correr `admin:bootstrap` lo incrementa y los tokens con otra versión dejan de valer. | B14 (Cuenta), TC-45 |
 | **JSON Resume** | Formato abierto (v1.0.0) con el que se exporta un perfil curado, un archivo por idioma: lo que muestra la página, sin las secciones ocultas ni el año de las certificaciones. Se baja desde **Publicación**; no cuenta como visita. | B12 (Constructor · Publicación), TC-48 |
 | **enlace de verificación** | La página pública de la credencial en el emisor (Credly, Accredible…); solo `https://`. El sitio lo muestra como «Ver credencial» y no comprueba que funcione. | B6 (Formación), TC-42 |
+| **postulación** | Un proceso de selección que registrás en el panel: empresa, puesto, estado, fecha y, si querés, el perfil y el enlace de seguimiento que mandaste. Es privada: no se publica en ningún lado. | B15 (Postulaciones), TC-46 |
+| **Abierto el** | La fecha de la primera apertura de una persona del enlace asociado a una postulación, o «Sin abrir». Las tuyas y las de bots no cuentan. | B15 (Postulaciones), TC-46 |

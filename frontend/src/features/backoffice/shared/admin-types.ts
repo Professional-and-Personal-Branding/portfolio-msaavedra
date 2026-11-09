@@ -42,6 +42,13 @@ export type UpdateSocialLinkBody = Schemas['UpdateSocialLinkDto'];
 export type ShareLink = Schemas['ShareLinkResponse'];
 export type CreateShareLinkBody = Schemas['CreateShareLinkDto'];
 
+// add-application-tracking: postulaciones (CRM personal del panel).
+export type Application = Schemas['ApplicationResponse'];
+export type ApplicationStatus = Schemas['ApplicationStatus'];
+export type ApplicationSummary = Schemas['ApplicationSummaryResponse'];
+export type CreateApplicationBody = Schemas['CreateApplicationDto'];
+export type UpdateApplicationBody = Schemas['UpdateApplicationDto'];
+
 // add-cv-consistency-rules: revisión de consistencia del CV.
 export type CvConsistency = Schemas['CvConsistencyResponse'];
 export type CvIssue = Schemas['CvIssueResponse'];

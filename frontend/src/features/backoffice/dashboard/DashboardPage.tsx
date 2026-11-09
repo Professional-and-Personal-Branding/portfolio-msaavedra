@@ -20,6 +20,7 @@ import {
 } from '@/shared/components/ui/table';
 import { profilePath } from '@/shared/lib/profile-link';
 import { PageHeader } from '../shared/PageHeader';
+import { ApplicationsStrip } from './ApplicationsStrip';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
 import { useAnalytics, useCuratedProfilesAdmin } from '../shared/use-admin-api';
 import type { ProfileViews } from '../shared/admin-types';
@@ -60,6 +61,8 @@ export function DashboardPage() {
           </Select>
         }
       />
+
+      <ApplicationsStrip />
 
       {analytics.isPending && <LoadingRows rows={3} />}
       {analytics.isError && (

@@ -377,6 +377,7 @@
     <a href="#tc42"><span class="dot ok"></span><span class="id">TC-42</span> Credencial verificable</a>
     <a href="#tc44"><span class="dot part"></span><span class="id">TC-44</span> Datos estructurados</a>
     <a href="#tc45"><span class="dot part"></span><span class="id">TC-45</span> Cambiar la contraseña</a>
+    <a href="#tc46"><span class="dot ok"></span><span class="id">TC-46</span> Postulaciones</a>
     <a href="#tc47"><span class="dot ok"></span><span class="id">TC-47</span> Revisar la consistencia del CV</a>
     <a href="#tc48"><span class="dot part"></span><span class="id">TC-48</span> Exportar JSON Resume</a>
     <a href="#tc27"><span class="dot ok"></span><span class="id">TC-27</span> Proyectos</a>
@@ -509,17 +510,17 @@ $env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del o
     <!-- ───────────── Resumen ───────────── -->
     <section id="resumen" class="block">
       <h2>Resumen de la última ejecución</h2>
-      <p class="lede">Último caso ejecutado el 7 de noviembre de 2026 (TC-47, en la app real con la imagen de producción, y TC-48, por la API y el contenedor <code>web</code>); antes, el 5 de noviembre (TC-45, por la API y la sesión revocada en Chrome); antes, el 4 de noviembre (TC-44, pasos 1 a 5); antes, el 29 de octubre (TC-43, TC-42 y TC-41), el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias): suite <code>suite-backoffice.ps1</code>, recorridos y casos de lectura por API, <code>print:check</code> y las 46 capturas con <code>manual:capture</code> (TC-43 suma una y regenera la de TC-13). TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real.</p>
+      <p class="lede">Último caso ejecutado el 7 de noviembre de 2026 (TC-46, TC-47 y TC-48); antes, el 5 de noviembre (TC-45) y el 4 de noviembre (TC-44, pasos 1 a 5). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias); TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real. El historial completo de corridas está en <code>docs/MANUAL.md</code> § 6.</p>
 
       <div class="stats">
-        <div class="stat"><b>47</b><span>casos</span></div>
-        <div class="stat ok"><b>39</b><span>pasan</span></div>
+        <div class="stat"><b>48</b><span>casos</span></div>
+        <div class="stat ok"><b>40</b><span>pasan</span></div>
         <div class="stat part"><b>8</b><span>parciales</span></div>
         <div class="stat"><b>2</b><span>defectos corregidos</span></div>
-        <div class="stat"><b>49</b><span>capturas</span></div>
+        <div class="stat"><b>50</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Pasan los 43 casos anteriores y TC-47; TC-44, TC-45 y TC-48 quedan parciales</b> (<code>add-json-resume-export</code>: TC-48 se ejecutó el 7 de noviembre de 2026 en la app real con una base descartable, por la API y con el contenedor <code>web</code>; los pasos del panel con sesión no se ejecutaron a mano; sin captura nueva) (<code>add-cv-consistency-rules</code>: TC-47 se ejecutó el 7 de noviembre de 2026 en la app real con la imagen de <code>frontend/Dockerfile</code> y una base descartable, con la captura <code>bo-revision</code> nueva y <code>a11y:check</code> con <code>/admin/revision</code>; <code>add-admin-password-change</code>: TC-45 se ejecutó el 5 de noviembre de 2026 en la app real con una base descartable, por la API y con la sesión revocada en Chrome, con la captura <code>bo-cuenta</code>; los pasos del panel que escriben contraseñas reales no se ejecutaron a mano) (<code>upgrade-profile-structured-data</code>: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado) (31 con captura; 10 verificados contra la API o con e2e, sin captura de la pantalla). TC-43 (ajustar skills y proyectos de un perfil), con <code>add-builder-skill-project-overrides</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable), con la captura <code>tc43-overrides</code> nueva y la de <code>tc13-seleccion</code> regenerada con <code>manual:capture</code>. TC-42 (verificar una certificación desde el sitio), con <code>add-certification-verification</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable), con la captura <code>tc42-credencial</code> nueva y la del diálogo de certificación regenerada con <code>manual:capture</code>. TC-41 (compartir un perfil con un enlace de seguimiento), con <code>add-share-links</code>, se ejecutó el 29 de octubre de 2026 en la app real (imagen de <code>frontend/Dockerfile</code>, Chrome no headless y una base descartable); el Dashboard con <b>Por enlace</b> y <b>Por portal</b> es la captura de TC-18, regenerada con <code>manual:capture</code>. TC-39 (las visitas propias y de bots no suman), con <code>classify-profile-views</code>, se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por <code>POST /api/auth/login</code>; el Dashboard con <b>Por tipo</b> es la captura de TC-18. TC-21 a TC-24 llegaron con el change <code>add-curated-profile-lifecycle</code>, verificados con e2e y, los dos primeros, en la app real; TC-25 a TC-27 (portada, formación y proyectos), con <code>add-profile-content-admin</code>; TC-28 a TC-30 (avisos antes de descartar cambios), con <code>polish-builder-and-edge</code>: los tres se ejecutaron el 8 de octubre de 2026 en la app real, contra el contenedor <code>web</code>; TC-31 (imprimir en una hoja), con <code>add-printable-one-page</code>, se verificó el 9 de octubre con <code>npm run print:check</code>; TC-32 (nivel del idioma en los dos idiomas), con <code>localize-language-level</code>, se ejecutó el 10 de octubre en la app real contra una copia de la base de desarrollo; TC-33 y TC-34 (teclado y contraste), con <code>improve-a11y-and-performance</code>, el 15 de octubre contra la imagen de producción del frontend y una base descartable; TC-40 (ítems ocultos e insignias legibles), con <code>fix-admin-contrast</code>, el 28 de octubre contra la imagen de producción del frontend y bases descartables; TC-35 (el perfil abre rápido en un móvil), con <code>improve-mobile-performance</code>, el 15 de octubre contra el <code>dist/</code> del repo servido por Caddy y una base descartable. Los dos defectos que encontró esta ejecución, D-01 (el dashboard no mostraba las visitas de hoy) y D-02 (un 500 al omitir un campo obligatorio), están corregidos. Detalle en <a href="#defectos">Defectos</a>.</div>
+      <div class="note"><b>Pasan los 43 casos anteriores, TC-46 y TC-47; TC-44, TC-45 y TC-48 quedan parciales.</b> TC-44 pide el sitio desplegado para los pasos 6 y 7; en TC-45 y TC-48 los pasos del panel que escriben contraseñas o descargan con sesión no se ejecutaron a mano y quedan cubiertos por la API, los e2e y los tests de la pantalla. Cada caso indica en <b>Observado</b> cuándo y contra qué se ejecutó. D-01 y D-02, los defectos de la primera ejecución, están corregidos (ver <a href="#defectos">Defectos</a>).</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -619,7 +620,8 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         <p><b>El origen casi nunca llega.</b> El sitio no reenvía de dónde vino la persona (<code>Referrer-Policy: no-referrer</code>) y LinkedIn, Gmail o el chat tampoco lo mandan, así que en producción <b>Por origen</b> da casi siempre <code>directo</code>. Lo que sí viaja es el link: un <b>enlace de seguimiento</b> (<code>?via=&lt;código&gt;</code>, uno por destinatario o portal, con etiqueta y revocación) o un <b>portal</b> genérico (<code>?src=&lt;portal&gt;</code>). Cada <b>apertura</b> de una persona se cuenta en el enlace y en el portal, y se ve en <b>Por enlace</b> y <b>Por portal</b>. Un enlace revocado deja de atribuir, pero el link sigue abriendo el perfil.</p>
         <p><span class="lbl">En el ejemplo</span> · 105 visitas sintéticas en 5 perfiles (<code>all</code>, <code>ejemplo-backend</code>, <code>ejemplo-secciones</code>, <code>ejemplo-archivado</code>, <code>ejemplo-protegido</code>), con orígenes directo, LinkedIn, buscador y un dominio de <code>example.com</code>. Ninguna trae enlace ni portal: las tablas <b>Por enlace</b> y <b>Por portal</b> arrancan con su estado vacío.</p>
         <p><span class="lbl">Dónde se edita</span> · <a href="#b2">B2 · Dashboard</a>; los enlaces se crean en <a href="#b12">B12 · Constructor · Publicación</a></p>
-        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a>, <a href="#tc41">TC-41</a></p>
+        <p><span class="lbl">Postulaciones</span> · el CRM del panel (<a href="#b15">B15</a>) usa estas aperturas para mostrar «Abierto el…» en cada postulación con enlace.</p>
+        <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a>, <a href="#tc41">TC-41</a>, <a href="#tc46">TC-46</a></p>
       </article>
 
     </section>
@@ -745,7 +747,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         </ol>
         <p><span class="lbl">Resultado esperado</span> · Con el ejemplo y 30 días: 105 visitas, 5 perfiles vistos, 2 idiomas, y los orígenes directo, linkedin.com, google.com y empleos.example.com. <b>Por enlace</b> y <b>Por portal</b> quedan con su estado vacío hasta que se envíe un link con código.</p>
         <p><span class="lbl">Errores típicos</span> · Las visitas de hoy cuentan (defecto D-01 corregido). La vista previa del panel y la carga de otra persona de <code>/admin</code> no suman visitas. Tus propias visitas (con la sesión del panel) y las de bots tampoco suman en el total: están en <b>Por tipo</b>. Si <b>Por origen</b> dice <code>directo</code> para todo, es lo esperado: mirá <b>Por enlace</b> y <b>Por portal</b>.</p>
-        <p><span class="lbl">Casos</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a>, <a href="#tc41">TC-41</a></p>
+        <p><span class="lbl">Casos</span> · <a href="#tc18">TC-18</a>, <a href="#tc39">TC-39</a>, <a href="#tc41">TC-41</a>, <a href="#tc46">TC-46</a></p>
       </article>
 
     </section>
@@ -779,7 +781,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 
       <article class="screen" id="b2">
         <h3>Dashboard</h3>
-        <p><span class="lbl">Ruta</span> · <code>/admin</code>. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales (de <b>personas</b>), <b>Visitas por día</b>, <b>Por perfil</b> (con enlaces al constructor y a la vista pública y la marca <code>archivado</code>), <b>Por idioma</b>, <b>Por origen</b> (con la aclaración de que casi siempre da <code>directo</code>), <b>Por enlace</b> (etiqueta, perfil, portal, marca <code>revocado</code> y visitas, más una fila final <b>Sin enlace</b>), <b>Por portal</b> (con una fila final <b>Sin portal</b>) y <b>Por tipo</b> (<i>Personas</i>, <i>Tus visitas</i> y <i>Bots</i>, con la aclaración de que solo las de personas suman).</p>
+        <p><span class="lbl">Ruta</span> · <code>/admin</code>. Visitas de las vistas públicas. Rango: 7, 30 (por defecto), 90 días o el último año. Totales (de <b>personas</b>), <b>Visitas por día</b>, <b>Por perfil</b> (con enlaces al constructor y a la vista pública y la marca <code>archivado</code>), <b>Por idioma</b>, <b>Por origen</b> (con la aclaración de que casi siempre da <code>directo</code>), <b>Por enlace</b> (etiqueta, perfil, portal, marca <code>revocado</code> y visitas, más una fila final <b>Sin enlace</b>), <b>Por portal</b> (con una fila final <b>Sin portal</b>) y <b>Por tipo</b> (<i>Personas</i>, <i>Tus visitas</i> y <i>Bots</i>, con la aclaración de que solo las de personas suman). Sobre los totales hay una franja con las postulaciones activas por estado y el enlace <b>Ver postulaciones</b> (<a href="#b15">B15</a>); muestra el estado de hoy y no cambia con el rango.</p>
 <div class="tablewrap"><table>
 <thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
 <tbody>
@@ -1225,6 +1227,65 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         <figure class="shot" id="img-bo-revision-b16"><img src="bo-revision.jpg" width="800" height="500" alt="Revisión con un aviso y una sugerencia"></figure>
       </article>
 
+      <article class="screen" id="b15">
+        <h3>Postulaciones</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/postulaciones</code>. Tu seguimiento personal de procesos: a quién te postulaste, en qué estado está y <b>si abrieron el enlace</b> que mandaste. Solo existe en el panel: ninguna ruta pública, el sitemap ni el head de un perfil muestran nada de esto. La lista se filtra por <b>Estado</b> (<b>Activas</b> por defecto, <b>Todas</b> o uno) y el filtro vive en la URL (<code>?estado=interviewing</code>), no en <code>localStorage</code>. Columnas: Empresa y puesto, Estado, Portal, Perfil, Enlace y Postulada; <b>Editar</b> y <b>Borrar</b> (con confirmación) por fila.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Empresa</td><td>texto</td><td>Sí</td><td>1 a 120 caracteres tras recortar</td><td>Cobalto Ejemplo</td></tr>
+<tr><td>Puesto</td><td>texto</td><td>Sí</td><td>1 a 160 caracteres</td><td>Backend Senior</td></tr>
+<tr><td>URL de la vacante</td><td>texto</td><td>No</td><td>URL absoluta <code>http://</code> o <code>https://</code>, hasta 2048 caracteres</td><td>https://empresa.example/jobs/1</td></tr>
+<tr><td>Estado</td><td>selector</td><td>Sí (<i>Por postular</i> por defecto)</td><td>Al crear, los siete. Al editar, el actual y los que la API manda en <code>nextStatuses</code> (tabla de abajo)</td><td>En entrevistas</td></tr>
+<tr><td>Fecha de postulación</td><td>fecha</td><td>No</td><td>Oculta con <i>Por postular</i>. Al elegir otro estado se completa con hoy; no puede ser futura. Vacía, el servidor pone hoy</td><td>2026-11-05</td></tr>
+<tr><td>Portal</td><td>texto</td><td>No</td><td>Minúsculas, números y guiones, hasta 32; no empieza con guion. Elegir un enlace con portal completa uno vacío</td><td>linkedin</td></tr>
+<tr><td>Perfil</td><td>selector</td><td>No</td><td>Un perfil curado existente (puede estar archivado)</td><td>ejemplo-backend</td></tr>
+<tr><td>Enlace</td><td>selector</td><td>No</td><td>Solo enlaces <code>MANUAL</code> del perfil elegido, activos o revocados; deshabilitado sin perfil. Un enlace solo puede estar en una postulación</td><td>Cobalto — Laura, RR. HH.</td></tr>
+<tr><td>Notas</td><td>texto largo</td><td>No</td><td>Hasta 5000 caracteres. No guardes datos de contacto de personas</td><td>Primera llamada con RR. HH.</td></tr>
+</tbody>
+</table></div>
+
+        <p><b>Transiciones de estado</b> · la tabla vive en el servidor; el selector solo ofrece las válidas y un cambio inválido da 422 sin guardar nada, ni siquiera las notas que se editaron en el mismo guardado.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Desde</th><th>Puede pasar a</th></tr></thead>
+<tbody>
+<tr><td>Por postular</td><td>Postulada, Retirada</td></tr>
+<tr><td>Postulada</td><td>En entrevistas, Oferta, Rechazada, Retirada</td></tr>
+<tr><td>En entrevistas</td><td>Oferta, Rechazada, Retirada</td></tr>
+<tr><td>Oferta</td><td>Aceptada, Rechazada, Retirada</td></tr>
+<tr><td>Aceptada</td><td>— (final)</td></tr>
+<tr><td>Rechazada</td><td>Postulada (reabrir)</td></tr>
+<tr><td>Retirada</td><td>Postulada (reabrir)</td></tr>
+</tbody>
+</table></div>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">Escribí la empresa</td><td>La empresa está vacía.</td></tr>
+<tr><td class="msg">Escribí el puesto</td><td>El puesto está vacío.</td></tr>
+<tr><td class="msg">Usá como máximo 120 caracteres</td><td>La empresa pasa de 120 caracteres.</td></tr>
+<tr><td class="msg">Usá como máximo 160 caracteres</td><td>El puesto pasa de 160 caracteres.</td></tr>
+<tr><td class="msg">Usá como máximo 5000 caracteres</td><td>Las notas pasan de 5000 caracteres.</td></tr>
+<tr><td class="msg">Usá una URL que empiece con http:// o https://</td><td>La URL de la vacante no empieza con <code>http://</code> o <code>https://</code>.</td></tr>
+<tr><td class="msg">Usá como máximo 2048 caracteres</td><td>La URL de la vacante pasa de 2048 caracteres.</td></tr>
+<tr><td class="msg">Usá solo minúsculas, números y guiones (hasta 32)</td><td>El portal tiene otros caracteres o más de 32.</td></tr>
+<tr><td class="msg">La fecha no puede ser futura</td><td>La fecha de postulación es posterior a hoy.</td></tr>
+<tr><td class="msg">Ese cambio de estado no está permitido. Elegí uno de la lista.</td><td>La API respondió 422: otra pestaña cambió el estado antes. El diálogo sigue abierto; recargá la lista.</td></tr>
+<tr><td class="msg">Ese enlace ya está asociado a otra postulación.</td><td>La API respondió 409. El diálogo sigue abierto; elegí otro enlace.</td></tr>
+<tr><td class="msg">Postulación creada</td><td>Aviso de éxito al crear.</td></tr>
+<tr><td class="msg">Postulación actualizada</td><td>Aviso de éxito al editar.</td></tr>
+<tr><td class="msg">Postulación borrada</td><td>Aviso de éxito al borrar (pide confirmación antes).</td></tr>
+<tr><td class="msg">No se pudo exportar. Intentá de nuevo.</td><td><b>Exportar CSV</b> falló (por ejemplo, un 500). No se descarga ningún archivo.</td></tr>
+<tr><td class="msg">Todavía no registraste postulaciones</td><td>No hay ninguna y el filtro es <b>Todas</b>.</td></tr>
+<tr><td class="msg">No hay postulaciones con este estado</td><td>No hay ninguna con el filtro elegido (<b>Activas</b> u otro estado).</td></tr>
+</tbody>
+</table></div>
+
+        <p><span class="lbl">Acciones y avisos</span> · <b>Abierto el…</b> es la fecha de la <b>primera apertura de una persona</b> del enlace asociado (<code>firstOpenedAt</code>), en tu fecha local, o <b>Sin abrir</b> si nadie lo abrió. No cuentan tus visitas con la sesión del panel ni las de bots, igual que en <b>Por enlace</b> del Dashboard; la cantidad de aperturas está en el <code>title</code> de la celda. Si mandaste el link antes de registrar la postulación, esas aperturas previas también cuentan: el enlace es de esa postulación. <b>Sin datos de contacto.</b> Bajo <b>Notas</b> el diálogo avisa «No guardes datos de contacto de personas»: la plataforma no tiene campos de nombre, email ni teléfono del reclutador y la API rechaza cualquier campo desconocido con 400. <b>Exportar CSV</b> descarga las postulaciones con el filtro vigente (<code>postulaciones-AAAA-MM-DD.csv</code>, 14 columnas: Empresa, Puesto, Estado, Portal, URL de la vacante, Fecha de postulación, Último cambio de estado, Perfil, Enlace, Abierto el, Aperturas, Notas, Creada y Actualizada). Está en UTF-8 con BOM, separado por comas y con todas las celdas entre comillas. Una celda que empieza con <code>=</code>, <code>+</code>, <code>-</code>, <code>@</code>, tabulación o retorno de carro lleva un apóstrofo delante, para que la planilla no la ejecute como fórmula: se ve <code>'=1+1</code> como texto. <b>Para abrirlo:</b> en Excel, <b>Datos → Desde texto/CSV</b>, origen UTF-8 y delimitador coma (con doble clic suele alcanzar); en Google Sheets o LibreOffice, <b>Archivo → Importar</b>. La franja del Dashboard (B2) resume el estado actual: «Postulaciones activas: 3 · 2 postuladas · 1 con oferta» con el enlace <b>Ver postulaciones</b>; no depende del rango de fechas.</p>
+        <figure class="shot" id="img-bo-postulaciones"><img src="bo-postulaciones.jpg" width="800" height="500" alt="Postulaciones con el filtro Todas"></figure>
+      </article>
+
     </section>
     <!-- ───────────── Vista pública ───────────── -->
     <section class="block" id="publica">
@@ -1237,7 +1298,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         <p><span class="lbl">Esperado</span> · Se renderiza el perfil <code>all</code> con el hero, el badge de disponibilidad, los datos de contacto y la fila de métricas. El título del documento es <code>Perfil Completo · &lt;nombre&gt;</code>.</p>
         <p><span class="lbl">Observado</span> · 5 experiencias, 16 tecnologías, 2 certificaciones, 2 proyectos, 4 categorías con 16 skills y las 9 secciones (27 de octubre de 2026, base de ejemplo).</p>
         <figure class="shot" id="img-tc01-home-es"><img src="tc01-home-es.jpg" width="800" height="500" alt="Home del portafolio en español"><figcaption>La home es el perfil curado <code>all</code>.</figcaption></figure>
-              <fieldset class="run" data-run="tc01"><legend>Resultado de la corrida · TC-01</legend><label><input type="radio" name="r-tc01" value="pass"> pasa</label><label><input type="radio" name="r-tc01" value="fail"> falla</label><label><input type="radio" name="r-tc01" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-01"></fieldset>
+        <fieldset class="run" data-run="tc01"><legend>Resultado de la corrida · TC-01</legend><label><input type="radio" name="r-tc01" value="pass"> pasa</label><label><input type="radio" name="r-tc01" value="fail"> falla</label><label><input type="radio" name="r-tc01" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-01"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc02" data-area="publica" data-change="add-public-frontend-theming">
@@ -1245,7 +1306,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         <p><span class="lbl">Pasos</span> · Abrir <code>/</code> sin parámetros con el navegador en inglés, y después <code>/?lang=es</code>.</p>
         <p><span class="lbl">Esperado</span> · Sin parámetro, el contenido sale en el idioma del <code>Accept-Language</code> y el selector marca EN. Con <code>?lang=es</code> todo pasa a español, incluido el título del documento. Los datos no se duplican: es el mismo registro resuelto en otro idioma.</p>
         <figure class="shot" id="img-tc02-home-en"><img src="tc02-home-en.jpg" width="800" height="500" alt="Home del portafolio en inglés"><figcaption>Mismo registro, idioma negociado por <code>Accept-Language</code>.</figcaption></figure>
-              <fieldset class="run" data-run="tc02"><legend>Resultado de la corrida · TC-02</legend><label><input type="radio" name="r-tc02" value="pass"> pasa</label><label><input type="radio" name="r-tc02" value="fail"> falla</label><label><input type="radio" name="r-tc02" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-02"></fieldset>
+        <fieldset class="run" data-run="tc02"><legend>Resultado de la corrida · TC-02</legend><label><input type="radio" name="r-tc02" value="pass"> pasa</label><label><input type="radio" name="r-tc02" value="fail"> falla</label><label><input type="radio" name="r-tc02" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-02"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc03" data-area="publica" data-change="add-public-frontend-theming">
@@ -1254,7 +1315,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         <p><span class="lbl">Esperado</span> · El titular pasa a ser el del perfil, se antepone su descripción al resumen general y las métricas bajan respecto de la home porque el contenido está filtrado por <code>filterTags</code>.</p>
         <div class="note"><b>Cómo se comprueba el filtro sin mirar.</b> Comparar las métricas con TC-01: en <code>ejemplo-backend</code> (<code>filterTags</code>: <code>java</code>, <code>spring-boot</code>, <code>microservices</code>) se pasa de 5 experiencias y 16 tecnologías a 2 y 7.</div>
         <figure class="shot" id="img-tc03-perfil-curado"><img src="tc03-perfil-curado.jpg" width="800" height="500" alt="Perfil curado ejemplo-backend"><figcaption>Titular y descripción propios del perfil curado.</figcaption></figure>
-              <fieldset class="run" data-run="tc03"><legend>Resultado de la corrida · TC-03</legend><label><input type="radio" name="r-tc03" value="pass"> pasa</label><label><input type="radio" name="r-tc03" value="fail"> falla</label><label><input type="radio" name="r-tc03" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-03"></fieldset>
+        <fieldset class="run" data-run="tc03"><legend>Resultado de la corrida · TC-03</legend><label><input type="radio" name="r-tc03" value="pass"> pasa</label><label><input type="radio" name="r-tc03" value="fail"> falla</label><label><input type="radio" name="r-tc03" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-03"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc04" data-area="publica" data-change="add-public-frontend-theming">
@@ -1271,7 +1332,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
           </tbody>
         </table></div>
         <figure class="shot" id="img-tc04-tema-layout"><img src="tc04-tema-layout.jpg" width="800" height="500" alt="Perfil con tema corporate y layout sidebar"><figcaption>Preset <code>corporate</code> con layout <code>sidebar</code>.</figcaption></figure>
-              <fieldset class="run" data-run="tc04"><legend>Resultado de la corrida · TC-04</legend><label><input type="radio" name="r-tc04" value="pass"> pasa</label><label><input type="radio" name="r-tc04" value="fail"> falla</label><label><input type="radio" name="r-tc04" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-04"></fieldset>
+        <fieldset class="run" data-run="tc04"><legend>Resultado de la corrida · TC-04</legend><label><input type="radio" name="r-tc04" value="pass"> pasa</label><label><input type="radio" name="r-tc04" value="fail"> falla</label><label><input type="radio" name="r-tc04" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-04"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc05" data-area="publica" data-change="add-public-frontend-theming">
@@ -1280,7 +1341,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         <p><span class="lbl">Esperado</span> · En la home, el menú lista los perfiles públicos, enumerados y no archivados, agrupados por <code>roleType</code>, cada uno con su <code>techFocus</code> debajo. En <code>/:slug</code> no hay menú.</p>
         <div class="note"><b>Desde el change <code>add-curated-profile-lifecycle</code></b> el menú solo se monta en la home: quien recibe un link no ve los otros perfiles.</div>
         <figure class="shot" id="img-tc05-menu-perfiles"><img src="tc05-menu-perfiles.jpg" width="800" height="500" alt="Menú de perfiles abierto en la home"><figcaption>El desplegable en la home, agrupado por tipo de rol, sobre la base de ejemplo. En <code>/ejemplo-backend</code> no hay botón Perfiles.</figcaption></figure>
-              <fieldset class="run" data-run="tc05"><legend>Resultado de la corrida · TC-05</legend><label><input type="radio" name="r-tc05" value="pass"> pasa</label><label><input type="radio" name="r-tc05" value="fail"> falla</label><label><input type="radio" name="r-tc05" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-05"></fieldset>
+        <fieldset class="run" data-run="tc05"><legend>Resultado de la corrida · TC-05</legend><label><input type="radio" name="r-tc05" value="pass"> pasa</label><label><input type="radio" name="r-tc05" value="fail"> falla</label><label><input type="radio" name="r-tc05" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-05"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc06" data-area="publica" data-change="add-public-frontend-theming">
@@ -1288,7 +1349,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         <p><span class="lbl">Precondición</span> · Base de ejemplo: <code>ejemplo-protegido</code> (<code>visibility: PROTECTED</code>, token <code>ejemplo-token-2026</code>). Se abre <code>/ejemplo-protegido</code> sin <code>?token=</code>.</p>
         <p><span class="lbl">Esperado</span> · La API responde <b>401</b> y la vista muestra el formulario de token, sin filtrar ningún dato del perfil.</p>
         <figure class="shot" id="img-tc06-token-form"><img src="tc06-token-form.jpg" width="800" height="500" alt="Formulario de token de acceso"><figcaption>Nada del perfil se filtra antes de validar el token.</figcaption></figure>
-              <fieldset class="run" data-run="tc06"><legend>Resultado de la corrida · TC-06</legend><label><input type="radio" name="r-tc06" value="pass"> pasa</label><label><input type="radio" name="r-tc06" value="fail"> falla</label><label><input type="radio" name="r-tc06" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-06"></fieldset>
+        <fieldset class="run" data-run="tc06"><legend>Resultado de la corrida · TC-06</legend><label><input type="radio" name="r-tc06" value="pass"> pasa</label><label><input type="radio" name="r-tc06" value="fail"> falla</label><label><input type="radio" name="r-tc06" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-06"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc07" data-area="publica" data-change="add-public-frontend-theming">
@@ -1296,21 +1357,21 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         <p><span class="lbl">Pasos</span> · Escribir el token (<code>ejemplo-token-2026</code>) y pulsar <b>Acceder</b>.</p>
         <p><span class="lbl">Esperado</span> · El token pasa a la URL como <code>?token=</code>, la API responde 200 y el perfil se renderiza. El link con el token es compartible tal cual.</p>
         <figure class="shot" id="img-tc07-token-resuelto"><img src="tc07-token-resuelto.jpg" width="800" height="500" alt="Perfil protegido ya resuelto"><figcaption>Resuelto, y con las métricas ya filtradas.</figcaption></figure>
-              <fieldset class="run" data-run="tc07"><legend>Resultado de la corrida · TC-07</legend><label><input type="radio" name="r-tc07" value="pass"> pasa</label><label><input type="radio" name="r-tc07" value="fail"> falla</label><label><input type="radio" name="r-tc07" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-07"></fieldset>
+        <fieldset class="run" data-run="tc07"><legend>Resultado de la corrida · TC-07</legend><label><input type="radio" name="r-tc07" value="pass"> pasa</label><label><input type="radio" name="r-tc07" value="fail"> falla</label><label><input type="radio" name="r-tc07" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-07"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc08" data-area="publica" data-change="add-public-frontend-theming">
         <div class="case-head"><span class="case-id">TC-08</span><h3>Un slug inexistente o privado da 404</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Esperado</span> · La API responde <b>404</b> y la vista muestra el 404 propio. Un perfil <code>PRIVATE</code> responde exactamente igual, <b>a propósito</b>: un 403 confirmaría que el slug existe.</p>
         <figure class="shot" id="img-tc08-404"><img src="tc08-404.jpg" width="800" height="500" alt="Página 404 del portafolio"><figcaption>Indistinguible de un perfil privado.</figcaption></figure>
-              <fieldset class="run" data-run="tc08"><legend>Resultado de la corrida · TC-08</legend><label><input type="radio" name="r-tc08" value="pass"> pasa</label><label><input type="radio" name="r-tc08" value="fail"> falla</label><label><input type="radio" name="r-tc08" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-08"></fieldset>
+        <fieldset class="run" data-run="tc08"><legend>Resultado de la corrida · TC-08</legend><label><input type="radio" name="r-tc08" value="pass"> pasa</label><label><input type="radio" name="r-tc08" value="fail"> falla</label><label><input type="radio" name="r-tc08" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-08"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc09" data-area="publica" data-change="add-public-frontend-theming">
         <div class="case-head"><span class="case-id">TC-09</span><h3>La vista funciona en móvil</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Esperado</span> · Una sola columna, el menú colapsa en hamburguesa, los selectores de tema e idioma siguen accesibles y no hay scroll horizontal.</p>
         <figure class="shot" id="img-tc09-movil"><img src="tc09-movil.jpg" width="390" height="844" alt="Vista móvil del perfil" style="max-width:390px"><figcaption>390 × 844.</figcaption></figure>
-              <fieldset class="run" data-run="tc09"><legend>Resultado de la corrida · TC-09</legend><label><input type="radio" name="r-tc09" value="pass"> pasa</label><label><input type="radio" name="r-tc09" value="fail"> falla</label><label><input type="radio" name="r-tc09" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-09"></fieldset>
+        <fieldset class="run" data-run="tc09"><legend>Resultado de la corrida · TC-09</legend><label><input type="radio" name="r-tc09" value="pass"> pasa</label><label><input type="radio" name="r-tc09" value="fail"> falla</label><label><input type="radio" name="r-tc09" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-09"></fieldset>
 </article>
 
       <article class="case" data-status="part" id="tc10" data-area="publica" data-change="add-auth-and-crud">
@@ -1324,7 +1385,7 @@ curl -s -o /dev/null -w '%{http_code}\n' "$API/api/curated-profiles/ejemplo-prot
 curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
 # 404   ← inexistente, y lo mismo devuelve un PRIVATE</pre></div>
         <p>El token también viaja en la cabecera <code>X-Access-Token</code>. En los logs el <code>?token=</code> sale censurado, y <code>Referrer-Policy: no-referrer</code> evita que se filtre al navegar a un enlace externo.</p>
-              <fieldset class="run" data-run="tc10"><legend>Resultado de la corrida · TC-10</legend><label><input type="radio" name="r-tc10" value="pass"> pasa</label><label><input type="radio" name="r-tc10" value="fail"> falla</label><label><input type="radio" name="r-tc10" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-10"></fieldset>
+        <fieldset class="run" data-run="tc10"><legend>Resultado de la corrida · TC-10</legend><label><input type="radio" name="r-tc10" value="pass"> pasa</label><label><input type="radio" name="r-tc10" value="fail"> falla</label><label><input type="radio" name="r-tc10" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-10"></fieldset>
 </article>
 
       <article class="case" data-status="part" id="tc31" data-area="publica" data-change="add-printable-one-page">
@@ -1336,7 +1397,7 @@ curl -s -o /dev/null -w '%{http_code}\n' $API/api/curated-profiles/no-existe
 A4 = 1 página · Letter = 1 página en todos los casos</pre></div>
         <div class="note">El diálogo de impresión y Firefox son pasos manuales: <code>print:check</code> usa el mismo motor de Chrome pero no abre el diálogo. Los PDF de ejemplo están en el archivo del change <code>add-printable-one-page</code>.</div>
         <figure class="shot" id="img-tc31-imprimir"><img src="tc31-imprimir.jpg" width="800" height="500" alt="Hoja imprimible con print emulado"><figcaption>La hoja de <code>ejemplo-backend</code> con <code>print</code> emulado: una página, texto oscuro sobre blanco.</figcaption></figure>
-              <fieldset class="run" data-run="tc31"><legend>Resultado de la corrida · TC-31</legend><label><input type="radio" name="r-tc31" value="pass"> pasa</label><label><input type="radio" name="r-tc31" value="fail"> falla</label><label><input type="radio" name="r-tc31" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-31"></fieldset>
+        <fieldset class="run" data-run="tc31"><legend>Resultado de la corrida · TC-31</legend><label><input type="radio" name="r-tc31" value="pass"> pasa</label><label><input type="radio" name="r-tc31" value="fail"> falla</label><label><input type="radio" name="r-tc31" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-31"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc32" data-area="backoffice" data-change="localize-language-level">
@@ -1350,7 +1411,7 @@ POST /api/admin/languages  level: "B2"             -> 400 (level must be an obje
 Portada: EN del nivel, guardar, recargar            -> ES="B1-B2" EN="B1-B2 (working proficiency)"
 Constructor, vista previa en EN, nivel sin inglés   -> Falta 1 traducción en EN · Idiomas · Inglés: Nivel</pre></div>
         <figure class="shot" id="img-tc32-faltantes"><img src="tc32-faltantes.jpg" width="800" height="500" alt="Aviso de faltantes de traducción"><figcaption>La pestaña Publicación de <code>ejemplo-borrador</code> con la vista previa en EN: <code>Falta 1 traducción en EN</code>.</figcaption></figure>
-              <fieldset class="run" data-run="tc32"><legend>Resultado de la corrida · TC-32</legend><label><input type="radio" name="r-tc32" value="pass"> pasa</label><label><input type="radio" name="r-tc32" value="fail"> falla</label><label><input type="radio" name="r-tc32" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-32"></fieldset>
+        <fieldset class="run" data-run="tc32"><legend>Resultado de la corrida · TC-32</legend><label><input type="radio" name="r-tc32" value="pass"> pasa</label><label><input type="radio" name="r-tc32" value="fail"> falla</label><label><input type="radio" name="r-tc32" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-32"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc33" data-area="publica" data-change="improve-a11y-and-performance">
@@ -1364,7 +1425,7 @@ Menú de perfiles, tema, Sheet móvil   -> foco adentro; Escape devuelve el foco
 Nueva experiencia / categoría / proyecto + Escape -> el foco vuelve al botón (antes: &lt;body&gt;)
 prefers-reduced-motion: reduce        -> scroll-behavior: auto</pre></div>
         <figure class="shot" id="img-tc33-foco"><img src="tc33-foco.jpg" width="800" height="500" alt="Salto al contenido con el foco visible"><figcaption>Tras el primer <b>Tab</b>: <b>Saltar al contenido</b> con el foco visible.</figcaption></figure>
-              <fieldset class="run" data-run="tc33"><legend>Resultado de la corrida · TC-33</legend><label><input type="radio" name="r-tc33" value="pass"> pasa</label><label><input type="radio" name="r-tc33" value="fail"> falla</label><label><input type="radio" name="r-tc33" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-33"></fieldset>
+        <fieldset class="run" data-run="tc33"><legend>Resultado de la corrida · TC-33</legend><label><input type="radio" name="r-tc33" value="pass"> pasa</label><label><input type="radio" name="r-tc33" value="fail"> falla</label><label><input type="radio" name="r-tc33" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-33"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc34" data-area="publica" data-change="improve-a11y-and-performance">
@@ -1380,7 +1441,7 @@ prefers-reduced-motion: reduce        -> scroll-behavior: auto</pre></div>
 #00bc7d   2,06:1            -> #00754e         4,80:1   (verde de «Actual», modern-light; TC-40)
 medido el 27 de octubre de 2026 en la base de ejemplo, contra la tarjeta de cada tema</pre></div>
         <figure class="shot" id="img-tc34-acento"><img src="tc34-acento.jpg" width="800" height="500" alt="Perfil con el acento derivado legible"><figcaption><code>ejemplo-backend</code> con el preset <code>modern-light</code>: el texto en acento se lee.</figcaption></figure>
-              <fieldset class="run" data-run="tc34"><legend>Resultado de la corrida · TC-34</legend><label><input type="radio" name="r-tc34" value="pass"> pasa</label><label><input type="radio" name="r-tc34" value="fail"> falla</label><label><input type="radio" name="r-tc34" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-34"></fieldset>
+        <fieldset class="run" data-run="tc34"><legend>Resultado de la corrida · TC-34</legend><label><input type="radio" name="r-tc34" value="pass"> pasa</label><label><input type="radio" name="r-tc34" value="fail"> falla</label><label><input type="radio" name="r-tc34" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-34"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc35" data-area="publica" data-change="improve-mobile-performance">
@@ -1390,7 +1451,7 @@ medido el 27 de octubre de 2026 en la base de ejemplo, contra la tarjeta de cada
         <p><span class="lbl">Esperado</span> · El hero se ve antes que el resto, el pie no salta (CLS ≤ 0,01), una sola petición del perfil y una sola visita por carga, y los menús abren con teclado aunque se activen al instante. La consola no muestra violaciones de CSP.</p>
         <p><span class="lbl">Observado</span> · 15 de octubre de 2026, contra el <code>dist/</code> y el <code>Caddyfile</code> del repo en <code>caddy:2-alpine</code> y una base descartable; el detalle está en el <code>verification.md</code> del change <code>improve-mobile-performance</code> (§ Recorrido en 375 px y § Una visita por carga). <code>perf:budget</code> fija el arranque (≤ 155 KB gzip en un solo JS de módulo) y <code>perf:check</code> mide Lighthouse (Performance ≥ 85, mediana de 5, en el CI); ver <a href="#calidad">§ 8.1</a>.</p>
         <figure class="shot" id="img-tc35-movil-hero"><img src="tc35-movil-hero.jpg" width="390" height="844" alt="Hero en 390 px" style="max-width:390px"><figcaption>El hero en 390 px, primer tiempo de la carga.</figcaption></figure>
-              <fieldset class="run" data-run="tc35"><legend>Resultado de la corrida · TC-35</legend><label><input type="radio" name="r-tc35" value="pass"> pasa</label><label><input type="radio" name="r-tc35" value="fail"> falla</label><label><input type="radio" name="r-tc35" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-35"></fieldset>
+        <fieldset class="run" data-run="tc35"><legend>Resultado de la corrida · TC-35</legend><label><input type="radio" name="r-tc35" value="pass"> pasa</label><label><input type="radio" name="r-tc35" value="fail"> falla</label><label><input type="radio" name="r-tc35" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-35"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc40" data-area="publica" data-change="fix-admin-contrast">
@@ -1406,7 +1467,7 @@ modern-light  2,06:1         -> #00754e         4,80:1
 minimal       2,15:1         -> #007a51         4,67:1
 corporate     2,07:1         -> #00754e         4,80:1</pre></div>
         <p>Sin captura: es salida de terminal y medidas de contraste.</p>
-              <fieldset class="run" data-run="tc40"><legend>Resultado de la corrida · TC-40</legend><label><input type="radio" name="r-tc40" value="pass"> pasa</label><label><input type="radio" name="r-tc40" value="fail"> falla</label><label><input type="radio" name="r-tc40" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-40"></fieldset>
+        <fieldset class="run" data-run="tc40"><legend>Resultado de la corrida · TC-40</legend><label><input type="radio" name="r-tc40" value="pass"> pasa</label><label><input type="radio" name="r-tc40" value="fail"> falla</label><label><input type="radio" name="r-tc40" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-40"></fieldset>
 </article>
     </section>
 
@@ -1421,7 +1482,7 @@ corporate     2,07:1         -> #00754e         4,80:1</pre></div>
         <p>La sesión es una cookie <b>httpOnly</b>: el cliente nunca guarda el JWT y el estado se deriva de <code>GET /api/auth/me</code>. Al expirar, el panel vuelve al login en la siguiente petición.</p>
         <figure class="shot" id="img-tc11-login"><img src="tc11-login.jpg" width="800" height="500" alt="Pantalla de login del backoffice"><figcaption>El panel vive en el mismo frontend, en un chunk aparte.</figcaption></figure>
         <figure class="shot" id="img-tc11-login-error"><img src="tc11-login-error.jpg" width="800" height="500" alt="Error de credenciales"><figcaption>Con un email inexistente y una contraseña de relleno: <code>Email o contraseña incorrectos</code>.</figcaption></figure>
-              <fieldset class="run" data-run="tc11"><legend>Resultado de la corrida · TC-11</legend><label><input type="radio" name="r-tc11" value="pass"> pasa</label><label><input type="radio" name="r-tc11" value="fail"> falla</label><label><input type="radio" name="r-tc11" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-11"></fieldset>
+        <fieldset class="run" data-run="tc11"><legend>Resultado de la corrida · TC-11</legend><label><input type="radio" name="r-tc11" value="pass"> pasa</label><label><input type="radio" name="r-tc11" value="fail"> falla</label><label><input type="radio" name="r-tc11" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-11"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc12" data-area="backoffice" data-change="add-admin-backoffice">
@@ -1449,7 +1510,7 @@ POST con accentColor                   -> 400  campo retirado (retire-accent-col
         <div class="note"><b>Recomendado.</b> Crealo <code>PRIVATE</code> y pasalo a <code>PUBLIC</code> recién cuando esté listo. Un <code>PRIVATE</code> devuelve 404, así que nadie lo encuentra mientras lo armás.</div>
         <figure class="shot" id="img-tc12a-perfiles-lista"><img src="tc12a-perfiles-lista.jpg" width="800" height="500" alt="Lista de perfiles curados en el panel"><figcaption>Slug, visibilidad, taxonomía y visitas de cada perfil.</figcaption></figure>
         <figure class="shot" id="img-tc12b-identidad"><img src="tc12b-identidad.jpg" width="800" height="500" alt="Pestaña Identidad del constructor"><figcaption>Pestaña Identidad, con la vista previa en vivo: <code>2 experiencias · 3 categorías · 1 proyecto</code> ya filtradas (en <code>ejemplo-backend</code>).</figcaption></figure>
-              <fieldset class="run" data-run="tc12"><legend>Resultado de la corrida · TC-12</legend><label><input type="radio" name="r-tc12" value="pass"> pasa</label><label><input type="radio" name="r-tc12" value="fail"> falla</label><label><input type="radio" name="r-tc12" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-12"></fieldset>
+        <fieldset class="run" data-run="tc12"><legend>Resultado de la corrida · TC-12</legend><label><input type="radio" name="r-tc12" value="pass"> pasa</label><label><input type="radio" name="r-tc12" value="fail"> falla</label><label><input type="radio" name="r-tc12" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-12"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc13" data-area="backoffice" data-change="add-admin-backoffice">
@@ -1470,7 +1531,7 @@ includeIds sobre una experiencia oculta   -> no entró  (no fuerza invisibles)
 mismo id en includeIds y excludeIds       -> no entró  (excludeIds siempre gana)</pre></div>
         <p>El orden de salida siempre es cronológico: <code>startDate</code> descendente, <code>order</code> ascendente como desempate. No se reordena item por item, a propósito.</p>
         <figure class="shot" id="img-tc13-seleccion"><img src="tc13-seleccion.jpg" width="800" height="500" alt="Pestaña Selección con los chips de tags"><figcaption>Los tags activos arriba y el universo disponible debajo, sacado de los datos reales.</figcaption></figure>
-              <fieldset class="run" data-run="tc13"><legend>Resultado de la corrida · TC-13</legend><label><input type="radio" name="r-tc13" value="pass"> pasa</label><label><input type="radio" name="r-tc13" value="fail"> falla</label><label><input type="radio" name="r-tc13" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-13"></fieldset>
+        <fieldset class="run" data-run="tc13"><legend>Resultado de la corrida · TC-13</legend><label><input type="radio" name="r-tc13" value="pass"> pasa</label><label><input type="radio" name="r-tc13" value="fail"> falla</label><label><input type="radio" name="r-tc13" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-13"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc43" data-area="backoffice" data-change="add-builder-skill-project-overrides">
@@ -1485,7 +1546,7 @@ mismo id en includeIds y excludeIds       -> no entró  (excludeIds siempre gana
 POST  /api/admin/curated-profiles/preview  (mismo borrador)  -&gt; skillCategories con Frontend [React], projects sin Plataforma
 GET   /api/curated-profiles/ejemplo-overrides               -&gt; mismas experiences, skillCategories y projects que el preview</pre></div>
         <figure class="shot" id="img-tc43-overrides"><img src="tc43-overrides.jpg" width="800" height="500" alt="Bloques Skills y Proyectos de ejemplo-overrides"><figcaption>Kotlin excluida (y «1 excluida» en su categoría), la inclusión de Herramienta Interna de Métricas y el proyecto oculto con Incluir deshabilitado.</figcaption></figure>
-              <fieldset class="run" data-run="tc43"><legend>Resultado de la corrida · TC-43</legend><label><input type="radio" name="r-tc43" value="pass"> pasa</label><label><input type="radio" name="r-tc43" value="fail"> falla</label><label><input type="radio" name="r-tc43" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-43"></fieldset>
+        <fieldset class="run" data-run="tc43"><legend>Resultado de la corrida · TC-43</legend><label><input type="radio" name="r-tc43" value="pass"> pasa</label><label><input type="radio" name="r-tc43" value="fail"> falla</label><label><input type="radio" name="r-tc43" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-43"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc14" data-area="backoffice" data-change="add-admin-backoffice">
@@ -1499,7 +1560,7 @@ sectionsOrder=[hero,skills,experience,contact]
         <div class="note"><b>Dos reglas.</b> Una sección <b>con datos</b> que no figure en <code>sectionsOrder</code> se agrega al final; para ocultarla hay que ponerla en <code>sectionsHidden</code>. Una sección <b>sin datos</b> no se renderiza aunque esté en el orden.</div>
         <div class="note">Desde el change <code>unify-section-catalog</code> el catálogo es uno solo, con <b>9</b> secciones, y el backend aplica el relleno: <code>sections</code> trae al final, en orden canónico, las secciones con datos que no figuran en el orden ni están ocultas. La transcripción de arriba es anterior al change. Un id fuera del catálogo ahora responde 400.</div>
         <figure class="shot" id="img-tc14-secciones"><img src="tc14-secciones.jpg" width="800" height="500" alt="Pestaña Diseño con la lista de secciones"><figcaption>Las nueve secciones de <code>ejemplo-secciones</code>, reordenadas, con Estadísticas y Presencia apagadas.</figcaption></figure>
-              <fieldset class="run" data-run="tc14"><legend>Resultado de la corrida · TC-14</legend><label><input type="radio" name="r-tc14" value="pass"> pasa</label><label><input type="radio" name="r-tc14" value="fail"> falla</label><label><input type="radio" name="r-tc14" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-14"></fieldset>
+        <fieldset class="run" data-run="tc14"><legend>Resultado de la corrida · TC-14</legend><label><input type="radio" name="r-tc14" value="pass"> pasa</label><label><input type="radio" name="r-tc14" value="fail"> falla</label><label><input type="radio" name="r-tc14" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-14"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc15" data-area="backoffice" data-change="add-admin-backoffice">
@@ -1510,7 +1571,7 @@ sectionsOrder=[hero,skills,experience,contact]
         <div class="codewrap"><pre>GET /api/admin/themes  -> 5 temas: corporate, elegant, minimal, modern-dark, modern-light
 PATCH themeOverrides   -> se guarda {"colors":{"accent":"#5B2C87"}}, solo la diferencia</pre></div>
         <figure class="shot" id="img-tc15-tema"><img src="tc15-tema.jpg" width="800" height="500" alt="Customizador de tema"><figcaption>Tema base, los ocho colores con su hexadecimal, y <b>Restablecer</b> para volver al preset.</figcaption></figure>
-              <fieldset class="run" data-run="tc15"><legend>Resultado de la corrida · TC-15</legend><label><input type="radio" name="r-tc15" value="pass"> pasa</label><label><input type="radio" name="r-tc15" value="fail"> falla</label><label><input type="radio" name="r-tc15" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-15"></fieldset>
+        <fieldset class="run" data-run="tc15"><legend>Resultado de la corrida · TC-15</legend><label><input type="radio" name="r-tc15" value="pass"> pasa</label><label><input type="radio" name="r-tc15" value="fail"> falla</label><label><input type="radio" name="r-tc15" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-15"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc16" data-area="backoffice" data-change="add-admin-backoffice">
@@ -1542,7 +1603,7 @@ PRIVATE   con token -> 404   (no revela que existe)
 slug inexistente    -> 404   (indistinguible del PRIVATE)
 el PRIVATE figura en el sitemap -> no</pre></div>
         <figure class="shot" id="img-tc16-publicacion"><img src="tc16-publicacion.jpg" width="800" height="500" alt="Pestaña Publicación"><figcaption>Visibilidad, el link público con copiar y abrir, y el contador de visitas.</figcaption></figure>
-              <fieldset class="run" data-run="tc16"><legend>Resultado de la corrida · TC-16</legend><label><input type="radio" name="r-tc16" value="pass"> pasa</label><label><input type="radio" name="r-tc16" value="fail"> falla</label><label><input type="radio" name="r-tc16" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-16"></fieldset>
+        <fieldset class="run" data-run="tc16"><legend>Resultado de la corrida · TC-16</legend><label><input type="radio" name="r-tc16" value="pass"> pasa</label><label><input type="radio" name="r-tc16" value="fail"> falla</label><label><input type="radio" name="r-tc16" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-16"></fieldset>
 </article>
 
       <article class="case" data-status="part" id="tc17" data-area="backoffice" data-change="add-admin-backoffice">
@@ -1561,7 +1622,7 @@ el PRIVATE figura en el sitemap -> no</pre></div>
         <div class="codewrap"><pre>curl -s -X POST "$API/api/admin/curated-profiles/preview?locale=en" -H "$AUTH"   -H 'Content-Type: application/json' -d '{ "filterTags": ["dotnet"] }'   | jq '.missingTranslations'</pre></div>
         <div class="note"><b>Cuidado con los nombres.</b> Lo que mandás usa <code>sectionsOrder</code> y <code>sectionsHidden</code>; lo que vuelve resuelto trae <code>sections</code> y <code>hiddenSections</code>. Es la diferencia entre la configuración y el resultado.</div>
         <figure class="shot" id="img-tc17-preview-en"><img src="tc17-preview-en.jpg" width="800" height="500" alt="Vista previa en inglés con un borrador sin guardar"><figcaption>La vista previa en EN de <code>ejemplo-backend</code> con el slug editado y sin guardar: es estado de vista, no se persiste.</figcaption></figure>
-              <fieldset class="run" data-run="tc17"><legend>Resultado de la corrida · TC-17</legend><label><input type="radio" name="r-tc17" value="pass"> pasa</label><label><input type="radio" name="r-tc17" value="fail"> falla</label><label><input type="radio" name="r-tc17" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-17"></fieldset>
+        <fieldset class="run" data-run="tc17"><legend>Resultado de la corrida · TC-17</legend><label><input type="radio" name="r-tc17" value="pass"> pasa</label><label><input type="radio" name="r-tc17" value="fail"> falla</label><label><input type="radio" name="r-tc17" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-17"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc18" data-area="backoffice" data-change="add-admin-backoffice">
@@ -1576,7 +1637,7 @@ GET analytics/views?from=hoy&amp;to=hoy    -> total=4   ✅ después</pre></div>
         <div class="note"><b>Fallaba el rango, no el registro.</b> El contador del perfil y el registro de <code>ProfileView</code> siempre funcionaron. <code>to</code> era exclusivo y el dashboard pide <code>[hoy-29, hoy]</code>, así que las visitas de hoy no aparecían. Corregido: ver <a href="#defectos">D-01</a>.</div>
         <figure class="shot" id="img-tc18-dashboard"><img src="tc18-dashboard.jpg" width="800" height="1039" alt="Dashboard de analítica"><figcaption>105 visitas en 30 días, 5 perfiles y 2 idiomas, sobre la base de ejemplo (el archivado conserva las suyas). Las siete tablas: por día, por perfil, por idioma, por origen, por enlace, por portal y por tipo (las dos nuevas, con su estado vacío: el ejemplo no trae enlaces).</figcaption></figure>
         <p>De cada visita se guarda el perfil, el idioma, la fecha y la IP <b>solo como HMAC</b> con <code>ANALYTICS_SALT</code>. No hay cookies de seguimiento: la cookie de sesión del panel solo se lee para reconocer tus visitas y no se guarda. Si el registro falla, la respuesta al visitante no se altera.</p>
-              <fieldset class="run" data-run="tc18"><legend>Resultado de la corrida · TC-18</legend><label><input type="radio" name="r-tc18" value="pass"> pasa</label><label><input type="radio" name="r-tc18" value="fail"> falla</label><label><input type="radio" name="r-tc18" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-18"></fieldset>
+        <fieldset class="run" data-run="tc18"><legend>Resultado de la corrida · TC-18</legend><label><input type="radio" name="r-tc18" value="pass"> pasa</label><label><input type="radio" name="r-tc18" value="fail"> falla</label><label><input type="radio" name="r-tc18" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-18"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc39" data-area="backoffice" data-change="classify-profile-views">
@@ -1593,7 +1654,7 @@ navegador sin sesión (ejemplo-backend)-&gt; fila HUMAN, views 26 -&gt; 27
 GET analytics/views                  -&gt; total 106 · byKind HUMAN 106, OWNER 2, BOT (las 2 del paso 3)
 views de cada perfil                 -&gt; igual a sus filas HUMAN</pre></div>
         <p>Sin captura propia: el Dashboard con la tabla <b>Por tipo</b> es la de <a href="#tc18">TC-18</a>. Los e2e <code>view-kind.e2e-spec.ts</code> cubren la cookie, el <code>Authorization: Bearer</code>, la cookie vencida o forjada, Googlebot, HeadlessChrome y la ausencia de User-Agent.</p>
-              <fieldset class="run" data-run="tc39"><legend>Resultado de la corrida · TC-39</legend><label><input type="radio" name="r-tc39" value="pass"> pasa</label><label><input type="radio" name="r-tc39" value="fail"> falla</label><label><input type="radio" name="r-tc39" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-39"></fieldset>
+        <fieldset class="run" data-run="tc39"><legend>Resultado de la corrida · TC-39</legend><label><input type="radio" name="r-tc39" value="pass"> pasa</label><label><input type="radio" name="r-tc39" value="fail"> falla</label><label><input type="radio" name="r-tc39" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-39"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc41" data-area="backoffice" data-change="add-share-links">
@@ -1614,7 +1675,7 @@ GET /profile-prefetch.js         -&gt; Cache-Control: no-cache
 HTML de /&lt;slug&gt;?via=…            -&gt; canonical y og:url sin query · mismo head que sin código</pre></div>
         <figure class="shot" id="img-tc41-enlaces-caso"><img src="tc41-enlaces.jpg" width="800" height="500" alt="Enlaces de seguimiento en Publicación"></figure>
         <p>Capturada sobre la base de ejemplo con <code>manual:capture</code>, que crea ese enlace por la API del panel. El Dashboard con <b>Por enlace</b> y <b>Por portal</b> es la captura de <a href="#tc18">TC-18</a>. Los e2e <code>share-links.e2e-spec.ts</code> y <code>share-links-admin.e2e-spec.ts</code> cubren el código activo, revocado, de otro perfil, inexistente y mal formado, <code>?src=</code>, el perfil protegido, el slug anterior, el agregado y el ciclo de vida.</p>
-              <fieldset class="run" data-run="tc41"><legend>Resultado de la corrida · TC-41</legend><label><input type="radio" name="r-tc41" value="pass"> pasa</label><label><input type="radio" name="r-tc41" value="fail"> falla</label><label><input type="radio" name="r-tc41" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-41"></fieldset>
+        <fieldset class="run" data-run="tc41"><legend>Resultado de la corrida · TC-41</legend><label><input type="radio" name="r-tc41" value="pass"> pasa</label><label><input type="radio" name="r-tc41" value="fail"> falla</label><label><input type="radio" name="r-tc41" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-41"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc19" data-area="backoffice" data-change="add-admin-backoffice">
@@ -1639,7 +1700,7 @@ POST omitiendo "summary" (obligatorio)   -> 500  ❌ antes del arreglo de D-02
 POST omitiendo "summary" (obligatorio)   -> 400  ✅ después: "summary should not be null or undefined"</pre></div>
         <figure class="shot" id="img-tc19a-experiencias"><img src="tc19a-experiencias.jpg" width="800" height="500" alt="Lista de experiencias"><figcaption>Cada fila con su empresa, periodo, tags y orden.</figcaption></figure>
         <figure class="shot" id="img-tc19b-formulario"><img src="tc19b-formulario.jpg" width="800" height="500" alt="Formulario de experiencia"><figcaption>Los campos bilingües llevan conmutador ES/EN; <b>Logros (es)</b> y <b>Logros (en)</b> son dos listas, y el inglés es opcional.</figcaption></figure>
-              <fieldset class="run" data-run="tc19"><legend>Resultado de la corrida · TC-19</legend><label><input type="radio" name="r-tc19" value="pass"> pasa</label><label><input type="radio" name="r-tc19" value="fail"> falla</label><label><input type="radio" name="r-tc19" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-19"></fieldset>
+        <fieldset class="run" data-run="tc19"><legend>Resultado de la corrida · TC-19</legend><label><input type="radio" name="r-tc19" value="pass"> pasa</label><label><input type="radio" name="r-tc19" value="fail"> falla</label><label><input type="radio" name="r-tc19" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-19"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc20" data-area="backoffice" data-change="add-admin-backoffice">
@@ -1652,7 +1713,7 @@ preview con filterTags=[suite-tag]            -> la categoría entra por el tag 
 DELETE de la categoría                        -> se lleva sus skills</pre></div>
         <figure class="shot" id="img-tc20-skills"><img src="tc20-skills.jpg" width="800" height="500" alt="Skills agrupadas por categoría"><figcaption>Cada skill lleva los tags que deciden en qué perfiles aparece.</figcaption></figure>
         <p>Una categoría entra en un perfil curado si <b>alguna de sus skills</b> comparte un tag con <code>filterTags</code>; dentro, se muestran solo las skills que pasan el filtro.</p>
-              <fieldset class="run" data-run="tc20"><legend>Resultado de la corrida · TC-20</legend><label><input type="radio" name="r-tc20" value="pass"> pasa</label><label><input type="radio" name="r-tc20" value="fail"> falla</label><label><input type="radio" name="r-tc20" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-20"></fieldset>
+        <fieldset class="run" data-run="tc20"><legend>Resultado de la corrida · TC-20</legend><label><input type="radio" name="r-tc20" value="pass"> pasa</label><label><input type="radio" name="r-tc20" value="fail"> falla</label><label><input type="radio" name="r-tc20" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-20"></fieldset>
 </article>
 
       <article class="case" data-status="part" id="tc21" data-area="backoffice" data-change="add-curated-profile-lifecycle">
@@ -1663,7 +1724,7 @@ DELETE de la categoría                        -> se lleva sus skills</pre></div
   | jq '{slug, visibility, listed, accessToken, views}'</pre></div>
         <p><span class="lbl">Observado</span> · 27 de octubre de 2026, base de ejemplo, por API: duplicar <code>ejemplo-backend</code> dio <code>ejemplo-backend-2</code> (201), <code>PRIVATE</code>, no enumerado, sin token y con 0 visitas; publicado como <code>ejemplo-vacante</code> cambiando slug, título, <code>filterTags</code>, tema y secciones, respondió 200 con su contenido filtrado. El original quedó intacto.</p>
         <figure class="shot" id="img-tc21-duplicar"><img src="tc21-duplicar.jpg" width="800" height="500" alt="Diálogo Duplicar perfil curado"><figcaption>El diálogo de <b>Duplicar</b>: la copia nace privada y sin enumerar.</figcaption></figure>
-              <fieldset class="run" data-run="tc21"><legend>Resultado de la corrida · TC-21</legend><label><input type="radio" name="r-tc21" value="pass"> pasa</label><label><input type="radio" name="r-tc21" value="fail"> falla</label><label><input type="radio" name="r-tc21" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-21"></fieldset>
+        <fieldset class="run" data-run="tc21"><legend>Resultado de la corrida · TC-21</legend><label><input type="radio" name="r-tc21" value="pass"> pasa</label><label><input type="radio" name="r-tc21" value="fail"> falla</label><label><input type="radio" name="r-tc21" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-21"></fieldset>
 </article>
 
       <article class="case" data-status="part" id="tc22" data-area="backoffice" data-change="add-curated-profile-lifecycle">
@@ -1676,7 +1737,7 @@ curl -s -X POST $API/api/admin/curated-profiles/$ID/unarchive -H "$AUTH" | jq .a
         <div class="note"><b>Archivar en lugar de borrar.</b> Borrar se lleva las visitas; archivar las conserva y se puede deshacer. <code>archivedAt</code> no se escribe por <code>PATCH</code> (400).</div>
         <p><span class="lbl">Observado</span> · 27 de octubre de 2026, base de ejemplo, por API: archivada la copia <code>ejemplo-vacante</code> el link dio 404; archivar dos veces conservó la primera fecha; <code>PATCH</code> con <code>archivedAt</code> dio 400; <i>Desarchivar</i> la devolvió a 200. <code>ejemplo-archivado</code> responde 404 y conserva sus 14 visitas.</p>
         <figure class="shot" id="img-tc22-archivado"><img src="tc22-archivado.jpg" width="800" height="500" alt="Publicación de un perfil archivado"><figcaption>La pestaña Publicación de <code>ejemplo-archivado</code>: el link avisa que no resuelve.</figcaption></figure>
-              <fieldset class="run" data-run="tc22"><legend>Resultado de la corrida · TC-22</legend><label><input type="radio" name="r-tc22" value="pass"> pasa</label><label><input type="radio" name="r-tc22" value="fail"> falla</label><label><input type="radio" name="r-tc22" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-22"></fieldset>
+        <fieldset class="run" data-run="tc22"><legend>Resultado de la corrida · TC-22</legend><label><input type="radio" name="r-tc22" value="pass"> pasa</label><label><input type="radio" name="r-tc22" value="fail"> falla</label><label><input type="radio" name="r-tc22" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-22"></fieldset>
 </article>
 
       <article class="case" data-status="part" id="tc23" data-area="backoffice" data-change="add-curated-profile-lifecycle">
@@ -1687,7 +1748,7 @@ curl -s -X POST $API/api/admin/curated-profiles/$ID/unarchive -H "$AUTH" | jq .a
   -H 'Content-Type: application/json' -d '{"listed":false}' | jq .listed</pre></div>
         <div class="note">Los perfiles del seed nacen enumerados, salvo los que el ejemplo marca a propósito (<code>ejemplo-dirigido</code> y <code>ejemplo-protegido</code>). <b>Observado</b> el 27 de octubre de 2026: <code>ejemplo-dirigido</code> responde 200 por su link y no figura en <code>GET /api/curated-profiles</code> ni en <code>/sitemap.xml</code>.</div>
         <figure class="shot" id="img-tc23-dirigido"><img src="tc23-dirigido.jpg" width="800" height="500" alt="Publicación de un perfil no enumerado"><figcaption>La pestaña Publicación de <code>ejemplo-dirigido</code>, con <b>Enumerar</b> apagado y su link.</figcaption></figure>
-              <fieldset class="run" data-run="tc23"><legend>Resultado de la corrida · TC-23</legend><label><input type="radio" name="r-tc23" value="pass"> pasa</label><label><input type="radio" name="r-tc23" value="fail"> falla</label><label><input type="radio" name="r-tc23" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-23"></fieldset>
+        <fieldset class="run" data-run="tc23"><legend>Resultado de la corrida · TC-23</legend><label><input type="radio" name="r-tc23" value="pass"> pasa</label><label><input type="radio" name="r-tc23" value="fail"> falla</label><label><input type="radio" name="r-tc23" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-23"></fieldset>
 </article>
 
       <article class="case" data-status="part" id="tc24" data-area="backoffice" data-change="add-curated-profile-lifecycle">
@@ -1697,7 +1758,7 @@ curl -s -X POST $API/api/admin/curated-profiles/$ID/unarchive -H "$AUTH" | jq .a
         <div class="codewrap"><pre>curl -s -D - -o /dev/null $API/api/curated-profiles/el-slug-viejo | grep -i content-location</pre></div>
         <p><span class="lbl">Observado</span> · 27 de octubre de 2026, base de ejemplo: <code>/ejemplo-nombre-anterior</code> responde 200 con el perfil <code>ejemplo-renombrado</code> y <code>Content-Location: /api/curated-profiles/ejemplo-renombrado</code>. Tomar ese slug para otro perfil dio <b>409</b>.</p>
         <figure class="shot" id="img-tc24-alias"><img src="tc24-alias.jpg" width="800" height="500" alt="Perfil renombrado resolviendo desde el slug anterior"><figcaption><code>/ejemplo-nombre-anterior</code> abre el perfil <code>ejemplo-renombrado</code>.</figcaption></figure>
-              <fieldset class="run" data-run="tc24"><legend>Resultado de la corrida · TC-24</legend><label><input type="radio" name="r-tc24" value="pass"> pasa</label><label><input type="radio" name="r-tc24" value="fail"> falla</label><label><input type="radio" name="r-tc24" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-24"></fieldset>
+        <fieldset class="run" data-run="tc24"><legend>Resultado de la corrida · TC-24</legend><label><input type="radio" name="r-tc24" value="pass"> pasa</label><label><input type="radio" name="r-tc24" value="fail"> falla</label><label><input type="radio" name="r-tc24" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-24"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc25" data-area="backoffice" data-change="add-profile-content-admin">
@@ -1710,7 +1771,7 @@ PUT con un campo desconocido                  -> 400 y el perfil queda idéntico
 PUT con email vacío                           -> 400 y conserva el anterior</pre></div>
         <figure class="shot" id="img-tc25-portada"><img src="tc25-portada.jpg" width="800" height="500" alt="Portada con la vista previa del hero"><figcaption>La vista previa la resuelve el backend con el mismo mapper que la ruta pública.</figcaption></figure>
         <div class="note">El titular base se ve en la home y en todo perfil curado <b>sin titular propio</b> (decisión D7). Las plantillas del seed traen el suyo y lo conservan; para volver al titular base, vaciá el del perfil en la pestaña Identidad.</div>
-              <fieldset class="run" data-run="tc25"><legend>Resultado de la corrida · TC-25</legend><label><input type="radio" name="r-tc25" value="pass"> pasa</label><label><input type="radio" name="r-tc25" value="fail"> falla</label><label><input type="radio" name="r-tc25" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-25"></fieldset>
+        <fieldset class="run" data-run="tc25"><legend>Resultado de la corrida · TC-25</legend><label><input type="radio" name="r-tc25" value="pass"> pasa</label><label><input type="radio" name="r-tc25" value="fail"> falla</label><label><input type="radio" name="r-tc25" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-25"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc26" data-area="backoffice" data-change="add-profile-content-admin">
@@ -1719,7 +1780,7 @@ PUT con email vacío                           -> 400 y conserva el anterior</pr
         <div class="codewrap"><pre>PATCH {visible:false}       -> fuera de /api/certifications, sigue en /api/admin/certifications
 GET /api/admin/education    -> incluye las ocultas, con visible y order</pre></div>
         <figure class="shot" id="img-tc26-formacion"><img src="tc26-formacion.jpg" width="800" height="500" alt="Formación en el panel"><figcaption>La formación del seed, editable desde el panel.</figcaption></figure>
-              <fieldset class="run" data-run="tc26"><legend>Resultado de la corrida · TC-26</legend><label><input type="radio" name="r-tc26" value="pass"> pasa</label><label><input type="radio" name="r-tc26" value="fail"> falla</label><label><input type="radio" name="r-tc26" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-26"></fieldset>
+        <fieldset class="run" data-run="tc26"><legend>Resultado de la corrida · TC-26</legend><label><input type="radio" name="r-tc26" value="pass"> pasa</label><label><input type="radio" name="r-tc26" value="fail"> falla</label><label><input type="radio" name="r-tc26" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-26"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc42" data-area="backoffice" data-change="add-certification-verification">
@@ -1734,7 +1795,7 @@ PATCH /api/admin/certifications/:id {"verificationUrl":"https://example.org/c/1"
 GET   /api/certifications                     -&gt; verificationUrl, credentialId, expiresAt (sin campo expired)
 PATCH /api/admin/certifications/:id {"verificationUrl":null}                      -&gt; 200, enlace en null</pre></div>
         <figure class="shot" id="img-tc42-credencial"><img src="tc42-credencial.jpg" width="800" height="500" alt="Sección de certificaciones con Ver credencial y Vencida"><figcaption>La sección pública: «Ver credencial» en la primera certificación y «Vencida» en la segunda.</figcaption></figure>
-              <fieldset class="run" data-run="tc42"><legend>Resultado de la corrida · TC-42</legend><label><input type="radio" name="r-tc42" value="pass"> pasa</label><label><input type="radio" name="r-tc42" value="fail"> falla</label><label><input type="radio" name="r-tc42" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-42"></fieldset>
+        <fieldset class="run" data-run="tc42"><legend>Resultado de la corrida · TC-42</legend><label><input type="radio" name="r-tc42" value="pass"> pasa</label><label><input type="radio" name="r-tc42" value="fail"> falla</label><label><input type="radio" name="r-tc42" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-42"></fieldset>
 </article>
 
       <article class="case" data-status="part" id="tc44" data-area="publica" data-change="upgrade-profile-structured-data">
@@ -1748,7 +1809,7 @@ PATCH /api/admin/certifications/:id {"verificationUrl":null}                    
 GET /api/public/profile-head?slug=ejemplo-backend&amp;lang=en  -&gt; "inLanguage":"en"
 GET /api/public/profile-head?slug=&lt;protegido&gt;&amp;token=&lt;tok&gt;  -&gt; genérico, noindex, sin ld+json
 GET /api/public/profile-head?slug=no-existe                -&gt; genérico, igual al de un PRIVATE</pre></div>
-              <fieldset class="run" data-run="tc44"><legend>Resultado de la corrida · TC-44</legend><label><input type="radio" name="r-tc44" value="pass"> pasa</label><label><input type="radio" name="r-tc44" value="fail"> falla</label><label><input type="radio" name="r-tc44" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-44"></fieldset>
+        <fieldset class="run" data-run="tc44"><legend>Resultado de la corrida · TC-44</legend><label><input type="radio" name="r-tc44" value="pass"> pasa</label><label><input type="radio" name="r-tc44" value="fail"> falla</label><label><input type="radio" name="r-tc44" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-44"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc27" data-area="backoffice" data-change="add-profile-content-admin">
@@ -1758,7 +1819,7 @@ GET /api/public/profile-head?slug=no-existe                -&gt; genérico, igua
 DELETE enlace social               -> 204 y sale de /api/social-links
 POST enlace con stats=[1,2]        -> 400</pre></div>
         <figure class="shot" id="img-tc27-proyectos"><img src="tc27-proyectos.jpg" width="800" height="500" alt="Proyectos y enlaces sociales en el panel"><figcaption>Los dos proyectos del seed, todavía sin enlace.</figcaption></figure>
-              <fieldset class="run" data-run="tc27"><legend>Resultado de la corrida · TC-27</legend><label><input type="radio" name="r-tc27" value="pass"> pasa</label><label><input type="radio" name="r-tc27" value="fail"> falla</label><label><input type="radio" name="r-tc27" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-27"></fieldset>
+        <fieldset class="run" data-run="tc27"><legend>Resultado de la corrida · TC-27</legend><label><input type="radio" name="r-tc27" value="pass"> pasa</label><label><input type="radio" name="r-tc27" value="fail"> falla</label><label><input type="radio" name="r-tc27" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-27"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc28" data-area="backoffice" data-change="polish-builder-and-edge">
@@ -1770,7 +1831,7 @@ POST enlace con stats=[1,2]        -> 400</pre></div>
 Salir sin guardar                  -> /admin/perfiles, el título guardado sigue "Tech Lead .NET"</pre></div>
         <figure class="shot" id="img-tc28-constructor-con-cambios"><img src="tc28-constructor-con-cambios.jpg" width="800" height="500" alt="El constructor con el aviso de cambios sin guardar"><figcaption>El aviso aparece sobre el constructor sin salir de la página.</figcaption></figure>
         <div class="note">El aviso nativo de <code>beforeunload</code> lo dibuja el navegador y no se capturó en la app real: lo cubren los tests del guardián y de <code>ProfileBuilderPage</code>.</div>
-              <fieldset class="run" data-run="tc28"><legend>Resultado de la corrida · TC-28</legend><label><input type="radio" name="r-tc28" value="pass"> pasa</label><label><input type="radio" name="r-tc28" value="fail"> falla</label><label><input type="radio" name="r-tc28" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-28"></fieldset>
+        <fieldset class="run" data-run="tc28"><legend>Resultado de la corrida · TC-28</legend><label><input type="radio" name="r-tc28" value="pass"> pasa</label><label><input type="radio" name="r-tc28" value="fail"> falla</label><label><input type="radio" name="r-tc28" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-28"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc29" data-area="backoffice" data-change="polish-builder-and-edge">
@@ -1779,7 +1840,7 @@ Salir sin guardar                  -> /admin/perfiles, el título guardado sigue
         <p><span class="lbl">Esperado</span> · Cambiar el idioma de la vista previa (<code>?lang=</code>) con cambios pendientes no pide confirmación, porque solo cambia la query. <b>Guardar portada</b> deja la página limpia.</p>
         <p><span class="lbl">Observado</span> · Se editó la Ubicación: cambiar el idioma de la vista previa (EN y de vuelta a ES) no abrió el aviso y la edición se conservó. Ir a Skills desde el menú lateral abrió «Tenés cambios sin guardar»; <i>Salir sin guardar</i> llevó a <code>/admin/skills</code> y la ubicación guardada siguió «Santa Cruz de la Sierra, Bolivia».</p>
         <figure class="shot" id="img-tc29-portada-con-cambios"><img src="tc29-portada-con-cambios.jpg" width="800" height="500" alt="La Portada con el aviso de cambios sin guardar"><figcaption>El aviso de la Portada es el mismo que el del constructor.</figcaption></figure>
-              <fieldset class="run" data-run="tc29"><legend>Resultado de la corrida · TC-29</legend><label><input type="radio" name="r-tc29" value="pass"> pasa</label><label><input type="radio" name="r-tc29" value="fail"> falla</label><label><input type="radio" name="r-tc29" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-29"></fieldset>
+        <fieldset class="run" data-run="tc29"><legend>Resultado de la corrida · TC-29</legend><label><input type="radio" name="r-tc29" value="pass"> pasa</label><label><input type="radio" name="r-tc29" value="fail"> falla</label><label><input type="radio" name="r-tc29" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-29"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc30" data-area="backoffice" data-change="polish-builder-and-edge">
@@ -1791,7 +1852,7 @@ Salir sin guardar                  -> /admin/perfiles, el título guardado sigue
 Descartar                                          -> cierra, la categoría no se crea</pre></div>
         <figure class="shot" id="img-tc30-dialogo-con-cambios"><img src="tc30-dialogo-con-cambios.jpg" width="800" height="500" alt="Aviso al cerrar el formulario de categoría con cambios"><figcaption>El aviso se monta sobre el formulario, que sigue abierto.</figcaption></figure>
         <div class="note"><i>Atrás</i> del navegador con un diálogo abierto no tiene aviso propio (decisión D11). En la app real se probó <i>Escape</i>; clic fuera, X y <i>Cancelar</i> los cubren los tests del guardián y de cada página.</div>
-              <fieldset class="run" data-run="tc30"><legend>Resultado de la corrida · TC-30</legend><label><input type="radio" name="r-tc30" value="pass"> pasa</label><label><input type="radio" name="r-tc30" value="fail"> falla</label><label><input type="radio" name="r-tc30" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-30"></fieldset>
+        <fieldset class="run" data-run="tc30"><legend>Resultado de la corrida · TC-30</legend><label><input type="radio" name="r-tc30" value="pass"> pasa</label><label><input type="radio" name="r-tc30" value="fail"> falla</label><label><input type="radio" name="r-tc30" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-30"></fieldset>
 </article>
 
       <article class="case" data-status="part" id="tc45" data-area="backoffice" data-change="add-admin-password-change">
@@ -1811,8 +1872,44 @@ GET  /api/auth/me con la cookie anterior   -&gt; 401
 GET  /api/auth/me con la sesión B          -&gt; 401
 login con la contraseña anterior / nueva   -&gt; 401 / 200</pre></div>
         <figure class="shot" id="img-bo-cuenta-tc45"><img src="bo-cuenta.jpg" width="800" height="500" alt="Cuenta con el aviso de repetición distinta"></figure>
-              <fieldset class="run" data-run="tc45"><legend>Resultado de la corrida · TC-45</legend><label><input type="radio" name="r-tc45" value="pass"> pasa</label><label><input type="radio" name="r-tc45" value="fail"> falla</label><label><input type="radio" name="r-tc45" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-45"></fieldset>
+        <fieldset class="run" data-run="tc45"><legend>Resultado de la corrida · TC-45</legend><label><input type="radio" name="r-tc45" value="pass"> pasa</label><label><input type="radio" name="r-tc45" value="fail"> falla</label><label><input type="radio" name="r-tc45" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-45"></fieldset>
 </article>
+      <article class="case" data-status="ok" id="tc46" data-area="backoffice" data-change="add-application-tracking">
+        <div class="case-head"><span class="case-id">TC-46</span><h3>Registrar una postulación y ver si abrieron el enlace</h3><span class="pill ok">ok</span></div>
+        <p><span class="lbl">Precondición</span> · base de ejemplo <b>descartable</b> (nunca <code>portfolio</code>), con la API y el frontend levantados (de preferencia la imagen de <code>frontend/Dockerfile</code>) y sesión en el panel. Sin postulaciones cargadas (si corriste <code>manual:capture</code> hay tres de ejemplo: el paso 1 mostrará la lista con ellas y el filtro <b>Activas</b>). El perfil <code>ejemplo-backend</code> tiene un enlace de seguimiento <code>MANUAL</code> activo (creálo en <b>Perfiles → ejemplo-backend → Publicación</b> con la etiqueta «Globex — RR. HH.» si no existe).</p>
+        <p><span class="lbl">Pasos</span> · (1) Pulsá <b>Postulaciones</b> en la navegación.; (2) Pulsá <b>Nueva postulación</b>, escribí <code>globex.example</code> en <b>URL de la vacante</b> y pulsá <b>Guardar</b> sin completar nada más.; (3) Completá <b>Empresa</b> <code>Globex</code>, <b>Puesto</b> <code>Backend Senior</code>, <b>URL de la vacante</b> <code>https://globex.example/jobs/1</code>, <b>Estado</b> <i>Postulada</i>, <b>Perfil</b> <code>ejemplo-backend</code> y <b>Enlace</b> «Globex — RR. HH.». Pulsá <b>Guardar</b>.; (4) En una <b>ventana privada</b> (sin sesión), abrí el link del enlace (<code>/ejemplo-backend?via=&lt;código&gt;</code>, copiálo desde <b>Publicación</b>). Volvé al panel y recargá <b>Postulaciones</b>.; (5) Editá la postulación y abrí el selector <b>Estado</b>.; (6) Elegí <i>En entrevistas</i> y guardá. Después elegí el filtro <b>Estado → En entrevistas</b> y recargá la página.; (7) Pulsá <b>Exportar CSV</b> y abrí el archivo en una planilla.; (8) Volvé al <b>Dashboard</b>.; (9) Borrá la postulación y confirmá.</p>
+        <p><span class="lbl">Esperado</span> · (1) Se abre <code>/admin/postulaciones</code> con el filtro <b>Activas</b> y, sin datos, «No hay postulaciones con este estado».; (2) Se ven «Escribí la empresa», «Escribí el puesto» y «Usá una URL que empiece con http:// o https://», y no sale ninguna petición (pestaña Red).; (3) Aparece «Postulación creada»; la fila muestra Globex, Backend Senior, <i>Postulada</i>, <code>ejemplo-backend</code>, «Sin abrir» y la fecha de hoy.; (4) La fila pasa a «Abierto el &lt;fecha de hoy&gt;».; (5) El selector ofrece solo <i>Postulada</i>, <i>En entrevistas</i>, <i>Oferta</i>, <i>Rechazada</i> y <i>Retirada</i>.; (6) Aparece «Postulación actualizada»; la URL lleva <code>?estado=interviewing</code> y tras recargar el filtro sigue elegido y la fila sigue en la lista.; (7) Se descarga <code>postulaciones-&lt;fecha&gt;.csv</code>; la planilla muestra las columnas Empresa, Puesto, Estado, …, Abierto el, Aperturas, Notas, Creada y Actualizada, con los acentos bien, y la fila de Globex con «En entrevistas».; (8) La franja dice «Postulaciones activas: 1 · 1 en entrevistas» con el enlace <b>Ver postulaciones</b>.; (9) Aparece «Postulación borrada» y la lista vuelve al estado vacío.</p>
+        <p><span class="lbl">Errores típicos</span> · «Ese enlace ya está asociado a otra postulación.»: el enlace ya está en otra fila; creá otro en <b>Publicación</b>. «Ese cambio de estado no está permitido. Elegí uno de la lista.»: otra pestaña cambió el estado antes; recargá. Si la visita del paso 4 no aparece, la abriste con la sesión del panel (cuenta como tuya, no como persona) o el enlace es <code>LINKEDIN_POST</code>. Si Excel muestra todo en una columna, importá con <i>Datos → Desde texto/CSV</i>, origen UTF-8 y delimitador coma.</p>
+        <div class="codewrap"><pre>API=http://localhost:3300
+PROFILE_ID=&lt;id de ejemplo-backend&gt;   # GET /api/admin/curated-profiles
+LINK_ID=&lt;id del enlace MANUAL&gt;       # GET /api/admin/curated-profiles/$PROFILE_ID/share-links
+
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/admin/applications                       # 401  sin sesión
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/applications                             # 404  sin rutas públicas
+
+ID=$(curl -s -b s.jar -H 'Content-Type: application/json' \
+  -d "{\"company\":\"Globex\",\"role\":\"Backend Senior\",\"status\":\"APPLIED\",\"curatedProfileId\":\"$PROFILE_ID\",\"shareLinkId\":\"$LINK_ID\"}" \
+  $API/api/admin/applications | node -pe 'JSON.parse(require("fs").readFileSync(0)).id')   # 201
+
+curl -s -o /dev/null -w '%{http_code}\n' -b s.jar -X PATCH -H 'Content-Type: application/json' \
+  -d '{"status":"ACCEPTED"}' $API/api/admin/applications/$ID                              # 422  APPLIED → ACCEPTED
+curl -s -o /dev/null -w '%{http_code}\n' -b s.jar -X PATCH -H 'Content-Type: application/json' \
+  -d '{"status":"INTERVIEWING"}' $API/api/admin/applications/$ID                          # 200
+curl -s -o /dev/null -w '%{http_code}\n' -b s.jar -H 'Content-Type: application/json' \
+  -d "{\"company\":\"Otra\",\"role\":\"X\",\"curatedProfileId\":\"$PROFILE_ID\",\"shareLinkId\":\"$LINK_ID\"}" \
+  $API/api/admin/applications                                                              # 409  enlace repetido
+curl -s -b s.jar $API/api/admin/applications/summary                                       # {"byStatus":{...,"INTERVIEWING":1,...},"active":1}
+curl -s -D - -o postulaciones.csv -b s.jar "$API/api/admin/applications/export?status=INTERVIEWING"
+# Content-Type: text/csv; charset=utf-8
+# Content-Disposition: attachment; filename="postulaciones-AAAA-MM-DD.csv"
+# Cache-Control: no-store
+curl -s -o /dev/null -w '%{http_code}\n' -b s.jar -X DELETE $API/api/admin/applications/$ID  # 204
+rm -f postulaciones.csv</pre></div>
+        <p><span class="lbl">Observado</span> · (7 de noviembre de 2026, imagen de <code>frontend/Dockerfile</code> en <code>localhost:8102</code>, API de la rama en <code>localhost:3348</code> y la base descartable <code>portfolio_apps_example</code>, sembrada con el ejemplo): el bloque <b>Por la API</b> dio los códigos esperados (401, 404, 201, 422 con <code>error: "Unprocessable Entity"</code> y sin <code>stack</code>, 200, 409, 400 con un campo <code>contactEmail</code>, 400 con <code>status=HIRED</code>, 204; el resumen dio <code>active: 1</code>; con una apertura de persona y otra de un bot, el enlace trajo <code>opens: 1</code>; el export respondió <code>text/csv; charset=utf-8</code>, <code>attachment; filename="postulaciones-2026-11-07.csv"</code> y <code>no-store</code>). Los nueve pasos del panel se ejecutaron en Chrome controlado con <code>puppeteer-core</code> (sesión abierta por <code>fetch</code>, sin escribir credenciales) con el resultado esperado de cada uno. El CSV se abrió en <b>Excel 16</b>: acentos correctos, 14 columnas y las celdas con fórmula (<code>=HYPERLINK(…)</code>, <code>+Lead</code>, <code>@usuario</code>) como texto con su apóstrofo, sin ninguna celda con fórmula. Además <code>a11y:check</code> con panel (60 cargas, con <code>/admin/postulaciones</code> y el diálogo con errores): 0 violaciones. Evidencia: <code>openspec/changes/add-application-tracking/verification/</code> (<code>9.2-tc46.txt</code>, <code>9.2-csv.png</code>, <code>9.3-a11y.txt</code>).</p>
+        <figure class="shot" id="img-bo-postulaciones-tc46"><img src="bo-postulaciones.jpg" width="800" height="500" alt="Postulaciones con el filtro Todas"></figure>
+        <fieldset class="run" data-run="tc46"><legend>Resultado de la corrida · TC-46</legend><label><input type="radio" name="r-tc46" value="pass"> pasa</label><label><input type="radio" name="r-tc46" value="fail"> falla</label><label><input type="radio" name="r-tc46" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-46"></fieldset>
+      </article>
+
       <article class="case" data-status="ok" id="tc47" data-area="backoffice" data-change="add-cv-consistency-rules">
         <div class="case-head"><span class="case-id">TC-47</span><h3>Revisar la consistencia del CV</h3><span class="pill ok">pasa</span></div>
         <p><span class="lbl">Precondición</span> · Base de ejemplo <b>descartable</b> (nunca <code>portfolio</code>) sembrada con <code>npm run seed:example</code>, con la API y el frontend levantados (de preferencia la imagen de <code>frontend/Dockerfile</code>) y una sesión de administrador. El ejemplo declara 11 años y sus experiencias van de 2015-01 al mes actual (<code>cobalto</code> es actual): en noviembre de 2026 suman 143 meses (11 años y 11 meses) y no hay aviso de años; desde diciembre de 2026 suman 12 años o más y el aviso aparece desde el paso 1, lo que también es correcto. Tiene una certificación vencida (<code>2025-12</code>) y el perfil <code>ejemplo-borrador</code> sin la descripción en inglés, a propósito.</p>
@@ -1843,7 +1940,7 @@ npm run cv:lint -- --file "$(node -p "require('os').tmpdir()")/cv-roto.json"; ec
 npm run cv:lint -- --file no-existe.json; echo "salida: $?"                        # salida: 2</pre></div>
         <p><span class="lbl">Observado</span> · 7 de noviembre de 2026, imagen de <code>frontend/Dockerfile</code> en <code>localhost:8103</code>, API de producción de la rama en <code>localhost:3349</code> y la base descartable <code>portfolio_lint_example</code>, sembrada con el ejemplo: los nueve pasos dieron lo esperado, con el resumen «0 errores · 1 aviso · 1 sugerencia» (143 meses derivados contra 11 declarados), «0 errores · 2 avisos · 1 sugerencia» con 15 años y con el resumen en inglés vacío, y de vuelta a «1 aviso · 1 sugerencia» al restaurar. Los cambios de datos de los pasos 3, 5, 6 y 8 se hicieron por la API con la misma sesión; la navegación, <b>Volver a revisar</b>, <b>Abrir</b> y el aviso salen del panel. Por la API: 401 sin sesión, <code>Cache-Control: no-store</code> y el mismo <code>code</code> en español e inglés. <code>cv:lint</code> salió con 0 y 0 sobre los dos archivos (con el aviso de años del CV real, 10 contra 8 años y 7 meses), con 1 sobre la copia rota y con 2 con la ruta inexistente. <code>a11y:check</code> con panel, incluida <code>/admin/revision</code>: 0 violaciones.</p>
         <figure class="shot" id="img-bo-revision-tc47"><img src="bo-revision.jpg" width="800" height="500" alt="Revisión con un aviso y una sugerencia"></figure>
-              <fieldset class="run" data-run="tc47"><legend>Resultado de la corrida · TC-47</legend><label><input type="radio" name="r-tc47" value="pass"> pasa</label><label><input type="radio" name="r-tc47" value="fail"> falla</label><label><input type="radio" name="r-tc47" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-47"></fieldset>
+        <fieldset class="run" data-run="tc47"><legend>Resultado de la corrida · TC-47</legend><label><input type="radio" name="r-tc47" value="pass"> pasa</label><label><input type="radio" name="r-tc47" value="fail"> falla</label><label><input type="radio" name="r-tc47" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-47"></fieldset>
       </article>
 
       <article class="case" data-status="part" id="tc48" data-area="backoffice" data-change="add-json-resume-export">
@@ -1866,7 +1963,7 @@ curl -s -D - -o /dev/null "$BASE$R/ejemplo-nombre-anterior/resume.json" | grep -
         <p>Antes y después de los <code>curl</code>, el contador de visitas de <code>ejemplo-backend</code> en <b>Perfiles curados</b> (o en el Dashboard) es el mismo: exportar no cuenta como visita.</p>
         <p><span class="lbl">Errores típicos</span> · <code>/ejemplo-backend/resume.json</code> (sin <code>/api</code>) devuelve la página del sitio, no el JSON: la ruta es <code>/api/curated-profiles/&lt;slug&gt;/resume.json</code>. Un 401 en la descarga del panel indica que la sesión venció: volvé a entrar. El archivo no trae el año de las certificaciones (el formato pide una fecha completa que el panel no guarda; P1 de <code>design.md</code>).</p>
         <p><span class="lbl">Observado</span> · 7 de noviembre de 2026, imagen de <code>frontend/Dockerfile</code> en <code>localhost:8101</code>, API de la rama en <code>localhost:3347</code> y la base descartable <code>portfolio_resume_example</code>, sembrada con el ejemplo. El bloque <b>Por la API</b> dio exactamente los códigos esperados (200 para <code>all</code> y <code>ejemplo-secciones</code>, este sin <code>basics.profiles</code>; 404 para <code>ejemplo-borrador</code> y <code>ejemplo-archivado</code>; 401 para <code>ejemplo-protegido</code> sin token y 200 con <code>?token=</code> y con <code>X-Access-Token</code>; <code>Content-Location</code> al slug vigente en el alias; y <code>/ejemplo-backend/resume.json</code> sin <code>/api</code>, la página del sitio, 200 <code>text/html</code>). Los 8 archivos bajados (públicos en ES y EN, el protegido y los del panel, incluido el del perfil privado) validan contra el schema vendorizado con los formatos activos; el del protegido no contiene el token; el del panel es idéntico byte a byte al público en ES y EN; el contador de visitas de los 9 perfiles es el mismo antes y después, también con <code>?via=&amp;src=</code>. En Chrome, la vista pública de <code>ejemplo-backend</code> no trae ningún enlace al JSON y la descarga por <code>fetch</code> devuelve las mismas empresas que la página. <code>a11y:check</code> con panel (56 cargas, incluido el constructor): 0 violaciones. <b>Observación:</b> el <code>Caddyfile</code> agrega <code>Cache-Control: no-cache</code> a toda ruta que no sea <code>/assets/*</code> ni <code>/fonts/*</code>, así que por el contenedor <code>web</code> un perfil protegido recibe dos líneas (<code>no-cache</code> y <code>private, no-store</code>); <code>no-store</code> sigue presente y lo mismo pasa con el detalle, pero conviene decidir si <code>/api/*</code> debe quedar fuera de esa regla. Los pasos del panel (1 a 5), que piden una sesión iniciada en el navegador, <b>no se ejecutaron a mano</b>: los cubren el test del constructor (los dos <code>href</code>, <code>download</code>, el perfil nuevo y los cambios sin guardar) y el e2e de la ruta del panel, y la sesión del <code>curl</code> es la misma que usa la descarga. Por eso el caso queda parcial. Evidencia: <code>openspec/changes/add-json-resume-export/verification/6.3-tc48.md</code>.</p>
-              <fieldset class="run" data-run="tc48"><legend>Resultado de la corrida · TC-48</legend><label><input type="radio" name="r-tc48" value="pass"> pasa</label><label><input type="radio" name="r-tc48" value="fail"> falla</label><label><input type="radio" name="r-tc48" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-48"></fieldset>
+        <fieldset class="run" data-run="tc48"><legend>Resultado de la corrida · TC-48</legend><label><input type="radio" name="r-tc48" value="pass"> pasa</label><label><input type="radio" name="r-tc48" value="fail"> falla</label><label><input type="radio" name="r-tc48" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-48"></fieldset>
 </article>
     </section>
 
@@ -1909,7 +2006,7 @@ $ npm run seed:example:verify
   ✅ los 8 perfiles curados: visibilidad, listed, archivado, layout, tema, secciones, alias y overrides
 ✅ La base coincide con el archivo de ejemplo.     exit=0</pre></div>
         <figure class="shot" id="img-tc36-ejemplo-home"><img src="tc36-ejemplo-home.jpg" width="800" height="1062" alt="Home sembrada con el ejemplo"><figcaption>La home (<code>all</code>) sobre la base de ejemplo: persona ficticia, experiencias, skills y las demás secciones.</figcaption></figure>
-              <fieldset class="run" data-run="tc36"><legend>Resultado de la corrida · TC-36</legend><label><input type="radio" name="r-tc36" value="pass"> pasa</label><label><input type="radio" name="r-tc36" value="fail"> falla</label><label><input type="radio" name="r-tc36" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-36"></fieldset>
+        <fieldset class="run" data-run="tc36"><legend>Resultado de la corrida · TC-36</legend><label><input type="radio" name="r-tc36" value="pass"> pasa</label><label><input type="radio" name="r-tc36" value="fail"> falla</label><label><input type="radio" name="r-tc36" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-36"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc37" data-area="datos" data-change="add-learning-guide-and-example-data">
@@ -1937,7 +2034,7 @@ No se escribió nada.                         exit=2
 Conteos antes y después: Profile=1 · Experience=15 · CuratedProfile=14 · ProfileView=0   (sin cambios)
 $ npm run seed:verify                        -&gt; ✅ La base coincide con cv-data.json   exit=0</pre></div>
         <p>Sin captura: es salida de terminal. La capa 3 cubre el olvido más probable (<code>backend/.env</code> apunta a la base del owner y <code>DATABASE_URL</code> no se redefinió): esa base tiene otro <code>Profile</code>, así que el seed se niega aunque la variable esté puesta.</p>
-              <fieldset class="run" data-run="tc37"><legend>Resultado de la corrida · TC-37</legend><label><input type="radio" name="r-tc37" value="pass"> pasa</label><label><input type="radio" name="r-tc37" value="fail"> falla</label><label><input type="radio" name="r-tc37" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-37"></fieldset>
+        <fieldset class="run" data-run="tc37"><legend>Resultado de la corrida · TC-37</legend><label><input type="radio" name="r-tc37" value="pass"> pasa</label><label><input type="radio" name="r-tc37" value="fail"> falla</label><label><input type="radio" name="r-tc37" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-37"></fieldset>
 </article>
 
       <article class="case" data-status="ok" id="tc38" data-area="datos" data-change="protect-default-seed">
@@ -1963,7 +2060,7 @@ Para borrarlo y recargar desde docs/cv-data.json: npm run seed -- --overwrite
 No se escribió nada.
 exit: 2</pre></div>
         <p>Sin captura: es salida de terminal. Al terminar, <code>docker exec portfolio-postgres dropdb -U portfolio portfolio_seed_guard</code>.</p>
-              <fieldset class="run" data-run="tc38"><legend>Resultado de la corrida · TC-38</legend><label><input type="radio" name="r-tc38" value="pass"> pasa</label><label><input type="radio" name="r-tc38" value="fail"> falla</label><label><input type="radio" name="r-tc38" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-38"></fieldset>
+        <fieldset class="run" data-run="tc38"><legend>Resultado de la corrida · TC-38</legend><label><input type="radio" name="r-tc38" value="pass"> pasa</label><label><input type="radio" name="r-tc38" value="fail"> falla</label><label><input type="radio" name="r-tc38" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-38"></fieldset>
 </article>
     </section>
 
@@ -2162,6 +2259,8 @@ echo "$SITIO/acme-tech-lead"</pre></div>
         <div class="g"><dt id="g-enlace-de-verificacion">enlace de verificación</dt><dd>La página pública de la credencial en el emisor (Credly, Accredible…); solo <code>https://</code>. El sitio lo muestra como «Ver credencial» y no comprueba que funcione. <span class="refs"><a href="#b6">B6 · Formación</a>, <a href="#tc42">TC-42</a></span></dd></div>
         <div class="g"><dt id="g-apertura">apertura</dt><dd>Una visita de una persona atribuida a un enlace de seguimiento; las tuyas y las de bots no cuentan. <span class="refs"><a href="#b12">B12 · Constructor · Publicación</a>, <a href="#tc41">TC-41</a></span></dd></div>
         <div class="g"><dt id="g-referencia-huerfana">referencia huérfana</dt><dd>Un id de <code>includeIds</code> o <code>excludeIds</code> que ya no corresponde a ninguna experiencia, skill ni proyecto (el ítem se borró). El sitio lo ignora; el constructor lo cuenta y deja quitarlo. <span class="refs"><a href="#b10">B10 · Constructor · Selección</a>, <a href="#tc43">TC-43</a></span></dd></div>
+        <div class="g"><dt id="g-postulaci-n">postulación</dt><dd>Un proceso de selección que registrás en el panel: empresa, puesto, estado, fecha y, si querés, el perfil y el enlace de seguimiento que mandaste. Es privada: no se publica en ningún lado. <span class="refs"><a href="#b15">B15 · Postulaciones</a>, <a href="#tc46">TC-46</a></span></dd></div>
+        <div class="g"><dt id="g-abierto-el">Abierto el</dt><dd>La fecha de la primera apertura de una persona del enlace asociado a una postulación, o «Sin abrir». Las tuyas y las de bots no cuentan. <span class="refs"><a href="#b15">B15 · Postulaciones</a>, <a href="#tc46">TC-46</a></span></dd></div>
       </dl>
     </section>
 </main>

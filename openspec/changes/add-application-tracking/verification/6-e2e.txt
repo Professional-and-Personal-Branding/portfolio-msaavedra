@@ -1,0 +1,38 @@
+Suite: admin-applications.e2e-spec.ts
+  OK   Postulaciones: API del panel (e2e) 6.1 CRUD y filtro crea (201) con el portal normalizado y lo lee
+  OK   Postulaciones: API del panel (e2e) 6.1 CRUD y filtro PATCH parcial cambia solo lo enviado
+  OK   Postulaciones: API del panel (e2e) 6.1 CRUD y filtro lista con status=APPLIED,INTERVIEWING ordenada por updatedAt descendente
+  OK   Postulaciones: API del panel (e2e) 6.1 CRUD y filtro sin status trae todas
+  OK   Postulaciones: API del panel (e2e) 6.1 CRUD y filtro borra (204) y después la lectura da 404; borrar de nuevo, 404
+  OK   Postulaciones: API del panel (e2e) 6.1 CRUD y filtro un id inexistente da 404 al leer y al editar
+  OK   Postulaciones: API del panel (e2e) 6.1 CRUD y filtro status=HIRED en la lista y en el export da 400
+  OK   Postulaciones: API del panel (e2e) 6.1 CRUD y filtro un campo desconocido (contactEmail) da 400 y no crea nada
+  OK   Postulaciones: API del panel (e2e) 6.1 CRUD y filtro campos inválidos dan 400: empresa vacía, ftp, portal con espacios, status inexistente
+  OK   Postulaciones: API del panel (e2e) 6.1 CRUD y filtro las siete rutas dan 401 sin sesión
+  OK   Postulaciones: API del panel (e2e) 6.2 Transiciones APPLIED → INTERVIEWING da 200 con nextStatuses y statusChangedAt nuevo
+  OK   Postulaciones: API del panel (e2e) 6.2 Transiciones DRAFT → OFFER da 422 con error "Unprocessable Entity" y sin stack
+  OK   Postulaciones: API del panel (e2e) 6.2 Transiciones ACCEPTED → APPLIED da 422 (estado final)
+  OK   Postulaciones: API del panel (e2e) 6.2 Transiciones PATCH con notas y una transición inválida da 422 y las notas no cambian
+  OK   Postulaciones: API del panel (e2e) 6.2 Transiciones el mismo estado da 200 y no cambia statusChangedAt
+  OK   Postulaciones: API del panel (e2e) 6.2 Transiciones salir de DRAFT fija appliedAt con la fecha UTC de hoy
+  OK   Postulaciones: API del panel (e2e) 6.2 Transiciones REJECTED → APPLIED conserva appliedAt
+  OK   Postulaciones: API del panel (e2e) 6.2 Transiciones DRAFT con appliedAt da 400; una fecha futura, también
+  OK   Postulaciones: API del panel (e2e) 6.2 Transiciones un status desconocido en el PATCH da 400, no 422
+  OK   Postulaciones: API del panel (e2e) 6.3 Vínculos y aperturas crea con perfil y enlace MANUAL: trae el slug y la etiqueta
+  OK   Postulaciones: API del panel (e2e) 6.3 Vínculos y aperturas perfil inexistente, enlace de otro perfil, LINKEDIN_POST o sin perfil: 400 sin crear
+  OK   Postulaciones: API del panel (e2e) 6.3 Vínculos y aperturas el segundo uso del mismo enlace da 409
+  OK   Postulaciones: API del panel (e2e) 6.3 Vínculos y aperturas un PATCH con el enlace de otra postulación da 409; con el propio, 200
+  OK   Postulaciones: API del panel (e2e) 6.3 Vínculos y aperturas quitar el perfil sin quitar el enlace da 400
+  OK   Postulaciones: API del panel (e2e) 6.3 Vínculos y aperturas un enlace revocado se acepta y sigue mostrando sus aperturas
+  OK   Postulaciones: API del panel (e2e) 6.3 Vínculos y aperturas cuenta solo las visitas HUMAN: OWNER día 1, HUMAN días 3 y 5, BOT
+  OK   Postulaciones: API del panel (e2e) 6.3 Vínculos y aperturas borrar el perfil deja la postulación sin perfil ni enlace (SetNull)
+  OK   Postulaciones: API del panel (e2e) 6.4 Resumen y CSV summary trae los siete estados con ceros y active
+  OK   Postulaciones: API del panel (e2e) 6.4 Resumen y CSV export: cabeceras exactas, BOM y una empresa con fórmula neutralizada
+  OK   Postulaciones: API del panel (e2e) 6.4 Resumen y CSV export aplica el filtro de estado
+  OK   Postulaciones: API del panel (e2e) 6.4 Resumen y CSV export sin sesión da 401 JSON, no un CSV
+  OK   Postulaciones: API del panel (e2e) 6.5 Sin rutas públicas GET /api/applications y /api/applications/export dan 404
+  OK   Postulaciones: API del panel (e2e) 6.5 Sin rutas públicas el perfil público es idéntico antes y después de crear postulaciones
+  OK   Postulaciones: API del panel (e2e) 6.5 Sin rutas públicas el sitemap no cambia con postulaciones
+
+Test Suites: 1 passed, 1 total
+Tests:       34 passed, 34 total

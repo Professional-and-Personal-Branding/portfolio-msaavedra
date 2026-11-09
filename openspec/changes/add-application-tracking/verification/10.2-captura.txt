@@ -1,0 +1,19 @@
+== corrida 1
+
+
+ok tc18-dashboard.jpg  126.5 KB
+ok bo-postulaciones.jpg  52.3 KB
+
+2/2 capturas; 0 sobre 150 KB.
+postulaciones en la base: 3
+== corrida 2
+
+
+ok tc18-dashboard.jpg  126.5 KB
+ok bo-postulaciones.jpg  52.3 KB
+
+2/2 capturas; 0 sobre 150 KB.
+postulaciones en la base: 3
+Atlas Demo|APPLIED
+Cobalto Ejemplo|INTERVIEWING
+Nimbus Ejemplo|REJECTED

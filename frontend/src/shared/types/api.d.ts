@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 02cdfba949f78187fce6c3c6767c3f97c7b46089b3427fdac5ea7f42a040a9f4
+// openapi-sha256: ea49a1e3adc766dd82e2997d9324e6bd196e5f2b8eab96a1a256ff6a1fe3da59
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -14,6 +14,92 @@ export interface paths {
          * @description El rango `from`/`to` es cerrado: `to=hoy` incluye las visitas del día en curso. El origen se normaliza al host del `referrer` guardado; las visitas desde el propio sitio cuentan como `interno`. `total` y los desgloses cuentan solo las visitas de personas (`HUMAN`); `byKind` cuenta todas las del rango, también las propias (`OWNER`) y las de bots (`BOT`). `byShareLink` y `bySource` cuentan las visitas de personas atribuidas a un enlace de seguimiento o a un portal.
          */
         get: operations["AdminAnalyticsController_views"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar postulaciones
+         * @description Más recientemente editadas primero (`updatedAt` y `id` descendentes). `status` acepta uno o varios estados separados por coma; sin él, todas. Cada una trae las aperturas humanas de su enlace.
+         */
+        get: operations["AdminApplicationController_list"];
+        put?: never;
+        /**
+         * Crear una postulación
+         * @description Se puede crear en cualquier estado. No admite datos de contacto de personas.
+         */
+        post: operations["AdminApplicationController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/applications/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Leer una postulación */
+        get: operations["AdminApplicationController_get"];
+        put?: never;
+        post?: never;
+        /** Borrar una postulación */
+        delete: operations["AdminApplicationController_remove"];
+        options?: never;
+        head?: never;
+        /**
+         * Editar una postulación
+         * @description Campos parciales, incluido `status`, en una sola escritura: si la transición es inválida, 422 y nada cambia.
+         */
+        patch: operations["AdminApplicationController_update"];
+        trace?: never;
+    };
+    "/api/admin/applications/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Exportar a CSV
+         * @description Mismo filtro y orden que la lista. UTF-8 con BOM, coma, CRLF, todas las celdas entre comillas y las que empiezan con `=`, `+`, `-`, `@`, tabulación o retorno de carro con un apóstrofo delante (sin fórmulas ejecutables). `Cache-Control: no-store`.
+         */
+        get: operations["AdminApplicationController_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/applications/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resumen por estado
+         * @description Los siete estados con ceros y `active` (DRAFT, APPLIED, INTERVIEWING y OFFER). Es el estado actual: no depende de un rango de fechas.
+         */
+        get: operations["AdminApplicationController_summary"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1076,6 +1162,73 @@ export interface components {
             url: string;
             visible: boolean;
         };
+        ApplicationResponse: {
+            /**
+             * @description AAAA-MM-DD
+             * @example 2026-11-20
+             */
+            appliedAt: string | null;
+            /** @example Globex */
+            company: string;
+            /** @description ISO 8601 */
+            createdAt: string;
+            curatedProfileId: string | null;
+            id: string;
+            jobUrl: string | null;
+            /** @description Estados a los que puede pasar desde el actual (vacío si es final) */
+            nextStatuses: components["schemas"]["ApplicationStatus"][];
+            notes: string | null;
+            /** @example linkedin */
+            portal: string | null;
+            /** @example ejemplo-backend */
+            profileSlug: string | null;
+            /** @example Backend Senior */
+            role: string;
+            shareLink: components["schemas"]["ApplicationShareLinkResponse"] | null;
+            status: components["schemas"]["ApplicationStatus"];
+            /** @description ISO 8601 del último cambio efectivo de estado */
+            statusChangedAt: string;
+            /** @description ISO 8601 */
+            updatedAt: string;
+        };
+        ApplicationShareLinkResponse: {
+            /**
+             * @description Código de `?via=`
+             * @example k7m2q9xw4t
+             */
+            code: string;
+            /** @description ISO 8601 de la primera apertura */
+            firstOpenedAt: string | null;
+            id: string;
+            /** @example Globex — RR. HH. */
+            label: string;
+            /** @description ISO 8601 de la última apertura */
+            lastOpenedAt: string | null;
+            /** @description Aperturas de personas (`HUMAN`) en toda la historia del enlace */
+            opens: number;
+            revoked: boolean;
+        };
+        /** @enum {string} */
+        ApplicationStatus: "DRAFT" | "APPLIED" | "INTERVIEWING" | "OFFER" | "ACCEPTED" | "REJECTED" | "WITHDRAWN";
+        ApplicationSummaryResponse: {
+            /** @description DRAFT + APPLIED + INTERVIEWING + OFFER */
+            active: number;
+            /**
+             * @description Los siete estados, ceros incluidos
+             * @example {
+             *       "DRAFT": 0,
+             *       "APPLIED": 2,
+             *       "INTERVIEWING": 1,
+             *       "OFFER": 0,
+             *       "ACCEPTED": 0,
+             *       "REJECTED": 3,
+             *       "WITHDRAWN": 0
+             *     }
+             */
+            byStatus: {
+                [key: string]: number;
+            };
+        };
         AvailabilityDto: {
             /** @description Tipo de contrato */
             contractType?: components["schemas"]["LocalizedTextDto"] | null;
@@ -1178,6 +1331,44 @@ export interface components {
              */
             source: string;
             views: number;
+        };
+        CreateApplicationDto: {
+            /**
+             * @description `AAAA-MM-DD`. Nula con `DRAFT`; si falta en otro estado, el día UTC del reloj. No puede pasar de mañana (UTC).
+             * @example 2026-11-20
+             */
+            appliedAt?: string | null;
+            /**
+             * @description Empresa (1 a 120 caracteres tras recortar)
+             * @example Globex
+             */
+            company: string;
+            /** @description Id del perfil curado */
+            curatedProfileId?: string | null;
+            /**
+             * @description URL absoluta http o https de la vacante (hasta 2048)
+             * @example https://globex.example/jobs/1
+             */
+            jobUrl?: string | null;
+            /** @description Notas libres (hasta 5000). No guardes datos de contacto de personas. */
+            notes?: string | null;
+            /**
+             * @description Portal (`[a-z0-9-]`, hasta 32 caracteres; se normaliza a minúsculas)
+             * @example linkedin
+             */
+            portal?: string | null;
+            /**
+             * @description Puesto (1 a 160 caracteres)
+             * @example Backend Senior
+             */
+            role: string;
+            /** @description Id de un enlace `MANUAL` de ese perfil; requiere `curatedProfileId` */
+            shareLinkId?: string | null;
+            /**
+             * @description Estado inicial; al crear se admite cualquiera
+             * @default DRAFT
+             */
+            status: components["schemas"]["ApplicationStatus"];
         };
         CreateCertificationDto: {
             /**
@@ -2010,6 +2201,21 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        UpdateApplicationDto: {
+            /** @description `AAAA-MM-DD` */
+            appliedAt?: string | null;
+            /** @description Empresa (1 a 120 caracteres tras recortar) */
+            company?: string;
+            curatedProfileId?: string | null;
+            jobUrl?: string | null;
+            notes?: string | null;
+            portal?: string | null;
+            /** @description Puesto (1 a 160 caracteres) */
+            role?: string;
+            shareLinkId?: string | null;
+            /** @description Estado nuevo: una transición inválida da 422 y no cambia nada */
+            status?: components["schemas"]["ApplicationStatus"];
+        };
         UpdateCertificationDto: {
             /**
              * @description ID de la credencial en el emisor (texto plano); null para quitarlo
@@ -2273,6 +2479,307 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponseDto"];
                 };
             };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminApplicationController_list: {
+        parameters: {
+            query?: {
+                /** @description Estados separados por coma (`DRAFT,APPLIED,…`); sin valor, todas */
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationResponse"][];
+                };
+            };
+            /** @description Estado desconocido */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminApplicationController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateApplicationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationResponse"];
+                };
+            };
+            /** @description Campo inválido, perfil o enlace inexistente, ajeno o `LINKEDIN_POST`, fecha inválida */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description El enlace ya está en otra postulación */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminApplicationController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationResponse"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminApplicationController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminApplicationController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateApplicationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description El enlace ya está en otra postulación */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Transición de estado inválida (no se cambia nada) */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminApplicationController_export: {
+        parameters: {
+            query?: {
+                /** @description Estados separados por coma (`DRAFT,APPLIED,…`); sin valor, todas */
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Archivo CSV (`postulaciones-AAAA-MM-DD.csv`) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            /** @description Estado desconocido */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminApplicationController_summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationSummaryResponse"];
+                };
+            };
+            /** @description Sin sesión de administrador */
             401: {
                 headers: {
                     [name: string]: unknown;

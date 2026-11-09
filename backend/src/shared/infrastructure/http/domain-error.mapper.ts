@@ -5,12 +5,14 @@ import {
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import {
   AccessDeniedError,
   ConflictError,
   DomainError,
   NotFoundError,
+  RuleViolationError,
   ValidationError,
 } from '../../domain/errors';
 
@@ -32,6 +34,10 @@ export function toHttpException(error: DomainError): HttpException {
   }
   if (error instanceof ConflictError) {
     return new ConflictException(error.message);
+  }
+  if (error instanceof RuleViolationError) {
+    // 422: la petición es válida de forma pero el estado actual no admite la operación.
+    return new UnprocessableEntityException(error.message);
   }
   // Nunca exponer detalles internos de errores no previstos.
   return new InternalServerErrorException('Error interno');

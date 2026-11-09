@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { AppRouter } from '@/app/router';
 import { ANALYTICS, EMPTY_ANALYTICS, makeAdminCuratedProfile } from '@/test/fixtures/admin';
+import { makeSummary } from '@/test/fixtures/applications';
 import { API, http, HttpResponse, server } from '@/test/msw';
 import { adminHandlers } from '@/test/msw-admin';
 import { renderWithProviders } from '@/test/render';
@@ -383,5 +384,91 @@ describe('DashboardPage — enlaces de seguimiento y portales', () => {
         'Sin portal3',
       ]),
     );
+  });
+});
+
+describe('DashboardPage — franja de postulaciones (D12)', () => {
+  it('con 2 postuladas y 1 con oferta muestra la línea y enlaza a la pantalla', async () => {
+    server.use(
+      http.get(`${API}/admin/applications/summary`, () =>
+        HttpResponse.json(makeSummary({ APPLIED: 2, OFFER: 1, REJECTED: 4 })),
+      ),
+      ...adminHandlers,
+    );
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    const strip = await screen.findByRole('region', {
+      name: 'Resumen de postulaciones, estado actual',
+    });
+    expect(strip).toHaveTextContent('Postulaciones activas: 3 · 2 postuladas · 1 con oferta');
+    expect(within(strip).getByRole('link', { name: 'Ver postulaciones' })).toHaveAttribute(
+      'href',
+      '/admin/postulaciones',
+    );
+  });
+
+  it('con todos los estados activos usa el texto completo, omitiendo los ceros', async () => {
+    server.use(
+      http.get(`${API}/admin/applications/summary`, () =>
+        HttpResponse.json(makeSummary({ DRAFT: 1, APPLIED: 2, INTERVIEWING: 1, OFFER: 1 })),
+      ),
+      ...adminHandlers,
+    );
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    expect(
+      await screen.findByText(
+        'Postulaciones activas: 5 · 1 por postular · 2 postuladas · 1 en entrevistas · 1 con oferta',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('sin activas dice «Sin postulaciones activas» y mantiene el enlace', async () => {
+    server.use(...adminHandlers);
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    const strip = await screen.findByRole('region', {
+      name: 'Resumen de postulaciones, estado actual',
+    });
+    expect(strip).toHaveTextContent('Sin postulaciones activas');
+    expect(within(strip).getByRole('link', { name: 'Ver postulaciones' })).toBeInTheDocument();
+  });
+
+  it('cambiar el rango no vuelve a pedir el resumen', async () => {
+    let summaryCalls = 0;
+    server.use(
+      http.get(`${API}/admin/applications/summary`, () => {
+        summaryCalls += 1;
+        return HttpResponse.json(makeSummary({ APPLIED: 1 }));
+      }),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+    await screen.findByText('Postulaciones activas: 1 · 1 postulada');
+    expect(summaryCalls).toBe(1);
+
+    await user.click(screen.getByRole('combobox', { name: 'Rango de fechas' }));
+    await user.click(await screen.findByRole('option', { name: 'Últimos 7 días' }));
+    await screen.findByRole('region', { name: 'Totales' });
+
+    expect(summaryCalls).toBe(1);
+    expect(screen.getByText('Postulaciones activas: 1 · 1 postulada')).toBeInTheDocument();
+  });
+
+  it('un resumen 500 con visitas 200: sin franja y con las visitas', async () => {
+    server.use(
+      http.get(`${API}/admin/applications/summary`, () =>
+        HttpResponse.json({ statusCode: 500, message: 'Error interno' }, { status: 500 }),
+      ),
+      ...adminHandlers,
+    );
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    expect(await screen.findByRole('region', { name: 'Totales' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('region', { name: 'Resumen de postulaciones, estado actual' }),
+    ).toBeNull();
+    expect(screen.queryByText(/Sin postulaciones activas/)).toBeNull();
   });
 });
