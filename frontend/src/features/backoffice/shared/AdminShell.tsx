@@ -5,6 +5,7 @@ import {
   GraduationCap,
   IdCard,
   LayoutDashboard,
+  ListChecks,
   LogOut,
   Menu,
   Palette,
@@ -40,6 +41,7 @@ const NAV = [
   { to: '/admin/proyectos', label: 'Proyectos', icon: FolderGit2, end: false },
   { to: '/admin/perfiles', label: 'Perfiles curados', icon: Palette, end: false },
   { to: '/admin/postulaciones', label: 'Postulaciones', icon: Briefcase, end: false },
+  { to: '/admin/revision', label: 'Revisión', icon: ListChecks, end: false },
 ] as const;
 
 /** Texto de las acciones del header: visible desde `sm` y oculto desde `lg` (solo ícono: la barra necesita el ancho). */

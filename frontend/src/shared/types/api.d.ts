@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 496bca8ceb851c83689e8c9066ac8f9a90869de6cb82708c72f476fcc4262e8d
+// openapi-sha256: ea49a1e3adc766dd82e2997d9324e6bd196e5f2b8eab96a1a256ff6a1fe3da59
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -143,6 +143,26 @@ export interface paths {
         head?: never;
         /** Editar certificación (parcial) */
         patch: operations["AdminCertificationController_update"];
+        trace?: never;
+    };
+    "/api/admin/consistency": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Revisar la consistencia del CV
+         * @description Corre las reglas de consistencia sobre todo el contenido (ocho consultas fijas, sin escrituras) y devuelve los hallazgos con el mensaje y la etiqueta resueltos en el idioma pedido. `error`: la API del panel lo rechazaría o rompe el render; `warning`: probable descuido; `info`: suele ser legítimo. Los mismos hallazgos salen de `npm run cv:lint` sobre el archivo del seed.
+         */
+        get: operations["AdminCvConsistencyController_run"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/admin/curated-profiles": {
@@ -1656,6 +1676,73 @@ export interface components {
              */
             title: string;
         };
+        CvConsistencyResponse: {
+            /**
+             * @description Mes de referencia (UTC)
+             * @example 2026-11
+             */
+            asOf: string;
+            /** @description null si todavía no hay perfil base */
+            experience: components["schemas"]["CvExperienceSummaryResponse"] | null;
+            /** @description Ordenados por severidad, tipo de entidad, etiqueta y código */
+            issues: components["schemas"]["CvIssueResponse"][];
+            summary: components["schemas"]["CvSeveritySummaryResponse"];
+        };
+        /** @enum {string} */
+        CvEntityType: "profile" | "language" | "experience" | "skillCategory" | "skill" | "education" | "certification" | "project" | "socialLink" | "curatedProfile";
+        CvExperienceSummaryResponse: {
+            /**
+             * @description `Profile.yearsOfExperience`, tal como se cargó
+             * @example 10
+             */
+            declaredYears: number;
+            /**
+             * @description Meses fusionados de todas las experiencias
+             * @example 103
+             */
+            derivedMonths: number;
+        };
+        /** @enum {string} */
+        CvIssueCode: "profile.years-mismatch" | "date.invalid-format" | "date.end-before-start" | "date.ongoing-with-end" | "experience.multiple-current" | "i18n.missing-translation" | "i18n.highlights-count-mismatch" | "url.invalid" | "url.not-https" | "certification.expired" | "curated.orphan-reference" | "curated.conflicting-reference" | "curated.unmatched-filter-tag" | "curated.no-experiences";
+        CvIssueResponse: {
+            /** @example profile.years-mismatch */
+            code: components["schemas"]["CvIssueCode"];
+            /** @description Id exacto del ítem */
+            entityId: string;
+            /**
+             * @description Nombre legible del ítem
+             * @example Manuel Saavedra
+             */
+            entityLabel: string;
+            entityType: components["schemas"]["CvEntityType"];
+            /** @example yearsOfExperience */
+            field: string | null;
+            /** @description Resuelto en el idioma pedido */
+            message: string;
+            /**
+             * @example {
+             *       "declared": 10,
+             *       "months": 103,
+             *       "years": 8,
+             *       "remainderMonths": 7
+             *     }
+             */
+            params: {
+                [key: string]: string | number;
+            };
+            /** @description `error`: la API la rechazaría o rompe el render; `warning`: descuido visible; `info`: suele ser legítimo */
+            severity: components["schemas"]["CvSeverity"];
+        };
+        /**
+         * @description `error`: la API la rechazaría o rompe el render; `warning`: descuido visible; `info`: suele ser legítimo
+         * @enum {string}
+         */
+        CvSeverity: "error" | "warning" | "info";
+        CvSeveritySummaryResponse: {
+            error: number;
+            info: number;
+            warning: number;
+        };
         DuplicateCuratedProfileDto: Record<string, never>;
         EducationResponse: {
             /**
@@ -2886,6 +2973,39 @@ export interface operations {
                 };
             };
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminCvConsistencyController_run: {
+        parameters: {
+            query?: {
+                /** @description Alias de `locale`. */
+                lang?: "es" | "en";
+                /** @description Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`). */
+                locale?: "es" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CvConsistencyResponse"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

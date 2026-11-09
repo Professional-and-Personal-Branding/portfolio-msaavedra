@@ -11,6 +11,7 @@ import { PortadaPage } from './portada/PortadaPage';
 import { ProfileBuilderPage } from './curated-profiles/ProfileBuilderPage';
 import { ProfilesPage } from './curated-profiles/ProfilesPage';
 import { ProyectosPage } from './proyectos/ProyectosPage';
+import { RevisionPage } from './revision/RevisionPage';
 import { AdminLayout, AdminShell } from './shared/AdminShell';
 import { SkillsPage } from './skills/SkillsPage';
 
@@ -37,6 +38,7 @@ export function BackofficeApp() {
                     <Route path="perfiles" element={<ProfilesPage />} />
                     <Route path="perfiles/:id" element={<ProfileBuilderPage />} />
                     <Route path="postulaciones" element={<ApplicationsPage />} />
+                    <Route path="revision" element={<RevisionPage />} />
                   </Routes>
                 </AdminLayout>
               </RequireSession>

@@ -1,0 +1,35 @@
+TC-47 sobre la base descartable portfolio_lint_example (imagen frontend/Dockerfile en :8103, API de producción en :3349), 2026-11-07
+
+== Panel (puppeteer, login por fetch, sin escribir credenciales en campos)
+login por fetch: 200
+1. URL /admin/revision; ítems activos del menú: ["Revisión"]
+2. resumen: 0 errores · 1 aviso · 1 sugerencia
+2. Experiencia: 11 años declarados; las fechas suman 11 años y 11 meses
+2. Sugerencias: true
+   API sin cookie: 401
+3. PUT portada años=15 (por API, misma sesión): 200
+3. resumen: 0 errores · 2 avisos · 1 sugerencia
+3. Declarás 15 años de experiencia, pero las experiencias cargadas suman 11 años y 11 meses.
+4. URL /admin/portada; h1 Portada
+5. PUT portada años=11 (por API): 200
+5. resumen: 0 errores · 1 aviso · 1 sugerencia (igual al paso 2: true)
+6. PATCH Cobalto Ejemplo: summary.en vacío (por API): 200
+6. resumen: 0 errores · 2 avisos · 1 sugerencia; hallazgo: Falta el texto en inglés de summary. (Cobalto Ejemplo)
+7. diálogo: "Editar Cobalto Ejemplo"; URL /admin/experiencias
+8. PATCH restaurar resumen: 200
+8. resumen: 0 errores · 1 aviso · 1 sugerencia (igual al paso 2: true)
+9. toast "El ítem ya no existe." visible; diálogos abiertos: 0; URL /admin/formacion
+
+Los pasos 3, 5, 6 y 8 (cambios de datos) se hicieron por la API con la misma sesión; la navegación, Volver a revisar, Abrir y el aviso salen del panel. Los datos del ejemplo quedaron restaurados (paso 8).
+
+== Por la API
+$ curl sin cookie
+401
+$ con sesión
+2026-11 {"declaredYears":11,"derivedMonths":143} {"error":0,"warning":1,"info":1}
+warning i18n.missing-translation curatedProfile cmw6txkfi001luc8okte7j79i - Falta el texto en inglés de description.
+info certification.expired certification cmw6txkec000yuc8oja9cgdc4 - Venció en 2025-12: el sitio la muestra como «Vencida».
+$ ?locale=en
+i18n.missing-translation | The English text for description is missing.
+$ cabecera Cache-Control (directo a la API)
+Cache-Control: no-store

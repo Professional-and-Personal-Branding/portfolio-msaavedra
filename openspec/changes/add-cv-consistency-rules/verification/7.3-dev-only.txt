@@ -1,0 +1,21 @@
+$ grep -rn "fast-check" dist | wc -l
+0
+$ ls dist/modules/cv-consistency/domain | grep -c fixture (el fixture queda fuera del build)
+0
+$ npm ls fast-check --omit=dev
+portfolio-backend@0.1.0 D:\projects\portfolio-msaavedra\wt-lint\backend
+└─┬ prisma@6.19.3
+  └─┬ @prisma/config@6.19.3
+    └─┬ effect@3.21.0
+      └── fast-check@3.23.2
+
+$ npm ls fast-check
+portfolio-backend@0.1.0 D:\projects\portfolio-msaavedra\wt-lint\backend
+├── fast-check@4.10.2
+└─┬ prisma@6.19.3
+  └─┬ @prisma/config@6.19.3
+    └─┬ effect@3.21.0
+      └── fast-check@3.23.2
+
+
+Nota: con --omit=dev solo queda el fast-check@3.23.2 transitivo de prisma (prisma > @prisma/config > effect), que ya estaba antes del change y no es el nuestro. El fast-check@4.10.2 del backend está solo en devDependencies (git diff de package.json: una línea en devDependencies, dependencies sin cambios).

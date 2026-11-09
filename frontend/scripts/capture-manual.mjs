@@ -232,6 +232,8 @@ const MANIFEST = [
     ],
   },
   { id: 'tc20-skills', ruta: '/admin/skills', sesion: true, esperar: 'Spring Boot' },
+  // Revisión del CV (change `add-cv-consistency-rules`, B16 y TC-47): solo lectura, sobre el ejemplo.
+  { id: 'bo-revision', ruta: '/admin/revision', sesion: true, esperar: 'Sugerencias' },
   // Cuenta (change `add-admin-password-change`): el formulario con «Las contraseñas no coinciden».
   // Valores de relleno que no pertenecen a nadie; la validación es del cliente y no sale ninguna
   // petición (no se pulsa nada que envíe: el error aparece al salir del último campo).

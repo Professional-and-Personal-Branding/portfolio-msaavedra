@@ -1,0 +1,9 @@
+Punto de partida (main e337efd + diseño ae3f326), 2026-11-07
+grep -rn "computeYears" backend/src: 0 coincidencias
+fast-check en backend/package.json: ausente
+CuratedProfileModule exports: [ResolveCuratedProfileUseCase, ListCuratedProfilesUseCase] (sin CURATED_PROFILE_REPOSITORY)
+Ruta /admin/revision: inexistente
+backend npm test: 99 suites, 972 tests, verde
+backend npm run lint / typecheck: verde
+backend npm run test:e2e (base descartable portfolio_lint_e2e, migrada y seedeada): 17 suites, 277 tests, verde
+frontend npm test -- --run: 1041 tests, verde

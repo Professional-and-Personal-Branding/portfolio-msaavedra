@@ -1,0 +1,21 @@
+== npm run lint
+> portfolio-backend@0.1.0 lint
+> eslint "{src,test,scripts}/**/*.ts"
+
+== npm run typecheck
+> tsc --noEmit -p tsconfig.json
+
+== npm test
+Test Suites: 117 passed, 117 total
+Tests:       1169 passed, 1169 total
+== npm run build
+> portfolio-backend@0.1.0 build
+> nest build
+
+build exit: 0
+== openapi:export + git diff --exit-code
+OpenAPI exportado a openapi.json: 45 rutas, 77 schemas
+sin deriva
+== npm run test:e2e (base descartable portfolio_lint_e2e)
+Test Suites: 18 passed, 18 total
+Tests:       283 passed, 283 total

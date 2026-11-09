@@ -542,6 +542,7 @@ if (ADMIN_EMAIL && ADMIN_PASSWORD) {
     ['admin-perfiles', '/admin/perfiles'],
     ['admin-postulaciones', '/admin/postulaciones?estado=todas'],
     ['admin-postulaciones-error', '/admin/postulaciones'],
+    ['admin-revision', '/admin/revision'],
     ...(first?.id ? [['admin-builder', `/admin/perfiles/${first.id}`]] : []),
   ].map(([id, path]) => ({ id, path, keyboard: id === 'admin' || id === 'admin-builder' }));
   for (const viewport of Object.keys(VIEWPORTS)) {

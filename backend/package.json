@@ -32,6 +32,7 @@
     "seed:example:verify": "tsx scripts/verify-seed.ts --file ../docs/examples/cv-data.example.json",
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
     "views:reclassify": "tsx scripts/reclassify-views.ts",
+    "cv:lint": "tsx scripts/cv-lint.ts",
     "openapi:export": "ts-node --transpile-only -P tsconfig.json scripts/export-openapi.ts"
   },
   "prisma": {
@@ -78,6 +79,7 @@
     "eslint": "^9.39.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
+    "fast-check": "~4.10.2",
     "globals": "^17.12.0",
     "jest": "^30.5.1",
     "pino-pretty": "^13.1.3",

@@ -7,6 +7,7 @@ import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { HiddenBadge } from '../shared/HiddenBadge';
 import { PageHeader } from '../shared/PageHeader';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
+import { useEditParam } from '../shared/use-edit-param';
 import {
   notifyError,
   notifySuccess,
@@ -29,6 +30,19 @@ export function ExperiencesPage() {
   const save = useSaveExperience();
   const remove = useDeleteExperience();
   const [editing, setEditing] = useState<Editing | null>(null);
+
+  const openEdit = (experience: AdminExperience) =>
+    setEditing({
+      id: experience.id,
+      values: toFormValues(experience),
+      title: `Editar ${experience.company}`,
+    });
+  // `?editar=<id>` (enlace «Abrir» de la pantalla Revisión).
+  useEditParam({
+    ready: experiences.isSuccess,
+    find: (id) => experiences.data?.find((experience) => experience.id === id),
+    onFound: openEdit,
+  });
 
   const handleSubmit = (body: CreateExperienceBody) => {
     save.mutate(
@@ -113,13 +127,7 @@ export function ExperiencesPage() {
                 variant="outline"
                 size="icon-sm"
                 aria-label={`Editar ${experience.company}`}
-                onClick={() =>
-                  setEditing({
-                    id: experience.id,
-                    values: toFormValues(experience),
-                    title: `Editar ${experience.company}`,
-                  })
-                }
+                onClick={() => openEdit(experience)}
               >
                 <Pencil aria-hidden />
               </Button>

@@ -197,8 +197,21 @@ npm run seed -- --overwrite                # borrar y recargar aunque haya conte
 npm run seed -- --file <ruta>              # cargar otro archivo (solo en una base descartable: § 11)
 npm run seed:example                      # cargar los datos de ejemplo (SEED_DISPOSABLE_DB=1)
 npm run seed:example:verify               # comparar la base con el ejemplo
+npm run cv:lint                            # revisar docs/cv-data.json sin base (otro archivo: -- --file <ruta>)
 npx prisma studio                          # GUI oficial de Prisma para ver/editar datos
 ```
+
+### 8.1 Revisar el archivo antes de sembrar: `npm run cv:lint`
+
+Antes de `npm run seed` (o de cargar otro archivo con `--file`), corré `npm run cv:lint -- --file <archivo>`: aplica las mismas 14 reglas de consistencia que la pantalla **Revisión** del panel (fechas, traducciones, enlaces, vencimientos y referencias de los perfiles curados) sobre el archivo, **sin abrir la base** y sin modificar nada. Cada línea es `SEVERIDAD código entidad id: mensaje`; las entidades se identifican por su clave del archivo (`experience:novacomp`, el `slug` del perfil) o por su posición base 0 (`certification#4`, `skill#3.2` = categoría 3, skill 2).
+
+| Salida | Significa |
+|---|---|
+| `0` | Sin errores. Los avisos y las sugerencias se imprimen, pero no fallan (por ejemplo, los años declarados contra las fechas: el valor de `profile.yearsOfExperience` se carga a mano y solo se contrasta). |
+| `1` | Al menos un hallazgo de severidad `error`: el dato viola una regla que la API del panel rechazaría. Corregilo en el archivo antes de sembrar. |
+| `2` | El archivo no existe, no es JSON o el seed lo rechaza (se imprimen sus errores), o los argumentos no sirven. |
+
+Opciones: `--as-of AAAA-MM` (mes de referencia, por defecto el actual), `--locale es|en` y `--format text|json`. El CI lo corre sobre `docs/cv-data.json` y sobre el ejemplo.
 
 ---
 

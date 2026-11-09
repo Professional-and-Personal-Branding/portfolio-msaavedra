@@ -49,6 +49,12 @@ export type ApplicationSummary = Schemas['ApplicationSummaryResponse'];
 export type CreateApplicationBody = Schemas['CreateApplicationDto'];
 export type UpdateApplicationBody = Schemas['UpdateApplicationDto'];
 
+// add-cv-consistency-rules: revisión de consistencia del CV.
+export type CvConsistency = Schemas['CvConsistencyResponse'];
+export type CvIssue = Schemas['CvIssueResponse'];
+export type CvSeverity = Schemas['CvSeverity'];
+export type CvEntityType = Schemas['CvEntityType'];
+
 export type AdminTheme = Schemas['ThemeResponse'];
 export type ProfileViews = Schemas['ProfileViewsResponse'];
 export type Visibility = AdminCuratedProfile['visibility'];

@@ -1,5 +1,16 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`add-cv-consistency-rules`)
+
+El CV se contrasta consigo mismo: una pantalla del panel y un comando sin base listan lo que se contradice.
+
+- **`computeYearsOfExperience`.** Función pura (`profile/domain/services`): meses inclusivos de `YYYY-MM`, fusión de intervalos solapados o contiguos, actuales hasta `asOf`. Probada con `fast-check` (devDependency del backend, `~4.10.2`).
+- **14 reglas.** Módulo `cv-consistency` con una instantánea propia y reglas puras (fechas, años declarados, traducciones, URLs, vencimientos, referencias de los perfiles curados); severidades `error`, `warning` e `info`. Ninguna regla `error` depende de la fecha. El predicado de faltantes de traducción pasó a `shared/domain/i18n` y lo comparten el constructor y la revisión.
+- **API.** `GET /api/admin/consistency` (sesión de administrador, ocho lecturas fijas, sin escrituras, `Cache-Control: no-store`, `?locale=`); en el contrato, los enums `CvIssueCode`, `CvSeverity` y `CvEntityType`. `openapi.json` y `api.d.ts` regenerados. Sin migraciones.
+- **Panel.** Pantalla **Revisión** (`/admin/revision`) con bloques por severidad y enlaces **Abrir**; `?editar=<id>` abre el diálogo del ítem en Experiencias, Skills, Formación y Proyectos.
+- **`npm run cv:lint`.** Las mismas reglas sobre el archivo del seed, sin base; salidas 0, 1 (algún error) y 2 (archivo inválido). Dos pasos nuevos en el job `backend` del CI. `readSeedFile` pasó a `scripts/lib/seed-file.ts` (sin Prisma).
+- **Docs.** `docs/MANUAL.md` e `index.html` (B16, TC-47, glosario; `bo-revision.jpg`) y `docs/DATA-POPULATION.md` § 8.1. Con `docs/cv-data.json` aparece el aviso de años (10 declarados contra 8 años y 7 meses): es un hallazgo para el owner, el archivo no se tocó.
+
 ## Update — Noviembre 2026 (`raise-manual-html-size-cap`)
 
 El tope de `docs/manual/index.html` pasa de 300 KB a 1 MB: el HTML ya pesaba ~289 KB y cada caso de prueba suma unos 3 KB.

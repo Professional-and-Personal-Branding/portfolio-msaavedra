@@ -1,0 +1,20 @@
+== npm run lint
+> eslint .
+
+== npm run typecheck
+> tsc -b
+
+== npm test -- --run
+ Test Files  71 passed (71) (segunda corrida; la primera, con Docker y Chrome ocupando la CPU, tuvo 3 tests con falla transitoria que no se repitió)
+      Tests  1082 passed (1082)
+== npm run build
+[32m✓ built in 3.52s[39m
+== npm run perf:budget
+| /assets/index-UVyYTOgi.js | módulo | 148.9 |
+| /profile-prefetch.js | clásico | 1.2 |
+| **Total** | | **150.1** |
+
+Presupuesto: 155 KB.
+
+== npm run manual:check
+manual:check ok: 46 casos alineados, 49 imágenes (3.53 MB), index.html 280 KB, 188 ids.

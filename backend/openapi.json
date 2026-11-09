@@ -4851,6 +4851,72 @@
           "admin"
         ]
       }
+    },
+    "/api/admin/consistency": {
+      "get": {
+        "description": "Corre las reglas de consistencia sobre todo el contenido (ocho consultas fijas, sin escrituras) y devuelve los hallazgos con el mensaje y la etiqueta resueltos en el idioma pedido. `error`: la API del panel lo rechazaría o rompe el render; `warning`: probable descuido; `info`: suele ser legítimo. Los mismos hallazgos salen de `npm run cv:lint` sobre el archivo del seed.",
+        "operationId": "AdminCvConsistencyController_run",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CvConsistencyResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revisar la consistencia del CV",
+        "tags": [
+          "admin"
+        ]
+      }
     }
   },
   "info": {
@@ -8372,6 +8438,198 @@
             "nullable": true
           }
         }
+      },
+      "CvExperienceSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "declaredYears": {
+            "type": "number",
+            "example": 10,
+            "description": "`Profile.yearsOfExperience`, tal como se cargó"
+          },
+          "derivedMonths": {
+            "type": "number",
+            "example": 103,
+            "description": "Meses fusionados de todas las experiencias"
+          }
+        },
+        "required": [
+          "declaredYears",
+          "derivedMonths"
+        ]
+      },
+      "CvSeveritySummaryResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "number"
+          },
+          "warning": {
+            "type": "number"
+          },
+          "info": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "error",
+          "warning",
+          "info"
+        ]
+      },
+      "CvIssueCode": {
+        "type": "string",
+        "enum": [
+          "profile.years-mismatch",
+          "date.invalid-format",
+          "date.end-before-start",
+          "date.ongoing-with-end",
+          "experience.multiple-current",
+          "i18n.missing-translation",
+          "i18n.highlights-count-mismatch",
+          "url.invalid",
+          "url.not-https",
+          "certification.expired",
+          "curated.orphan-reference",
+          "curated.conflicting-reference",
+          "curated.unmatched-filter-tag",
+          "curated.no-experiences"
+        ]
+      },
+      "CvSeverity": {
+        "type": "string",
+        "enum": [
+          "error",
+          "warning",
+          "info"
+        ],
+        "description": "`error`: la API la rechazaría o rompe el render; `warning`: descuido visible; `info`: suele ser legítimo"
+      },
+      "CvEntityType": {
+        "type": "string",
+        "enum": [
+          "profile",
+          "language",
+          "experience",
+          "skillCategory",
+          "skill",
+          "education",
+          "certification",
+          "project",
+          "socialLink",
+          "curatedProfile"
+        ]
+      },
+      "CvIssueResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "example": "profile.years-mismatch",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CvIssueCode"
+              }
+            ]
+          },
+          "severity": {
+            "description": "`error`: la API la rechazaría o rompe el render; `warning`: descuido visible; `info`: suele ser legítimo",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CvSeverity"
+              }
+            ]
+          },
+          "entityType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CvEntityType"
+              }
+            ]
+          },
+          "entityId": {
+            "type": "string",
+            "description": "Id exacto del ítem"
+          },
+          "entityLabel": {
+            "type": "string",
+            "example": "Manuel Saavedra",
+            "description": "Nombre legible del ítem"
+          },
+          "field": {
+            "type": "string",
+            "nullable": true,
+            "example": "yearsOfExperience"
+          },
+          "message": {
+            "type": "string",
+            "description": "Resuelto en el idioma pedido"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "example": {
+              "declared": 10,
+              "months": 103,
+              "years": 8,
+              "remainderMonths": 7
+            }
+          }
+        },
+        "required": [
+          "code",
+          "severity",
+          "entityType",
+          "entityId",
+          "entityLabel",
+          "field",
+          "message",
+          "params"
+        ]
+      },
+      "CvConsistencyResponse": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "type": "string",
+            "example": "2026-11",
+            "description": "Mes de referencia (UTC)"
+          },
+          "experience": {
+            "nullable": true,
+            "description": "null si todavía no hay perfil base",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CvExperienceSummaryResponse"
+              }
+            ]
+          },
+          "summary": {
+            "$ref": "#/components/schemas/CvSeveritySummaryResponse"
+          },
+          "issues": {
+            "description": "Ordenados por severidad, tipo de entidad, etiqueta y código",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CvIssueResponse"
+            }
+          }
+        },
+        "required": [
+          "asOf",
+          "experience",
+          "summary",
+          "issues"
+        ]
       }
     }
   }

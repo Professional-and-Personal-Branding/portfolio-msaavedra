@@ -27,7 +27,12 @@ describe('AdminShell', () => {
       'Proyectos',
       'Perfiles curados',
       'Postulaciones',
+      'Revisión',
     ]);
+    expect(within(nav!).getByRole('link', { name: 'Revisión' })).toHaveAttribute(
+      'href',
+      '/admin/revision',
+    );
     expect(within(nav!).getByRole('link', { name: 'Formación' })).toHaveAttribute(
       'href',
       '/admin/formacion',

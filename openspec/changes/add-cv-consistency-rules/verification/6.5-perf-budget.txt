@@ -1,0 +1,13 @@
+perf:budget (frontend, tope 155 KB gzip, un solo JS de módulo)
+
+Antes (main e337efd, build en un worktree temporal):
+| /assets/index-Dz6G3h_t.js | módulo | 148.9 |
+| /profile-prefetch.js | clásico | 1.2 |
+| Total | 150.1 |   (index: 481.37 kB, 150.60 kB gzip)
+
+Después (feat/cv-consistency-rules):
+| /assets/index-BYCv2HgB.js | módulo | 148.9 |
+| /profile-prefetch.js | clásico | 1.2 |
+| Total | 150.1 |   (index: 481.37 kB, 150.60 kB gzip)
+
+El arranque público no crece: el panel vive en el chunk aparte BackofficeApp (lazy).
