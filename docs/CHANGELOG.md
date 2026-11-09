@@ -11,6 +11,13 @@ El CV se contrasta consigo mismo: una pantalla del panel y un comando sin base l
 - **`npm run cv:lint`.** Las mismas reglas sobre el archivo del seed, sin base; salidas 0, 1 (algún error) y 2 (archivo inválido). Dos pasos nuevos en el job `backend` del CI. `readSeedFile` pasó a `scripts/lib/seed-file.ts` (sin Prisma).
 - **Docs.** `docs/MANUAL.md` e `index.html` (B16, TC-47, glosario; `bo-revision.jpg`) y `docs/DATA-POPULATION.md` § 8.1. Con `docs/cv-data.json` aparece el aviso de años (10 declarados contra 8 años y 7 meses): es un hallazgo para el owner, el archivo no se tocó.
 
+## Update — Noviembre 2026 (`raise-manual-html-size-cap`)
+
+El tope de `docs/manual/index.html` pasa de 300 KB a 1 MB: el HTML ya pesaba ~289 KB y cada caso de prueba suma unos 3 KB.
+
+- **`manual:check`.** `MAX_HTML = 1024 * 1024` y el mensaje de error toma el tope de la constante. Los topes de imágenes siguen en 150 KB cada una y 4 MB en total.
+- **Spec.** *Tope de tamaño del manual* (`platform-manual`) con el tope nuevo y escenarios para el HTML. Se descartaron normalizar la sangría y quitar el historial porque solo ahorran espacio una vez (design D2).
+
 ## Update — Noviembre 2026 (`add-application-tracking`)
 
 CRM personal de postulaciones en el panel: a quién te postulaste, en qué estado está cada proceso y si abrieron el enlace.
