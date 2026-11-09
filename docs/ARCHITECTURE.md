@@ -236,6 +236,7 @@ model ProfileView { /* analítica: slug, timestamp, referrer */ }
 - `GET|POST /api/admin/skill-categories` · `PATCH|DELETE /api/admin/skill-categories/:id` · `POST /api/admin/skill-categories/:id/skills` · `PATCH|DELETE /api/admin/skills/:id`
 - `GET|POST /api/admin/curated-profiles` · `GET|PATCH|DELETE /api/admin/curated-profiles/:id`
 - `GET /api/admin/analytics/views?from&to` — visitas por perfil, idioma y día
+- Postulaciones (`add-application-tracking`, solo panel, sin rutas públicas): `GET|POST /api/admin/applications` (`?status=A,B` filtra por estado) · `GET /api/admin/applications/summary` (conteo por estado y `active`) · `GET /api/admin/applications/export` (CSV UTF-8 con BOM, sin fórmulas ejecutables) · `GET|PATCH|DELETE /api/admin/applications/:id`. Una transición de estado inválida da **422** (`RuleViolationError`), no 400.
 - Contraseñas: argon2id. Administrador único vía `npm run admin:bootstrap`. Rate limiting, Helmet y cookies: Fase 6.
 
 ---

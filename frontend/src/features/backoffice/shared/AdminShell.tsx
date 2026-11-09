@@ -1,4 +1,5 @@
 import {
+  Briefcase,
   ExternalLink,
   FolderGit2,
   GraduationCap,
@@ -38,10 +39,11 @@ const NAV = [
   { to: '/admin/formacion', label: 'Formación', icon: GraduationCap, end: false },
   { to: '/admin/proyectos', label: 'Proyectos', icon: FolderGit2, end: false },
   { to: '/admin/perfiles', label: 'Perfiles curados', icon: Palette, end: false },
+  { to: '/admin/postulaciones', label: 'Postulaciones', icon: Briefcase, end: false },
 ] as const;
 
-/** Texto de las acciones del header: oculto en móvil y por debajo de `2xl` desde `lg`. */
-const ACTION_LABEL = 'hidden sm:inline lg:hidden 2xl:inline';
+/** Texto de las acciones del header: visible desde `sm` y oculto desde `lg` (solo ícono: la barra necesita el ancho). */
+const ACTION_LABEL = 'hidden sm:inline lg:hidden';
 
 /**
  * Marco del backoffice. Fija el preset `modern-dark` para que el panel tenga
@@ -79,7 +81,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
     <>
       <SkipLink label={translate('es', 'a11y.skipToContent')} />
       <header className="sticky top-0 z-40 border-b border-border glass">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3">
+        <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-3">
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
               <Button
@@ -109,18 +111,18 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           {/* La barra completa solo cabe desde `xl`; por debajo, el menú lateral. */}
           <nav
             aria-label="Secciones"
-            className="ml-4 hidden min-w-0 items-center gap-1 overflow-x-auto xl:flex"
+            className="ml-4 hidden min-w-0 items-center gap-0.5 overflow-x-auto xl:flex"
           >
             <NavLinks />
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
             {admin && (
-              <span className="hidden text-xs text-text-dim 2xl:inline" data-testid="admin-name">
+              <span className="hidden text-xs text-text-dim" data-testid="admin-name">
                 {admin.name}
               </span>
             )}
-            {/* Por debajo de `2xl` la navegación ocupa el ancho: solo íconos. */}
+            {/* Desde `lg` la navegación ocupa el ancho: las acciones van solo con ícono (con `title`). */}
             <Button asChild variant="outline" size="sm">
               <Link
                 to="/"
@@ -177,7 +179,8 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
           onClick={onNavigate}
           className={({ isActive }) =>
             cn(
-              'flex items-center gap-2 rounded-theme-sm px-3 py-2 text-sm font-medium transition-colors',
+              // En la barra horizontal (`xl`) el padding baja a 6 px para que entren nueve secciones.
+              'flex items-center gap-2 rounded-theme-sm px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors xl:px-1.5',
               isActive
                 ? 'bg-brand/15 text-brand-ink'
                 : 'text-text-muted hover:bg-bg-soft hover:text-text',

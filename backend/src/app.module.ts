@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { APP_CONFIG, AppConfig, loadConfiguration } from './config/configuration';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { ApplicationTrackingModule } from './modules/application-tracking/application-tracking.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CuratedProfileModule } from './modules/curated-profile/curated-profile.module';
 import { EducationModule } from './modules/education/education.module';
@@ -54,6 +55,7 @@ import { PrismaModule } from './shared/infrastructure/persistence/prisma.module'
     EducationModule,
     ProjectModule,
     SocialLinkModule,
+    ApplicationTrackingModule,
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: ContentLanguageInterceptor },

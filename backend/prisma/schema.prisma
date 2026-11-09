@@ -236,6 +236,7 @@ model CuratedProfile {
   views          Int        @default(0)
   profileViews   ProfileView[]
   shareLinks     ShareLink[]
+  applications   Application[]
 
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
@@ -314,7 +315,43 @@ model ShareLink {
   createdAt        DateTime       @default(now())
   revokedAt        DateTime?
   profileViews     ProfileView[]
+  application      Application?
 
+  @@index([curatedProfileId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// POSTULACIONES (CRM personal, solo panel; sin datos de contacto de personas)
+// ─────────────────────────────────────────────────────────────
+enum ApplicationStatus {
+  DRAFT
+  APPLIED
+  INTERVIEWING
+  OFFER
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+model Application {
+  id               String            @id @default(cuid())
+  company          String            // 1 a 120 caracteres
+  role             String            // 1 a 160 caracteres
+  jobUrl           String?           // URL http(s) de la vacante
+  portal           String?           // normalizado como `src`
+  notes            String?           // texto libre del owner, hasta 5000
+  status           ApplicationStatus @default(DRAFT)
+  appliedAt        DateTime?         @db.Date
+  statusChangedAt  DateTime          @default(now())
+  curatedProfile   CuratedProfile?   @relation(fields: [curatedProfileId], references: [id], onDelete: SetNull)
+  curatedProfileId String?
+  shareLink        ShareLink?        @relation(fields: [shareLinkId], references: [id], onDelete: SetNull)
+  shareLinkId      String?           @unique // un enlace, una postulación
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([status])
+  @@index([updatedAt])
   @@index([curatedProfileId])
 }
 

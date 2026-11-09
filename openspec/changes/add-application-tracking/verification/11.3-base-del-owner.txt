@@ -1,0 +1,5 @@
+La base del owner (portfolio, localhost:5434) no se toco: ningun comando de esta rama se conecto a ella.
+El backend/.env copiado apuntaba a portfolio; antes del primer comando que usa la base se cambio su DATABASE_URL
+a portfolio_apps_e2e, y la migracion se genero y aplico solo en portfolio_apps_check, portfolio_apps_example y
+portfolio_apps_e2e (todas borradas al terminar). No se corrio prisma migrate status contra portfolio para no abrir
+una conexion a la base del owner: su migracion add_application_tracking queda pendiente hasta que la aplique el owner.

@@ -184,12 +184,20 @@ export class PrismaProfileViewRepository implements ProfileViewRepository {
       by: ['shareLinkId'],
       where: { shareLinkId: { in: [...shareLinkIds] }, kind: 'HUMAN' },
       _count: { _all: true },
+      _min: { viewedAt: true },
       _max: { viewedAt: true },
     });
     return rows.flatMap((r) =>
       r.shareLinkId === null
         ? []
-        : [{ shareLinkId: r.shareLinkId, opens: r._count._all, lastOpenedAt: r._max.viewedAt }],
+        : [
+            {
+              shareLinkId: r.shareLinkId,
+              opens: r._count._all,
+              firstOpenedAt: r._min.viewedAt,
+              lastOpenedAt: r._max.viewedAt,
+            },
+          ],
     );
   }
 }

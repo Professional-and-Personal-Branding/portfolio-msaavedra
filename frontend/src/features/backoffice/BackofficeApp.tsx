@@ -3,6 +3,7 @@ import { TooltipProvider } from '@/shared/components/ui/tooltip';
 import { LoginPage } from './auth/LoginPage';
 import { RequireSession } from './auth/RequireSession';
 import { AccountPage } from './account/AccountPage';
+import { ApplicationsPage } from './applications/ApplicationsPage';
 import { DashboardPage } from './dashboard/DashboardPage';
 import { ExperiencesPage } from './experiences/ExperiencesPage';
 import { FormacionPage } from './formacion/FormacionPage';
@@ -35,6 +36,7 @@ export function BackofficeApp() {
                     <Route path="proyectos" element={<ProyectosPage />} />
                     <Route path="perfiles" element={<ProfilesPage />} />
                     <Route path="perfiles/:id" element={<ProfileBuilderPage />} />
+                    <Route path="postulaciones" element={<ApplicationsPage />} />
                   </Routes>
                 </AdminLayout>
               </RequireSession>

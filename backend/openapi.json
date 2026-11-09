@@ -4428,6 +4428,429 @@
           "admin"
         ]
       }
+    },
+    "/api/admin/applications": {
+      "get": {
+        "description": "Más recientemente editadas primero (`updatedAt` y `id` descendentes). `status` acepta uno o varios estados separados por coma; sin él, todas. Cada una trae las aperturas humanas de su enlace.",
+        "operationId": "AdminApplicationController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Estados separados por coma (`DRAFT,APPLIED,…`); sin valor, todas",
+            "schema": {
+              "example": "APPLIED,INTERVIEWING",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApplicationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Estado desconocido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar postulaciones",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "description": "Se puede crear en cualquier estado. No admite datos de contacto de personas.",
+        "operationId": "AdminApplicationController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateApplicationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campo inválido, perfil o enlace inexistente, ajeno o `LINKEDIN_POST`, fecha inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El enlace ya está en otra postulación",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear una postulación",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/applications/summary": {
+      "get": {
+        "description": "Los siete estados con ceros y `active` (DRAFT, APPLIED, INTERVIEWING y OFFER). Es el estado actual: no depende de un rango de fechas.",
+        "operationId": "AdminApplicationController_summary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationSummaryResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resumen por estado",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/applications/export": {
+      "get": {
+        "description": "Mismo filtro y orden que la lista. UTF-8 con BOM, coma, CRLF, todas las celdas entre comillas y las que empiezan con `=`, `+`, `-`, `@`, tabulación o retorno de carro con un apóstrofo delante (sin fórmulas ejecutables). `Cache-Control: no-store`.",
+        "operationId": "AdminApplicationController_export",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Estados separados por coma (`DRAFT,APPLIED,…`); sin valor, todas",
+            "schema": {
+              "example": "APPLIED,INTERVIEWING",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo CSV (`postulaciones-AAAA-MM-DD.csv`)",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Estado desconocido",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Exportar a CSV",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/applications/{id}": {
+      "get": {
+        "operationId": "AdminApplicationController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Leer una postulación",
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "description": "Campos parciales, incluido `status`, en una sola escritura: si la transición es inválida, 422 y nada cambia.",
+        "operationId": "AdminApplicationController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateApplicationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El enlace ya está en otra postulación",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Transición de estado inválida (no se cambia nada)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar una postulación",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminApplicationController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Borrar una postulación",
+        "tags": [
+          "admin"
+        ]
+      }
     }
   },
   "info": {
@@ -7660,6 +8083,293 @@
           "visible": {
             "type": "boolean",
             "default": true
+          }
+        }
+      },
+      "ApplicationStatus": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "APPLIED",
+          "INTERVIEWING",
+          "OFFER",
+          "ACCEPTED",
+          "REJECTED",
+          "WITHDRAWN"
+        ]
+      },
+      "ApplicationShareLinkResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string",
+            "example": "Globex — RR. HH."
+          },
+          "code": {
+            "type": "string",
+            "example": "k7m2q9xw4t",
+            "description": "Código de `?via=`"
+          },
+          "revoked": {
+            "type": "boolean"
+          },
+          "opens": {
+            "type": "number",
+            "description": "Aperturas de personas (`HUMAN`) en toda la historia del enlace"
+          },
+          "firstOpenedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601 de la primera apertura"
+          },
+          "lastOpenedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601 de la última apertura"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "code",
+          "revoked",
+          "opens",
+          "firstOpenedAt",
+          "lastOpenedAt"
+        ]
+      },
+      "ApplicationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string",
+            "example": "Globex"
+          },
+          "role": {
+            "type": "string",
+            "example": "Backend Senior"
+          },
+          "jobUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "portal": {
+            "type": "string",
+            "nullable": true,
+            "example": "linkedin"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApplicationStatus"
+              }
+            ]
+          },
+          "appliedAt": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-11-20",
+            "description": "AAAA-MM-DD"
+          },
+          "statusChangedAt": {
+            "type": "string",
+            "description": "ISO 8601 del último cambio efectivo de estado"
+          },
+          "curatedProfileId": {
+            "type": "string",
+            "nullable": true
+          },
+          "profileSlug": {
+            "type": "string",
+            "nullable": true,
+            "example": "ejemplo-backend"
+          },
+          "shareLink": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApplicationShareLinkResponse"
+              }
+            ]
+          },
+          "nextStatuses": {
+            "type": "array",
+            "description": "Estados a los que puede pasar desde el actual (vacío si es final)",
+            "items": {
+              "$ref": "#/components/schemas/ApplicationStatus"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO 8601"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "ISO 8601"
+          }
+        },
+        "required": [
+          "id",
+          "company",
+          "role",
+          "jobUrl",
+          "portal",
+          "notes",
+          "status",
+          "appliedAt",
+          "statusChangedAt",
+          "curatedProfileId",
+          "profileSlug",
+          "shareLink",
+          "nextStatuses",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ApplicationSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "byStatus": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "Los siete estados, ceros incluidos",
+            "example": {
+              "DRAFT": 0,
+              "APPLIED": 2,
+              "INTERVIEWING": 1,
+              "OFFER": 0,
+              "ACCEPTED": 0,
+              "REJECTED": 3,
+              "WITHDRAWN": 0
+            }
+          },
+          "active": {
+            "type": "number",
+            "description": "DRAFT + APPLIED + INTERVIEWING + OFFER"
+          }
+        },
+        "required": [
+          "byStatus",
+          "active"
+        ]
+      },
+      "CreateApplicationDto": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "type": "string",
+            "description": "Empresa (1 a 120 caracteres tras recortar)",
+            "example": "Globex"
+          },
+          "role": {
+            "type": "string",
+            "description": "Puesto (1 a 160 caracteres)",
+            "example": "Backend Senior"
+          },
+          "jobUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL absoluta http o https de la vacante (hasta 2048)",
+            "example": "https://globex.example/jobs/1"
+          },
+          "portal": {
+            "type": "string",
+            "nullable": true,
+            "description": "Portal (`[a-z0-9-]`, hasta 32 caracteres; se normaliza a minúsculas)",
+            "example": "linkedin"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "description": "Notas libres (hasta 5000). No guardes datos de contacto de personas."
+          },
+          "status": {
+            "default": "DRAFT",
+            "description": "Estado inicial; al crear se admite cualquiera",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApplicationStatus"
+              }
+            ]
+          },
+          "appliedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "`AAAA-MM-DD`. Nula con `DRAFT`; si falta en otro estado, el día UTC del reloj. No puede pasar de mañana (UTC).",
+            "example": "2026-11-20"
+          },
+          "curatedProfileId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Id del perfil curado"
+          },
+          "shareLinkId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Id de un enlace `MANUAL` de ese perfil; requiere `curatedProfileId`"
+          }
+        },
+        "required": [
+          "company",
+          "role"
+        ]
+      },
+      "UpdateApplicationDto": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "type": "string",
+            "description": "Empresa (1 a 120 caracteres tras recortar)"
+          },
+          "role": {
+            "type": "string",
+            "description": "Puesto (1 a 160 caracteres)"
+          },
+          "jobUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "portal": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "description": "Estado nuevo: una transición inválida da 422 y no cambia nada",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApplicationStatus"
+              }
+            ]
+          },
+          "appliedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "`AAAA-MM-DD`"
+          },
+          "curatedProfileId": {
+            "type": "string",
+            "nullable": true
+          },
+          "shareLinkId": {
+            "type": "string",
+            "nullable": true
           }
         }
       }

@@ -1,5 +1,18 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`add-application-tracking`)
+
+CRM personal de postulaciones en el panel: a quién te postulaste, en qué estado está cada proceso y si abrieron el enlace.
+
+- **Módulo `application-tracking`.** Entidad `Application` con siete estados (`DRAFT`, `APPLIED`, `INTERVIEWING`, `OFFER`, `ACCEPTED`, `REJECTED`, `WITHDRAWN`) y la máquina de transiciones en el dominio; la API devuelve `nextStatuses` para armar el selector. Vínculo opcional con un perfil y con un enlace de seguimiento `MANUAL` (uno por postulación). Sin datos de contacto de personas y sin rutas públicas.
+- **422.** `RuleViolationError` en `shared/domain` y su mapeo a `422 Unprocessable Entity` en `toHttpException`; una transición inválida lo usa. La validación de entrada sigue dando 400.
+- **«Abierto el…».** `ShareLinkOpens.firstOpenedAt` (`_min.viewedAt` en el mismo `groupBy`); la lista resuelve las aperturas de todas las filas con una sola consulta de agregado.
+- **CSV.** `GET /api/admin/applications/export`: BOM UTF-8, CRLF, todas las celdas entre comillas y apóstrofo delante de lo que empieza con `=`, `+`, `-`, `@`, tabulación o retorno de carro.
+- **Panel.** Pantalla `/admin/postulaciones` (filtro en la URL, diálogo con React Hook Form y Zod, borrado con confirmación, **Exportar CSV**) y una franja de postulaciones activas en el Dashboard. Ítem **Postulaciones** en la navegación.
+- **`normalizeSource`** pasa a `shared/domain` (con re-export desde `curated-profile`).
+- **Migración aditiva** `add_application_tracking` (tabla, enum e índices); sin dependencias nuevas. Contrato y tipos del frontend regenerados.
+- **Herramientas y manual.** `a11y:check` suma `admin-postulaciones` y `admin-postulaciones-error`; `manual:capture` suma `bo-postulaciones` con tres postulaciones ficticias idempotentes. Manual: TC-46 y la pantalla B15.
+
 ## Update — Noviembre 2026 (`fix-error-contrast-and-date-modified`)
 
 Los mensajes de error del panel cumplen contraste AA y el JSON-LD del perfil declara cuándo se modificó.

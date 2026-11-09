@@ -33,6 +33,28 @@ describe('AdminLayout responsive', () => {
     expect(nav).toHaveClass('min-w-0', 'overflow-x-auto');
   });
 
+  // add-application-tracking, D11: la barra pasa a ocho ítems. jsdom no mide el desborde (se mide
+  // en Chrome, `verification/8.5-barra.txt`); aquí se fija que el ítem está y que, si no entrara,
+  // la barra se desplaza dentro de sí misma en vez de estirar el header.
+  it('la barra incluye Postulaciones con ícono y sin acortar su texto', async () => {
+    const header = await renderHeader();
+    const nav = within(header).getByRole('navigation', { name: 'Secciones' });
+    const link = within(nav).getByRole('link', { name: 'Postulaciones' });
+    expect(link).toHaveAttribute('href', '/admin/postulaciones');
+    expect(link.querySelector('svg')).not.toBeNull();
+    expect(within(nav).getAllByRole('link')).toHaveLength(8);
+    expect(nav).toHaveClass('overflow-x-auto', 'gap-0.5');
+    // Padding compacto solo en la barra horizontal; el menú lateral conserva `px-3`.
+    expect(link).toHaveClass('px-3', 'xl:px-1.5', 'whitespace-nowrap');
+  });
+
+  // 8.5 (D11): el header es más ancho que el contenido para que entren ocho secciones.
+  it('el header usa max-w-7xl y el contenido sigue en max-w-6xl', async () => {
+    const header = await renderHeader();
+    expect(header.firstElementChild).toHaveClass('max-w-7xl');
+    expect(screen.getByRole('main')).toHaveClass('max-w-6xl');
+  });
+
   it('las acciones conservan su nombre accesible cuando muestran solo el ícono', async () => {
     const header = await renderHeader();
     const portfolio = within(header).getByRole('link', { name: 'Ver portafolio' });
@@ -41,13 +63,9 @@ describe('AdminLayout responsive', () => {
 
     for (const action of [portfolio, account, logout]) {
       expect(action).toHaveAttribute('title', action.getAttribute('aria-label'));
-      expect(action.querySelector('span')).toHaveClass(
-        'hidden',
-        'sm:inline',
-        'lg:hidden',
-        '2xl:inline',
-      );
+      expect(action.querySelector('span')).toHaveClass('hidden', 'sm:inline', 'lg:hidden');
     }
-    expect(within(header).getByTestId('admin-name')).toHaveClass('hidden', '2xl:inline');
+    expect(within(header).getByTestId('admin-name')).toHaveClass('hidden');
+    expect(within(header).getByTestId('admin-name')).not.toHaveClass('2xl:inline');
   });
 });

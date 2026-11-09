@@ -1,0 +1,7 @@
+Punto de partida (main e337efd + diseño 19a3f88), base descartable portfolio_apps_e2e migrada y sembrada.
+Confirmado por grep: no existe modelo Application ni modulo application-tracking; ShareLinkOpens sin firstOpenedAt; NAV con 7 items.
+backend  npm test:      99 suites, 972 tests, verdes
+backend  test:e2e:      17 suites, 277 tests, verdes
+backend  npm run lint:  sin errores
+frontend npm test:      1041 tests, verdes
+frontend perf:budget:   arranque publico 150.1 KB gzip total (index 148.9 + prefetch 1.2), tope 155
