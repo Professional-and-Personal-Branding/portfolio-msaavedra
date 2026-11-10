@@ -194,6 +194,7 @@ npm run perf:check -- <base>   # Lighthouse mobile, mediana de PERF_CHECK_RUNS (
 - [x] `polish-views-updated-at-and-builder` — el incremento de `views` ya no mueve `CuratedProfile.updatedAt` (`UPDATE` crudo en la misma transacción) y se pulen detalles del constructor; resolvió la P1 de `upgrade-profile-structured-data` (archivado 2026-11-05)
 - [x] `add-admin-password-change` — cambio de contraseña desde **Cuenta**, `sessionVersion` en el JWT que revoca las demás sesiones, límite propio y `admin:bootstrap` como recuperación (archivado 2026-11-05)
 - [x] `fix-error-contrast-and-date-modified` — mensajes de error con `--t-danger-ink` (≥ 4,5:1 en todos los presets) y regla `danger`, `a11y:check` con formularios con errores a la vista, y `dateModified` en el JSON-LD desde `CuratedProfile.updatedAt` (día UTC, igual al `<lastmod>`), con `updatedAt` en el DTO público (archivado 2026-11-07)
+- [x] `raise-manual-html-size-cap` — el tope de `docs/manual/index.html` en `manual:check` pasa de 300 KB a 1 MB (el límite de un artifact es 16 MB y cada caso suma ~3 KB); imágenes sin cambios (archivado 2026-11-09)
 
 ---
 
