@@ -311,7 +311,7 @@ Hay además un ajuste de configuración que no es un change: verificar `SESSION_
 | `add-github-code-evidence` | Sync con GitHub (1.2b) | ADDED `code-evidence` | Con el fixture, se actualizan stars, lenguajes y topics. Un 304 autenticado no reescribe nada. Con el token vencido se sirve el último snapshot y el panel avisa. |
 | `add-cv-consistency-rules` | Linter, capa 1 | ADDED `cv-consistency` | Fast-check: ningún «años con X» contradice las fechas. **`Profile.yearsOfExperience` se contrasta con `computeYearsOfExperience`** (o se aplica la Dn de la pregunta 20). El 100 % de los errores sembrados se detecta. |
 | `add-open-notifications` | Email en la primera apertura humana | ADDED `owner-notifications` | Una visita humana con ShareLink envía el email (adaptador fake). Las visitas de bots o propias no envían nada. Se deduplica. |
-| `add-json-resume-export` | `/resume.json?lang=` | MODIFIED `public-curated-profile-api` | Valida contra el schema v1.0.0. PRIVATE da 404 y PROTECTED sin token da 401. |
+| `add-json-resume-export` | `GET /api/curated-profiles/:slug/resume.json?locale=` (D1; archivado 2026-11-10) | MODIFIED `public-curated-profile-api` | Valida contra el schema v1.0.0. PRIVATE da 404 y PROTECTED sin token da 401. |
 
 #### Fase 2.0: IA con humano en el bucle, radar y extras
 
