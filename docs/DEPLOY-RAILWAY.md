@@ -104,6 +104,7 @@ FRONTEND_URL=https://mjsaavedra.is-a.dev
 
 - **`FRONTEND_URL`** lleva el dominio real, que se completa en el paso 6. La API en producción exige un valor https; si querés probar antes de tener dominio, poné provisoriamente `https://<dominio-up.railway.app-de-web>` y reemplazalo en el paso 6.
 - **No** definir `ENABLE_API_DOCS` (Swagger queda cerrado), **ni** `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` (viven solo en la terminal del paso 4), **ni** `SEED_ALLOW_PRODUCTION`.
+- **Integraciones con terceros:** dejá las ocho variables `INTEGRATIONS_*` **sin definir** hasta que llegue un proveedor real (`INTEGRATIONS_ENABLED`, `INTEGRATIONS_SCHEDULER_ENABLED`, `INTEGRATIONS_SYNC_CRON`, `INTEGRATIONS_TICK_SECONDS`, `INTEGRATIONS_JOB_TIMEOUT_MS`, `INTEGRATIONS_RUN_MAX_MS`, `INTEGRATIONS_KEYS` e `INTEGRATIONS_ACTIVE_KEY`). Sus defaults dejan todo apagado y `fake` está prohibido en producción. El detalle, en [`DEPLOY.md` § 3](DEPLOY.md#integraciones-con-terceros-change-add-integrations-foundation).
 - El drenaje de 10 s ya está versionado (`drainingSeconds`); la variable `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` solo hace falta para pisarlo desde el panel. La API espera hasta 5 s a registrar las visitas en vuelo al apagarse.
 - [ ] Deploy.
 
@@ -361,6 +362,8 @@ curl.exe -s $SITIO/tech-lead-dotnet | Select-String 'og:title'    # el título d
 | cuando haga falta | reclasificar visitas | paso 8, con dump previo |
 
 **Rotar secretos.** Cambiar `JWT_SECRET` en el panel y redesplegar `api` cierra **todas** las sesiones: sirve si se sospecha que el secreto se filtró. Cambiar `ANALYTICS_SALT` hace que, desde ese momento, las mismas IP den otro `ipHash`. No rompe nada, pero corta la continuidad de visitantes únicos. Generá los valores nuevos con la función del paso 1 y guardalos en el gestor antes de pegarlos.
+
+**Integraciones (cuando haya un proveedor real).** Generar el keyring: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` por clave, guardada en el gestor antes de pegarla. Definir `INTEGRATIONS_ENABLED`, el secreto del proveedor, `INTEGRATIONS_KEYS`, `INTEGRATIONS_ACTIVE_KEY` e `INTEGRATIONS_SCHEDULER_ENABLED=true` en el servicio `api`, **en una sola réplica**. `drainingSeconds` tiene que seguir por encima de 8 s. Rotar una clave: agregar `k2` → `INTEGRATIONS_ACTIVE_KEY=k2` → redeploy → `npm run integrations:rekey -- --apply` desde tu terminal (con `DATABASE_URL` de producción solo en ese proceso; primero sin `--apply` para simular) → quitar `k1`. `npm run integrations:sync` corre el ejecutor una vez, a mano, sin servicio cron aparte. La pantalla **Integraciones** (se llega desde **Cuenta**) avisa si un proveedor lleva más de 48 h sin una corrida exitosa.
 
 **Monitoreo.** Hasta que exista el change `add-uptime-monitoring`, el único aviso automático es el del propio Railway cuando falla un deploy. Si el sitio se cae entre deploys, nadie avisa: conviene abrirlo de vez en cuando. `/health/live` en `200` con `/health` en `503` significa que la API vive pero no llega a la base.
 

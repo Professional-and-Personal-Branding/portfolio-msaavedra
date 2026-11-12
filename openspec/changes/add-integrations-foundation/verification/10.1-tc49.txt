@@ -1,0 +1,71 @@
+TC-49 — Sincronizar una integración y ver su estado (app real, 12 de noviembre de 2026)
+
+Entorno: imagen de frontend/Dockerfile en localhost:8158 (Caddy, proxy a la API), API de la rama en localhost:3358
+con INTEGRATIONS_ENABLED=fake, INTEGRATIONS_SCHEDULER_ENABLED=true e INTEGRATIONS_TICK_SECONDS=10, base descartable
+portfolio_integ_check sembrada con el ejemplo (nunca la del owner). Token de fake y keyring generados al azar; no se
+imprimen. Chrome controlado con puppeteer-core; la sesión del panel se abre con fetch('/api/auth/login') (la
+contraseña nunca se escribe en un campo). Script temporal, no versionado.
+
+Nota de entorno. fake exige FAKE_PROVIDER_TOKEN al arrancar (D11) y esa variable tiene prioridad sobre la base (D14):
+con el servicio arrancado normalmente la credencial de fake viene SIEMPRE de la variable y el panel no ofrece el campo.
+Para recorrer el formulario en la app real se arrancó la API una segunda vez con un precarga (node -r) que retira la
+variable 12 s después de arrancar. El precarga vive en .scratch y no forma parte del repositorio.
+
+=== Fase A — credencial por variable de entorno (arranque normal)
+OK    login por fetch: 200
+OK    la barra tiene 9 ítems y ninguno es Integraciones
+OK    Cuenta: bloque «Integraciones» con enlace a /admin/integraciones
+OK    el enlace abre la pantalla Integraciones
+OK    URL: /admin/integraciones
+OK    enlace «Volver a Cuenta»
+OK    estado «Activo»
+OK    sin aviso de scheduler apagado (INTEGRATIONS_SCHEDULER_ENABLED=true)
+OK    sin corridas: «Todavía no corrió»
+OK    credencial por variable de entorno: sin campo
+OK    «Encolado: corre en el próximo minuto.»
+OK    la cola muestra 1 pendiente
+OK    «Ya había una sincronización en cola.»
+OK    tras el tick: «Exitosa» como última corrida (refresco automático)
+OK    la cola vuelve a 0 pendientes
+OK    hay una «Última exitosa»
+OK    Pausar: estado «Pausado»
+OK    POST …/sync con el proveedor pausado: 422
+OK    el botón Sincronizar ahora queda deshabilitado
+OK    Reanudar: estado «Activo»
+OK    PUT …/credential con la variable de entorno definida: 422
+FALLA GET /api/admin/integrations: Cache-Control no-cache, no-store
+escrituras a /api/admin/integrations: POST /api/admin/integrations/fake/sync, POST /api/admin/integrations/fake/sync, PATCH /api/admin/integrations/fake, POST /api/admin/integrations/fake/sync, PATCH /api/admin/integrations/fake, PUT /api/admin/integrations/fake/credential
+errores de consola: Failed to load resource: the server responded with a status of 401 (Unauthorized) | Failed to load resource: the server responded with a status of 422 (Unprocessable Entity) | Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)
+
+(La única línea FALLA es el criterio estricto del script: por el contenedor web, Caddy agrega no-cache y la respuesta trae «no-cache, no-store»; no-store está presente. Es la observación ya documentada de TC-48.)
+
+=== Fase B — credencial en la base (variable retirada tras el arranque)
+OK    login por fetch: 200
+OK    la barra tiene 9 ítems y ninguno es Integraciones
+OK    Cuenta: bloque «Integraciones» con enlace a /admin/integraciones
+OK    el enlace abre la pantalla Integraciones
+OK    URL: /admin/integraciones
+OK    enlace «Volver a Cuenta»
+OK    sin variable ni credencial guardada: «Sin credencial»
+OK    aparece el campo «Credencial»
+OK    el campo es de tipo password
+OK    «Ingresá la credencial.»
+OK    Guardar vacío no llama a la API
+OK    «Credencial guardada.»
+OK    la tarjeta dice «Guardada en la base (clave k2)»
+OK    el campo queda vacío
+OK    el valor no figura en el DOM
+OK    tras recargar: campo vacío y valor fuera del DOM
+OK    tras recargar: credencial guardada en la base (clave activa k2)
+OK    con la credencial de la base, la sincronización termina «Exitosa»
+OK    «Credencial borrada.»
+OK    tras borrar: «Sin credencial»
+escrituras a /api/admin/integrations: PUT /api/admin/integrations/fake/credential, POST /api/admin/integrations/fake/sync, DELETE /api/admin/integrations/fake/credential
+errores de consola: Failed to load resource: the server responded with a status of 401 (Unauthorized)
+
+En la fase B, el valor guardado (generado al azar) no aparece en el log de la API ni en el del contenedor web (0 coincidencias).
+
+=== npm run integrations:sync -- --provider fake, con la API corriendo y su scheduler encendido
+Trabajo manual: encolado. Corrida: 1 trabajos (hechos 1, con error y reintento 0, muertos 0, interrumpidos 0). exit=0 · el trabajo quedó DONE.
+
+Observación de la corrida: en una repetición de la fase B el script retiró la credencial (Borrar) antes del tick y el trabajo quedó DEAD con «falta la credencial»; es el comportamiento especificado (D14), no un defecto, y aparece en la tarjeta como «Último error fallido».

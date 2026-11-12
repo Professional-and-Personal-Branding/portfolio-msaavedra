@@ -1,5 +1,21 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`add-integrations-foundation`)
+
+Base reutilizable para hablar con terceros sin demorar ninguna petición, sin ejecutar un trabajo dos veces y sin dejar un token en claro. No trae ningún proveedor real (GitHub llega en `add-github-code-evidence`).
+
+- **Módulo `integrations`** (Clean Architecture completa). Puerto `ConnectorPort` por proveedor, registro de los habilitados por `INTEGRATIONS_ENABLED` y un único proveedor, `fake`, solo para tests y prohibido con `NODE_ENV=production`. Casos de uso: listar, encolar («Sincronizar ahora»), pausar/reanudar, guardar y borrar credencial, planificar y ejecutar. Ningún módulo de la ruta pública lo importa (test de arquitectura).
+- **Cola y scheduler.** `@nestjs/schedule` `~6.1.3` (única dependencia nueva; usa `cron` 4.4.0), registrado a mano y **apagado por defecto** (`INTEGRATIONS_SCHEDULER_ENABLED`). Planificador diario (`INTEGRATIONS_SYNC_CRON`, UTC) y ejecutor por intervalo (`INTEGRATIONS_TICK_SECONDS`). Un único ejecutor por arriendo en una fila más `FOR UPDATE SKIP LOCKED` en cada reclamo; trabajos idempotentes por clave; reintentos con jitter completo (30 s a 6 h) y clasificación de errores (`RetryAfter`, `ResetAt`, `Transient`, `Permanent`, `BudgetExhausted`, incluida la de la API de Anthropic para 2.0); pausa por proveedor y circuit breaker persistidos; apagado ordenado dentro del drenaje de 10 s; retención de 30 y 90 días.
+- **Credenciales.** AES-256-GCM con keyring (`INTEGRATIONS_KEYS`, `INTEGRATIONS_ACTIVE_KEY`) y dato asociado por proveedor; la variable de entorno tiene prioridad sobre la base; API de solo escritura. `npm run integrations:rekey` (simulación por defecto, `-- --apply`) recifra con la clave activa, idempotente.
+- **Snapshots y logs.** `ExternalSnapshot` con `etag`, hash del contenido y tope de 1 MiB; cada línea de un trabajo lleva `syncRunId`, `jobId` y `provider`; `redactSecrets` y cuatro rutas más en la redacción del logger (`secret`, `ciphertext`, `credential`, `token`).
+- **Migración** `add_integrations_foundation`: dos enums y seis tablas (más la fila `runner` del arriendo); sin `ALTER` ni `DROP` sobre tablas existentes ni claves foráneas hacia ellas.
+- **API.** Cinco rutas bajo `/api/admin/integrations` (la de sincronizar responde 202); `openapi.json` y `api.d.ts` regenerados.
+- **Panel.** Pantalla **Integraciones** (`/admin/integraciones`) **sin ítem en la barra** (D25): se llega desde **Cuenta** y desde un aviso del Dashboard cuando hay una sincronización atrasada (más de 48 h) o un trabajo fallido.
+- **CLI.** `npm run integrations:sync [-- --provider <id>] [-- --plan]` corre el ejecutor una vez, sin HTTP ni servicio de Railway; salidas 0, 1 y 2.
+- **No genera cuellos de botella (medido).** Con un trabajo lento corriendo en el mismo proceso (3 s en 30 pasos y 5 ms de CPU por paso), `GET /health/live` mantiene su p95 (línea de base 4–5 ms; con trabajo 4–8 ms contra un umbral de +25 ms), su máximo queda en 9 ms (umbral 150 ms) y el p99 del retardo del event loop en 23–24 ms (umbral 50 ms); «Sincronizar ahora» responde 202 en 16–22 ms sin llamar al conector; `app.close()` con un trabajo en curso tarda 18 ms (3 s si el conector ignora la señal; tope 5 s).
+- **CI.** El job `backend-e2e` suma `npm run build` antes de los e2e: `integrations-env.e2e-spec.ts` arranca `node dist/main` como proceso hijo.
+- **Docs.** `docs/DEPLOY.md` y `docs/DEPLOY-RAILWAY.md` (variables, keyring, rotación, una sola réplica, `drainingSeconds` > 8 s), `docs/ARCHITECTURE.md` (módulo, rutas y presupuesto de los trabajos) y `docs/MANUAL.md` con `index.html` (B17, TC-49, glosario, `bo-integraciones.jpg`).
+
 ## Update — Noviembre 2026 (`add-cv-consistency-rules`)
 
 El CV se contrasta consigo mismo: una pantalla del panel y un comando sin base listan lo que se contradice.

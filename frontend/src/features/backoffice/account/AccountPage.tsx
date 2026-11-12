@@ -80,21 +80,6 @@ export function AccountPage() {
         )}
       </section>
 
-      <section aria-labelledby="account-integrations" className="surface mb-6 p-card">
-        <h2 id="account-integrations" className="mb-1 text-lg font-semibold">
-          Integraciones
-        </h2>
-        <p className="mb-3 text-sm text-text-muted">
-          Sincronización con servicios externos: estado, cola, pausa y credenciales.
-        </p>
-        <Link
-          to="/admin/integraciones"
-          className="text-sm font-medium text-brand-ink hover:underline"
-        >
-          Integraciones
-        </Link>
-      </section>
-
       <section aria-labelledby="account-password" className="surface max-w-xl p-card">
         <h2 id="account-password" className="mb-1 text-lg font-semibold">
           Cambiar contraseña
@@ -144,6 +129,21 @@ export function AccountPage() {
             </Button>
           </div>
         </form>
+      </section>
+
+      <section aria-labelledby="account-integrations" className="surface mt-6 max-w-xl p-card">
+        <h2 id="account-integrations" className="mb-1 text-lg font-semibold">
+          Integraciones
+        </h2>
+        <p className="mb-3 text-sm text-text-muted">
+          Sincronización con servicios externos: estado, cola, pausa y credenciales.
+        </p>
+        <Link
+          to="/admin/integraciones"
+          className="text-sm font-medium text-brand-ink hover:underline"
+        >
+          Integraciones
+        </Link>
       </section>
     </>
   );
