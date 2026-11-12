@@ -201,6 +201,7 @@ describe('Perfiles curados (e2e)', () => {
           'experiences',
           'skillCategories',
           'projects',
+          'repositories',
           'education',
           'certifications',
           'socialLinks',

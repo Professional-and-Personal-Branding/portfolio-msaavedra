@@ -62,16 +62,16 @@
 
 ## 9. App real y checks de calidad
 
-- [ ] 9.1 Con la imagen de `frontend/Dockerfile` y la API sobre `portfolio_repos_check`: `A11Y_CHECK_DISPOSABLE_DB=1 npm run a11y:check -- <base>` (con credenciales del panel, `A11Y_CHECK_PROFILE=ejemplo-backend`) y `npm run perf:check -- <base>` (≥ 85). Verificar: ambos con código 0; salidas en `verification/9.1-calidad.txt`.
-- [ ] 9.2 `MANUAL_CAPTURE_DISPOSABLE_DB=1 npm run manual:capture -- <base>`: captura nueva del bloque Repositorios de `/admin/proyectos` con su diálogo y de la sección pública; regenera las que cambian (`/admin/proyectos`, Selección del constructor). Verificar: `npm run manual:check` verde (topes de 150 KB por imagen y 4 MB en total).
+- [x] 9.1 Con la imagen de `frontend/Dockerfile` y la API sobre `portfolio_repos_check`: `A11Y_CHECK_DISPOSABLE_DB=1 npm run a11y:check -- <base>` (con credenciales del panel, `A11Y_CHECK_PROFILE=ejemplo-backend`) y `npm run perf:check -- <base>` (≥ 85). Verificar: ambos con código 0; salidas en `verification/9.1-calidad.txt`.
+- [x] 9.2 `MANUAL_CAPTURE_DISPOSABLE_DB=1 npm run manual:capture -- <base>`: captura nueva del bloque Repositorios de `/admin/proyectos` con su diálogo y de la sección pública; regenera las que cambian (`/admin/proyectos`, Selección del constructor). Verificar: `npm run manual:check` verde (topes de 150 KB por imagen y 4 MB en total).
 
 ## 10. Documentación
 
-- [ ] 10.1 `docs/MANUAL.md` y `docs/manual/index.html`: **TC-50 — Destacar repositorios de GitHub** (alta con URL inválida y repetida, dos repos visibles en la home, umbral con `ejemplo-renombrado`, Incluir/Excluir en el constructor, línea en el PDF y `resume.json`), los mensajes literales, el bloque de `/admin/proyectos` y la sección en el glosario. Verificar: `npm run manual:check` verde y TC-50 en el índice de casos.
-- [ ] 10.2 `docs/DATA-POPULATION.md` § 10 (deja de ser «inerte»: panel, umbral de 2, solo GitHub) y § 12.10 (fila por campo: `id`, `name`, `url`, `language`, `description`, `technologies`, `tags`, `visible`, `stars` ignorado; dónde se ve y qué pantalla lo edita), más `repository:<id>` en la fila de `includeRefs`. Verificar: el escenario *Campo documentado* de `example-seed-data` para cada clave nueva del ejemplo.
-- [ ] 10.3 `docs/CHANGELOG.md`: entrada del change (sección nueva, umbral, PDF condicional, JSON Resume, sin migración ni dependencias, tamaño del arranque). Verificar: lectura.
+- [x] 10.1 `docs/MANUAL.md` y `docs/manual/index.html`: **TC-50 — Destacar repositorios de GitHub** (alta con URL inválida y repetida, dos repos visibles en la home, umbral con `ejemplo-renombrado`, Incluir/Excluir en el constructor, línea en el PDF y `resume.json`), los mensajes literales, el bloque de `/admin/proyectos` y la sección en el glosario. Verificar: `npm run manual:check` verde y TC-50 en el índice de casos.
+- [x] 10.2 `docs/DATA-POPULATION.md` § 10 (deja de ser «inerte»: panel, umbral de 2, solo GitHub) y § 12.10 (fila por campo: `id`, `name`, `url`, `language`, `description`, `technologies`, `tags`, `visible`, `stars` ignorado; dónde se ve y qué pantalla lo edita), más `repository:<id>` en la fila de `includeRefs`. Verificar: el escenario *Campo documentado* de `example-seed-data` para cada clave nueva del ejemplo.
+- [x] 10.3 `docs/CHANGELOG.md`: entrada del change (sección nueva, umbral, PDF condicional, JSON Resume, sin migración ni dependencias, tamaño del arranque). Verificar: lectura.
 
 ## 11. Cierre
 
-- [ ] 11.1 `npx -y @fission-ai/openspec@1.14.1 validate add-featured-repositories --strict` y `validate --all --strict` sin errores nuevos ni «Archive would refuse»; CI verde (`web-quality` incluido). Verificar: salida en `verification/11.1-validate.txt`.
+- [ ] 11.1 (validate `--strict` y `--all --strict` verdes, 42 de 42; falta el CI del PR, incluido `web-quality`) `npx -y @fission-ai/openspec@1.14.1 validate add-featured-repositories --strict` y `validate --all --strict` sin errores nuevos ni «Archive would refuse»; CI verde (`web-quality` incluido). Verificar: salida en `verification/11.1-validate.txt`.
 - [ ] 11.2 Al archivar: línea del roadmap en `CLAUDE.md` y la mención de `SECTION_IDS` (diez ids) en la sección de decisiones. Verificar: `git diff CLAUDE.md`.
