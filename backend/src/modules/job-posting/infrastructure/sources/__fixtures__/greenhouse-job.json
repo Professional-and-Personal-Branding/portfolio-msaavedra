@@ -1,0 +1,12 @@
+{
+  "_fixture": "Ficticio y sanitizado (Acme Ejemplo). Forma segun https://docs.greenhouse.io/job-board.html (Retrieve a job), consultada el 2026-11-12. `content` llega escapado como entidades HTML, que se decodifican (y aqui ademas vienen doblemente escapadas, como en vacantes reales).",
+  "id": 4012345,
+  "internal_job_id": 99001,
+  "title": "Tech Lead Backend (Java)",
+  "company_name": "Acme Ejemplo",
+  "updated_at": "2026-10-30T14:21:05-03:00",
+  "absolute_url": "https://boards.greenhouse.io/acmeejemplo/jobs/4012345",
+  "language": "en",
+  "location": { "name": "Remote - Argentina" },
+  "content": "&lt;p&gt;We are looking for a Tech Lead to join our team. You will lead the design of &amp;lt;b&amp;gt;microservices&amp;lt;/b&amp;gt; with Java and Spring Boot.&lt;/p&gt;&lt;h3&gt;Requirements&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;5+ years of experience with Java&lt;/li&gt;&lt;li&gt;Kubernetes and AWS&lt;/li&gt;&lt;li&gt;Leadership of small teams&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;This is a 100% remote, full-time position.&lt;/p&gt;"
+}
