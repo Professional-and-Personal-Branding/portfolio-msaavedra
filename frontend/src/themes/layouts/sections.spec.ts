@@ -9,6 +9,7 @@ describe('SECTION_IDS', () => {
       'experience',
       'skills',
       'projects',
+      'repositories',
       'education',
       'certifications',
       'presence',

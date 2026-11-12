@@ -11,6 +11,7 @@ const ENTITY_LABELS: Record<MissingTranslation['entity'], string> = {
   experience: 'Experiencias',
   skillCategory: 'Categorías de skills',
   project: 'Proyectos',
+  repository: 'Repositorios',
   education: 'Educación',
   certification: 'Certificaciones',
   socialLink: 'Enlaces',

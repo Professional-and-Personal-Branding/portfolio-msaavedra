@@ -13,6 +13,7 @@ import { HOME_SLUG, profilePath } from '@/shared/lib/profile-link';
 import { useUrlState } from '@/shared/lib/url-state';
 import { resolveLayoutName } from '@/themes/layouts';
 import { ProfileLayout } from '@/themes/layouts/ProfileLayout';
+import { preloadRepositories } from '@/themes/layouts/lazy-repositories';
 import { renderableSections } from '@/themes/layouts/sections';
 import { ThemeProvider } from '@/themes/theme-provider';
 import { PrintableSheet } from './print/PrintableSheet';
@@ -44,6 +45,13 @@ export function CuratedProfileView({ slug }: CuratedProfileViewProps) {
   // Hero primero, el resto en una transición (D1 de `improve-mobile-performance`).
   const renderable = useMemo(() => (data ? renderableSections(data.sections) : null), [data]);
   const staged = useStagedSections(renderable);
+
+  // La sección de repositorios vive en un chunk aparte (D8 de `add-featured-repositories`): se
+  // pide en cuanto llega un perfil que la trae, antes de que termine el revelado en dos tiempos.
+  const hasRepositories = renderable?.includes('repositories') ?? false;
+  useEffect(() => {
+    if (hasRepositories) void preloadRepositories().catch(() => undefined);
+  }, [hasRepositories]);
   const menusReady =
     staged.revealed ||
     state.status === 'notFound' ||

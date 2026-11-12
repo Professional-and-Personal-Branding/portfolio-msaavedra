@@ -37,6 +37,7 @@ describe('layouts', () => {
       'experience',
       'skills',
       'projects',
+      'repositories',
       'education',
       'certifications',
       'presence',

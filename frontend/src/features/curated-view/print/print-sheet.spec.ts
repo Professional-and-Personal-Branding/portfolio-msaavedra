@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { makeCuratedProfile, makeExperience } from '@/test/fixtures/curated-profile';
-import { buildPrintSheet, PRINT_LIMITS, type PrintBlock } from './print-sheet';
+import type { CuratedProfile } from '@/shared/types/portfolio';
+import {
+  buildPrintSheet,
+  estimatePrintLines,
+  PRINT_CAPACITY_LINES,
+  PRINT_LIMITS,
+  type PrintBlock,
+} from './print-sheet';
 
 const ORIGIN = 'https://portfolio.example.com';
 
@@ -36,6 +43,7 @@ describe('buildPrintSheet — orden y secciones', () => {
       'experience',
       'skills',
       'projects',
+      'repositories',
       'education',
       'certifications',
     ]);
@@ -356,5 +364,176 @@ describe('buildPrintSheet — perfil sin datos base', () => {
     const sheet = buildPrintSheet(makeCuratedProfile({ profile: null }), 'es', ORIGIN);
     expect(sheet.header.fullName).toBe('Perfil completo');
     expect(sheet.header.contact.map((l) => l.text)).not.toContain('ada@example.com');
+  });
+});
+
+// Change add-featured-repositories (D9): una línea compacta, solo si entra.
+describe('buildPrintSheet — repositorios (D9)', () => {
+  const repo = (i: number, overrides: Partial<CuratedProfile['repositories'][number]> = {}) => ({
+    id: `r${i}`,
+    name: `repo-${i}`,
+    url: `https://github.com/octo-org/repo-${i}`,
+    language: 'Java',
+    description: `Descripción ${i}`,
+    technologies: ['Java'],
+    tags: [],
+    order: i,
+    ...overrides,
+  });
+  const repos = (n: number) => Array.from({ length: n }, (_, i) => repo(i));
+  const sections = ['hero', 'experience', 'repositories'];
+  const repositoriesBlock = (data: CuratedProfile) =>
+    buildPrintSheet(data, 'es', ORIGIN).blocks.find((b) => b.kind === 'repositories');
+
+  /** Un perfil cuya hoja SIN repositorios estima exactamente `target` líneas (1 línea por cada 110 caracteres). */
+  function profileEstimating(target: number, repositories = repos(2)) {
+    const base = makeCuratedProfile({
+      sections,
+      experiences: [makeExperience({ highlights: ['x'], technologies: [] })],
+      repositories: [],
+    });
+    const baseline = estimatePrintLines(buildPrintSheet(base, 'es', ORIGIN).blocks);
+    const extra = target - baseline;
+    if (extra < 0 || !Number.isInteger(extra)) throw new Error(`no se puede estimar ${target}`);
+    return makeCuratedProfile({
+      sections,
+      experiences: [
+        makeExperience({ highlights: ['x'.repeat(110 * (1 + extra))], technologies: [] }),
+      ],
+      repositories,
+    });
+  }
+
+  it('entra: una línea con los nombres, cada uno con su href, en la posición de sections', () => {
+    const sheet = buildPrintSheet(makeCuratedProfile(), 'es', ORIGIN);
+    const found = block(sheet.blocks, 'repositories');
+    expect(found.label).toBe('Repositorios');
+    expect(found.items).toEqual([
+      { text: 'reservas-api', href: 'https://github.com/ejemplo/reservas-api' },
+      { text: 'metricas-dashboard', href: 'https://github.com/ejemplo/metricas-dashboard' },
+    ]);
+    expect(found.omitted).toBe(0);
+    expect(found.omittedLabel).toBeNull();
+    // El texto impreso no incluye la URL: solo viaja como href.
+    expect(JSON.stringify(found.items.map((i) => i.text))).not.toContain('github.com');
+  });
+
+  it('la capacidad es un entero (los pesos del estimador llegan a medias líneas)', () => {
+    expect(Number.isInteger(PRINT_CAPACITY_LINES)).toBe(true);
+  });
+
+  it('un estimado de capacidad − 2 deja lugar: entra', () => {
+    expect(repositoriesBlock(profileEstimating(PRINT_CAPACITY_LINES - 2))).toBeDefined();
+  });
+
+  it('un estimado de capacidad − 1 no deja lugar: no entra y no hay línea de omitidos', () => {
+    const data = profileEstimating(PRINT_CAPACITY_LINES - 1);
+    const sheet = buildPrintSheet(data, 'es', ORIGIN);
+    expect(sheet.blocks.find((b) => b.kind === 'repositories')).toBeUndefined();
+    expect(sheet.blocks.every((b) => b.omittedLabel === null)).toBe(true);
+    expect(JSON.stringify(sheet)).not.toContain('print.omitted.repositories');
+  });
+
+  it('el estimado agrega 1,5 líneas al incluir la línea de repositorios', () => {
+    const data = profileEstimating(PRINT_CAPACITY_LINES - 2);
+    const sheet = buildPrintSheet(data, 'es', ORIGIN);
+    const without = sheet.blocks.filter((b) => b.kind !== 'repositories');
+    expect(estimatePrintLines(sheet.blocks) - estimatePrintLines(without)).toBe(1.5);
+  });
+
+  it('con 5 repositorios muestra los 3 primeros y «y 2 más»', () => {
+    const found = block(
+      buildPrintSheet(makeCuratedProfile({ repositories: repos(5) }), 'es', ORIGIN).blocks,
+      'repositories',
+    );
+    expect(found.items.map((i) => i.text)).toEqual(['repo-0', 'repo-1', 'repo-2']);
+    expect(found.items).toHaveLength(PRINT_LIMITS.repositories);
+    expect(found.omitted).toBe(2);
+    expect(found.omittedLabel).toBe('y 2 más');
+  });
+
+  it('con 4 repositorios cierra con «and 1 more» en inglés', () => {
+    const found = block(
+      buildPrintSheet(makeCuratedProfile({ repositories: repos(4) }), 'en', ORIGIN).blocks,
+      'repositories',
+    );
+    expect(found.label).toBe('Repositories');
+    expect(found.omittedLabel).toBe('and 1 more');
+  });
+
+  it('un nombre de 45 caracteres se recorta con «…» y conserva el href completo', () => {
+    const long = 'n'.repeat(45);
+    const found = block(
+      buildPrintSheet(
+        makeCuratedProfile({ repositories: [repo(0, { name: long }), repo(1)] }),
+        'es',
+        ORIGIN,
+      ).blocks,
+      'repositories',
+    );
+    expect(found.items[0]!.text).toHaveLength(40);
+    expect(found.items[0]!.text.endsWith('…')).toBe(true);
+    expect(found.items[0]!.href).toBe('https://github.com/octo-org/repo-0');
+    expect(found.items[1]!.text).toBe('repo-1');
+  });
+
+  it('un nombre de 40 caracteres no se recorta', () => {
+    const exact = 'n'.repeat(40);
+    const found = block(
+      buildPrintSheet(
+        makeCuratedProfile({ repositories: [repo(0, { name: exact }), repo(1)] }),
+        'es',
+        ORIGIN,
+      ).blocks,
+      'repositories',
+    );
+    expect(found.items[0]!.text).toBe(exact);
+  });
+
+  it('sin repositories en sections no hay bloque aunque haya datos', () => {
+    const data = makeCuratedProfile({ sections: ['hero', 'experience'], repositories: repos(3) });
+    expect(repositoriesBlock(data)).toBeUndefined();
+  });
+
+  it('con repositories en sections pero sin datos no hay bloque', () => {
+    expect(repositoriesBlock(makeCuratedProfile({ repositories: [] }))).toBeUndefined();
+  });
+
+  it('respeta la posición de sections: antes de la experiencia si así viene', () => {
+    const data = makeCuratedProfile({ sections: ['hero', 'repositories', 'experience'] });
+    const kinds = buildPrintSheet(data, 'es', ORIGIN).blocks.map((b) => b.section);
+    expect(kinds).toEqual(['hero', 'repositories', 'experience']);
+  });
+});
+
+describe('estimatePrintLines (D9)', () => {
+  it('una hoja vacía pesa el encabezado y la URL de cierre', () => {
+    expect(estimatePrintLines([])).toBe(6);
+  });
+
+  it('suma el título de cada bloque y las líneas de texto por 110 caracteres', () => {
+    const summary = (text: string): PrintBlock => ({
+      kind: 'summary',
+      section: 'hero',
+      label: 'Perfil',
+      text,
+      omitted: 0,
+      omittedLabel: null,
+    });
+    expect(estimatePrintLines([summary('x'.repeat(110))])).toBe(6 + 1.5 + 1);
+    expect(estimatePrintLines([summary('x'.repeat(111))])).toBe(6 + 1.5 + 2);
+    // El resumen cuenta como máximo 4 líneas.
+    expect(estimatePrintLines([summary('x'.repeat(1000))])).toBe(6 + 1.5 + 4);
+  });
+
+  it('cuenta una línea por cada aviso de omitidos', () => {
+    const data = makeCuratedProfile({
+      sections: ['experience'],
+      experiences: experiences(13),
+    });
+    const blocks = buildPrintSheet(data, 'es', ORIGIN).blocks;
+    const withLabel = estimatePrintLines(blocks);
+    const withoutLabel = estimatePrintLines(blocks.map((b) => ({ ...b, omittedLabel: null })));
+    expect(withLabel - withoutLabel).toBe(1);
   });
 });

@@ -88,9 +88,25 @@ describe('PrintableSheet', () => {
       'experience',
       'skills',
       'projects',
+      'repositories',
       'education',
       'certifications',
     ]);
+  });
+
+  it('la línea de repositorios: rótulo en línea, nombres enlazados y sin imprimir la URL', () => {
+    const { container } = renderSheet(makeCuratedProfile());
+    const block = sheet(container).querySelector('[data-print-block="repositories"]');
+    expect(block).not.toBeNull();
+    expect(block?.querySelectorAll('p')).toHaveLength(1);
+    expect(block?.textContent).toBe('Repositorios: reservas-api · metricas-dashboard');
+    const links = [...(block?.querySelectorAll('a') ?? [])].map((a) => a.getAttribute('href'));
+    expect(links).toEqual([
+      'https://github.com/ejemplo/reservas-api',
+      'https://github.com/ejemplo/metricas-dashboard',
+    ]);
+    expect(block?.textContent).not.toContain('github.com');
+    expect(sheet(container).querySelector('[data-motion]')).toBeNull();
   });
 
   it('«Ver credencial» es un enlace con su href en el bloque de certificaciones, sin motion', () => {
