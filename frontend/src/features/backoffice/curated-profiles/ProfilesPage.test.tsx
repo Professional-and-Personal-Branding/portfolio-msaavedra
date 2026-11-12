@@ -22,6 +22,20 @@ const DUPLICADO = makeAdminCuratedProfile({
 
 // add-curated-profile-lifecycle: duplicar y distinguir el estado de cada perfil.
 describe('ProfilesPage', () => {
+  it('«Desde una vacante» lleva a la pantalla de crear desde una vacante, junto a «Nuevo perfil»', async () => {
+    server.use(
+      http.get(`${API}/admin/curated-profiles`, () => HttpResponse.json([PUBLICADO])),
+      http.get(`${API}/admin/job-postings`, () => HttpResponse.json([])),
+      ...adminHandlers,
+    );
+    renderWithProviders(<AppRouter />, { route: '/admin/perfiles' });
+    expect(await screen.findByRole('button', { name: 'Nuevo perfil' })).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Desde una vacante' }));
+    expect(
+      await screen.findByRole('heading', { name: 'Crear desde una vacante' }),
+    ).toBeInTheDocument();
+  });
+
   it('distingue un perfil publicado de un duplicado y de un archivado', async () => {
     const archivado = makeAdminCuratedProfile({
       id: 'cp-3',
