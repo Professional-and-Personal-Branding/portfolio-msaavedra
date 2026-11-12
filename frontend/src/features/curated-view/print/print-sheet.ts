@@ -196,7 +196,7 @@ const LINES = {
  * una sola página en todas las combinaciones de las dos bases y en un fixture al límite. El
  * valor y la tabla de calibración están en D9 de `design.md`.
  */
-export const PRINT_CAPACITY_LINES = 60;
+export const PRINT_CAPACITY_LINES = 63;
 
 const linesOf = (text: string): number => Math.ceil(text.length / CHARS_PER_LINE);
 
