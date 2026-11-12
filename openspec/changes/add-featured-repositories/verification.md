@@ -41,7 +41,7 @@ Número reservado solo para este change. Quedó en 🔍: los pasos 1 a 8 se ejec
 
 ## Desvíos y decisiones menores (sin cambiar arquitectura)
 
-1. **La sección entra al final en las bases sembradas antes del change (D4).** El diseño supone que ninguna plantilla declara `sectionsOrder`, pero `seed-runner.ts` escribe `sectionsOrder: [...SECTION_IDS]` en cada perfil curado (y en `all`). Las filas ya sembradas, **incluida la base del owner**, tienen un orden explícito de nueve ids; en ellas `repositories` llega por el relleno al final (después de `contact`), no después de `projects`. Con una base sembrada después del change (o con el orden vacío) queda entre `projects` y `education`. No hay migración de datos (D1): hay que decidir si se re-siembra, se reordena desde el constructor o se agrega un paso. Lo dejé documentado en el `CHANGELOG`.
+1. **Orden de secciones de las bases ya sembradas (D4) — resuelto con una migración de datos.** El seed escribe `sectionsOrder: [...SECTION_IDS]`, así que las filas anteriores tenían nueve ids y la sección habría llegado al final. La migración `20261112235611_order_repositories_section` la inserta tras `projects` (idempotente; no toca arreglos vacíos ni filas que ya la tienen). Evidencia: `verification/12-migracion-orden.txt`.
 2. **El puerto del repositorio usa `create` y `update`** (como `project`), no un único `save` (tarea 2.2). Los specs de los casos de uso verifican que no se escribe (`create`/`update`) ante conflicto o validación fallida.
 3. **Reglas de perfiles curados de `cv-consistency`.** Para que `cv:lint` sobre el ejemplo no dé `curated.orphan-reference` por `repository:experimento-oculto`, la regla reconoce los ids de los repositorios (visibles u ocultos) y cuenta los tags de los visibles en `curated.unmatched-filter-tag`. El delta de D16 no lo pedía: lo agregué como requisito nuevo en `specs/cv-consistency/spec.md`.
 4. **Digest del seed por defecto.** `LEGACY_SHA256` de `seed-runner.spec.ts` cambió porque `sectionsOrder` copia `SECTION_IDS`; verifiqué que quitando `repositories` de esas listas el digest vuelve al original.
@@ -54,6 +54,5 @@ Número reservado solo para este change. Quedó en 🔍: los pasos 1 a 8 se ejec
 
 ## Pendientes y dudas para la sesión principal
 
-- Decidir lo del punto 1 (orden de secciones de las bases existentes) antes del deploy.
 - El job `web-quality` del CI mide la Performance con el equipo de referencia: confirmar ≥ 85 tras abrir el PR.
 - `docs/manual/index.html` y `MANUAL.md` ya tienen TC-50; si otro change reservó otro número en paralelo, el conflicto esperable es el de las tablas del manual y `CHANGELOG.md`.

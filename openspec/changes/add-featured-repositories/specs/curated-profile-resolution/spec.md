@@ -49,3 +49,14 @@ La sección `repositories` SHALL contar como sección con datos solo si la vista
 #### Scenario: Sin repositorios
 - **WHEN** se resuelve cualquier perfil tras sembrar `docs/cv-data.json`
 - **THEN** `repositories` es un array vacío y `sections` no contiene `repositories`
+
+### Requirement: Los perfiles sembrados antes del change ubican repositories después de projects
+Una migración de datos SHALL insertar `repositories` justo después de `projects` en el `sectionsOrder` de cada perfil curado que tenga `projects` y no tenga `repositories`. MUST NOT tocar los arreglos vacíos ni los que ya lo tienen, y aplicarla dos veces MUST dejar el mismo resultado.
+
+#### Scenario: Perfiles sembrados antes del change ubican repositories después de projects
+- **WHEN** se aplica la migración sobre una base cuyos perfiles tienen el orden de nueve ids sin `repositories`
+- **THEN** cada uno queda con diez ids y `repositories` entre `projects` y `education`, y los perfiles con `sectionsOrder` vacío no cambian
+
+#### Scenario: Aplicación repetida
+- **WHEN** se vuelve a ejecutar el mismo `UPDATE`
+- **THEN** no modifica ninguna fila

@@ -71,6 +71,10 @@
 - [x] 10.2 `docs/DATA-POPULATION.md` § 10 (deja de ser «inerte»: panel, umbral de 2, solo GitHub) y § 12.10 (fila por campo: `id`, `name`, `url`, `language`, `description`, `technologies`, `tags`, `visible`, `stars` ignorado; dónde se ve y qué pantalla lo edita), más `repository:<id>` en la fila de `includeRefs`. Verificar: el escenario *Campo documentado* de `example-seed-data` para cada clave nueva del ejemplo.
 - [x] 10.3 `docs/CHANGELOG.md`: entrada del change (sección nueva, umbral, PDF condicional, JSON Resume, sin migración ni dependencias, tamaño del arranque). Verificar: lectura.
 
+## 10b. Migración del orden de secciones
+
+- [x] 10b.1 Migración de datos `order_repositories_section` (sin cambios de schema): inserta `repositories` después de `projects` en `CuratedProfile."sectionsOrder"`, idempotente, sin tocar arreglos vacíos. Verificar: aplicada sobre una base con el orden de nueve ids, resultado y segunda aplicación en `verification/12-migracion-orden.txt`; `prisma migrate diff` sin diferencias.
+
 ## 11. Cierre
 
 - [ ] 11.1 (validate `--strict` y `--all --strict` verdes, 42 de 42; falta el CI del PR, incluido `web-quality`) `npx -y @fission-ai/openspec@1.14.1 validate add-featured-repositories --strict` y `validate --all --strict` sin errores nuevos ni «Archive would refuse»; CI verde (`web-quality` incluido). Verificar: salida en `verification/11.1-validate.txt`.
