@@ -1,0 +1,20 @@
+backend
+
+
+Test Suites: 139 passed, 139 total
+Tests:       1706 passed, 1706 total
+
+Test Suites: 21 passed, 21 total
+Tests:       361 passed, 361 total
+openapi:export sin deriva
+frontend
+
+
+[32m✓ built in 5.27s[39m
+# Presupuesto de JS del arranque público
+| **Total** | | **150.1** |
+Presupuesto: 155 KB.
+manual:check ok: 49 casos alineados, 51 imágenes (3.74 MB), index.html 316 KB, 203 ids.
+
+frontend npm test: 76 archivos, 1166 tests. En la corrida completa fallaron 3 por tiempo (CuratedProfilePage, CuratedProfileView.staged y ProfileBuilderPage, con la maquina cargada por otros agentes); repetidos aislados: 3 archivos, 79 tests, todo verde.
+backend (resumen): lint y typecheck sin hallazgos; test 139 suites / 1706 (antes 126 / 1350); test:e2e 21 suites / 361 (antes 20 / 338); build ok.

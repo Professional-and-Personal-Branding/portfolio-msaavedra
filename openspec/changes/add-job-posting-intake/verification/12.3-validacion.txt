@@ -1,0 +1,10 @@
+Change 'add-job-posting-intake' is valid
+--- validate --all --strict
+✓ spec/runtime-theming
+✓ spec/share-links
+✓ spec/site-security-policy
+✓ spec/theme-customizer
+✓ spec/theme-resolution
+✓ spec/web-accessibility
+✓ spec/web-performance
+Totals: 42 passed, 0 failed (42 items)

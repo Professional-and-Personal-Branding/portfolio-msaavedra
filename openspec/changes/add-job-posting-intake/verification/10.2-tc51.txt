@@ -1,0 +1,38 @@
+TC-51 por la API contra la app real (API de la rama en :3354, base descartable portfolio_intake_check con el ejemplo). Sin credenciales en este archivo.
+-- login (cookie de sesion en s.jar)
+200
+-- sin sesion: POST /api/admin/job-postings
+{"statusCode":401,"message":"Unauthorized","error":"Unauthorized","requestId":"30a278f0-6198-47d2-b0bb-98e9c849a7b8","timestamp":"2026-11-12T23:26:46.594Z"} -> 401
+-- portal cerrado (LinkedIn)
+{"statusCode":422,"message":"«LinkedIn» no permite leer sus vacantes. Copiá el texto de la vacante y pegalo en «Texto».","error":"Unprocessable Entity","requestId":"1ee6d818-0d0c-4a94-90e3-ed039da0121e","timestamp":"2026-11-12T23:26:46.663Z"} -> 422
+-- https://127.0.0.1/
+{"statusCode":422,"message":"La URL no puede ser una dirección IP. Pegá el texto de la vacante.","error":"Unprocessable Entity","requestId":"e8722252-0c2c-41f9-b833-3ab10dc43faf","timestamp":"2026-11-12T23:26:46.722Z"} -> 422
+-- http://
+{"statusCode":422,"message":"Usá una URL que empiece con https://","error":"Unprocessable Entity","requestId":"e847e988-cae0-4787-be50-d375feed0d71","timestamp":"2026-11-12T23:26:46.778Z"} -> 422
+-- https://2130706433/
+{"statusCode":422,"message":"La URL no puede ser una dirección IP. Pegá el texto de la vacante.","error":"Unprocessable Entity","requestId":"e74af6c7-dfe9-4bff-8524-314d110b9ea2","timestamp":"2026-11-12T23:26:46.830Z"} -> 422
+-- https://[::1]/
+{"statusCode":422,"message":"La URL no puede ser una dirección IP. Pegá el texto de la vacante.","error":"Unprocessable Entity","requestId":"fa43dbae-4e17-4af5-8678-7be5c30c857b","timestamp":"2026-11-12T23:26:46.897Z"} -> 422
+-- url y text juntos
+{"statusCode":400,"message":"Indicá la URL o el texto de la vacante, no ambos","error":"Bad Request","requestId":"df8fb8cc-0750-490a-81c9-ccf0f3da2794","timestamp":"2026-11-12T23:26:46.952Z"} -> 400
+-- GET /api/job-postings (sin ruta publica)
+404
+
+== Chrome (panel en :8154, imagen de produccion; sesion por cookie, sin escribir contrasenas en ningun campo) ==
+1. Perfiles curados -> boton "Desde una vacante" -> /admin/perfiles/desde-vacante (menu: Perfiles curados activo; tabla: "Todavia no importaste vacantes").
+2. URL https://www.linkedin.com/jobs/view/3900000001 + "Analizar vacante" -> aviso en rojo: «LinkedIn» no permite leer sus vacantes. Copia el texto de la vacante y pegalo en «Texto». + boton "Pegar el texto". Ninguna peticion a LinkedIn (la API dio 422 antes de resolver DNS).
+3. "Pegar el texto" -> origen Texto, campo "URL de referencia" con la URL de LinkedIn.
+4. Texto ficticio (Java, Spring Boot, Kubernetes, AWS, microservicios, liderazgo, Kafka, Golang; "Modalidad hibrida") + "Analizar vacante" -> URL con ?vacante={id}; resultado:
+   "Tech Lead Backend (Acme Ejemplo, vacante ficticia)", "Hibrido · Texto pegado", "El texto se borra el 10 feb 2027",
+   "Cubre 4 de 8 requisitos detectados (50 %)"; con respaldo: java (en 14 items), microservices (5), spring-boot (3), leadership (1 item); sin respaldo: aws, go, kafka, kubernetes.
+5. "Crear borrador" -> el panel navega a /admin/perfiles/{id}.
+   GET /api/admin/curated-profiles: slug tech-lead-backend-acme-ejemplo-vacante-ficticia, visibility PRIVATE, listed false, filterTags [java, microservices, spring-boot, leadership], sin token.
+   /sitemap.xml: 0 apariciones del slug; GET /api/curated-profiles/{slug}: 404.
+
+== Paso 8 (URL publica real de un ATS): NO ejecutado ==
+Por indicacion de la sesion principal no se hacen peticiones a sitios de terceros. Evidencia sustituta: e2e job-postings (transporte y resolvedor falsos, 23 tests),
+tests de las cuatro fuentes con fixtures, node-http-transport.spec (servidor http local) y la integracion SafeHttpClient + NodeHttpTransport real con 0 conexiones al servidor local.
+Estado de TC-51: parcial (🔍).
+
+== a11y:check ==
+Ver 10.3-a11y.txt: las tres entradas nuevas sin violaciones en movil y escritorio.

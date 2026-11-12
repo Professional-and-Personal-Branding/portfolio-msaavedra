@@ -1,0 +1,5 @@
+Entorno de la app real (tarea 10.1), 2026-11-12. Sin credenciales.
+- Base descartable portfolio_intake_check en portfolio-postgres (5434), migrada (npm run prisma:status: al dia, incluida 20261112230734_add_job_posting_intake) y sembrada con npm run seed:example (SEED_DISPOSABLE_DB=1).
+- prisma:status se corrio contra esa base (DATABASE_URL apuntado solo en el proceso) antes de cada escritura; portfolio (la del owner) no se toco.
+- Administrador de prueba creado con npm run admin:bootstrap y una contrasena aleatoria guardada en .scratch/ (no versionado).
+- API de la rama: node dist/main en el puerto 3354. Frontend: imagen de frontend/Dockerfile (portfolio-intake-web:test) en el puerto 8154, con API_ORIGIN=http://host.docker.internal:3354.

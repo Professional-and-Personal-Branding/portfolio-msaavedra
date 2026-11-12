@@ -1,5 +1,18 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`add-job-posting-intake`)
+
+De una vacante a un borrador de perfil curado, sin IA: se importa una URL o un texto, se cruza con los tags reales del owner y se crea un borrador privado.
+
+- **Módulo `job-posting`.** Entidad `JobPosting` (migración aditiva: dos enums, una tabla y tres índices, sin relaciones), casos de uso de importar, listar, leer, borrar y sugerir, y `JobPostingReader` como único puerto que `curated-profile` consume. Reglas de arquitectura en `test/architecture.spec.ts`: `job-posting` no importa `curated-profile` ni escribe `CuratedProfile`, y `curated-profile` solo importa su puerto.
+- **Fuentes.** Greenhouse, Lever y Ashby por la API pública de su tablero (hosts fijos), respaldo JSON-LD `JobPosting` para cualquier página https pública y texto pegado con extracción determinística (modalidad, tipo de empleo, idioma, título). La variante EU de Greenhouse no figura en su documentación y cae al respaldo.
+- **Portales cerrados.** Lista versionada (LinkedIn, Indeed, Glassdoor, Wellfound, Computrabajo, Bumeran, Laborum, ZonaJobs, Workana, Upwork, Torre, Get on Board y agregadores): 422 sin DNS ni petición, también en cada redirect.
+- **Guarda contra SSRF.** Política de URL (solo `https`, puerto 443, sin usuario ni IP literales ni nombres locales), `SafeHttpClient` con la IP validada como la del socket, rechazo de direcciones privadas, loopback, link-local, CGNAT, ULA, NAT64, 6to4 e IPv4 mapeadas, redirects a mano (máximo 3, cada salto revalidado), tope de tamaño tras descomprimir, plazo de 10 s y sin credenciales salientes. Sin dependencias nuevas.
+- **Cobertura y borrador.** `computeTagCoverage` y el vocabulario de tags (`shared/domain/tag-vocabulary`, el mismo criterio que `curated.unmatched-filter-tag`); `POST /api/admin/curated-profiles/from-job-posting` crea un perfil `PRIVATE`, no enumerado y sin token, con tags que existen en los datos.
+- **Límite y purga.** 10 importaciones por minuto y por IP (429 con `Retry-After`). La descripción se guarda 90 días y se purga al listar, leer o importar, o con `npm run job-postings:purge`; la respuesta remota nunca se guarda.
+- **Panel.** Pantalla `/admin/perfiles/desde-vacante` (botón **Desde una vacante** en Perfiles curados, sin ítem nuevo en la barra): formulario por URL o texto, cobertura con casillas, borrador y tabla de vacantes importadas con `?vacante={id}`. `a11y:check` suma tres entradas.
+- **Docs.** `docs/MANUAL.md` e `index.html` (B17, TC-51, glosario y la variante de R1; `bo-desde-vacante.jpg` con `manual:capture`) y `docs/ARCHITECTURE.md`. Contrato: `openapi.json` y `api.d.ts` regenerados.
+
 ## Update — Noviembre 2026 (`add-cv-consistency-rules`)
 
 El CV se contrasta consigo mismo: una pantalla del panel y un comando sin base listan lo que se contradice.

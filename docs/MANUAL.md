@@ -222,11 +222,13 @@ Nueve tareas reales, con los pasos por pantalla, lo que tiene que pasar, los err
 4. **Diseño**: elegí el **Tema** y el **Acento**, y ordená u ocultá las **Secciones**.
 5. **Guardar**. Después, en **Publicación**, cambiá la **Visibilidad** a `Público` (o `Protegido` con token) y copiá el **Link público**.
 
+**Variante desde una vacante:** en lugar de los pasos 1 a 3, **Perfiles** → **Desde una vacante** (B17): pegá la URL o el texto de la vacante, dejá marcados los tags con respaldo en tus datos y pulsá **Crear borrador**. El borrador nace privado y se abre en el constructor; seguí desde el paso 2.
+
 **Resultado esperado:** El link responde 200 y muestra solo lo que pasa el filtro, con el titular y el tema del perfil nuevo. Mientras fue privado, nadie lo veía (404).
 
 **Errores típicos:** `Ya existe un perfil con ese slug` (409) al elegir un slug tomado, o que es el alias de otro perfil. Si la vista previa queda vacía, los tags no coinciden con ninguna experiencia: mirá los tags disponibles en **Selección**.
 
-**Casos:** TC-12, TC-13, TC-15, TC-16, TC-21
+**Casos:** TC-12, TC-13, TC-15, TC-16, TC-21, TC-51
 
 ### R2 — Mandarlo a una sola empresa
 
@@ -556,7 +558,7 @@ Ruta: `/admin/proyectos`. Proyectos destacados y enlaces sociales. Un proyecto c
 
 ### B8 — Perfiles
 
-Ruta: `/admin/perfiles`. Lista de perfiles curados con su slug, visibilidad, taxonomía y visitas, y las marcas `Archivado` y `No enumerado`. Por fila: abrir en el portafolio, editar, **Duplicar** y borrar. **Nuevo perfil** abre el constructor vacío.
+Ruta: `/admin/perfiles`. Lista de perfiles curados con su slug, visibilidad, taxonomía y visitas, y las marcas `Archivado` y `No enumerado`. Por fila: abrir en el portafolio, editar, **Duplicar** y borrar. **Nuevo perfil** abre el constructor vacío y **Desde una vacante** abre la pantalla B17, que arma un borrador a partir de una vacante.
 
 | Campo | Tipo | Obligatorio | Validación | Ejemplo |
 |---|---|---|---|---|
@@ -848,6 +850,52 @@ Arriba, el resumen («1 error · 2 avisos · 1 sugerencia», en singular cuando 
 **Misma revisión, sin base.** `npm run cv:lint` corre las mismas reglas sobre el archivo del seed (por defecto `docs/cv-data.json`; otro con `-- --file <ruta>`) y sale con **0** sin errores (los avisos y sugerencias no fallan), **1** con algún error y **2** si el archivo no existe o el seed lo rechaza. El CI lo corre sobre `docs/cv-data.json` y sobre el ejemplo.
 
 ![Revisión con un aviso y una sugerencia](manual/bo-revision.jpg)
+
+### B17 — Crear desde una vacante
+
+Ruta: `/admin/perfiles/desde-vacante`. Se llega con el botón **Desde una vacante** de **Perfiles curados** (B8), junto a **Nuevo perfil**; el ítem activo del menú sigue siendo **Perfiles curados**. Pegás la URL o el texto de una vacante y la pantalla te dice **qué parte de lo que pide ya está en tus datos** y arma un borrador privado del perfil curado. Es un paso determinístico: no usa IA, y la decisión de qué tags usar es tuya.
+
+**Fuentes admitidas.** Con **URL**: Greenhouse (`boards.greenhouse.io` y `job-boards.greenhouse.io`), Lever (`jobs.lever.co`, también `jobs.eu.lever.co`) y Ashby (`jobs.ashbyhq.com`) por la API pública de su tablero, y cualquier otra página de empleo https pública que incluya el bloque estructurado `JobPosting` (JSON-LD). Con **Texto**: lo que pegues, sin ninguna petición a la red.
+
+**Portales cerrados.** LinkedIn, Indeed, Glassdoor, Wellfound, Computrabajo, Bumeran, Laborum, ZonaJobs, Workana, Upwork, Torre, Get on Board y algunos agregadores no permiten leer sus vacantes. Con su URL, el servidor responde 422 sin hacer ninguna petición y la pantalla ofrece **Pegar el texto**, que cambia a **Texto** y deja la URL en **URL de referencia**: copiás el texto de la vacante, lo pegás y conservás el enlace.
+
+**Seguridad de la URL.** Solo `https://` al puerto 443, sin usuario ni contraseña, con un nombre de dominio público: se rechazan las IP (también `2130706433` o `[::1]`), `localhost` y los nombres internos, y se revisa a qué IP resuelve el nombre en cada redirect (hasta tres). Si algo de eso falla, el mensaje termina en «Pegá el texto de la vacante.» y no incluye la IP ni lo que respondió el sitio. Se permiten 10 importaciones por minuto.
+
+| Campo | Tipo | Obligatorio | Validación | Ejemplo |
+|---|---|---|---|---|
+| Origen | opción URL o Texto | Sí | Una sola a la vez | URL |
+| URL de la vacante | texto | Sí, con URL | `https://`, hasta 2048 caracteres | `https://jobs.lever.co/empresa/…` |
+| Texto de la vacante | área de texto | Sí, con Texto | De 50 a 50000 caracteres | El texto copiado de LinkedIn |
+| Título | texto | No | Hasta 200; sin él, la primera línea del texto | `Tech Lead Backend` |
+| Empresa | texto | No | Hasta 160 | `Atlas Demo` |
+| URL de referencia | texto | No | `https://`; se guarda, nunca se abre desde el servidor | `https://www.linkedin.com/jobs/view/123` |
+| Casilla de cada tag con respaldo | casilla | Al menos una | Los sugeridos vienen marcados | `java`, en 14 ítems |
+| Título del perfil | texto | No | Hasta 120; sin él, el de la vacante | `Ingeniero Backend Senior` |
+| Slug (opcional) | texto | No | Minúsculas, números y guiones; sin él, empresa y puesto con el primer sufijo libre | `atlas-demo-backend` |
+
+| Mensaje | Cuándo |
+|---|---|
+| Pegá la URL de la vacante | **Analizar vacante** con la URL vacía en el modo URL. |
+| Usá una URL que empiece con https:// | La URL (o la URL de referencia) no es https. |
+| Pegá al menos 50 caracteres del texto de la vacante | El texto tiene menos de 50 caracteres. |
+| Usá como máximo 50000 caracteres | El texto pasa de 50000 caracteres. |
+| Elegí al menos un tag | **Crear borrador** con todas las casillas desmarcadas. No sale ninguna petición. |
+| Hiciste muchas importaciones seguidas. Esperá un minuto. | La API respondió 429: más de 10 importaciones en un minuto. |
+| Vacante importada | La vacante era nueva (201). |
+| Vacante actualizada | Ya la habías importado: se actualizó (200) y se renueva el plazo del texto. |
+| Borrador creado. Es privado hasta que lo publiques. | El perfil se creó; se abre el constructor. |
+| Vacante borrada | Se confirmó **Borrar** en la tabla. |
+| Todavía no importaste vacantes | La tabla de **Vacantes importadas** está vacía. |
+
+**Cómo leer la cobertura.** «Cubre 4 de 8 requisitos detectados (50 %)» cuenta los términos que la pantalla reconoció en el título y la descripción (con un diccionario de tecnologías y temas, más tus propios tags) y cuántos de ellos existen como tags de tus datos. En **Con respaldo en tus datos** cada tag lleva una casilla y «en 14 ítems»: cuántas experiencias y proyectos visibles y skills lo tienen; los hasta 8 primeros vienen marcados. **Sin respaldo** lista lo que la vacante pide y no figura en tus datos: no tiene casilla porque un filtro con un tag que ningún ítem tiene no mostraría nada. Si ocultás una experiencia, sus tags dejan de contar y la próxima vez que abras la vacante pasan a **Sin respaldo**. Es una ayuda, no un puntaje: un término ausente puede ser un falso negativo (el diccionario no lo conoce) o un falso positivo (una palabra común).
+
+**El borrador.** **Crear borrador** crea un perfil curado **Privado** y **No enumerado**, sin token, con los tags que dejaste marcados (o cualquier otro tag de tus datos) y el titular vacío (hereda el del perfil base). El slug sale de la empresa y el puesto, con el primer sufijo libre (`-2` … `-50`), o es el que escribas (si está ocupado, 409). No guarda ningún vínculo con la vacante: borrar la vacante no cambia el perfil. Terminalo en el constructor (B9 a B12) y publicalo desde **Publicación**.
+
+**El texto se guarda 90 días.** La descripción se conserva 90 días desde la importación («El texto se borra el 10 feb 2027») y después se borra, con «El texto se borró el …»; título, empresa, ubicación, enlaces, fechas y la cobertura se conservan. Reimportar renueva el plazo. La purga corre sola al listar, abrir o importar vacantes, y también a mano con `npm run job-postings:purge` en `backend/`. **La respuesta del sitio remoto nunca se guarda.**
+
+**Vacantes importadas.** La tabla muestra Puesto y empresa, Fuente e Importada. **Abrir** pone `?vacante={id}` en la URL (se conserva al recargar) y **Borrar** pide confirmar. Nada de esto se publica: no hay ninguna ruta pública, ni el sitemap ni el head de un perfil muestran vacantes.
+
+![Crear desde una vacante, con el análisis de una vacante pegada](manual/bo-desde-vacante.jpg)
 
 ---
 
@@ -1902,6 +1950,54 @@ Antes y después de los `curl`, el contador de visitas de `ejemplo-backend` en *
 
 **Ejecutado** (7 de noviembre de 2026, imagen de `frontend/Dockerfile` en `localhost:8101`, API de la rama en `localhost:3347` y la base descartable `portfolio_resume_example`, sembrada con el ejemplo): el bloque **Por la API** dio exactamente los códigos esperados (200 para `all` y `ejemplo-secciones`, este sin `basics.profiles`; 404 para `ejemplo-borrador` y `ejemplo-archivado`; 401 para `ejemplo-protegido` sin token y 200 con `?token=` y con `X-Access-Token`; `Content-Location` al slug vigente en el alias; y `/ejemplo-backend/resume.json` sin `/api`, la página del sitio, 200 `text/html`). Los 8 archivos bajados (públicos en ES y EN, el protegido y los del panel, incluido el del perfil privado) validan contra el schema vendorizado con los formatos activos; el del protegido no contiene el token; el del panel es idéntico byte a byte al público en ES y EN; el contador de visitas de los 9 perfiles es el mismo antes y después, también con `?via=&src=`. En Chrome, la vista pública de `ejemplo-backend` no trae ningún enlace al JSON y la descarga por `fetch` devuelve las mismas empresas que la página. `a11y:check` con panel (56 cargas, incluido el constructor): 0 violaciones. **Observación:** el `Caddyfile` agrega `Cache-Control: no-cache` a toda ruta que no sea `/assets/*` ni `/fonts/*`, así que por el contenedor `web` un perfil protegido recibe dos líneas (`no-cache` y `private, no-store`); `no-store` sigue presente y lo mismo pasa con el detalle, pero conviene decidir si `/api/*` debe quedar fuera de esa regla. Los pasos del panel (1 a 5), que piden una sesión iniciada en el navegador, **no se ejecutaron a mano**: los cubren el test del constructor (los dos `href`, `download`, el perfil nuevo y los cambios sin guardar) y el e2e de la ruta del panel, y la sesión del `curl` es la misma que usa la descarga. Por eso el caso queda en 🔍. Evidencia: `openspec/changes/add-json-resume-export/verification/6.3-tc48.md`.
 
+### TC-51 — Crear un perfil desde una vacante 🔍
+
+**Precondición:** base de ejemplo **descartable** (nunca `portfolio`) sembrada con `npm run seed:example`, con la API y el frontend levantados (de preferencia la imagen de `frontend/Dockerfile`) y una sesión del panel. Los pasos 1 a 7 no necesitan internet; el paso 8 pide la URL de una vacante pública real.
+
+**Pasos (panel):**
+1. En **Perfiles curados**, pulsá **Desde una vacante** (junto a **Nuevo perfil**).
+2. Pulsá **Analizar vacante** sin escribir nada. Después escribí `http://careers.acme-ejemplo.com/job/1` y pulsá otra vez.
+3. Escribí `https://www.linkedin.com/jobs/view/3900000001` y pulsá **Analizar vacante**.
+4. Pulsá **Pegar el texto**.
+5. En **Texto de la vacante** pegá un texto de al menos 50 caracteres que mencione Java, Spring Boot, Kubernetes y liderazgo, y pulsá **Analizar vacante**.
+6. Desmarcá un tag, dejá **Slug (opcional)** vacío y pulsá **Crear borrador**.
+7. En otra ventana, **sin sesión**, abrí `/{slug}` y `/sitemap.xml`. Volvé a **Desde una vacante** y, en **Vacantes importadas**, pulsá **Borrar** y confirmá.
+8. Escribí la URL pública de una vacante de Greenhouse, Lever o Ashby (por ejemplo `https://jobs.lever.co/<empresa>/<id>`) y pulsá **Analizar vacante**.
+
+**Resultado esperado:**
+1. Se abre `/admin/perfiles/desde-vacante` con **Perfiles curados** activo en el menú y «Todavía no importaste vacantes» en la tabla.
+2. Aparece «Pegá la URL de la vacante» sin ninguna petición; con `http://` aparece «Usá una URL que empiece con https://».
+3. Aparece, en un aviso con `role="alert"`, ««LinkedIn» no permite leer sus vacantes. Copiá el texto de la vacante y pegalo en «Texto».», con el botón **Pegar el texto**. Nadie pidió nada a LinkedIn.
+4. El origen pasa a **Texto** y la URL queda en **URL de referencia**.
+5. Aparece «Vacante importada»; la URL lleva `?vacante={id}`; se ve el título, «Híbrido · Texto pegado», «El texto se borra el {fecha a 90 días}» y «Cubre {n} de {m} requisitos detectados ({p} %)», con los tags de tus datos marcados y «en {k} ítems», y el resto en **Sin respaldo**.
+6. Aparece «Borrador creado. Es privado hasta que lo publiques.» y se abre el constructor del perfil nuevo: **Privado**, **No enumerado**, con los tags que dejaste marcados y un slug armado con la empresa y el puesto.
+7. `/{slug}` responde 404 y el perfil no figura en el sitemap. Al borrar aparece «Vacante borrada» y el perfil creado sigue en **Perfiles curados**.
+8. Aparece «Vacante importada» con la fuente de esa vacante (Greenhouse, Lever, Ashby o Página de empleo) y su análisis; si ya la habías importado, «Vacante actualizada».
+
+**Errores típicos:** «La página tardó demasiado en responder», «La página es demasiado grande», «No encontramos esa vacante (puede estar cerrada)», «No encontramos una vacante en esa página» o «La URL apunta a una dirección que no está permitida», todos terminados en «Pegá el texto de la vacante.»: el sitio no se pudo leer; usá **Texto**. «Hiciste muchas importaciones seguidas. Esperá un minuto.»: pasaste de 10 por minuto. «Estos tags no existen en tus datos: …» (400) al crear el borrador: cambiaste tus datos desde otra pestaña; recargá la vacante. «Perfil curado: el slug «…» ya existe» (409): elegí otro **Slug**.
+
+**Por la API** (Bash; con la cookie de sesión del login de § 0 en `s.jar`):
+
+```bash
+API=http://localhost:3300
+post() { curl -s -b s.jar -w ' -> %{http_code}\n' -H 'Content-Type: application/json' -d "$1" $API/api/admin/job-postings; }
+
+curl -s -w ' -> %{http_code}\n' -H 'Content-Type: application/json' -d '{"url":"https://jobs.lever.co/e/1"}' $API/api/admin/job-postings   # 401 sin sesión
+post '{"url":"https://www.linkedin.com/jobs/view/123"}'     # 422 «LinkedIn» no permite leer sus vacantes…
+post '{"url":"https://127.0.0.1/"}'                          # 422 La URL no puede ser una dirección IP. Pegá el texto de la vacante.
+post '{"url":"https://2130706433/"}'                         # 422 (la misma IP en decimal)
+post '{"url":"http://careers.acme-ejemplo.com/job/1"}'       # 422 Usá una URL que empiece con https://
+post '{"url":"https://x.acme-ejemplo.com/","text":"x"}'      # 400 url y text juntos
+post '{"text":"Tech Lead. Buscamos una persona con Java, Spring Boot y Kubernetes para nuestro equipo remoto."}'   # 201 la primera vez, 200 después
+curl -s -b s.jar $API/api/admin/job-postings/<id>/suggestion        # coverage, suggestedFilterTags (solo tags de tus datos), suggestedTitle, suggestedSlugBase
+curl -s -b s.jar -H 'Content-Type: application/json' -d '{"jobPostingId":"<id>","filterTags":["java"]}' $API/api/admin/curated-profiles/from-job-posting   # 201 PRIVATE, listed false
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/job-postings   # 404 sin ruta pública
+```
+
+**Observado:** 12 de noviembre de 2026, imagen de `frontend/Dockerfile` en `localhost:8154`, API de la rama en `localhost:3354` y la base descartable `portfolio_intake_check`, sembrada con el ejemplo. Por la API: 401 sin sesión; 422 de portal cerrado, de IP literal (`127.0.0.1`, `2130706433`, `[::1]`) y de `http://`; 400 con `url` y `text` juntos; 404 en `GET /api/job-postings`. En Chrome: el aviso de portal cerrado, **Pegar el texto**, el análisis de una vacante pegada («Cubre 4 de 8 requisitos detectados (50 %)»: `java`, `microservices`, `spring-boot` y `leadership` con respaldo; `aws`, `go`, `kafka` y `kubernetes` sin él) y **Crear borrador**, que dejó un perfil `PRIVATE`, `listed: false`, fuera del sitemap y con 404 en la ruta pública. **No se ejecutó el paso 8:** no se hicieron peticiones a sitios de terceros; la lectura de Greenhouse, Lever, Ashby y JSON-LD se verificó con los e2e (transporte y resolvedor de DNS falsos), los tests de cada fuente con fixtures sanitizados y un servidor `http` local para el cliente HTTP; por eso el caso queda en 🔍.
+
+![Crear desde una vacante](manual/bo-desde-vacante.jpg)
+
 ## 4. Administrar el resto del contenido
 
 Desde el change `add-profile-content-admin`, todo lo que el sitio muestra se edita en el panel. El seed queda para **poblar una base vacía**, no para editar.
@@ -2350,10 +2446,11 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-45 | Cambiar la contraseña del panel | 🔍 | `curl` de la imagen de producción con dos sesiones (cambio, 401 de la anterior, límite y `admin:bootstrap`) · Chrome con la sesión revocada · `a11y:check` con Cuenta · e2e `admin-password` · pasos del panel con contraseñas reales sin ejecutar a mano |
 | TC-46 | Registrar una postulación y ver si abrieron el enlace | ✅ | app real con la imagen de producción y Chrome controlado · API (401, 404, 422, 409, 400, CSV) · CSV abierto en Excel con las fórmulas como texto · `a11y:check` con panel · e2e `admin-applications` · tests de la pantalla, el diálogo y la descarga |
 | TC-47 | Revisar la consistencia del CV | ✅ | app real con la imagen de producción y una base descartable · panel de punta a punta (resumen, Volver a revisar, Abrir, `?editar=`) · API (401, `no-store`, `locale`) · `cv:lint` con salidas 0, 1 y 2 · `a11y:check` con `/admin/revision` · e2e `cv-consistency` |
+| TC-51 | Crear un perfil desde una vacante | 🔍 | app real con la imagen de producción y Chrome (portal cerrado, **Pegar el texto**, análisis y **Crear borrador**) · API (401, 422 de portal cerrado y de IP literal, 400, 404, sin ruta pública) · e2e `job-postings` con transporte y DNS falsos · tests de la guarda, de las cuatro fuentes y de la pantalla · `a11y:check` con las tres entradas nuevas · el paso con una URL pública real no se ejecutó |
 | TC-42 | Verificar una certificación desde el sitio | ✅ | app real con la imagen de producción y Chrome no headless · API (400 con `http://`, 200, `null`) · PDF de una página con el enlace · `print:check` (ejemplo y CV) · tests de la sección, la hoja y el panel |
 | TC-43 | Ajustar skills y proyectos de un perfil | ✅ | app real con la imagen de producción y Chrome no headless · preview = ruta pública (API) · `a11y:check` con panel y axe sobre Selección · tests de las funciones puras, del constructor y del núcleo (unitarios y e2e) |
 
-**Pasan los 43 casos anteriores, TC-46 y TC-47; TC-44, TC-45 y TC-48 quedan en 🔍** (change `add-application-tracking`: TC-46 se ejecutó completo el 7 de noviembre de 2026 en la app real con una base descartable, con la captura `bo-postulaciones`; el Dashboard de TC-18 se regeneró con la franja de postulaciones) (change `add-json-resume-export`: TC-48 se ejecutó el 7 de noviembre de 2026 en la app real con una base descartable, por la API y con el contenedor `web`; los pasos del panel con sesión no se ejecutaron a mano; sin captura nueva) (change `add-cv-consistency-rules`: TC-47 se ejecutó el 7 de noviembre de 2026 en la app real con la imagen de `frontend/Dockerfile` y una base descartable, con la captura `bo-revision` nueva y `a11y:check` con `/admin/revision`; change `add-admin-password-change`: TC-45 se ejecutó el 5 de noviembre de 2026 en la app real con una base descartable, por la API y con la sesión revocada en Chrome, con la captura `bo-cuenta`; los pasos del panel que escriben contraseñas reales no se ejecutaron a mano; change `upgrade-profile-structured-data`: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado). TC-43 (change `add-builder-skill-project-overrides`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc43-overrides` nueva y la de `tc13-seleccion` regenerada con `manual:capture`. TC-42 (change `add-certification-verification`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc42-credencial` nueva y la del diálogo de certificación regenerada con `manual:capture`. TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 46 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
+**Pasan los 43 casos anteriores, TC-46 y TC-47; TC-44, TC-45, TC-48 y TC-51 quedan en 🔍** (change `add-job-posting-intake`: TC-51 se ejecutó el 12 de noviembre de 2026 en la app real con la imagen de `frontend/Dockerfile` y una base descartable, por la API y en Chrome, con la captura `bo-desde-vacante` nueva; el paso con una URL pública real de un ATS no se ejecutó por no hacer peticiones a sitios de terceros y la lectura de las fuentes queda cubierta por los e2e y los tests) (change `add-application-tracking`: TC-46 se ejecutó completo el 7 de noviembre de 2026 en la app real con una base descartable, con la captura `bo-postulaciones`; el Dashboard de TC-18 se regeneró con la franja de postulaciones) (change `add-json-resume-export`: TC-48 se ejecutó el 7 de noviembre de 2026 en la app real con una base descartable, por la API y con el contenedor `web`; los pasos del panel con sesión no se ejecutaron a mano; sin captura nueva) (change `add-cv-consistency-rules`: TC-47 se ejecutó el 7 de noviembre de 2026 en la app real con la imagen de `frontend/Dockerfile` y una base descartable, con la captura `bo-revision` nueva y `a11y:check` con `/admin/revision`; change `add-admin-password-change`: TC-45 se ejecutó el 5 de noviembre de 2026 en la app real con una base descartable, por la API y con la sesión revocada en Chrome, con la captura `bo-cuenta`; los pasos del panel que escriben contraseñas reales no se ejecutaron a mano; change `upgrade-profile-structured-data`: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado). TC-43 (change `add-builder-skill-project-overrides`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc43-overrides` nueva y la de `tc13-seleccion` regenerada con `manual:capture`. TC-42 (change `add-certification-verification`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc42-credencial` nueva y la del diálogo de certificación regenerada con `manual:capture`. TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 46 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
@@ -2501,3 +2598,6 @@ Cada término enlaza el concepto, el recorrido o el caso donde se usa.
 | **enlace de verificación** | La página pública de la credencial en el emisor (Credly, Accredible…); solo `https://`. El sitio lo muestra como «Ver credencial» y no comprueba que funcione. | B6 (Formación), TC-42 |
 | **postulación** | Un proceso de selección que registrás en el panel: empresa, puesto, estado, fecha y, si querés, el perfil y el enlace de seguimiento que mandaste. Es privada: no se publica en ningún lado. | B15 (Postulaciones), TC-46 |
 | **Abierto el** | La fecha de la primera apertura de una persona del enlace asociado a una postulación, o «Sin abrir». Las tuyas y las de bots no cuentan. | B15 (Postulaciones), TC-46 |
+| **vacante importada** | Una vacante que pegaste o leíste desde una URL en **Crear desde una vacante**: título, empresa, ubicación, modalidad, enlaces y los términos detectados; el texto se borra a los 90 días. Es privada: no se publica en ningún lado. | B17 (Crear desde una vacante), TC-51 |
+| **cobertura** | Cuántos de los requisitos que se detectaron en una vacante existen como tags de tus datos («Cubre 4 de 8 requisitos detectados»). Los que tienen respaldo se pueden marcar para el borrador; los demás figuran como **Sin respaldo**. | B17 (Crear desde una vacante), TC-51 |
+| **portal cerrado** | Un sitio de empleo (LinkedIn, Indeed…) cuyos términos no permiten leer sus vacantes: la plataforma no lo consulta y te pide pegar el texto. | B17 (Crear desde una vacante), TC-51 |
