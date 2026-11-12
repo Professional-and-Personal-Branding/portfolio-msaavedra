@@ -62,6 +62,12 @@
 - **`createTestApp(customize?)`.** `e2e-helpers.ts` acepta una función para sustituir proveedores (transporte, DNS, reloj); es compatible hacia atrás.
 - **`slugifyDraft` en `shared/domain`** (no en `job-posting`): lo usan la sugerencia y el borrador, y la regla 3 de D19 impide que `curated-profile` importe del dominio de `job-posting`.
 
+## Revisión de seguridad (12.2) y su resolución
+
+- **ALTO — ReDoS cuadrático (corregido).** Las regex sobre el HTML remoto (`SCRIPT_BLOCK` del JSON-LD y las de `htmlToText`) bloqueaban el event loop. Antes, a 100 KB: `<a ` repetido 4212 ms, `<!--` sin cierre 3500 ms, `<script ` sin cierre 487 ms en el escáner de JSON-LD. Ahora, a 2 MiB: 13 ms, 1 ms y 11 ms (el resto, de 0 a 21 ms). Arreglo: entrada de `htmlToText` cortada a 100 000 caracteres, recorrido lineal con `indexOf`, etiquetas con `[^<>]*`, escáner de JSON-LD lineal que termina sin cierre y colapso de saltos de línea sin cuantificadores anidados. Test: `infrastructure/sources/redos.spec.ts` (2 MiB de `<a `, `<script`, `<!--`, `<style`, `<script>` y otros, en `htmlToText`, `extractLdJsonBlocks` y `JsonLdJobPostingSource.fetch`, todos < 500 ms) y los tests funcionales existentes sin cambios.
+- **BAJO — título de un texto pegado sin `title`.** Es la primera línea del texto crudo: sobrevive a la purga y se copia al perfil. Se acepta; la pantalla lo aclara en el campo **Título**.
+- **BAJO — purga sin cron.** Perezosa (listar, leer, importar); `npm run job-postings:purge` existe pero ningún cron lo corre. Pendiente para el deploy (cron de Railway).
+
 ## TC-51 — Crear un perfil desde una vacante
 
 El texto completo del caso (precondición, pasos, resultado esperado, errores típicos, API y observado) está en `docs/MANUAL.md` (sección 3) y en `docs/manual/index.html`. Estado: **🔍**. Los pasos 1 a 7 se ejecutaron en la app real el 12 de noviembre de 2026; el paso 8 (URL pública real de un ATS) no, por no hacer peticiones a sitios de terceros: lo sustituyen los e2e (transporte y resolvedor falsos), los tests de cada fuente y el servidor `http` local del test del transporte.

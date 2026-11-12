@@ -238,9 +238,15 @@ function IntakeForm({
               <Input
                 id="intake-title"
                 aria-invalid={errors.title ? true : undefined}
-                aria-describedby={errors.title ? 'intake-title-error' : undefined}
+                aria-describedby={['intake-title-help', errors.title ? 'intake-title-error' : null]
+                  .filter(Boolean)
+                  .join(' ')}
                 {...register('title')}
               />
+              <p id="intake-title-help" className="text-xs text-text-muted">
+                Opcional. Sin él se usa la primera línea del texto. El título se conserva aunque el
+                texto se borre y se copia al perfil que crees.
+              </p>
               <FieldError id="intake-title" message={errors.title?.message} />
             </div>
             <div className="flex flex-col gap-1.5">

@@ -348,6 +348,9 @@ model JobPosting {
 - **[Un sitio público controlado por terceros recibe el GET]** → riesgo residual aceptado (D10).
 - **[`net.BlockList` y las IPv4 mapeadas]** → extracción explícita con test (D9), sin depender del comportamiento de la versión de Node.
 - **[Límite en memoria]** → el contador de `@nestjs/throttler` es por instancia; con una sola réplica en Railway alcanza.
+- **[Regex sobre entrada remota]** (revisión de seguridad 12.2, hallazgo alto) → las regex con `[\s\S]*?` o `[^>]*` son cuadráticas con entradas patológicas (100 KB de `<a ` tardaban unos 4 s; 2 MiB, horas) y el `AbortSignal` no corta código síncrono. `htmlToText` corta su entrada a 100 000 caracteres (5 veces `MAX_DESCRIPTION_LENGTH`) y es un recorrido lineal (`indexOf`; una etiqueta es `<` + letra + `[^<>]*` + `>`; comentario, `<script>` o `<style>` sin cierre descartan el resto); el escáner de JSON-LD también es lineal y termina si no hay cierre. Test de tiempo con 2 MiB patológicos (`redos.spec.ts`, umbral 500 ms; medido: pocos ms).
+- **[Título del texto pegado]** → sin `title`, el título es la primera línea del texto crudo: sobrevive a la purga de 90 días y se copia al perfil curado. Se acepta (decisión de la sesión principal); el campo **Título** de la pantalla lo aclara.
+- **[Purga sin cron]** → la purga es perezosa (al listar, leer o importar); `npm run job-postings:purge` existe pero ningún cron lo corre todavía. Pendiente para el deploy (cron de Railway).
 - **[Changes en paralelo]** → `schema.prisma` (modelos nuevos al final del archivo en este change y en `add-integrations-foundation`), `app.module.ts`, `architecture.spec.ts`, `docs/MANUAL.md` (TC-51 reservado; la pantalla B17 puede chocar), `index.html`, `capture-manual.mjs`, `check-a11y.mjs`, `CHANGELOG.md`, `ARCHITECTURE.md` y los generados `openapi.json`/`api.d.ts` (se regeneran después del merge). Se resuelven en el merge sin renumerar TC-51.
 
 ## Migration Plan

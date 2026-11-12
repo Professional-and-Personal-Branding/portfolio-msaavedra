@@ -25,14 +25,52 @@ import {
   unparseable,
 } from './source-helpers';
 
-const SCRIPT_BLOCK = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi;
 const LD_JSON_TYPE = /\btype\s*=\s*["']?\s*application\/ld\+json\b/i;
+/** Un `<script>` con más atributos que esto no es uno real: se ignora sin mirarlo. */
+const MAX_SCRIPT_ATTRIBUTES = 1000;
 
-/** Cuerpos de los `<script type="application/ld+json">`, atributos en cualquier orden y caso. */
+const isAlnum = (char: string | undefined): boolean =>
+  char !== undefined && /[A-Za-z0-9]/.test(char);
+
+/** Índice posterior al `>` de un `</script ...>` desde `from`, o -1 si no hay cierre. */
+function findScriptClose(html: string, from: number): { start: number; end: number } | null {
+  let k = html.indexOf('</', from);
+  while (k !== -1) {
+    if (html.slice(k + 2, k + 8).toLowerCase() === 'script') {
+      let j = k + 8;
+      while (j < html.length && /\s/.test(html[j])) j += 1;
+      if (html[j] === '>') return { start: k, end: j + 1 };
+    }
+    k = html.indexOf('</', k + 2);
+  }
+  return null;
+}
+
+/**
+ * Cuerpos de los `<script type="application/ld+json">`, atributos en cualquier orden y caso.
+ * Escáner lineal con `indexOf` (sin regex sobre el HTML remoto, que son cuadráticas con
+ * entradas patológicas: 2 MiB de `<script` sin cierre bloquearían el event loop). Sin cierre,
+ * el escaneo termina.
+ */
 export function extractLdJsonBlocks(html: string): string[] {
   const blocks: string[] = [];
-  for (const match of html.matchAll(SCRIPT_BLOCK)) {
-    if (LD_JSON_TYPE.test(match[1])) blocks.push(match[2]);
+  let i = 0;
+  for (;;) {
+    const lt = html.indexOf('<', i);
+    if (lt === -1) break;
+    if (html.slice(lt + 1, lt + 7).toLowerCase() !== 'script' || isAlnum(html[lt + 7])) {
+      i = lt + 1;
+      continue;
+    }
+    const tagEnd = html.indexOf('>', lt + 7);
+    if (tagEnd === -1) break;
+    const close = findScriptClose(html, tagEnd + 1);
+    if (close === null) break;
+    const attributes = html.slice(lt + 7, tagEnd);
+    if (attributes.length <= MAX_SCRIPT_ATTRIBUTES && LD_JSON_TYPE.test(attributes)) {
+      blocks.push(html.slice(tagEnd + 1, close.start));
+    }
+    i = close.end;
   }
   return blocks;
 }

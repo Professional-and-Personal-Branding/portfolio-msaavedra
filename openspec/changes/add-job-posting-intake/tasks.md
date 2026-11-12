@@ -97,6 +97,6 @@
 ## 12. Cierre
 
 - [x] 12.1 Todo verde: `npm test`, `npm run test:e2e`, `npm run lint` y `npm run typecheck` en `backend/`; `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`, `npm run perf:budget` y `npm run manual:check` en `frontend/`. Verificar: conteos en `verification/12.1-cierre.txt`.
-- [ ] 12.2 Revisión de seguridad independiente (`code-review` o `security-review`) sobre el diff del cliente HTTP, las fuentes y el controller, con el modelo de amenazas de D10 como lista. Verificar: hallazgos y su resolución en `verification/12.2-revision-seguridad.md`. **Pendiente de la sesión principal** (no la hace el implementador).
+- [x] 12.2 Revisión de seguridad independiente (`code-review` o `security-review`) sobre el diff del cliente HTTP, las fuentes y el controller, con el modelo de amenazas de D10 como lista. Verificar: hallazgos y su resolución en `verification/12.2-revision-seguridad.md`. Hecha por la sesión principal: un hallazgo alto (ReDoS) corregido y dos bajos documentados; ver `verification.md`.
 - [x] 12.3 `npx -y @fission-ai/openspec@1.14.1 validate add-job-posting-intake --strict` y `validate --all --strict` sin fallos nuevos y sin avisos «Archive would refuse» para este change. Verificar: salida en `verification/12.3-validacion.txt`.
 - [x] 12.4 Borrar `portfolio_intake_check` y confirmar que `portfolio` no tiene la migración (`prisma migrate status` contra ella la muestra pendiente). Verificar: `verification/12.4-base-del-owner.txt`.

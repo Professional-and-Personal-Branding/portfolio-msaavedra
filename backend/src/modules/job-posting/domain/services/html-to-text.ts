@@ -1,3 +1,8 @@
+import { MAX_DESCRIPTION_LENGTH } from '../entities/job-posting.entity';
+
+/** Tope de la entrada de `htmlToText`: 5 veces la descripción guardada (100 000 caracteres). */
+export const MAX_HTML_INPUT_LENGTH = MAX_DESCRIPTION_LENGTH * 5;
+
 /**
  * HTML → texto plano (D14), puro y sin dependencias. Quita `<script>` y `<style>` con su
  * contenido, convierte los cortes de bloque en saltos de línea y `<li>` en «• », quita el resto de
@@ -71,29 +76,127 @@ export function decodeEntities(text: string): string {
   });
 }
 
-const TAG_LEFTOVER = /<\/?[a-z][^>]*>|<!--/i;
+/** `<etiqueta ...>` completa, sin otra `<` ni `>` en el medio: el cuerpo no puede crecer sin cierre. */
+const TAG_LEFTOVER = /<\/?[a-z][^<>]*>|<!--/i;
 
-function stripOnce(html: string): string {
-  return decodeEntities(
-    html
-      .replace(/<!--[\s\S]*?-->/g, ' ')
-      .replace(/<(script|style)\b[\s\S]*?<\/\1\s*>/gi, ' ')
-      .replace(/<(script|style)\b[\s\S]*$/gi, ' ')
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<li\b[^>]*>/gi, '\n• ')
-      .replace(/<\/(?:p|div|li|h[1-6]|tr|table|section|article|header|footer)\s*>/gi, '\n')
-      .replace(/<\/?[a-z!][^>]*>/gi, ' '),
-  );
+const BLOCK_CLOSE = new Set([
+  'p',
+  'div',
+  'li',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'tr',
+  'table',
+  'section',
+  'article',
+  'header',
+  'footer',
+]);
+
+const isLetter = (code: number): boolean =>
+  (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+const isAlnum = (code: number): boolean => isLetter(code) || (code >= 48 && code <= 57);
+
+/**
+ * Índice del cierre `</nombre ...>` desde `from`, o -1. Búsqueda con `indexOf` hacia adelante:
+ * lineal aunque el HTML no tenga cierre (nada de regex con `[\s\S]*?`, cuadráticas sobre entrada
+ * remota). Devuelve el índice del primer carácter posterior al `>` del cierre.
+ */
+function findClosing(html: string, name: string, from: number): number {
+  let k = html.indexOf('</', from);
+  while (k !== -1) {
+    if (html.slice(k + 2, k + 2 + name.length).toLowerCase() === name) {
+      let j = k + 2 + name.length;
+      while (j < html.length && /\s/.test(html[j])) j += 1;
+      if (html[j] === '>') return j + 1;
+    }
+    k = html.indexOf('</', k + 2);
+  }
+  return -1;
 }
 
+/**
+ * Un recorrido lineal que quita comentarios, `<script>`/`<style>` con su contenido (sin cierre,
+ * se descarta el resto), convierte cortes de bloque y `<li>`, y reemplaza las demás etiquetas por
+ * un espacio. Una etiqueta es `<` + letra, `/` o `!` + `[^<>]*` + `>`: un `<` suelto (`a < b`) es
+ * texto. Cada carácter se mira una cantidad acotada de veces.
+ */
+function stripMarkup(html: string): string {
+  const out: string[] = [];
+  let i = 0;
+  while (i < html.length) {
+    const lt = html.indexOf('<', i);
+    if (lt === -1) {
+      out.push(html.slice(i));
+      break;
+    }
+    out.push(html.slice(i, lt));
+
+    if (html.startsWith('<!--', lt)) {
+      const end = html.indexOf('-->', lt + 4);
+      if (end === -1) break; // comentario sin cierre: se descarta el resto
+      out.push(' ');
+      i = end + 3;
+      continue;
+    }
+
+    let j = lt + 1;
+    const closing = html[j] === '/';
+    if (closing) j += 1;
+    const first = html.charCodeAt(j);
+    if (!isLetter(first) && !(first === 33 && !closing)) {
+      out.push('<'); // `<` suelto
+      i = lt + 1;
+      continue;
+    }
+    let nameEnd = j;
+    while (nameEnd < html.length && isAlnum(html.charCodeAt(nameEnd))) nameEnd += 1;
+    const name = html.slice(j, nameEnd).toLowerCase();
+
+    // El fin de la etiqueta: el primer `>`, siempre que no aparezca otra `<` antes.
+    let end = nameEnd;
+    while (end < html.length && html[end] !== '>' && html[end] !== '<') end += 1;
+    if (html[end] !== '>') {
+      out.push('<'); // sin cierre: es texto
+      i = lt + 1;
+      continue;
+    }
+    i = end + 1;
+
+    if (!closing && (name === 'script' || name === 'style')) {
+      const close = findClosing(html, name, i);
+      if (close === -1) break; // sin cierre: se descarta el resto
+      out.push(' ');
+      i = close;
+    } else if (!closing && name === 'br') out.push('\n');
+    else if (!closing && name === 'li') out.push('\n• ');
+    else if (closing && BLOCK_CLOSE.has(name)) out.push('\n');
+    else out.push(' ');
+  }
+  return out.join('');
+}
+
+function stripOnce(html: string): string {
+  return decodeEntities(stripMarkup(html));
+}
+
+/**
+ * HTML → texto. La entrada se corta a `MAX_HTML_INPUT_LENGTH` (5 veces el tope de la descripción)
+ * antes de tocarla: una respuesta remota de varios MiB no puede ocupar el event loop, y de todos
+ * modos el resultado se corta a 20 000 caracteres.
+ */
 export function htmlToText(html: string): string {
-  let text = html;
+  let text = html.length > MAX_HTML_INPUT_LENGTH ? html.slice(0, MAX_HTML_INPUT_LENGTH) : html;
   for (let pass = 0; pass < 3; pass += 1) {
     text = stripOnce(text);
     if (!TAG_LEFTOVER.test(text)) break;
   }
   // Si tras tres pasadas quedan etiquetas, se quitan sin decodificar más.
-  text = text.replace(/<\/?[a-z][^>]*>/gi, ' ');
+  text = text.replace(/<\/?[a-z][^<>]*>/gi, ' ');
 
   return text
     .replace(/\r\n?/g, '\n')
@@ -101,7 +204,7 @@ export function htmlToText(html: string): string {
     .split('\n')
     .map((line) => line.trim())
     .join('\n')
-    .replace(/\n{2,}(?=• )/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
+    .replace(/\n\n(?=• )/g, '\n')
     .trim();
 }
