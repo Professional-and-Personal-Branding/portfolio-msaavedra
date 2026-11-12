@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { makeAdminCuratedProfile } from '@/test/fixtures/admin';
+import { makeAdminCuratedProfile, makeAdminRepository } from '@/test/fixtures/admin';
 import type { AdminExperience, AdminProject, AdminSkillCategory } from '../shared/admin-types';
 import {
   allSections,
@@ -136,6 +136,13 @@ describe('tagUniverse', () => {
   it('incluye los tags extra ya elegidos aunque no existan en los datos', () => {
     expect(tagUniverse([], [], [], ['nuevo'])).toEqual(['nuevo']);
     expect(tagUniverse()).toEqual([]);
+  });
+
+  it('suma los tags de los repositorios', () => {
+    expect(tagUniverse([], [], [], [], [makeAdminRepository({ tags: ['go', 'java'] })])).toEqual([
+      'go',
+      'java',
+    ]);
   });
 });
 

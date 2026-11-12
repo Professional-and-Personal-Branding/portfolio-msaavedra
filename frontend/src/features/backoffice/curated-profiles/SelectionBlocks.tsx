@@ -2,7 +2,12 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import { useId, useMemo, useState, type ReactNode } from 'react';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
-import type { AdminExperience, AdminProject, AdminSkillCategory } from '../shared/admin-types';
+import type {
+  AdminExperience,
+  AdminProject,
+  AdminRepository,
+  AdminSkillCategory,
+} from '../shared/admin-types';
 import { ErrorPanel, LoadingRows } from '../shared/states';
 import type { ProfileDraft } from './profile-draft';
 import {
@@ -189,6 +194,49 @@ export function ProjectsBlock({ draft, query, onOverride }: BlockProps<AdminProj
                 conflict={hasOverrideConflict(draft, project.id)}
                 hidden={!project.visible}
                 onChange={(mode) => onOverride(project.id, mode)}
+              />
+            ))}
+          </OverrideList>
+        </OverrideScrollArea>
+      </BlockState>
+    </div>
+  );
+}
+
+/**
+ * Bloque Repositorios: Incluir y Excluir por repositorio, los ocultos al final (D13 de
+ * `add-featured-repositories`). Con `belowThreshold` avisa que la sección necesita 2 repositorios.
+ */
+export function RepositoriesBlock({
+  draft,
+  query,
+  onOverride,
+  belowThreshold,
+}: BlockProps<AdminRepository> & { belowThreshold: boolean }) {
+  return (
+    <div>
+      <p className="mb-2 text-sm font-semibold">Repositorios</p>
+      <p className="mb-3 text-xs text-text-dim">
+        Forzá la inclusión de un repositorio que no comparte tags, o excluí uno que sí.
+      </p>
+      {belowThreshold && (
+        <p role="status" className="mb-3 text-xs text-text-dim">
+          La sección Repositorios se muestra desde 2; este perfil resuelve 1
+        </p>
+      )}
+      <BlockState query={query}>
+        <OverrideScrollArea label="Repositorios">
+          <OverrideList>
+            {hiddenLast(query.data ?? []).map((repository) => (
+              <OverrideRow
+                key={repository.id}
+                name={repository.name}
+                label={repository.name}
+                detail={repository.language ?? undefined}
+                state={overrideState(draft, repository.id)}
+                conflict={hasOverrideConflict(draft, repository.id)}
+                hidden={!repository.visible}
+                onChange={(mode) => onOverride(repository.id, mode)}
               />
             ))}
           </OverrideList>

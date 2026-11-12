@@ -1285,3 +1285,195 @@ describe('ProfileBuilderPage — Descargar JSON Resume', () => {
     );
   });
 });
+
+// add-featured-repositories (D13): repositorios en la pestaña Selección.
+describe('ProfileBuilderPage — repositorios', () => {
+  const savedProfile = (overrides: Partial<AdminCuratedProfile> = {}) =>
+    http.get(`${API}/admin/curated-profiles`, () =>
+      HttpResponse.json([makeAdminCuratedProfile({ filterTags: ['java'], ...overrides })]),
+    );
+  const patchCapture = (sent: Record<string, unknown>[]) =>
+    http.patch(`${API}/admin/curated-profiles/:id`, async ({ request }) => {
+      sent.push((await request.json()) as Record<string, unknown>);
+      return HttpResponse.json(makeAdminCuratedProfile());
+    });
+  const openSelection = async (user: ReturnType<typeof userEvent.setup>) => {
+    await openBuilder();
+    await user.click(screen.getByRole('tab', { name: 'Selección' }));
+  };
+  const button = (name: string) => screen.getByRole('button', { name });
+
+  it('el bloque Repositorios lista cada repositorio, los ocultos al final y marcados', async () => {
+    server.use(savedProfile(), trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    const region = await screen.findByRole('region', { name: 'Repositorios' });
+    const rows = within(region).getAllByRole('listitem');
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toHaveTextContent('reservas-api');
+    expect(rows[1]).toHaveTextContent('experimento-oculto');
+    expect(within(rows[1] as HTMLElement).getByText('Oculto')).toBeInTheDocument();
+    // Un repositorio oculto no se puede incluir.
+    expect(button('Incluir experimento-oculto')).toBeDisabled();
+    expect(button('Excluir experimento-oculto')).toBeEnabled();
+    expect(button('Incluir reservas-api')).toBeEnabled();
+  });
+
+  it('incluir un repositorio manda su id en includeIds', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    server.use(savedProfile(), trackPreviews(bodies), ...adminHandlers);
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    await user.click(await screen.findByRole('button', { name: 'Incluir reservas-api' }));
+
+    expect(button('Incluir reservas-api')).toHaveAttribute('aria-pressed', 'true');
+    await waitFor(() => expect(bodies.at(-1)).toMatchObject({ includeIds: ['repo-1'] }), {
+      timeout: 3000,
+    });
+  });
+
+  it('excluir un repositorio incluido lo mueve de includeIds a excludeIds', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    server.use(savedProfile({ includeIds: ['repo-1'] }), trackPreviews(bodies), ...adminHandlers);
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    expect(await screen.findByRole('button', { name: 'Incluir reservas-api' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await user.click(button('Excluir reservas-api'));
+
+    expect(button('Incluir reservas-api')).toHaveAttribute('aria-pressed', 'false');
+    expect(button('Excluir reservas-api')).toHaveAttribute('aria-pressed', 'true');
+    await waitFor(
+      () => expect(bodies.at(-1)).toMatchObject({ includeIds: [], excludeIds: ['repo-1'] }),
+      { timeout: 3000 },
+    );
+  });
+
+  it('quitar la inclusión de un repositorio oculto ya incluido está permitido', async () => {
+    server.use(savedProfile({ includeIds: ['repo-2'] }), trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    const incluir = await screen.findByRole('button', { name: 'Incluir experimento-oculto' });
+    expect(incluir).toBeEnabled();
+    expect(incluir).toHaveAttribute('aria-pressed', 'true');
+    await user.click(incluir);
+    expect(button('Incluir experimento-oculto')).toBeDisabled();
+  });
+
+  it('un repositorio incluido existente no cuenta como referencia huérfana', async () => {
+    server.use(savedProfile({ includeIds: ['repo-1'] }), trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    await screen.findByRole('region', { name: 'Repositorios' });
+    expect(screen.queryByText(/referencias? a/)).not.toBeInTheDocument();
+  });
+
+  it('un id de repositorio borrado sí se informa como huérfano', async () => {
+    server.use(savedProfile({ excludeIds: ['repo-borrado'] }), trackPreviews([]), ...adminHandlers);
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    expect(await screen.findByText('1 referencia a un ítem que ya no existe')).toBeInTheDocument();
+  });
+
+  it('si la lista de repositorios falla: error con reintento, sin huérfanos y el PATCH no altera los ids', async () => {
+    const sent: Record<string, unknown>[] = [];
+    server.use(
+      savedProfile({ includeIds: ['repo-1'], excludeIds: ['ya-no-existe'] }),
+      http.get(`${API}/admin/featured-repositories`, () =>
+        HttpResponse.json({ statusCode: 500, message: 'Error', error: 'x' }, { status: 500 }),
+      ),
+      patchCapture(sent),
+      trackPreviews([]),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openSelection(user);
+
+    expect(await screen.findByRole('button', { name: /Reintentar/ })).toBeInTheDocument();
+    expect(screen.queryByText(/referencias? a/)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Publicación' }));
+    await user.click(screen.getByRole('button', { name: /Guardar/ }));
+    // Sin cambios no hay PATCH; lo importante es que ningún id se perdió.
+    expect(
+      sent.every(
+        (body) => body.includeIds === undefined || (body.includeIds as string[]).includes('repo-1'),
+      ),
+    ).toBe(true);
+  });
+
+  describe('aviso del umbral', () => {
+    const previewWith = (repositories: number, sections: string[]) =>
+      http.post(`${API}/admin/curated-profiles/preview`, () => {
+        const view = makeCuratedProfile({ sections });
+        return HttpResponse.json({
+          ...view,
+          repositories: view.repositories.slice(0, repositories),
+        });
+      });
+    const NOTICE = 'La sección Repositorios se muestra desde 2; este perfil resuelve 1';
+
+    it('con 1 repositorio y sin la sección en sections avisa del umbral', async () => {
+      server.use(savedProfile(), previewWith(1, ['hero', 'experience']), ...adminHandlers);
+      const user = userEvent.setup();
+      await openSelection(user);
+
+      expect(await screen.findByText(NOTICE)).toBeInTheDocument();
+    });
+
+    it('con 2 repositorios y la sección presente no avisa', async () => {
+      server.use(
+        savedProfile(),
+        previewWith(2, ['hero', 'experience', 'repositories']),
+        ...adminHandlers,
+      );
+      const user = userEvent.setup();
+      await openSelection(user);
+
+      await screen.findByRole('region', { name: 'Repositorios' });
+      expect(screen.queryByText(NOTICE)).not.toBeInTheDocument();
+    });
+
+    it('con 0 repositorios no avisa', async () => {
+      server.use(savedProfile(), previewWith(0, ['hero', 'experience']), ...adminHandlers);
+      const user = userEvent.setup();
+      await openSelection(user);
+
+      await screen.findByRole('region', { name: 'Repositorios' });
+      expect(screen.queryByText(NOTICE)).not.toBeInTheDocument();
+    });
+  });
+
+  it('el aviso de faltantes en EN lista el repositorio sin descripción en inglés', async () => {
+    server.use(
+      http.post(`${API}/admin/curated-profiles/preview`, () =>
+        HttpResponse.json({
+          ...makeCuratedProfile(),
+          missingTranslations: [{ entity: 'repository', id: 'repo-1', field: 'description' }],
+        }),
+      ),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    await openBuilder();
+    await user.click(screen.getByRole('tab', { name: 'Publicación' }));
+    await user.click(
+      within(screen.getByRole('tablist', { name: 'Idioma de la vista previa' })).getByRole('tab', {
+        name: 'en',
+      }),
+    );
+
+    const notice = screen.getByTestId('missing-translations');
+    await waitFor(() => expect(notice).toHaveTextContent('Falta 1 traducción en EN'));
+    expect(notice).toHaveTextContent('Repositorio');
+    expect(notice).toHaveTextContent('reservas-api: Descripción');
+  });
+});

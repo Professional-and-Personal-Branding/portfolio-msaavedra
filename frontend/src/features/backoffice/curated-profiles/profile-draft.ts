@@ -3,6 +3,7 @@ import type {
   AdminCuratedProfile,
   AdminExperience,
   AdminProject,
+  AdminRepository,
   AdminSkillCategory,
   CreateCuratedProfileBody,
   LocalizedText,
@@ -174,10 +175,12 @@ export function tagUniverse(
   categories: readonly AdminSkillCategory[] = [],
   projects: readonly AdminProject[] = [],
   extra: readonly string[] = [],
+  repositories: readonly AdminRepository[] = [],
 ): string[] {
   const tags = new Set<string>(extra);
   for (const experience of experiences) for (const tag of experience.tags) tags.add(tag);
   for (const project of projects) for (const tag of project.tags) tags.add(tag);
+  for (const repository of repositories) for (const tag of repository.tags) tags.add(tag);
   for (const category of categories) {
     for (const skill of category.skills) for (const tag of skill.tags) tags.add(tag);
   }
