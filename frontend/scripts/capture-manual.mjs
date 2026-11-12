@@ -102,6 +102,12 @@ const MANIFEST = [
   { id: 'tc34-acento', ruta: `/ejemplo-backend${L}&theme=modern-light` },
   { id: 'tc35-movil-hero', ruta: `/ejemplo-backend${L}`, viewport: 'mobile' },
   { id: 'tc36-ejemplo-home', ruta: `/${L}`, recorte: { fullPage: true, altoMax: 1700 } },
+  {
+    // La sección Repositorios destacados de la home (chunk diferido, dos tarjetas).
+    id: 'tc50-seccion-publica',
+    ruta: `/${L}`,
+    pasos: [['verSeccion', '#repositories'], ['esperar', 800], ['esperarTexto', 'Repositorios destacados'], ['esperar', 400]],
+  },
   // ── Panel ──
   { id: 'tc12a-perfiles-lista', ruta: '/admin/perfiles', sesion: true, esperar: 'ejemplo-backend' },
   { id: 'tc12b-identidad', ruta: '/admin/perfiles/{id:ejemplo-backend}', sesion: true, esperar: 'Slug' },
@@ -299,6 +305,30 @@ const MANIFEST = [
     pasos: [['esperarTexto', 'Sin abrir'], ['esperar', 500]],
   },
   { id: 'tc27-proyectos', ruta: '/admin/proyectos', sesion: true, esperar: 'Plataforma de Reservas' },
+  {
+    // Change add-featured-repositories: el bloque Repositorios destacados de /admin/proyectos.
+    id: 'tc50-repositorios',
+    ruta: '/admin/proyectos',
+    sesion: true,
+    esperar: 'experimento-oculto',
+    pasos: [['verSeccion', 'section[aria-label="Repositorios destacados"]'], ['esperar', 500]],
+  },
+  {
+    // La URL que no es de GitHub se rechaza en el cliente: no se envía nada.
+    id: 'tc50-repositorio-dialogo',
+    ruta: '/admin/proyectos',
+    sesion: true,
+    esperar: 'experimento-oculto',
+    pasos: [
+      ['click', 'aria/Nuevo repositorio'],
+      ['esperarTexto', 'URL de GitHub'],
+      ['borrarYEscribir', '#repository-url', 'https://gitlab.com/a/b'],
+      ['borrarYEscribir', '#repository-name', 'repo-de-prueba'],
+      ['click', 'aria/Guardar[role="button"]'],
+      ['esperarTexto', 'La URL tiene que ser'],
+      ['esperar', 500],
+    ],
+  },
   {
     id: 'bo-enlace-stats',
     ruta: '/admin/proyectos',

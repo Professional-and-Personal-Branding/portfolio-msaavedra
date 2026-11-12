@@ -129,7 +129,7 @@ curl -s $API/api/auth/me -H "$AUTH" | jq
 | `/admin/experiencias` | CRUD de experiencias |
 | `/admin/skills` | CRUD de categorías y skills |
 | `/admin/formacion` | Educación y certificaciones |
-| `/admin/proyectos` | Proyectos destacados y enlaces sociales |
+| `/admin/proyectos` | Proyectos destacados, repositorios de GitHub y enlaces sociales |
 | `/admin/perfiles` | Lista de perfiles curados |
 | `/admin/perfiles/:id` | **El constructor**: Identidad, Selección, Diseño y Publicación, con preview en vivo |
 | `/admin/postulaciones` | Postulaciones: estado de cada proceso, «Abierto el…» y export a CSV |
@@ -152,7 +152,7 @@ Es tu información profesional **una sola vez**: nombre, titular, resumen, conta
 
 Una **vista filtrada y personalizada** del perfil base, accesible por un `slug` único (`/ejemplo-backend`). Tiene su propio titular, descripción, tema, orden de secciones y reglas de selección. La home es el perfil curado `all`, que no filtra nada.
 
-- **En el ejemplo:** `ejemplo-backend` (Java y microservicios, acento `#1A365D`) y `all` (la home con las 9 secciones).
+- **En el ejemplo:** `ejemplo-backend` (Java y microservicios, acento `#1A365D`) y `all` (la home con las 10 secciones).
 - **Dónde se edita:** B8 (Perfiles), B9 (Constructor · Identidad)
 - **Casos que lo verifican:** TC-03, TC-12, TC-21
 
@@ -166,9 +166,9 @@ Cada experiencia, skill y proyecto lleva **tags**. Un perfil incluye lo que comp
 
 ### C4 — Secciones
 
-La página se arma con nueve secciones: `hero`, `stats`, `experience`, `skills`, `projects`, `education`, `certifications`, `presence` y `contact`. Cada perfil puede **reordenarlas** y **ocultarlas**. Una sección con datos que no figura en el orden se agrega al final; una sin datos no se muestra.
+La página se arma con diez secciones: `hero`, `stats`, `experience`, `skills`, `projects`, `repositories`, `education`, `certifications`, `presence` y `contact`. Cada perfil puede **reordenarlas** y **ocultarlas**. Una sección con datos que no figura en el orden se agrega al final; una sin datos no se muestra. `repositories` necesita además **2 o más** repositorios resueltos para el perfil: con uno solo no se muestra (TC-50).
 
-- **En el ejemplo:** `ejemplo-secciones` reordena las nueve y oculta Estadísticas y Presencia. La home (`all`) muestra las nueve.
+- **En el ejemplo:** `ejemplo-secciones` reordena las diez y oculta Estadísticas y Presencia. La home (`all`) muestra las diez.
 - **Dónde se edita:** B11 (Constructor · Diseño)
 - **Casos que lo verifican:** TC-14, TC-36
 
@@ -515,7 +515,7 @@ Ruta: `/admin/formacion`. Dos listas, **Educación** y **Certificaciones**, con 
 
 ### B7 — Proyectos y enlaces
 
-Ruta: `/admin/proyectos`. Proyectos destacados y enlaces sociales. Un proyecto con **tags** que coincidan con los `filterTags` de un perfil aparece en él, con su **URL** como enlace.
+Ruta: `/admin/proyectos`. Proyectos destacados, repositorios de GitHub y enlaces sociales, en tres bloques; la página se titula «Proyectos, repositorios y enlaces» (el ítem del menú sigue diciendo **Proyectos**). Un proyecto o un repositorio con **tags** que coincidan con los `filterTags` de un perfil aparece en él; el proyecto con su **URL** como enlace y el repositorio con el nombre enlazado a GitHub.
 
 | Campo | Tipo | Obligatorio | Validación | Ejemplo |
 |---|---|---|---|---|
@@ -525,6 +525,12 @@ Ruta: `/admin/proyectos`. Proyectos destacados y enlaces sociales. Un proyecto c
 | Proyecto · URL | texto | No | Absoluta, con http:// o https:// | `https://reservas.example.com` |
 | Proyecto · Tecnologías / Tags | chips | No | Los tags alimentan `filterTags` | `java` · `microservices` |
 | Proyecto · Orden / Visible en el portafolio | entero / interruptor | No | Orden entero mayor o igual a 0 | `0` · activado |
+| Repositorio · URL de GitHub | texto | Sí | Exactamente `https://github.com/<usuario>/<repositorio>`; no se repite el mismo `usuario/repositorio` | `https://github.com/portafolio-ejemplo-ficticio/reservas-api` |
+| Repositorio · Nombre | texto | Sí | 1 a 100 caracteres; al salir de la URL se propone el nombre del repositorio | `reservas-api` |
+| Repositorio · Lenguaje | texto | No | Hasta 40 caracteres | `Java` |
+| Repositorio · Descripción | ES/EN | Sí (ES) | Español obligatorio | `API de reservas con Spring Boot…` |
+| Repositorio · Tecnologías / Tags | chips | No | Los tags alimentan `filterTags` | `java` · `microservices` |
+| Repositorio · Orden / Visible en el sitio | entero / interruptor | No | Orden entero mayor o igual a 0 | `0` · activado |
 | Enlace · Plataforma | texto | Sí | Solo minúsculas, dígitos y guiones | `github` |
 | Enlace · Usuario | texto | Sí | No vacío | `alexrivera-ejemplo` |
 | Enlace · URL | texto | Sí | Absoluta, con http:// o https:// | `https://github.example.com/alexrivera-ejemplo` |
@@ -539,6 +545,11 @@ Ruta: `/admin/proyectos`. Proyectos destacados y enlaces sociales. Un proyecto c
 | El rol en español es obligatorio | Proyecto sin rol en español. |
 | El resumen en español es obligatorio | Proyecto sin resumen en español. |
 | Usá una URL absoluta que empiece con http:// o https:// | URL del proyecto o del enlace sin esquema. |
+| La URL tiene que ser https://github.com/<usuario>/<repositorio> | URL de un repositorio de otro host o fuera de forma (barra final, `.git`, `www.`, query). |
+| Ese repositorio ya está cargado | El mismo `usuario/repositorio` ya existe (el servidor responde 409); el mensaje sale en el campo URL y se va al editarla. |
+| La descripción en español es obligatoria | Repositorio sin descripción en español. |
+| El nombre admite hasta 100 caracteres | Nombre de repositorio demasiado largo. |
+| El lenguaje admite hasta 40 caracteres | Lenguaje demasiado largo. |
 | La plataforma es obligatoria | Enlace sin plataforma. |
 | Solo minúsculas, dígitos y guiones (por ejemplo, github) | Plataforma con mayúsculas, espacios u otros símbolos. |
 | El usuario es obligatorio | Enlace sin usuario. |
@@ -548,9 +559,13 @@ Ruta: `/admin/proyectos`. Proyectos destacados y enlaces sociales. Un proyecto c
 | Las estadísticas deben ser un objeto JSON, por ejemplo {"repos": 67} | Estadísticas con un JSON que no es un objeto o con JSON roto. |
 | El orden debe ser un entero | Orden con decimales. |
 
-**Acciones y avisos:** Borrar pide confirmación («Se borrará "…". Esta acción no se puede deshacer.» para un proyecto). Un JSON inválido en estadísticas cuenta como cambio y bloquea el envío.
+**Acciones y avisos:** Borrar pide confirmación («Se borrará "…". Esta acción no se puede deshacer.» para un proyecto; para un repositorio aclara que el de GitHub no se toca). Un JSON inválido en estadísticas cuenta como cambio y bloquea el envío. Los repositorios ocultos se marcan con la insignia **Oculto**; el diálogo de un repositorio avisa de los cambios sin guardar como los demás. Con menos de 2 repositorios la sección no se muestra en ningún perfil: el bloque vacío lo recuerda.
 
 ![Proyectos y enlaces sociales](manual/tc27-proyectos.jpg)
+
+![Bloque Repositorios destacados](manual/tc50-repositorios.jpg)
+
+![Repositorio con una URL que no es de GitHub](manual/tc50-repositorio-dialogo.jpg)
 
 ![Enlace social con estadísticas inválidas](manual/bo-enlace-stats.jpg)
 
@@ -602,7 +617,7 @@ Ruta: `/admin/perfiles/:id`. Primera de las cuatro pestañas del constructor (**
 
 ### B10 — Constructor · Selección
 
-Ruta: `/admin/perfiles/:id`. Qué entra en el perfil. Los **Tags de filtrado** se activan como chips (abajo, los tags disponibles en los datos: de experiencias, skills y proyectos). Después vienen tres bloques, **Experiencias**, **Skills** (agrupadas por categoría, con un buscador) y **Proyectos**, y en cada fila los botones **Incluir** y **Excluir**.
+Ruta: `/admin/perfiles/:id`. Qué entra en el perfil. Los **Tags de filtrado** se activan como chips (abajo, los tags disponibles en los datos: de experiencias, skills, proyectos y repositorios). Después vienen cuatro bloques, **Experiencias**, **Skills** (agrupadas por categoría, con un buscador), **Proyectos** y **Repositorios**, y en cada fila los botones **Incluir** y **Excluir**.
 
 | Campo | Tipo | Obligatorio | Validación | Ejemplo |
 |---|---|---|---|---|
@@ -614,11 +629,13 @@ Ruta: `/admin/perfiles/:id`. Qué entra en el perfil. Los **Tags de filtrado** s
 | Excluir (por skill) | botón | No | Quita una skill que sí coincide; siempre gana | Kotlin en `ejemplo-overrides` |
 | Incluir (por proyecto) | botón | No | Fuerza la inclusión; solo de proyectos visibles | Herramienta Interna de Métricas en `ejemplo-overrides` |
 | Excluir (por proyecto) | botón | No | Fuerza la exclusión; siempre gana | Plataforma de Reservas |
-| Oculta / Oculto | insignia | — | Un ítem con `visible: false` lleva la insignia y su **Incluir** está deshabilitado | Terracota Demo y Prototipo en Pausa |
+| Incluir (por repositorio) | botón | No | Fuerza la inclusión; solo de repositorios visibles | `reservas-api` en `ejemplo-renombrado` |
+| Excluir (por repositorio) | botón | No | Fuerza la exclusión; siempre gana | `metricas-dashboard` |
+| Oculta / Oculto | insignia | — | Un ítem con `visible: false` lleva la insignia y su **Incluir** está deshabilitado | Terracota Demo, Prototipo en Pausa y `experimento-oculto` |
 
 **Acciones y avisos:** la vista previa se recalcula con cada clic. **Incluir** y **Excluir** se apagan entre sí: pulsar uno en un ítem excluido (o al revés) lo cambia de lado, y pulsarlo de nuevo lo deja sin override. Si un perfil guardado por la API trae el mismo id en los dos arreglos, la fila lo muestra como excluido y dice «Excluida: la exclusión gana sobre la inclusión». El encabezado de cada categoría cuenta las skills forzadas o quitadas («1 excluida»). Las skills se ajustan **de a una**: no hay un botón para incluir o excluir una categoría entera.
 
-Un ítem oculto (experiencia o proyecto con `visible: false`) se lista al final de su bloque con la insignia **Oculta** u **Oculto** y su **Incluir** deshabilitado («Oculta: no entra aunque la incluyas»), salvo que ya esté incluido: así se puede quitar esa inclusión. Si el perfil guarda ids de ítems que ya no existen, la pestaña avisa «1 referencia a un ítem que ya no existe» (o «N referencias a ítems que ya no existen») con el botón **Quitar**, que los saca del borrador; hasta que lo pulses y guardes se conservan y no cambian el resultado. Si alguna de las tres listas no carga, ese bloque muestra el error con **Reintentar**, no se informan referencias y **Guardar** no altera los ids.
+Un ítem oculto (experiencia o proyecto con `visible: false`) se lista al final de su bloque con la insignia **Oculta** u **Oculto** y su **Incluir** deshabilitado («Oculta: no entra aunque la incluyas»), salvo que ya esté incluido: así se puede quitar esa inclusión. Si el perfil guarda ids de ítems que ya no existen, la pestaña avisa «1 referencia a un ítem que ya no existe» (o «N referencias a ítems que ya no existen») con el botón **Quitar**, que los saca del borrador; hasta que lo pulses y guardes se conservan y no cambian el resultado. Si alguna de las cuatro listas no carga, ese bloque muestra el error con **Reintentar**, no se informan referencias y **Guardar** no altera los ids. Si el preview resuelve exactamente 1 repositorio, el bloque **Repositorios** avisa «La sección Repositorios se muestra desde 2; este perfil resuelve 1» (en `ejemplo-renombrado`); la pestaña **Publicación** suma al aviso de traducciones la descripción de cada repositorio seleccionado.
 
 Los ítems con `visible: false` nunca entran, ni forzándolos: en `ejemplo-overrides`, Terracota Demo (oculta) no aparece aunque esté en `includeRefs`.
 
@@ -628,7 +645,7 @@ Los ítems con `visible: false` nunca entran, ni forzándolos: en `ejemplo-overr
 
 ### B11 — Constructor · Diseño
 
-Ruta: `/admin/perfiles/:id`. Layout, **Secciones** (un interruptor de visibilidad y las flechas **Subir** y **Bajar** por cada una de las nueve) y el customizador de **Tema**: tema base, ocho colores, fuentes, densidad y efectos. Solo se guardan las diferencias contra el tema base en `themeOverrides`.
+Ruta: `/admin/perfiles/:id`. Layout, **Secciones** (un interruptor de visibilidad y las flechas **Subir** y **Bajar** por cada una de las diez) y el customizador de **Tema**: tema base, ocho colores, fuentes, densidad y efectos. Solo se guardan las diferencias contra el tema base en `themeOverrides`.
 
 | Campo | Tipo | Obligatorio | Validación | Ejemplo |
 |---|---|---|---|---|
@@ -1264,7 +1281,7 @@ GET   /api/curated-profiles/ejemplo-overrides               -> mismas experience
 
 ### TC-14 — Ordenar y ocultar secciones ✅
 
-Las nueve secciones conocidas: `hero`, `stats`, `experience`, `skills`, `projects`, `education`, `certifications`, `presence`, `contact`.
+Las diez secciones conocidas: `hero`, `stats`, `experience`, `skills`, `projects`, `repositories`, `education`, `certifications`, `presence`, `contact` (el caso se ejecutó cuando eran nueve; `repositories` se sumó con el change `add-featured-repositories`).
 
 **Pasos:** pestaña **Diseño**, bloque *Secciones*: cada fila tiene un interruptor de visibilidad y las flechas **Subir** y **Bajar**.
 
@@ -1275,7 +1292,7 @@ Las nueve secciones conocidas: `hero`, `stats`, `experience`, `skills`, `project
 
 ![Pestaña Diseño con las secciones](manual/tc14-secciones.jpg)
 
-*Las nueve secciones de `ejemplo-secciones`, reordenadas, con **Estadísticas** y **Presencia** apagadas.*
+*Las secciones de `ejemplo-secciones`, reordenadas, con **Estadísticas** y **Presencia** apagadas.*
 
 ```bash
 curl -s -X PATCH $API/api/admin/curated-profiles/$ID -H "$AUTH" \
@@ -1902,6 +1919,74 @@ Antes y después de los `curl`, el contador de visitas de `ejemplo-backend` en *
 
 **Ejecutado** (7 de noviembre de 2026, imagen de `frontend/Dockerfile` en `localhost:8101`, API de la rama en `localhost:3347` y la base descartable `portfolio_resume_example`, sembrada con el ejemplo): el bloque **Por la API** dio exactamente los códigos esperados (200 para `all` y `ejemplo-secciones`, este sin `basics.profiles`; 404 para `ejemplo-borrador` y `ejemplo-archivado`; 401 para `ejemplo-protegido` sin token y 200 con `?token=` y con `X-Access-Token`; `Content-Location` al slug vigente en el alias; y `/ejemplo-backend/resume.json` sin `/api`, la página del sitio, 200 `text/html`). Los 8 archivos bajados (públicos en ES y EN, el protegido y los del panel, incluido el del perfil privado) validan contra el schema vendorizado con los formatos activos; el del protegido no contiene el token; el del panel es idéntico byte a byte al público en ES y EN; el contador de visitas de los 9 perfiles es el mismo antes y después, también con `?via=&src=`. En Chrome, la vista pública de `ejemplo-backend` no trae ningún enlace al JSON y la descarga por `fetch` devuelve las mismas empresas que la página. `a11y:check` con panel (56 cargas, incluido el constructor): 0 violaciones. **Observación:** el `Caddyfile` agrega `Cache-Control: no-cache` a toda ruta que no sea `/assets/*` ni `/fonts/*`, así que por el contenedor `web` un perfil protegido recibe dos líneas (`no-cache` y `private, no-store`); `no-store` sigue presente y lo mismo pasa con el detalle, pero conviene decidir si `/api/*` debe quedar fuera de esa regla. Los pasos del panel (1 a 5), que piden una sesión iniciada en el navegador, **no se ejecutaron a mano**: los cubren el test del constructor (los dos `href`, `download`, el perfil nuevo y los cambios sin guardar) y el e2e de la ruta del panel, y la sesión del `curl` es la misma que usa la descarga. Por eso el caso queda en 🔍. Evidencia: `openspec/changes/add-json-resume-export/verification/6.3-tc48.md`.
 
+### TC-50 — Destacar repositorios de GitHub 🔍
+
+**Precondición:** base de ejemplo **descartable** (nunca `portfolio`), con la API y el frontend levantados (de preferencia la imagen de `frontend/Dockerfile`) y una sesión de administrador. El ejemplo trae tres repositorios ficticios de `portafolio-ejemplo-ficticio`: `reservas-api` (tags `java`, `microservices`), `metricas-dashboard` (`nodejs`, `react`, `microservices`) y `experimento-oculto` (oculto).
+
+**Pasos (panel):**
+1. Entrá a `/admin/proyectos`: debajo de **Proyectos destacados** está **Repositorios destacados**. Mirá la insignia **Oculto** en `experimento-oculto`.
+2. Pulsá **Nuevo repositorio**. En **URL de GitHub** escribí `https://gitlab.com/a/b`, en **Nombre** `x` y pulsá **Guardar**.
+3. Cambiá la URL por `https://github.com/Portafolio-Ejemplo-Ficticio/RESERVAS-API` (otras mayúsculas), completá **Descripción (es)** con `x` y pulsá **Guardar**. Después **Cancelar**.
+4. Abrí la home `/` y bajá hasta **Repositorios destacados**.
+5. Abrí `/ejemplo-renombrado`.
+6. En **Perfiles curados**, abrí `ejemplo-renombrado`, pestaña **Selección**, y mirá el bloque **Repositorios**.
+7. Pulsá **Incluir** en `reservas-api` (sin guardar).
+8. Pulsá **Excluir** en `metricas-dashboard` y volvé a **Incluir** en `reservas-api`. Salí sin guardar.
+9. Con `ejemplo-backend` en el navegador, imprimí (`Ctrl+P`, **Guardar como PDF**); después pedí su `resume.json` (ver abajo).
+
+**Resultado esperado:**
+1. Se ven los tres repositorios: `experimento-oculto` con el borde punteado y la insignia **Oculto**.
+2. No se envía nada: bajo **URL de GitHub** aparece «La URL tiene que ser https://github.com/<usuario>/<repositorio>».
+3. Aparece «Ese repositorio ya está cargado» bajo la URL (la API respondió 409); al editar la URL el mensaje se va. No se creó ningún repositorio.
+4. La sección tiene dos tarjetas, `reservas-api` y `metricas-dashboard`, con el nombre como enlace a `https://github.com/portafolio-ejemplo-ficticio/…` (se abre en una pestaña nueva), el lenguaje y las tecnologías; `experimento-oculto` no está.
+5. El perfil **no** tiene la sección: resuelve un solo repositorio (`metricas-dashboard`) y la sección necesita dos.
+6. Aparecen los dos visibles y el oculto (este con **Incluir** deshabilitado) y el aviso «La sección Repositorios se muestra desde 2; este perfil resuelve 1».
+7. El aviso desaparece y la vista previa muestra la sección **Repositorios destacados** con los dos repositorios.
+8. El aviso del umbral vuelve a aparecer y la sección sale de la vista previa; al salir sin guardar no queda ningún cambio.
+9. El PDF de `ejemplo-backend` tiene una sola página con la línea «Repositorios: reservas-api · metricas-dashboard» (los dos nombres son enlaces y no se imprime ninguna URL).
+
+**Por la API** (Bash, con la cookie de sesión del login de § 0 en `jar`):
+
+```bash
+BASE=http://localhost:8080          # la imagen de frontend/Dockerfile; con Vite, http://localhost:5173
+curl -s "$BASE/api/featured-repositories?locale=en" | node -e "
+  const r=JSON.parse(require('fs').readFileSync(0,'utf8'));
+  console.log(r.length, r.map(x=>x.name).join(','), '|', r[0].description);"
+                                                                                  # 2 reservas-api,metricas-dashboard | descripción en inglés (el oculto no sale)
+curl -s -b jar $BASE/api/admin/featured-repositories | node -e "
+  const r=JSON.parse(require('fs').readFileSync(0,'utf8'));
+  console.log(r.length, r.filter(x=>!x.visible).map(x=>x.name).join(','));"
+                                                                                  # 3 experimento-oculto (el panel trae los tres)
+curl -s $BASE/api/curated-profiles/ejemplo-renombrado | node -e "
+  const r=JSON.parse(require('fs').readFileSync(0,'utf8'));
+  console.log(r.repositories.length, r.sections.includes('repositories'));"
+                                                                                  # 1 false (el dato viaja, la sección no)
+curl -s $BASE/api/curated-profiles/all | node -e "
+  const r=JSON.parse(require('fs').readFileSync(0,'utf8'));
+  console.log(r.repositories.length, r.sections.indexOf('repositories')-r.sections.indexOf('projects'));"
+                                                                                  # 2 1 (justo después de projects)
+curl -s $BASE/api/curated-profiles/ejemplo-backend/resume.json | node -e "
+  const r=JSON.parse(require('fs').readFileSync(0,'utf8'));
+  console.log(r.projects.filter(p=>p.type==='repository').map(p=>p.name+' '+p.keywords.join('/')).join(' | '));"
+                                                                                  # reservas-api Java/Spring Boot/PostgreSQL/Docker | metricas-dashboard TypeScript/React/NestJS/Vite
+curl -s -o /dev/null -w '%{http_code}\n' -b jar -X POST $BASE/api/admin/featured-repositories -H 'Content-Type: application/json' \
+  -d '{"name":"x","url":"https://gitlab.com/a/b","description":{"es":"x"}}'                  # 400
+curl -s -o /dev/null -w '%{http_code}\n' -b jar -X POST $BASE/api/admin/featured-repositories -H 'Content-Type: application/json' \
+  -d '{"name":"x","url":"https://github.com/Portafolio-Ejemplo-Ficticio/RESERVAS-API","description":{"es":"x"}}'   # 409
+curl -s -o /dev/null -w '%{http_code}\n' -b jar -X POST $BASE/api/admin/featured-repositories -H 'Content-Type: application/json' \
+  -d '{"name":"x","url":"https://github.com/a/b","description":{"es":"x"},"stars":5}'        # 400 (stars no existe en el contrato)
+```
+
+**Errores típicos:** con un solo repositorio visible para un perfil la sección no aparece: no es un error, la regla es 2 o más. Una URL con barra final, `.git`, `www.` o de otro host se rechaza siempre. Un repositorio sin tags solo aparece en los perfiles sin `filterTags` (la home) o donde lo incluyas a mano. En el PDF la línea se omite sin aviso cuando la hoja no tiene lugar (perfiles muy cargados); el sitio y el `resume.json` sí lo muestran. Nada de esto llama a GitHub: ni las *stars* ni el lenguaje se sincronizan, y `stars` no existe en la API.
+
+**Observado** (12 de noviembre de 2026, el `dist/` del repo servido por Caddy 2 con el `Caddyfile` del repo en `localhost:8152` (equivale a la imagen de `frontend/Dockerfile`), la API de la rama en `localhost:3352` y la base descartable `portfolio_repos_check`, sembrada con el ejemplo): los pasos 1 a 8 se ejecutaron en Chrome controlado por `puppeteer-core` con la sesión iniciada por `POST /api/auth/login` (sin escribir ninguna contraseña) y dieron lo esperado: los tres repositorios con el oculto marcado; el mensaje de URL fuera de forma sin enviar nada; «Ese repositorio ya está cargado» bajo la URL, que se va al editarla, y el aviso de cambios sin guardar al cancelar; la home con las dos tarjetas (enlaces a `github.com/portafolio-ejemplo-ficticio/…` con `target="_blank"` y `rel="noopener noreferrer"`); `/ejemplo-renombrado` sin la sección; en el constructor, los tres repositorios con `Incluir` deshabilitado en el oculto y el aviso del umbral, que desaparece al incluir `reservas-api` (la vista previa trae la sección) y vuelve al excluir `metricas-dashboard`; al salir sin guardar, `includeIds` y `excludeIds` de `ejemplo-renombrado` siguen vacíos. Por la API: `GET /api/featured-repositories?locale=en` devuelve 2 con la descripción en inglés, el panel trae 3 (uno oculto), `ejemplo-renombrado` resuelve 1 repositorio y no trae la sección, `all` trae la sección justo después de `projects`, el `resume.json` de `ejemplo-backend` termina con `reservas-api` y `metricas-dashboard` (`type: "repository"`, con el lenguaje y las tecnologías como `keywords`), y los tres `POST` dieron 400 (GitLab), 409 (otras mayúsculas) y 400 (`stars`) sin crear nada (el panel sigue con 3). `print:check`: 20 casos sobre el ejemplo y 56 sobre `docs/cv-data.json` con dos repositorios de prueba, todos en una página en A4 y Letter (la línea entra en todos los perfiles menos en el de 62 y 63 líneas estimadas, que desbordaba; ver D9 del change). `a11y:check` con panel (62 cargas, incluido `/admin/proyectos` con el bloque nuevo): 0 violaciones. `perf:check` (Lighthouse mobile, 3 corridas): Performance 94 en la home y 95 en el perfil. El paso 9 no se ejecutó a mano: el diálogo de impresión de Chrome queda como paso manual (como en TC-31) y el PDF se verificó con `print:check` y con la línea «Repositorios: reservas-api · metricas-dashboard» en el DOM de impresión. Por eso el caso queda en 🔍. Evidencia: `openspec/changes/add-featured-repositories/verification/`.)
+
+![Bloque Repositorios destacados](manual/tc50-repositorios.jpg)
+
+![Repositorio con una URL que no es de GitHub](manual/tc50-repositorio-dialogo.jpg)
+
+![Sección Repositorios destacados de la home](manual/tc50-seccion-publica.jpg)
+
 ## 4. Administrar el resto del contenido
 
 Desde el change `add-profile-content-admin`, todo lo que el sitio muestra se edita en el panel. El seed queda para **poblar una base vacía**, no para editar.
@@ -2294,7 +2379,7 @@ El umbral de Performance es 85 en CI porque el runner de GitHub es el equipo de 
 
 ## 6. Suite de regresión manual
 
-Antes de cada release, recorrer en este orden. Último caso ejecutado: **7 de noviembre de 2026** (TC-46, por la API y en Chrome contra la imagen de producción; TC-47, en la app real con la imagen de producción, y TC-48, por la API y el contenedor `web`); antes, el 5 de noviembre (TC-45, por la API y la sesión revocada en Chrome); antes, el 4 de noviembre (TC-44, pasos 1 a 5); antes, el 29 de octubre (TC-43, TC-42 y TC-41) y el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 46 capturas con `manual:capture` (TC-43 suma una y regenera la de TC-13). TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
+Antes de cada release, recorrer en este orden. Último caso ejecutado: **12 de noviembre de 2026** (TC-50, en la app real con una base descartable: los pasos 1 a 8 en Chrome controlado y el resto por la API y `print:check`); antes, el **7 de noviembre de 2026** (TC-46, por la API y en Chrome contra la imagen de producción; TC-47, en la app real con la imagen de producción, y TC-48, por la API y el contenedor `web`); antes, el 5 de noviembre (TC-45, por la API y la sesión revocada en Chrome); antes, el 4 de noviembre (TC-44, pasos 1 a 5); antes, el 29 de octubre (TC-43, TC-42 y TC-41) y el 28 de octubre (TC-39) y el 27 de octubre (TC-36 y TC-37). Corrida sobre la **base de ejemplo** (9 perfiles curados, 6 experiencias) con la API en `localhost:3310`: la suite `suite-backoffice.ps1` (TC-12 a TC-20) en verde, los recorridos R1 a R7 y R9 y los casos de lectura (TC-01 a TC-10, TC-21 a TC-27) por API, `print:check` (TC-31) y las 46 capturas con `manual:capture` (TC-43 suma una y regenera la de TC-13). TC-33, TC-34 y TC-35 conservan la evidencia del 15 de octubre (con el CV real) y no se repitieron sobre el ejemplo; detalle en `openspec/changes/add-learning-guide-and-example-data/verification/7.1-corrida.md`.
 
 Los casos del backoffice están automatizados en [`manual/suite-backoffice.ps1`](manual/suite-backoffice.ps1): ejecuta TC-12 a TC-20 contra la API, imprime el resultado real junto al esperado y borra todos los datos de prueba que crea, pase o falle.
 
@@ -2350,10 +2435,11 @@ cd docs/manual && pwsh ./suite-backoffice.ps1
 | TC-45 | Cambiar la contraseña del panel | 🔍 | `curl` de la imagen de producción con dos sesiones (cambio, 401 de la anterior, límite y `admin:bootstrap`) · Chrome con la sesión revocada · `a11y:check` con Cuenta · e2e `admin-password` · pasos del panel con contraseñas reales sin ejecutar a mano |
 | TC-46 | Registrar una postulación y ver si abrieron el enlace | ✅ | app real con la imagen de producción y Chrome controlado · API (401, 404, 422, 409, 400, CSV) · CSV abierto en Excel con las fórmulas como texto · `a11y:check` con panel · e2e `admin-applications` · tests de la pantalla, el diálogo y la descarga |
 | TC-47 | Revisar la consistencia del CV | ✅ | app real con la imagen de producción y una base descartable · panel de punta a punta (resumen, Volver a revisar, Abrir, `?editar=`) · API (401, `no-store`, `locale`) · `cv:lint` con salidas 0, 1 y 2 · `a11y:check` con `/admin/revision` · e2e `cv-consistency` |
+| TC-50 | Destacar repositorios de GitHub | 🔍 | app real con el `dist/` servido por Caddy y una base descartable · panel con Chrome controlado (pasos 1 a 8) · API (400, 409, 400 por `stars`, `resume.json`) · `print:check` (76 casos, una página en A4 y Letter) · `a11y:check` con panel (62 cargas, 0 violaciones) · `perf:check` · e2e `featured-repositories` · tests de la sección, de la hoja y de los bloques del panel · diálogo de impresión sin ejecutar a mano |
 | TC-42 | Verificar una certificación desde el sitio | ✅ | app real con la imagen de producción y Chrome no headless · API (400 con `http://`, 200, `null`) · PDF de una página con el enlace · `print:check` (ejemplo y CV) · tests de la sección, la hoja y el panel |
 | TC-43 | Ajustar skills y proyectos de un perfil | ✅ | app real con la imagen de producción y Chrome no headless · preview = ruta pública (API) · `a11y:check` con panel y axe sobre Selección · tests de las funciones puras, del constructor y del núcleo (unitarios y e2e) |
 
-**Pasan los 43 casos anteriores, TC-46 y TC-47; TC-44, TC-45 y TC-48 quedan en 🔍** (change `add-application-tracking`: TC-46 se ejecutó completo el 7 de noviembre de 2026 en la app real con una base descartable, con la captura `bo-postulaciones`; el Dashboard de TC-18 se regeneró con la franja de postulaciones) (change `add-json-resume-export`: TC-48 se ejecutó el 7 de noviembre de 2026 en la app real con una base descartable, por la API y con el contenedor `web`; los pasos del panel con sesión no se ejecutaron a mano; sin captura nueva) (change `add-cv-consistency-rules`: TC-47 se ejecutó el 7 de noviembre de 2026 en la app real con la imagen de `frontend/Dockerfile` y una base descartable, con la captura `bo-revision` nueva y `a11y:check` con `/admin/revision`; change `add-admin-password-change`: TC-45 se ejecutó el 5 de noviembre de 2026 en la app real con una base descartable, por la API y con la sesión revocada en Chrome, con la captura `bo-cuenta`; los pasos del panel que escriben contraseñas reales no se ejecutaron a mano; change `upgrade-profile-structured-data`: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado). TC-43 (change `add-builder-skill-project-overrides`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc43-overrides` nueva y la de `tc13-seleccion` regenerada con `manual:capture`. TC-42 (change `add-certification-verification`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc42-credencial` nueva y la del diálogo de certificación regenerada con `manual:capture`. TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 46 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
+**Pasan los 43 casos anteriores, TC-46 y TC-47; TC-44, TC-45, TC-48 y TC-50 quedan en 🔍** (change `add-featured-repositories`: TC-50 se ejecutó el 12 de noviembre de 2026 en la app real con una base descartable, con tres capturas nuevas y la regeneración de `tc27-proyectos`, `tc13-seleccion` y `tc43-overrides`; el diálogo de impresión del paso 9 no se ejecutó a mano) (change `add-application-tracking`: TC-46 se ejecutó completo el 7 de noviembre de 2026 en la app real con una base descartable, con la captura `bo-postulaciones`; el Dashboard de TC-18 se regeneró con la franja de postulaciones) (change `add-json-resume-export`: TC-48 se ejecutó el 7 de noviembre de 2026 en la app real con una base descartable, por la API y con el contenedor `web`; los pasos del panel con sesión no se ejecutaron a mano; sin captura nueva) (change `add-cv-consistency-rules`: TC-47 se ejecutó el 7 de noviembre de 2026 en la app real con la imagen de `frontend/Dockerfile` y una base descartable, con la captura `bo-revision` nueva y `a11y:check` con `/admin/revision`; change `add-admin-password-change`: TC-45 se ejecutó el 5 de noviembre de 2026 en la app real con una base descartable, por la API y con la sesión revocada en Chrome, con la captura `bo-cuenta`; los pasos del panel que escriben contraseñas reales no se ejecutaron a mano; change `upgrade-profile-structured-data`: pasos 1 a 5 ejecutados el 4 de noviembre de 2026 en la app real con una base descartable, sin captura; los pasos 6 y 7 piden el sitio desplegado). TC-43 (change `add-builder-skill-project-overrides`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc43-overrides` nueva y la de `tc13-seleccion` regenerada con `manual:capture`. TC-42 (change `add-certification-verification`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con la captura `tc42-credencial` nueva y la del diálogo de certificación regenerada con `manual:capture`. TC-41 (change `add-share-links`) se ejecutó el 29 de octubre de 2026 en la app real (imagen de `frontend/Dockerfile`, Chrome no headless y una base descartable), con el Dashboard de TC-18 y la captura de **Publicación** regeneradas con `manual:capture`. TC-39 (change `classify-profile-views`) se ejecutó el 28 de octubre de 2026 en la app real contra una base de ejemplo descartable, con la sesión del panel iniciada por `POST /api/auth/login`, y con los e2e de `view-kind`; el Dashboard con **Por tipo** es la captura de TC-18, regenerada con `manual:capture`. TC-36 y TC-37 (change `add-learning-guide-and-example-data`) se ejecutaron el 27 de octubre de 2026 con la salida transcrita; TC-38 (change `protect-default-seed`), el mismo día contra bases descartables, con la evidencia en `verification/` de ese change; las 46 capturas del manual salen de `npm run manual:capture` sobre la base de ejemplo. TC-40 (change `fix-admin-contrast`) se ejecutó el 28 de octubre de 2026 contra la imagen de producción del frontend y bases descartables, sin captura (es la salida de `a11y:check` y las medidas de contraste). Los 20 originales tienen evidencia: 20 capturas en `docs/manual/` más las transcripciones de la API. Las capturas de TC-05 y TC-18 se renovaron el 8 de octubre de 2026 con sesión iniciada. TC-21 a TC-24 (change `add-curated-profile-lifecycle`) están cubiertos por e2e; TC-21 y TC-22 además se ejecutaron en la app real, con capturas en el archivo del change. TC-25 a TC-27 (change `add-profile-content-admin`) suman la transcripción del e2e y su captura de la app real. TC-28 a TC-30 (change `polish-builder-and-edge`) se ejecutaron el 8 de octubre de 2026 contra el contenedor `web` con la API de la rama detrás (TC-28, TC-29 y TC-30, con captura): 27 capturas en total. TC-31 (change `add-printable-one-page`) se verificó el 9 de octubre de 2026 con `npm run print:check` contra la base del seed y con los tests de la hoja; el diálogo de impresión y Firefox quedan como pasos manuales del caso. TC-32 (change `localize-language-level`) se ejecutó el 10 de octubre de 2026 en la app real contra una copia de la base de desarrollo, con captura y transcripción en el archivo del change. TC-33 y TC-34 (change `improve-a11y-and-performance`) se ejecutaron el 15 de octubre de 2026 contra la imagen de producción del frontend y una base descartable, con `npm run a11y:check`, Chrome controlado por `puppeteer-core` y tests; la evidencia está en el archivo del change. TC-35 (change `improve-mobile-performance`) se ejecutó el 15 de octubre de 2026 contra el `dist/` del repo servido por Caddy y una base descartable; la evidencia (recorrido en 375 px, visitas y Lighthouse) está en `verification.md` de ese change.
 
 ### 6.1 Defectos encontrados al ejecutar la suite
 
@@ -2476,8 +2562,8 @@ Cada término enlaza el concepto, el recorrido o el caso donde se usa.
 | **perfil base** | La información profesional única (nombre, contacto, idiomas…) de la que sale todo lo demás. | C1 (Perfil base), B3 (Portada (con Idiomas)) |
 | **perfil curado** | Una vista filtrada y personalizada del perfil base, con su slug, tema y reglas. | C2 (Perfil curado), B8 (Perfiles), TC-12 |
 | **`filterTags`** | Lista de tags: un ítem entra si comparte al menos uno. Vacía, entra todo. | C3 (Tags y overrides), B10 (Constructor · Selección), TC-13 |
-| **`includeIds` / `excludeIds`** | Overrides de selección, con ids de experiencias, skills y proyectos: forzar incluir (solo visibles) o excluir (siempre gana). | C3 (Tags y overrides), B10 (Constructor · Selección), TC-13, TC-43 |
-| **sección** | Cada bloque de la página; son nueve y se pueden reordenar y ocultar por perfil. | C4 (Secciones), B11 (Constructor · Diseño), TC-14 |
+| **`includeIds` / `excludeIds`** | Overrides de selección, con ids de experiencias, skills, proyectos y repositorios: forzar incluir (solo visibles) o excluir (siempre gana). | C3 (Tags y overrides), B10 (Constructor · Selección), TC-13, TC-43, TC-50 |
+| **sección** | Cada bloque de la página; son diez y se pueden reordenar y ocultar por perfil. | C4 (Secciones), B11 (Constructor · Diseño), TC-14, TC-50 |
 | **preset** | Uno de los cinco temas base (`modern-dark`, `modern-light`, `minimal`, `elegant`, `corporate`). | C5 (Tema), B11 (Constructor · Diseño), TC-15 |
 | **token de diseño** | Un valor de color, tipografía o espaciado guardado en la base y aplicado como variable CSS. | C5 (Tema), B11 (Constructor · Diseño) |
 | **`themeOverrides`** | Las diferencias de un perfil contra su preset; solo se guarda lo que cambió. | C5 (Tema), R5 (Ajustar el tema y el acento), TC-15 |
@@ -2497,6 +2583,7 @@ Cada término enlaza el concepto, el recorrido o el caso donde se usa.
 | **hallazgo** | Un dato del CV que contradice otro o una regla de la plataforma, detectado por la pantalla Revisión o por `npm run cv:lint`: lleva un código estable, una severidad y el ítem exacto. Nunca se corrige solo. | B16 (Revisión), TC-47 |
 | **severidad** | Qué tan grave es un hallazgo: error (la API lo rechazaría o rompe el render), aviso (probable descuido) o sugerencia (suele ser legítimo). Solo los errores hacen fallar `cv:lint`. | B16 (Revisión), TC-47 |
 | **versión de sesión** | Un número del administrador (`sessionVersion`) que el token del panel lleva como `sv`; cambiar la contraseña desde **Cuenta** o correr `admin:bootstrap` lo incrementa y los tokens con otra versión dejan de valer. | B14 (Cuenta), TC-45 |
+| **repositorio destacado** | Un repositorio de GitHub que cargás a mano (nombre, URL `https://github.com/<usuario>/<repositorio>`, descripción en ES/EN, tecnologías y tags). La sección se muestra desde 2 repositorios por perfil, sale como una línea en el PDF y como `projects` con `type: "repository"` en el JSON Resume. No se sincroniza con GitHub. | B7 (Proyectos y enlaces), B10 (Constructor · Selección), TC-50 |
 | **JSON Resume** | Formato abierto (v1.0.0) con el que se exporta un perfil curado, un archivo por idioma: lo que muestra la página, sin las secciones ocultas ni el año de las certificaciones. Se baja desde **Publicación**; no cuenta como visita. | B12 (Constructor · Publicación), TC-48 |
 | **enlace de verificación** | La página pública de la credencial en el emisor (Credly, Accredible…); solo `https://`. El sitio lo muestra como «Ver credencial» y no comprueba que funcione. | B6 (Formación), TC-42 |
 | **postulación** | Un proceso de selección que registrás en el panel: empresa, puesto, estado, fecha y, si querés, el perfil y el enlace de seguimiento que mandaste. Es privada: no se publica en ningún lado. | B15 (Postulaciones), TC-46 |

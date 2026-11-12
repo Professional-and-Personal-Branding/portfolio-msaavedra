@@ -380,6 +380,7 @@
     <a href="#tc46"><span class="dot ok"></span><span class="id">TC-46</span> Postulaciones</a>
     <a href="#tc47"><span class="dot ok"></span><span class="id">TC-47</span> Revisar la consistencia del CV</a>
     <a href="#tc48"><span class="dot part"></span><span class="id">TC-48</span> Exportar JSON Resume</a>
+    <a href="#tc50"><span class="dot part"></span><span class="id">TC-50</span> Repositorios destacados</a>
     <a href="#tc27"><span class="dot ok"></span><span class="id">TC-27</span> Proyectos</a>
     <a href="#tc28"><span class="dot ok"></span><span class="id">TC-28</span> Aviso en el constructor</a>
     <a href="#tc29"><span class="dot ok"></span><span class="id">TC-29</span> Aviso en la Portada</a>
@@ -500,7 +501,7 @@ $env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del o
           <tr><td><code>/admin/experiencias</code></td><td>CRUD de experiencias</td></tr>
           <tr><td><code>/admin/skills</code></td><td>CRUD de categorías y skills</td></tr>
           <tr><td><code>/admin/formacion</code></td><td>Educación y certificaciones</td></tr>
-          <tr><td><code>/admin/proyectos</code></td><td>Proyectos destacados y enlaces sociales</td></tr>
+          <tr><td><code>/admin/proyectos</code></td><td>Proyectos destacados, repositorios de GitHub y enlaces sociales</td></tr>
           <tr><td><code>/admin/perfiles</code></td><td>Lista de perfiles curados</td></tr>
           <tr><td><code>/admin/perfiles/:id</code></td><td><b>El constructor</b>: Identidad, Selección, Diseño y Publicación, con preview en vivo</td></tr>
         </tbody>
@@ -510,7 +511,7 @@ $env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del o
     <!-- ───────────── Resumen ───────────── -->
     <section id="resumen" class="block">
       <h2>Resumen de la última ejecución</h2>
-      <p class="lede">Último caso ejecutado el 7 de noviembre de 2026 (TC-46, TC-47 y TC-48); antes, el 5 de noviembre (TC-45) y el 4 de noviembre (TC-44, pasos 1 a 5). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias); TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real. El historial completo de corridas está en <code>docs/MANUAL.md</code> § 6.</p>
+      <p class="lede">Último caso ejecutado el 12 de noviembre de 2026 (TC-50); antes, el 7 de noviembre de 2026 (TC-46, TC-47 y TC-48); antes, el 5 de noviembre (TC-45) y el 4 de noviembre (TC-44, pasos 1 a 5). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias); TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real. El historial completo de corridas está en <code>docs/MANUAL.md</code> § 6.</p>
 
       <div class="stats">
         <div class="stat"><b>48</b><span>casos</span></div>
@@ -520,7 +521,7 @@ $env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del o
         <div class="stat"><b>50</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Pasan los 43 casos anteriores, TC-46 y TC-47; TC-44, TC-45 y TC-48 quedan parciales.</b> TC-44 pide el sitio desplegado para los pasos 6 y 7; en TC-45 y TC-48 los pasos del panel que escriben contraseñas o descargan con sesión no se ejecutaron a mano y quedan cubiertos por la API, los e2e y los tests de la pantalla. Cada caso indica en <b>Observado</b> cuándo y contra qué se ejecutó. D-01 y D-02, los defectos de la primera ejecución, están corregidos (ver <a href="#defectos">Defectos</a>).</div>
+      <div class="note"><b>Pasan los 43 casos anteriores, TC-46 y TC-47; TC-44, TC-45, TC-48 y TC-50 quedan parciales.</b> TC-44 pide el sitio desplegado para los pasos 6 y 7; en TC-45 y TC-48 los pasos del panel que escriben contraseñas o descargan con sesión no se ejecutaron a mano y quedan cubiertos por la API, los e2e y los tests de la pantalla; en TC-50 solo el diálogo de impresión del paso 9 queda sin ejecutar a mano. Cada caso indica en <b>Observado</b> cuándo y contra qué se ejecutó. D-01 y D-02, los defectos de la primera ejecución, están corregidos (ver <a href="#defectos">Defectos</a>).</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -569,7 +570,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
       <article class="concept" id="c2">
         <h3>Perfil curado</h3>
         <p>Una <b>vista filtrada y personalizada</b> del perfil base, accesible por un <code>slug</code> único (<code>/ejemplo-backend</code>). Tiene su propio titular, descripción, tema, orden de secciones y reglas de selección. La home es el perfil curado <code>all</code>, que no filtra nada.</p>
-        <p><span class="lbl">En el ejemplo</span> · <code>ejemplo-backend</code> (Java y microservicios, acento <code>#1A365D</code>) y <code>all</code> (la home con las 9 secciones).</p>
+        <p><span class="lbl">En el ejemplo</span> · <code>ejemplo-backend</code> (Java y microservicios, acento <code>#1A365D</code>) y <code>all</code> (la home con las 10 secciones).</p>
         <p><span class="lbl">Dónde se edita</span> · <a href="#b8">B8 · Perfiles</a>, <a href="#b9">B9 · Constructor · Identidad</a></p>
         <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc03">TC-03</a>, <a href="#tc12">TC-12</a>, <a href="#tc21">TC-21</a></p>
       </article>
@@ -584,8 +585,8 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 
       <article class="concept" id="c4">
         <h3>Secciones</h3>
-        <p>La página se arma con nueve secciones: <code>hero</code>, <code>stats</code>, <code>experience</code>, <code>skills</code>, <code>projects</code>, <code>education</code>, <code>certifications</code>, <code>presence</code> y <code>contact</code>. Cada perfil puede <b>reordenarlas</b> y <b>ocultarlas</b>. Una sección con datos que no figura en el orden se agrega al final; una sin datos no se muestra.</p>
-        <p><span class="lbl">En el ejemplo</span> · <code>ejemplo-secciones</code> reordena las nueve y oculta Estadísticas y Presencia. La home (<code>all</code>) muestra las nueve.</p>
+        <p>La página se arma con diez secciones: <code>hero</code>, <code>stats</code>, <code>experience</code>, <code>skills</code>, <code>projects</code>, <code>repositories</code>, <code>education</code>, <code>certifications</code>, <code>presence</code> y <code>contact</code>. Cada perfil puede <b>reordenarlas</b> y <b>ocultarlas</b>. Una sección con datos que no figura en el orden se agrega al final; una sin datos no se muestra. <code>repositories</code> necesita además <b>2 o más</b> repositorios resueltos para el perfil: con uno solo no se muestra (<a href="#tc50">TC-50</a>).</p>
+        <p><span class="lbl">En el ejemplo</span> · <code>ejemplo-secciones</code> reordena las diez y oculta Estadísticas y Presencia. La home (<code>all</code>) muestra las diez.</p>
         <p><span class="lbl">Dónde se edita</span> · <a href="#b11">B11 · Constructor · Diseño</a></p>
         <p><span class="lbl">Casos que lo verifican</span> · <a href="#tc14">TC-14</a>, <a href="#tc36">TC-36</a></p>
       </article>
@@ -935,7 +936,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 
       <article class="screen" id="b7">
         <h3>Proyectos y enlaces</h3>
-        <p><span class="lbl">Ruta</span> · <code>/admin/proyectos</code>. Proyectos destacados y enlaces sociales. Un proyecto con <b>tags</b> que coincidan con los <code>filterTags</code> de un perfil aparece en él, con su <b>URL</b> como enlace.</p>
+        <p><span class="lbl">Ruta</span> · <code>/admin/proyectos</code>. Proyectos destacados, repositorios de GitHub y enlaces sociales, en tres bloques; la página se titula «Proyectos, repositorios y enlaces» (el ítem del menú sigue diciendo <b>Proyectos</b>). Un proyecto o un repositorio con <b>tags</b> que coincidan con los <code>filterTags</code> de un perfil aparece en él; el proyecto con su <b>URL</b> como enlace y el repositorio con el nombre enlazado a GitHub.</p>
 <div class="tablewrap"><table>
 <thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
 <tbody>
@@ -945,6 +946,12 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 <tr><td>Proyecto · URL</td><td>texto</td><td>No</td><td>Absoluta, con http:// o https://</td><td><code>https://reservas.example.com</code></td></tr>
 <tr><td>Proyecto · Tecnologías / Tags</td><td>chips</td><td>No</td><td>Los tags alimentan <code>filterTags</code></td><td><code>java</code> · <code>microservices</code></td></tr>
 <tr><td>Proyecto · Orden / Visible en el portafolio</td><td>entero / interruptor</td><td>No</td><td>Orden entero mayor o igual a 0</td><td><code>0</code> · activado</td></tr>
+<tr><td>Repositorio · URL de GitHub</td><td>texto</td><td>Sí</td><td>Exactamente <code>https://github.com/&lt;usuario&gt;/&lt;repositorio&gt;</code>; no se repite el mismo <code>usuario/repositorio</code></td><td><code>https://github.com/portafolio-ejemplo-ficticio/reservas-api</code></td></tr>
+<tr><td>Repositorio · Nombre</td><td>texto</td><td>Sí</td><td>1 a 100 caracteres; al salir de la URL se propone el nombre del repositorio</td><td><code>reservas-api</code></td></tr>
+<tr><td>Repositorio · Lenguaje</td><td>texto</td><td>No</td><td>Hasta 40 caracteres</td><td><code>Java</code></td></tr>
+<tr><td>Repositorio · Descripción</td><td>ES/EN</td><td>Sí (ES)</td><td>Español obligatorio</td><td><code>API de reservas con Spring Boot…</code></td></tr>
+<tr><td>Repositorio · Tecnologías / Tags</td><td>chips</td><td>No</td><td>Los tags alimentan <code>filterTags</code></td><td><code>java</code> · <code>microservices</code></td></tr>
+<tr><td>Repositorio · Orden / Visible en el sitio</td><td>entero / interruptor</td><td>No</td><td>Orden entero mayor o igual a 0</td><td><code>0</code> · activado</td></tr>
 <tr><td>Enlace · Plataforma</td><td>texto</td><td>Sí</td><td>Solo minúsculas, dígitos y guiones</td><td><code>github</code></td></tr>
 <tr><td>Enlace · Usuario</td><td>texto</td><td>Sí</td><td>No vacío</td><td><code>alexrivera-ejemplo</code></td></tr>
 <tr><td>Enlace · URL</td><td>texto</td><td>Sí</td><td>Absoluta, con http:// o https://</td><td><code>https://github.example.com/alexrivera-ejemplo</code></td></tr>
@@ -961,6 +968,11 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 <tr><td class="msg">El rol en español es obligatorio</td><td>Proyecto sin rol en español.</td></tr>
 <tr><td class="msg">El resumen en español es obligatorio</td><td>Proyecto sin resumen en español.</td></tr>
 <tr><td class="msg">Usá una URL absoluta que empiece con http:// o https://</td><td>URL del proyecto o del enlace sin esquema.</td></tr>
+<tr><td class="msg">La URL tiene que ser https://github.com/&lt;usuario&gt;/&lt;repositorio&gt;</td><td>URL de un repositorio de otro host o fuera de forma (barra final, <code>.git</code>, <code>www.</code>, query).</td></tr>
+<tr><td class="msg">Ese repositorio ya está cargado</td><td>El mismo <code>usuario/repositorio</code> ya existe (el servidor responde 409); el mensaje sale en el campo URL y se va al editarla.</td></tr>
+<tr><td class="msg">La descripción en español es obligatoria</td><td>Repositorio sin descripción en español.</td></tr>
+<tr><td class="msg">El nombre admite hasta 100 caracteres</td><td>Nombre de repositorio demasiado largo.</td></tr>
+<tr><td class="msg">El lenguaje admite hasta 40 caracteres</td><td>Lenguaje demasiado largo.</td></tr>
 <tr><td class="msg">La plataforma es obligatoria</td><td>Enlace sin plataforma.</td></tr>
 <tr><td class="msg">Solo minúsculas, dígitos y guiones (por ejemplo, github)</td><td>Plataforma con mayúsculas, espacios u otros símbolos.</td></tr>
 <tr><td class="msg">El usuario es obligatorio</td><td>Enlace sin usuario.</td></tr>
@@ -971,8 +983,10 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 <tr><td class="msg">El orden debe ser un entero</td><td>Orden con decimales.</td></tr>
 </tbody>
 </table></div>
-        <p><span class="lbl">Acciones y avisos</span> · Borrar pide confirmación («Se borrará "…". Esta acción no se puede deshacer.» para un proyecto). Un JSON inválido en estadísticas cuenta como cambio y bloquea el envío.</p>
+        <p><span class="lbl">Acciones y avisos</span> · Borrar pide confirmación («Se borrará "…". Esta acción no se puede deshacer.» para un proyecto; para un repositorio aclara que el de GitHub no se toca). Un JSON inválido en estadísticas cuenta como cambio y bloquea el envío. Los repositorios ocultos se marcan con la insignia <b>Oculto</b>; el diálogo de un repositorio avisa de los cambios sin guardar como los demás. Con menos de 2 repositorios la sección no se muestra en ningún perfil: el bloque vacío lo recuerda.</p>
         <figure class="shot" id="img-tc27-proyectos"><img src="tc27-proyectos.jpg" width="800" height="500" alt="Proyectos y enlaces sociales"></figure>
+        <figure class="shot" id="img-b7-tc50-repositorios"><img src="tc50-repositorios.jpg" width="800" height="500" alt="Bloque Repositorios destacados"></figure>
+        <figure class="shot" id="img-b7-tc50-repositorio-dialogo"><img src="tc50-repositorio-dialogo.jpg" width="800" height="500" alt="Repositorio con una URL que no es de GitHub"></figure>
         <figure class="shot" id="img-bo-enlace-stats"><img src="bo-enlace-stats.jpg" width="800" height="500" alt="Enlace social con estadísticas inválidas"></figure>
       </article>
 
@@ -1028,7 +1042,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 
       <article class="screen" id="b10">
         <h3>Constructor · Selección</h3>
-        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles/:id</code>. Qué entra en el perfil. Los <b>Tags de filtrado</b> se activan como chips (abajo, los tags disponibles en los datos: de experiencias, skills y proyectos). Después vienen tres bloques, <b>Experiencias</b>, <b>Skills</b> (agrupadas por categoría, con un buscador) y <b>Proyectos</b>, y en cada fila los botones <b>Incluir</b> y <b>Excluir</b>.</p>
+        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles/:id</code>. Qué entra en el perfil. Los <b>Tags de filtrado</b> se activan como chips (abajo, los tags disponibles en los datos: de experiencias, skills, proyectos y repositorios). Después vienen cuatro bloques, <b>Experiencias</b>, <b>Skills</b> (agrupadas por categoría, con un buscador), <b>Proyectos</b> y <b>Repositorios</b>, y en cada fila los botones <b>Incluir</b> y <b>Excluir</b>.</p>
 <div class="tablewrap"><table>
 <thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
 <tbody>
@@ -1040,11 +1054,13 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 <tr><td>Excluir (por skill)</td><td>botón</td><td>No</td><td>Quita una skill que sí coincide; siempre gana</td><td>Kotlin en <code>ejemplo-overrides</code></td></tr>
 <tr><td>Incluir (por proyecto)</td><td>botón</td><td>No</td><td>Fuerza la inclusión; solo de proyectos visibles</td><td>Herramienta Interna de Métricas en <code>ejemplo-overrides</code></td></tr>
 <tr><td>Excluir (por proyecto)</td><td>botón</td><td>No</td><td>Fuerza la exclusión; siempre gana</td><td>Plataforma de Reservas</td></tr>
-<tr><td>Oculta / Oculto</td><td>insignia</td><td>—</td><td>Un ítem con <code>visible: false</code> lleva la insignia y su <b>Incluir</b> está deshabilitado</td><td>Terracota Demo y Prototipo en Pausa</td></tr>
+<tr><td>Incluir (por repositorio)</td><td>botón</td><td>No</td><td>Fuerza la inclusión; solo de repositorios visibles</td><td><code>reservas-api</code> en <code>ejemplo-renombrado</code></td></tr>
+<tr><td>Excluir (por repositorio)</td><td>botón</td><td>No</td><td>Fuerza la exclusión; siempre gana</td><td><code>metricas-dashboard</code></td></tr>
+<tr><td>Oculta / Oculto</td><td>insignia</td><td>—</td><td>Un ítem con <code>visible: false</code> lleva la insignia y su <b>Incluir</b> está deshabilitado</td><td>Terracota Demo, Prototipo en Pausa y <code>experimento-oculto</code></td></tr>
 </tbody>
 </table></div>
         <p><span class="lbl">Acciones y avisos</span> · La vista previa se recalcula con cada clic. <b>Incluir</b> y <b>Excluir</b> se apagan entre sí: pulsar uno en un ítem excluido (o al revés) lo cambia de lado, y pulsarlo de nuevo lo deja sin override. Si un perfil guardado por la API trae el mismo id en los dos arreglos, la fila lo muestra como excluido y dice «Excluida: la exclusión gana sobre la inclusión». El encabezado de cada categoría cuenta las skills forzadas o quitadas («1 excluida»). Las skills se ajustan <b>de a una</b>: no hay un botón para incluir o excluir una categoría entera.</p>
-        <p>Un ítem oculto (experiencia o proyecto con <code>visible: false</code>) se lista al final de su bloque con la insignia <b>Oculta</b> u <b>Oculto</b> y su <b>Incluir</b> deshabilitado («Oculta: no entra aunque la incluyas»), salvo que ya esté incluido: así se puede quitar esa inclusión. Si el perfil guarda ids de ítems que ya no existen, la pestaña avisa «1 referencia a un ítem que ya no existe» (o «N referencias a ítems que ya no existen») con el botón <b>Quitar</b>, que los saca del borrador; hasta que lo pulses y guardes se conservan y no cambian el resultado. Si alguna de las tres listas no carga, ese bloque muestra el error con <b>Reintentar</b>, no se informan referencias y <b>Guardar</b> no altera los ids.</p>
+        <p>Un ítem oculto (experiencia o proyecto con <code>visible: false</code>) se lista al final de su bloque con la insignia <b>Oculta</b> u <b>Oculto</b> y su <b>Incluir</b> deshabilitado («Oculta: no entra aunque la incluyas»), salvo que ya esté incluido: así se puede quitar esa inclusión. Si el perfil guarda ids de ítems que ya no existen, la pestaña avisa «1 referencia a un ítem que ya no existe» (o «N referencias a ítems que ya no existen») con el botón <b>Quitar</b>, que los saca del borrador; hasta que lo pulses y guardes se conservan y no cambian el resultado. Si alguna de las cuatro listas no carga, ese bloque muestra el error con <b>Reintentar</b>, no se informan referencias y <b>Guardar</b> no altera los ids. Si el preview resuelve exactamente 1 repositorio, el bloque <b>Repositorios</b> avisa «La sección Repositorios se muestra desde 2; este perfil resuelve 1» (en <code>ejemplo-renombrado</code>); la pestaña <b>Publicación</b> suma al aviso de traducciones la descripción de cada repositorio seleccionado.</p>
         <p>Los ítems con <code>visible: false</code> nunca entran, ni forzándolos: en <code>ejemplo-overrides</code>, Terracota Demo (oculta) no aparece aunque esté en <code>includeRefs</code>.</p>
         <figure class="shot" id="img-tc13-seleccion"><img src="tc13-seleccion.jpg" width="800" height="500" alt="Constructor, pestaña Selección"></figure>
         <figure class="shot" id="img-b10-tc43-overrides"><img src="tc43-overrides.jpg" width="800" height="500" alt="Constructor, bloques Skills y Proyectos"></figure>
@@ -1052,7 +1068,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 
       <article class="screen" id="b11">
         <h3>Constructor · Diseño</h3>
-        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles/:id</code>. Layout, <b>Secciones</b> (un interruptor de visibilidad y las flechas <b>Subir</b> y <b>Bajar</b> por cada una de las nueve) y el customizador de <b>Tema</b>: tema base, ocho colores, fuentes, densidad y efectos. Solo se guardan las diferencias contra el tema base en <code>themeOverrides</code>.</p>
+        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles/:id</code>. Layout, <b>Secciones</b> (un interruptor de visibilidad y las flechas <b>Subir</b> y <b>Bajar</b> por cada una de las diez) y el customizador de <b>Tema</b>: tema base, ocho colores, fuentes, densidad y efectos. Solo se guardan las diferencias contra el tema base en <code>themeOverrides</code>.</p>
 <div class="tablewrap"><table>
 <thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
 <tbody>
@@ -1551,7 +1567,7 @@ GET   /api/curated-profiles/ejemplo-overrides               -&gt; mismas experie
 
       <article class="case" data-status="ok" id="tc14" data-area="backoffice" data-change="add-admin-backoffice">
         <div class="case-head"><span class="case-id">TC-14</span><h3>Ordenar y ocultar secciones</h3><span class="pill ok">pasa</span></div>
-        <p>Las nueve secciones conocidas: <code>hero</code>, <code>stats</code>, <code>experience</code>, <code>skills</code>, <code>projects</code>, <code>education</code>, <code>certifications</code>, <code>presence</code>, <code>contact</code>.</p>
+        <p>Las diez secciones conocidas: <code>hero</code>, <code>stats</code>, <code>experience</code>, <code>skills</code>, <code>projects</code>, <code>repositories</code>, <code>education</code>, <code>certifications</code>, <code>presence</code>, <code>contact</code> (el caso se ejecutó cuando eran nueve; <code>repositories</code> se sumó con el change <code>add-featured-repositories</code>).</p>
         <p><span class="lbl">Observado</span></p>
         <div class="codewrap"><pre>sectionsOrder=[hero,experience]                 -> sections=[hero,experience]
 sectionsOrder=[hero,skills,experience,contact]
@@ -1559,7 +1575,7 @@ sectionsOrder=[hero,skills,experience,contact]
                                                    hiddenSections=[skills]</pre></div>
         <div class="note"><b>Dos reglas.</b> Una sección <b>con datos</b> que no figure en <code>sectionsOrder</code> se agrega al final; para ocultarla hay que ponerla en <code>sectionsHidden</code>. Una sección <b>sin datos</b> no se renderiza aunque esté en el orden.</div>
         <div class="note">Desde el change <code>unify-section-catalog</code> el catálogo es uno solo, con <b>9</b> secciones, y el backend aplica el relleno: <code>sections</code> trae al final, en orden canónico, las secciones con datos que no figuran en el orden ni están ocultas. La transcripción de arriba es anterior al change. Un id fuera del catálogo ahora responde 400.</div>
-        <figure class="shot" id="img-tc14-secciones"><img src="tc14-secciones.jpg" width="800" height="500" alt="Pestaña Diseño con la lista de secciones"><figcaption>Las nueve secciones de <code>ejemplo-secciones</code>, reordenadas, con Estadísticas y Presencia apagadas.</figcaption></figure>
+        <figure class="shot" id="img-tc14-secciones"><img src="tc14-secciones.jpg" width="800" height="500" alt="Pestaña Diseño con la lista de secciones"><figcaption>Las secciones de <code>ejemplo-secciones</code>, reordenadas, con Estadísticas y Presencia apagadas.</figcaption></figure>
         <fieldset class="run" data-run="tc14"><legend>Resultado de la corrida · TC-14</legend><label><input type="radio" name="r-tc14" value="pass"> pasa</label><label><input type="radio" name="r-tc14" value="fail"> falla</label><label><input type="radio" name="r-tc14" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-14"></fieldset>
 </article>
 
@@ -1965,6 +1981,46 @@ curl -s -D - -o /dev/null "$BASE$R/ejemplo-nombre-anterior/resume.json" | grep -
         <p><span class="lbl">Observado</span> · 7 de noviembre de 2026, imagen de <code>frontend/Dockerfile</code> en <code>localhost:8101</code>, API de la rama en <code>localhost:3347</code> y la base descartable <code>portfolio_resume_example</code>, sembrada con el ejemplo. El bloque <b>Por la API</b> dio exactamente los códigos esperados (200 para <code>all</code> y <code>ejemplo-secciones</code>, este sin <code>basics.profiles</code>; 404 para <code>ejemplo-borrador</code> y <code>ejemplo-archivado</code>; 401 para <code>ejemplo-protegido</code> sin token y 200 con <code>?token=</code> y con <code>X-Access-Token</code>; <code>Content-Location</code> al slug vigente en el alias; y <code>/ejemplo-backend/resume.json</code> sin <code>/api</code>, la página del sitio, 200 <code>text/html</code>). Los 8 archivos bajados (públicos en ES y EN, el protegido y los del panel, incluido el del perfil privado) validan contra el schema vendorizado con los formatos activos; el del protegido no contiene el token; el del panel es idéntico byte a byte al público en ES y EN; el contador de visitas de los 9 perfiles es el mismo antes y después, también con <code>?via=&amp;src=</code>. En Chrome, la vista pública de <code>ejemplo-backend</code> no trae ningún enlace al JSON y la descarga por <code>fetch</code> devuelve las mismas empresas que la página. <code>a11y:check</code> con panel (56 cargas, incluido el constructor): 0 violaciones. <b>Observación:</b> el <code>Caddyfile</code> agrega <code>Cache-Control: no-cache</code> a toda ruta que no sea <code>/assets/*</code> ni <code>/fonts/*</code>, así que por el contenedor <code>web</code> un perfil protegido recibe dos líneas (<code>no-cache</code> y <code>private, no-store</code>); <code>no-store</code> sigue presente y lo mismo pasa con el detalle, pero conviene decidir si <code>/api/*</code> debe quedar fuera de esa regla. Los pasos del panel (1 a 5), que piden una sesión iniciada en el navegador, <b>no se ejecutaron a mano</b>: los cubren el test del constructor (los dos <code>href</code>, <code>download</code>, el perfil nuevo y los cambios sin guardar) y el e2e de la ruta del panel, y la sesión del <code>curl</code> es la misma que usa la descarga. Por eso el caso queda parcial. Evidencia: <code>openspec/changes/add-json-resume-export/verification/6.3-tc48.md</code>.</p>
         <fieldset class="run" data-run="tc48"><legend>Resultado de la corrida · TC-48</legend><label><input type="radio" name="r-tc48" value="pass"> pasa</label><label><input type="radio" name="r-tc48" value="fail"> falla</label><label><input type="radio" name="r-tc48" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-48"></fieldset>
 </article>
+      <article class="case" data-status="part" id="tc50" data-area="backoffice" data-change="add-featured-repositories">
+        <div class="case-head"><span class="case-id">TC-50</span><h3>Destacar repositorios de GitHub</h3><span class="pill part">parcial</span></div>
+        <p><span class="lbl">Precondición</span> · Base de ejemplo <b>descartable</b> (nunca <code>portfolio</code>), con la API y el frontend levantados (de preferencia la imagen de <code>frontend/Dockerfile</code>) y una sesión de administrador. El ejemplo trae tres repositorios ficticios de <code>portafolio-ejemplo-ficticio</code>: <code>reservas-api</code> (tags <code>java</code>, <code>microservices</code>), <code>metricas-dashboard</code> (<code>nodejs</code>, <code>react</code>, <code>microservices</code>) y <code>experimento-oculto</code> (oculto).</p>
+        <p><span class="lbl">Pasos</span> · (1) Entrá a <code>/admin/proyectos</code>: debajo de <b>Proyectos destacados</b> está <b>Repositorios destacados</b>; mirá la insignia <b>Oculto</b> en <code>experimento-oculto</code>; (2) pulsá <b>Nuevo repositorio</b>, en <b>URL de GitHub</b> escribí <code>https://gitlab.com/a/b</code>, en <b>Nombre</b> <code>x</code> y pulsá <b>Guardar</b>; (3) cambiá la URL por <code>https://github.com/Portafolio-Ejemplo-Ficticio/RESERVAS-API</code> (otras mayúsculas), completá <b>Descripción (es)</b> con <code>x</code> y pulsá <b>Guardar</b>; después <b>Cancelar</b>; (4) abrí la home <code>/</code> y bajá hasta <b>Repositorios destacados</b>; (5) abrí <code>/ejemplo-renombrado</code>; (6) en <b>Perfiles curados</b>, abrí <code>ejemplo-renombrado</code>, pestaña <b>Selección</b>, y mirá el bloque <b>Repositorios</b>; (7) pulsá <b>Incluir</b> en <code>reservas-api</code> (sin guardar); (8) pulsá <b>Excluir</b> en <code>metricas-dashboard</code> y volvé a <b>Incluir</b> en <code>reservas-api</code>, y salí sin guardar; (9) con <code>ejemplo-backend</code> en el navegador, imprimí (<code>Ctrl+P</code>, <b>Guardar como PDF</b>); después pedí su <code>resume.json</code> (ver abajo).</p>
+        <p><span class="lbl">Esperado</span> · (1) Se ven los tres repositorios: <code>experimento-oculto</code> con el borde punteado y la insignia <b>Oculto</b>; (2) no se envía nada: bajo <b>URL de GitHub</b> aparece «La URL tiene que ser https://github.com/&lt;usuario&gt;/&lt;repositorio&gt;»; (3) aparece «Ese repositorio ya está cargado» bajo la URL (la API respondió 409); al editar la URL el mensaje se va; no se creó ningún repositorio; (4) la sección tiene dos tarjetas, <code>reservas-api</code> y <code>metricas-dashboard</code>, con el nombre como enlace a <code>https://github.com/portafolio-ejemplo-ficticio/…</code> (se abre en una pestaña nueva), el lenguaje y las tecnologías; <code>experimento-oculto</code> no está; (5) el perfil <b>no</b> tiene la sección: resuelve un solo repositorio (<code>metricas-dashboard</code>) y la sección necesita dos; (6) aparecen los dos visibles y el oculto (este con <b>Incluir</b> deshabilitado) y el aviso «La sección Repositorios se muestra desde 2; este perfil resuelve 1»; (7) el aviso desaparece y la vista previa muestra la sección <b>Repositorios destacados</b> con los dos repositorios; (8) el aviso del umbral vuelve a aparecer y la sección sale de la vista previa; al salir sin guardar no queda ningún cambio; (9) el PDF de <code>ejemplo-backend</code> tiene una sola página con la línea «Repositorios: reservas-api · metricas-dashboard» (los dos nombres son enlaces y no se imprime ninguna URL).</p>
+        <p><span class="lbl">Por la API</span> · Bash, con la cookie de sesión del login de § 0 en <code>jar</code>:</p>
+        <div class="codewrap"><pre>BASE=http://localhost:8080          # la imagen de frontend/Dockerfile; con Vite, http://localhost:5173
+curl -s "$BASE/api/featured-repositories?locale=en" | node -e "
+  const r=JSON.parse(require('fs').readFileSync(0,'utf8'));
+  console.log(r.length, r.map(x=&gt;x.name).join(','), '|', r[0].description);"
+                                                                                  # 2 reservas-api,metricas-dashboard | descripción en inglés (el oculto no sale)
+curl -s -b jar $BASE/api/admin/featured-repositories | node -e "
+  const r=JSON.parse(require('fs').readFileSync(0,'utf8'));
+  console.log(r.length, r.filter(x=&gt;!x.visible).map(x=&gt;x.name).join(','));"
+                                                                                  # 3 experimento-oculto (el panel trae los tres)
+curl -s $BASE/api/curated-profiles/ejemplo-renombrado | node -e "
+  const r=JSON.parse(require('fs').readFileSync(0,'utf8'));
+  console.log(r.repositories.length, r.sections.includes('repositories'));"
+                                                                                  # 1 false (el dato viaja, la sección no)
+curl -s $BASE/api/curated-profiles/all | node -e "
+  const r=JSON.parse(require('fs').readFileSync(0,'utf8'));
+  console.log(r.repositories.length, r.sections.indexOf('repositories')-r.sections.indexOf('projects'));"
+                                                                                  # 2 1 (justo después de projects)
+curl -s $BASE/api/curated-profiles/ejemplo-backend/resume.json | node -e "
+  const r=JSON.parse(require('fs').readFileSync(0,'utf8'));
+  console.log(r.projects.filter(p=&gt;p.type==='repository').map(p=&gt;p.name+' '+p.keywords.join('/')).join(' | '));"
+                                                                                  # reservas-api Java/Spring Boot/PostgreSQL/Docker | metricas-dashboard TypeScript/React/NestJS/Vite
+curl -s -o /dev/null -w '%{http_code}\n' -b jar -X POST $BASE/api/admin/featured-repositories -H 'Content-Type: application/json' \
+  -d '{"name":"x","url":"https://gitlab.com/a/b","description":{"es":"x"}}'                  # 400
+curl -s -o /dev/null -w '%{http_code}\n' -b jar -X POST $BASE/api/admin/featured-repositories -H 'Content-Type: application/json' \
+  -d '{"name":"x","url":"https://github.com/Portafolio-Ejemplo-Ficticio/RESERVAS-API","description":{"es":"x"}}'   # 409
+curl -s -o /dev/null -w '%{http_code}\n' -b jar -X POST $BASE/api/admin/featured-repositories -H 'Content-Type: application/json' \
+  -d '{"name":"x","url":"https://github.com/a/b","description":{"es":"x"},"stars":5}'        # 400 (stars no existe en el contrato)</pre></div>
+        <p><span class="lbl">Errores típicos</span> · Con un solo repositorio visible para un perfil la sección no aparece: no es un error, la regla es 2 o más. Una URL con barra final, <code>.git</code>, <code>www.</code> o de otro host se rechaza siempre. Un repositorio sin tags solo aparece en los perfiles sin <code>filterTags</code> (la home) o donde lo incluyas a mano. En el PDF la línea se omite sin aviso cuando la hoja no tiene lugar (perfiles muy cargados); el sitio y el <code>resume.json</code> sí lo muestran. Nada de esto llama a GitHub: ni las <i>stars</i> ni el lenguaje se sincronizan, y <code>stars</code> no existe en la API.</p>
+        <p><span class="lbl">Observado</span> · 12 de noviembre de 2026, el <code>dist/</code> del repo servido por Caddy 2 con el <code>Caddyfile</code> del repo en <code>localhost:8152</code> (equivale a la imagen de <code>frontend/Dockerfile</code>), la API de la rama en <code>localhost:3352</code> y la base descartable <code>portfolio_repos_check</code>, sembrada con el ejemplo. Los pasos 1 a 8 se ejecutaron en Chrome controlado por <code>puppeteer-core</code> con la sesión iniciada por <code>POST /api/auth/login</code> (sin escribir ninguna contraseña) y dieron lo esperado: los tres repositorios con el oculto marcado; el mensaje de URL fuera de forma sin enviar nada; «Ese repositorio ya está cargado» bajo la URL, que se va al editarla, y el aviso de cambios sin guardar al cancelar; la home con las dos tarjetas (enlaces a <code>github.com/portafolio-ejemplo-ficticio/…</code> con <code>target="_blank"</code> y <code>rel="noopener noreferrer"</code>); <code>/ejemplo-renombrado</code> sin la sección; en el constructor, los tres repositorios con <code>Incluir</code> deshabilitado en el oculto y el aviso del umbral, que desaparece al incluir <code>reservas-api</code> (la vista previa trae la sección) y vuelve al excluir <code>metricas-dashboard</code>; al salir sin guardar, <code>includeIds</code> y <code>excludeIds</code> de <code>ejemplo-renombrado</code> siguen vacíos. Por la API: <code>GET /api/featured-repositories?locale=en</code> devuelve 2 con la descripción en inglés, el panel trae 3 (uno oculto), <code>ejemplo-renombrado</code> resuelve 1 repositorio y no trae la sección, <code>all</code> trae la sección justo después de <code>projects</code>, el <code>resume.json</code> de <code>ejemplo-backend</code> termina con <code>reservas-api</code> y <code>metricas-dashboard</code> (<code>type: "repository"</code>, con el lenguaje y las tecnologías como <code>keywords</code>), y los tres <code>POST</code> dieron 400 (GitLab), 409 (otras mayúsculas) y 400 (<code>stars</code>) sin crear nada (el panel sigue con 3). <code>print:check</code>: 20 casos sobre el ejemplo y 56 sobre <code>docs/cv-data.json</code> con dos repositorios de prueba, todos en una página en A4 y Letter (la línea entra en todos los perfiles menos en el de 62 y 63 líneas estimadas, que desbordaba; ver D9 del change). <code>a11y:check</code> con panel (62 cargas, incluido <code>/admin/proyectos</code> con el bloque nuevo): 0 violaciones. <code>perf:check</code> (Lighthouse mobile, 3 corridas): Performance 94 en la home y 95 en el perfil. El paso 9 no se ejecutó a mano: el diálogo de impresión de Chrome queda como paso manual (como en TC-31) y el PDF se verificó con <code>print:check</code> y con la línea «Repositorios: reservas-api · metricas-dashboard» en el DOM de impresión. Por eso el caso queda parcial. Evidencia: <code>openspec/changes/add-featured-repositories/verification/</code>.</p>
+        <figure class="shot" id="img-tc50-repositorios"><img src="tc50-repositorios.jpg" width="800" height="500" alt="Bloque Repositorios destacados"></figure>
+        <figure class="shot" id="img-tc50-repositorio-dialogo"><img src="tc50-repositorio-dialogo.jpg" width="800" height="500" alt="Repositorio con una URL que no es de GitHub"></figure>
+        <figure class="shot" id="img-tc50-seccion-publica"><img src="tc50-seccion-publica.jpg" width="800" height="500" alt="Sección Repositorios destacados de la home"></figure>
+        <fieldset class="run" data-run="tc50"><legend>Resultado de la corrida · TC-50</legend><label><input type="radio" name="r-tc50" value="pass"> pasa</label><label><input type="radio" name="r-tc50" value="fail"> falla</label><label><input type="radio" name="r-tc50" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-50"></fieldset>
+</article>
     </section>
 
     <!-- ───────────── Defectos ───────────── -->
@@ -2236,8 +2292,8 @@ echo "$SITIO/acme-tech-lead"</pre></div>
         <div class="g"><dt id="g-perfil-base">perfil base</dt><dd>La información profesional única (nombre, contacto, idiomas…) de la que sale todo lo demás. <span class="refs"><a href="#c1">C1 · Perfil base</a>, <a href="#b3">B3 · Portada (con Idiomas)</a></span></dd></div>
         <div class="g"><dt id="g-perfil-curado">perfil curado</dt><dd>Una vista filtrada y personalizada del perfil base, con su slug, tema y reglas. <span class="refs"><a href="#c2">C2 · Perfil curado</a>, <a href="#b8">B8 · Perfiles</a>, <a href="#tc12">TC-12</a></span></dd></div>
         <div class="g"><dt id="g-filtertags"><code>filterTags</code></dt><dd>Lista de tags: un ítem entra si comparte al menos uno. Vacía, entra todo. <span class="refs"><a href="#c3">C3 · Tags y overrides</a>, <a href="#b10">B10 · Constructor · Selección</a>, <a href="#tc13">TC-13</a></span></dd></div>
-        <div class="g"><dt id="g-includeids-excludeids"><code>includeIds</code> / <code>excludeIds</code></dt><dd>Overrides de selección, con ids de experiencias, skills y proyectos: forzar incluir (solo visibles) o excluir (siempre gana). <span class="refs"><a href="#c3">C3 · Tags y overrides</a>, <a href="#b10">B10 · Constructor · Selección</a>, <a href="#tc13">TC-13</a>, <a href="#tc43">TC-43</a></span></dd></div>
-        <div class="g"><dt id="g-secci-n">sección</dt><dd>Cada bloque de la página; son nueve y se pueden reordenar y ocultar por perfil. <span class="refs"><a href="#c4">C4 · Secciones</a>, <a href="#b11">B11 · Constructor · Diseño</a>, <a href="#tc14">TC-14</a></span></dd></div>
+        <div class="g"><dt id="g-includeids-excludeids"><code>includeIds</code> / <code>excludeIds</code></dt><dd>Overrides de selección, con ids de experiencias, skills, proyectos y repositorios: forzar incluir (solo visibles) o excluir (siempre gana). <span class="refs"><a href="#c3">C3 · Tags y overrides</a>, <a href="#b10">B10 · Constructor · Selección</a>, <a href="#tc13">TC-13</a>, <a href="#tc43">TC-43</a></span></dd></div>
+        <div class="g"><dt id="g-secci-n">sección</dt><dd>Cada bloque de la página; son diez y se pueden reordenar y ocultar por perfil. <span class="refs"><a href="#c4">C4 · Secciones</a>, <a href="#b11">B11 · Constructor · Diseño</a>, <a href="#tc14">TC-14</a></span></dd></div>
         <div class="g"><dt id="g-preset">preset</dt><dd>Uno de los cinco temas base (<code>modern-dark</code>, <code>modern-light</code>, <code>minimal</code>, <code>elegant</code>, <code>corporate</code>). <span class="refs"><a href="#c5">C5 · Tema</a>, <a href="#b11">B11 · Constructor · Diseño</a>, <a href="#tc15">TC-15</a></span></dd></div>
         <div class="g"><dt id="g-token-de-dise-o">token de diseño</dt><dd>Un valor de color, tipografía o espaciado guardado en la base y aplicado como variable CSS. <span class="refs"><a href="#c5">C5 · Tema</a>, <a href="#b11">B11 · Constructor · Diseño</a></span></dd></div>
         <div class="g"><dt id="g-themeoverrides"><code>themeOverrides</code></dt><dd>Las diferencias de un perfil contra su preset; solo se guarda lo que cambió. <span class="refs"><a href="#c5">C5 · Tema</a>, <a href="#r5">R5 · Ajustar el tema y el acento</a>, <a href="#tc15">TC-15</a></span></dd></div>
@@ -2255,6 +2311,7 @@ echo "$SITIO/acme-tech-lead"</pre></div>
         <div class="g"><dt id="g-hallazgo">hallazgo</dt><dd>Un dato del CV que contradice otro o una regla de la plataforma, detectado por la pantalla Revisión o por <code>npm run cv:lint</code>: lleva un código estable, una severidad y el ítem exacto. Nunca se corrige solo. <span class="refs"><a href="#b16">B16 · Revisión</a>, <a href="#tc47">TC-47</a></span></dd></div>
         <div class="g"><dt id="g-severidad">severidad</dt><dd>Qué tan grave es un hallazgo: error (la API lo rechazaría o rompe el render), aviso (probable descuido) o sugerencia (suele ser legítimo). Solo los errores hacen fallar <code>cv:lint</code>. <span class="refs"><a href="#b16">B16 · Revisión</a>, <a href="#tc47">TC-47</a></span></dd></div>
         <div class="g"><dt id="g-versi-n-de-sesi-n">versión de sesión</dt><dd>Un número del administrador (<code>sessionVersion</code>) que el token del panel lleva como <code>sv</code>; cambiar la contraseña desde <b>Cuenta</b> o correr <code>admin:bootstrap</code> lo incrementa y los tokens con otra versión dejan de valer. <span class="refs"><a href="#b14">B14 · Cuenta</a>, <a href="#tc45">TC-45</a></span></dd></div>
+        <div class="g"><dt id="g-repositorio-destacado">repositorio destacado</dt><dd>Un repositorio de GitHub que cargás a mano (nombre, URL <code>https://github.com/&lt;usuario&gt;/&lt;repositorio&gt;</code>, descripción en ES/EN, tecnologías y tags). La sección se muestra desde 2 repositorios por perfil, sale como una línea en el PDF y como <code>projects</code> con <code>type: "repository"</code> en el JSON Resume. No se sincroniza con GitHub. <span class="refs"><a href="#b7">B7 · Proyectos y enlaces</a>, <a href="#b10">B10 · Constructor · Selección</a>, <a href="#tc50">TC-50</a></span></dd></div>
         <div class="g"><dt id="g-json-resume">JSON Resume</dt><dd>Formato abierto (v1.0.0) con el que se exporta un perfil curado, un archivo por idioma: lo que muestra la página, sin las secciones ocultas ni el año de las certificaciones. Se baja desde <b>Publicación</b>; no cuenta como visita. <span class="refs"><a href="#b12">B12 · Constructor · Publicación</a>, <a href="#tc48">TC-48</a></span></dd></div>
         <div class="g"><dt id="g-enlace-de-verificacion">enlace de verificación</dt><dd>La página pública de la credencial en el emisor (Credly, Accredible…); solo <code>https://</code>. El sitio lo muestra como «Ver credencial» y no comprueba que funcione. <span class="refs"><a href="#b6">B6 · Formación</a>, <a href="#tc42">TC-42</a></span></dd></div>
         <div class="g"><dt id="g-apertura">apertura</dt><dd>Una visita de una persona atribuida a un enlace de seguimiento; las tuyas y las de bots no cuentan. <span class="refs"><a href="#b12">B12 · Constructor · Publicación</a>, <a href="#tc41">TC-41</a></span></dd></div>
