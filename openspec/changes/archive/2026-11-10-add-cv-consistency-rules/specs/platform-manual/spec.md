@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Manual del backoffice por pantalla
-El manual SHALL recorrer cada pantalla del panel: login, dashboard, portada con idiomas, experiencias, skills, formación, proyectos y enlaces, perfiles, el constructor con sus cuatro pestañas, la vista previa, la cuenta y la revisión del CV. Cada campo SHALL tener su etiqueta visible, tipo, obligatoriedad, validación y un ejemplo del archivo de ejemplo, según el código vigente del panel y de la API.
+El manual SHALL recorrer cada pantalla del panel: login, dashboard, portada con idiomas, experiencias, skills, formación, proyectos y enlaces, perfiles, el constructor con sus cuatro pestañas, la vista previa, la cuenta, las postulaciones y la revisión del CV. Cada campo SHALL tener su etiqueta visible, tipo, obligatoriedad, validación y un ejemplo del archivo de ejemplo, según el código vigente del panel y de la API.
 
 #### Scenario: Campo con validación
 - **WHEN** se lee la fila de *Plataforma* en la pantalla Proyectos y enlaces
@@ -14,6 +14,10 @@ El manual SHALL recorrer cada pantalla del panel: login, dashboard, portada con 
 #### Scenario: Pantalla Cuenta
 - **WHEN** se lee la pantalla Cuenta
 - **THEN** describe los tres campos de contraseña con su regla, cita sus mensajes literales y aclara que el cambio cierra las sesiones de otros dispositivos y que `admin:bootstrap` es la vía de recuperación
+
+#### Scenario: Pantalla Postulaciones
+- **WHEN** se lee la pantalla Postulaciones
+- **THEN** describe cada campo del diálogo con su regla y sus mensajes literales, la tabla de transiciones de estado, qué significa «Abierto el…», el aviso de no guardar datos de contacto y cómo abrir el CSV en una planilla
 
 #### Scenario: Pantalla Revisión
 - **WHEN** se lee la pantalla Revisión

@@ -131,6 +131,7 @@ npm run seed:example     # carga docs/examples/cv-data.example.json (datos FICTI
 npm run seed:example:verify   # compara la base con el ejemplo (conteos, mecanismos de cada perfil, alias y visitas)
 npm run admin:bootstrap  # crea/actualiza el administrador (ADMIN_EMAIL/ADMIN_PASSWORD/ADMIN_NAME, argon2id)
 npm run views:reclassify # recalcula el `kind` de las visitas con la lista de bots vigente y `views` como la cantidad de visitas HUMAN (simulación; `-- --apply` escribe; correrlo primero sin --apply y con pg_dump)
+npm run cv:lint          # reglas de consistencia del CV sobre docs/cv-data.json (sin base): 0 ok, 1 algún error, 2 archivo inválido
 npm run openapi:export   # escribe backend/openapi.json (fuente de los tipos del frontend; sin servidor ni DB)
 npm run prisma:deploy    # aplica migraciones en producción (NUNCA prisma db push)
 # El backoffice vive en el frontend: http://localhost:5173/admin
@@ -195,6 +196,10 @@ npm run perf:check -- <base>   # Lighthouse mobile, mediana de PERF_CHECK_RUNS (
 - [x] `add-admin-password-change` — cambio de contraseña desde **Cuenta**, `sessionVersion` en el JWT que revoca las demás sesiones, límite propio y `admin:bootstrap` como recuperación (archivado 2026-11-05)
 - [x] `fix-error-contrast-and-date-modified` — mensajes de error con `--t-danger-ink` (≥ 4,5:1 en todos los presets) y regla `danger`, `a11y:check` con formularios con errores a la vista, y `dateModified` en el JSON-LD desde `CuratedProfile.updatedAt` (día UTC, igual al `<lastmod>`), con `updatedAt` en el DTO público (archivado 2026-11-07)
 - [x] `raise-manual-html-size-cap` — el tope de `docs/manual/index.html` en `manual:check` pasa de 300 KB a 1 MB (el límite de un artifact es 16 MB y cada caso suma ~3 KB); imágenes sin cambios (archivado 2026-11-09)
+- [ ] Fase 1.3 — sin bloqueantes primero (`docs/PROPUESTA-FEATURES.md` § 6.2; decisiones del owner del 2026-11-07):
+  - [x] `add-json-resume-export` — cada perfil curado se exporta como JSON Resume v1.0.0 (`GET /api/curated-profiles/:slug/resume.json?locale=` y la ruta del panel por id), con la misma resolución que la ruta pública y sin registrar visitas; schema vendorizado con SHA-256 y validado con Ajv en los tests (archivado 2026-11-10)
+  - [x] `add-application-tracking` — postulaciones en `/admin/postulaciones` (siete estados con transiciones, `RuleViolationError` → 422, vínculo con un `ShareLink` y «Abierto el…», CSV a prueba de fórmulas), sin rutas públicas ni datos de contacto; migración aditiva `add_application_tracking` (archivado 2026-11-10)
+  - [x] `add-cv-consistency-rules` — linter determinista del CV (14 códigos, `computeYearsOfExperience`), pantalla `/admin/revision`, `GET /api/admin/consistency` y `npm run cv:lint` en el CI (archivado 2026-11-10)
 
 ---
 

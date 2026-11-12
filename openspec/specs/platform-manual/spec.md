@@ -31,7 +31,7 @@ El manual SHALL incluir nueve recorridos: preparar un perfil para una vacante, m
 - **THEN** el perfil queda fuera de la home y del sitemap, y su link responde 200
 
 ### Requirement: Manual del backoffice por pantalla
-El manual SHALL recorrer cada pantalla del panel: login, dashboard, portada con idiomas, experiencias, skills, formación, proyectos y enlaces, perfiles, el constructor con sus cuatro pestañas, la vista previa y la cuenta. Cada campo SHALL tener su etiqueta visible, tipo, obligatoriedad, validación y un ejemplo del archivo de ejemplo, según el código vigente del panel y de la API.
+El manual SHALL recorrer cada pantalla del panel: login, dashboard, portada con idiomas, experiencias, skills, formación, proyectos y enlaces, perfiles, el constructor con sus cuatro pestañas, la vista previa, la cuenta, las postulaciones y la revisión del CV. Cada campo SHALL tener su etiqueta visible, tipo, obligatoriedad, validación y un ejemplo del archivo de ejemplo, según el código vigente del panel y de la API.
 
 #### Scenario: Campo con validación
 - **WHEN** se lee la fila de *Plataforma* en la pantalla Proyectos y enlaces
@@ -44,6 +44,14 @@ El manual SHALL recorrer cada pantalla del panel: login, dashboard, portada con 
 #### Scenario: Pantalla Cuenta
 - **WHEN** se lee la pantalla Cuenta
 - **THEN** describe los tres campos de contraseña con su regla, cita sus mensajes literales y aclara que el cambio cierra las sesiones de otros dispositivos y que `admin:bootstrap` es la vía de recuperación
+
+#### Scenario: Pantalla Postulaciones
+- **WHEN** se lee la pantalla Postulaciones
+- **THEN** describe cada campo del diálogo con su regla y sus mensajes literales, la tabla de transiciones de estado, qué significa «Abierto el…», el aviso de no guardar datos de contacto y cómo abrir el CSV en una planilla
+
+#### Scenario: Pantalla Revisión
+- **WHEN** se lee la pantalla Revisión
+- **THEN** explica las tres severidades, que `yearsOfExperience` se carga a mano y la revisión solo avisa si contradice las fechas, que nada se corrige solo y que `npm run cv:lint` corre las mismas reglas sobre el archivo del seed
 
 ### Requirement: Mensajes de validación literales
 Los mensajes de error del manual del backoffice SHALL citarse literales, en una columna *Mensaje* en Markdown y en `td.msg` en el HTML. `npm run manual:check` SHALL terminar con código 1 si alguno no aparece literal en `frontend/src`.
