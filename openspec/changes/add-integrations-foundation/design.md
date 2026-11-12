@@ -308,7 +308,7 @@ Errores: proveedor fuera de `INTEGRATIONS_ENABLED` → 404; «Sincronizar ahora�
 
 ### D19 — Pantalla Integraciones (`/admin/integraciones`)
 
-- Ítem **Integraciones** en `NAV` (décimo, con el ícono `Plug` de Lucide), ruta en `BackofficeApp.tsx`, chunk del panel.
+- **Sin ítem en `NAV`** (D25). Ruta `/admin/integraciones` en `BackofficeApp.tsx`, protegida igual que las demás, en el chunk del panel; se llega desde **Cuenta** y desde el aviso del Dashboard.
 - Aviso arriba si `schedulerEnabled = false`: «El scheduler está apagado en este servidor: lo que encoles queda en espera.»
 - Una tarjeta por proveedor: estado por **texto e insignia** (Activo, En pausa hasta …, Pausado, Sin sincronizar hace más de 48 h), última corrida, última exitosa, conteos de la cola, último error de un trabajo `DEAD`, origen de la credencial.
 - Botones: **Sincronizar ahora** (POST; aviso «Encolado: corre en el próximo minuto.» o «Ya había una sincronización en cola.»), **Pausar**/**Reanudar** (PATCH) y, si la credencial no viene de una variable de entorno, un campo de contraseña **Credencial** con **Guardar** y **Borrar** (con `ConfirmDialog`). El campo nunca se rellena con el valor guardado.
@@ -350,6 +350,17 @@ En cada corrida del planificador: borrar `IntegrationJob` en `DONE` con `finishe
 - Expone, solo para tests, un contador de llamadas por escenario.
 - Lo usan los e2e, `manual:capture` sobre la base de ejemplo y el TC-49. En producción no puede habilitarse (D11).
 
+### D25 — La pantalla no suma un ítem a la navegación del panel
+
+Ajuste de la sesión principal (2026-11-12). `NAV` ya tiene nueve ítems, otros changes en paralelo agregan secciones y a 1280 px no entra uno más.
+
+- `NAV` de `AdminShell.tsx` **no cambia**. La ruta `/admin/integraciones` existe y exige sesión exactamente igual que el resto del panel.
+- **Desde Cuenta** (`/admin/cuenta`): un bloque propio «Integraciones» con un enlace «Integraciones» a la pantalla.
+- **Desde el Dashboard:** un aviso con enlace a la pantalla, visible solo si algún proveedor tiene `stale: true` o `jobs.dead > 0` («Hay integraciones que requieren atención»). El Dashboard consulta `GET /api/admin/integrations` (una consulta corta, sin conectores); si falla o no hay proveedores, no muestra nada.
+- La pantalla lleva un enlace «Volver a Cuenta».
+
+Alternativa descartada: **décimo ítem en `NAV`.** Ver arriba.
+
 ## Risks / Trade-offs
 
 - **[Los trabajos viven en el proceso de la API]** → D4, D5 y D6 acotan qué puede ocupar: una conexión a la vez, sin CPU sincrónica relevante, con timeouts. D22 lo mide. Si un proveedor futuro necesitara CPU (p. ej. parsear un ZIP grande), ese change tiene que justificarlo o moverlo a un proceso aparte; queda escrito en `ARCHITECTURE.md`.
@@ -357,7 +368,7 @@ En cada corrida del planificador: borrar `IntegrationJob` en `DONE` con `finishe
 - **[Reloj de la base contra reloj del proceso]** → el arriendo y los locks usan `now()` de Postgres; `runAt` lo calcula el dominio con el reloj del proceso. Una deriva de segundos solo adelanta o atrasa un reintento.
 - **[Tick cada 60 s con nada que hacer]** → dos sentencias indexadas por minuto (el arriendo y el reclamo vacío). Despreciable frente al tráfico; con el scheduler apagado, cero.
 - **[Pérdida del keyring]** → las credenciales en la base quedan ilegibles (`DEAD` con mensaje claro); se reingresan desde el panel. Las de variables de entorno no dependen del keyring. `DEPLOY-RAILWAY.md` pide guardar las claves en el gestor.
-- **[Barra del panel con diez ítems]** → por debajo de `xl` sigue el menú lateral; en `xl` la barra ya tiene `overflow-x-auto`. `a11y:check` recorre la ruta nueva.
+- **[Barra del panel saturada]** → D25: la pantalla no suma un ítem a `NAV`; se llega desde Cuenta y desde el aviso del Dashboard. `a11y:check` recorre la ruta nueva.
 - **[El texto del 400 de la Console es una suposición]** → P4; el error de etiqueta solo cambia `BudgetExhausted` por `Permanent`, y ninguno de los dos se reintenta.
 - **[Changes en paralelo]** → TC-49 es de este change; el número de pantalla del backoffice (B17) puede chocar en `docs/MANUAL.md`: se toma el siguiente libre al implementar y se resuelve en el merge.
 

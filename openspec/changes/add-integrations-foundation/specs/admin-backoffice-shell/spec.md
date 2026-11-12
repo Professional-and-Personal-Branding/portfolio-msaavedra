@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Pantalla Integraciones
-`/admin/integraciones` SHALL requerir sesión, figurar como **Integraciones** en la navegación y mostrar por proveedor su estado (por texto, no solo color), la última corrida, la última exitosa, la cola y el último error. **Sincronizar ahora** encola; **Pausar** y **Reanudar** cambian `enabled`; la credencial se escribe sin mostrarse nunca. Avisa si el scheduler está apagado.
+`/admin/integraciones` SHALL requerir sesión, MUST NOT sumar un ítem a la barra del panel y se SHALL alcanzar desde Cuenta y desde un aviso del Dashboard. Muestra por proveedor su estado (por texto), la última corrida, la cola y el último error; **Sincronizar ahora** encola, **Pausar** y **Reanudar** cambian `enabled`, y la credencial se escribe sin mostrarse nunca.
 
 #### Scenario: Sincronizar ahora
 - **WHEN** se pulsa **Sincronizar ahora** en `fake`
@@ -30,3 +30,15 @@
 #### Scenario: Scheduler apagado
 - **WHEN** la API devuelve `schedulerEnabled: false`
 - **THEN** se muestra «El scheduler está apagado en este servidor: lo que encoles queda en espera.»
+
+#### Scenario: Acceso desde Cuenta
+- **WHEN** se abre la pantalla Cuenta
+- **THEN** hay un bloque «Integraciones» con un enlace «Integraciones» que lleva a `/admin/integraciones`, y la barra de navegación del panel no tiene un ítem Integraciones
+
+#### Scenario: Aviso en el Dashboard
+- **WHEN** la API devuelve algún proveedor con `stale: true` o con trabajos `dead` mayores que 0
+- **THEN** el Dashboard muestra «Hay integraciones que requieren atención» con un enlace a `/admin/integraciones`
+
+#### Scenario: Dashboard sin avisos
+- **WHEN** ningún proveedor está atrasado ni tiene trabajos muertos, o no hay proveedores
+- **THEN** el Dashboard no muestra el aviso
