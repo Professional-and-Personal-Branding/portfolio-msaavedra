@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
+import { validateCronExpression } from 'cron';
 import {
   IsEnum,
   IsIn,
@@ -14,6 +15,12 @@ import {
   MinLength,
   validateSync,
 } from 'class-validator';
+import {
+  isKnownProvider,
+  parseEnabledProviders,
+  PROVIDER_CATALOG,
+} from '../modules/integrations/domain/provider-catalog';
+import { EXAMPLE_INTEGRATIONS_KEY, parseKeyring } from './integrations-keys';
 
 export enum NodeEnv {
   Development = 'development',
@@ -87,6 +94,45 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsIn(['true', 'false'])
   ENABLE_API_DOCS?: string;
+
+  /** Proveedores de integración habilitados, separados por comas (change `add-integrations-foundation`). */
+  @IsOptional()
+  @IsString()
+  INTEGRATIONS_ENABLED?: string;
+
+  /** Enciende los timers del planificador y del ejecutor en este proceso (default apagado, P1). */
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  INTEGRATIONS_SCHEDULER_ENABLED?: string;
+
+  /** Cron del planificador diario, en UTC (default 06:00 en Bolivia). */
+  @IsString()
+  @IsNotEmpty()
+  INTEGRATIONS_SYNC_CRON: string = '0 10 * * *';
+
+  @IsInt()
+  @Min(10)
+  @Max(3600)
+  INTEGRATIONS_TICK_SECONDS: number = 60;
+
+  @IsInt()
+  @Min(5000)
+  @Max(600000)
+  INTEGRATIONS_JOB_TIMEOUT_MS: number = 120000;
+
+  @IsInt()
+  @Min(10000)
+  @Max(1800000)
+  INTEGRATIONS_RUN_MAX_MS: number = 300000;
+
+  /** Keyring `k1:<base64 de 32 bytes>,k2:…` para cifrar las credenciales. */
+  @IsOptional()
+  @IsString()
+  INTEGRATIONS_KEYS?: string;
+
+  @IsOptional()
+  @IsString()
+  INTEGRATIONS_ACTIVE_KEY?: string;
 }
 
 /** Valor de ejemplo del repositorio: jamás debe llegar a producción. */
@@ -117,6 +163,68 @@ function productionIssues(env: EnvironmentVariables): string[] {
   return issues;
 }
 
+/**
+ * Reglas de las integraciones (spec `api-platform`): lista contra el catálogo, secreto de cada
+ * proveedor solo si está habilitado, keyring y clave activa solo si hay habilitados, `fake`
+ * prohibido en producción y el cron válido. Los mensajes nombran la variable y no el valor.
+ */
+function integrationIssues(env: EnvironmentVariables, raw: Record<string, unknown>): string[] {
+  const issues: string[] = [];
+  const isProduction = env.NODE_ENV === NodeEnv.Production;
+  const enabled = parseEnabledProviders(env.INTEGRATIONS_ENABLED);
+
+  if (!validateCronExpression(env.INTEGRATIONS_SYNC_CRON).valid) {
+    issues.push('INTEGRATIONS_SYNC_CRON: no es una expresión cron válida (5 o 6 campos)');
+  }
+
+  const unknown = enabled.filter((id) => !isKnownProvider(id));
+  if (unknown.length > 0) {
+    issues.push(
+      `INTEGRATIONS_ENABLED: contiene un proveedor que no está en el catálogo (válidos: ${Object.keys(PROVIDER_CATALOG).join(', ')})`,
+    );
+  }
+  for (const id of enabled.filter(isKnownProvider)) {
+    const descriptor = PROVIDER_CATALOG[id];
+    if (isProduction && !descriptor.allowedInProduction) {
+      issues.push(`INTEGRATIONS_ENABLED: el proveedor "${id}" no puede habilitarse en producción`);
+    }
+    for (const name of descriptor.requiredEnv) {
+      const value = raw[name];
+      if (typeof value !== 'string' || value.trim() === '') {
+        issues.push(`${name}: obligatoria porque INTEGRATIONS_ENABLED incluye "${id}"`);
+      }
+    }
+  }
+
+  const keyring = parseKeyring(env.INTEGRATIONS_KEYS);
+  issues.push(...keyring.issues);
+  if (enabled.length > 0) {
+    if (!env.INTEGRATIONS_KEYS || env.INTEGRATIONS_KEYS.trim() === '') {
+      issues.push('INTEGRATIONS_KEYS: obligatoria si INTEGRATIONS_ENABLED no está vacía');
+    }
+    if (!env.INTEGRATIONS_ACTIVE_KEY || env.INTEGRATIONS_ACTIVE_KEY.trim() === '') {
+      issues.push('INTEGRATIONS_ACTIVE_KEY: obligatoria si INTEGRATIONS_ENABLED no está vacía');
+    }
+  }
+  if (
+    env.INTEGRATIONS_ACTIVE_KEY &&
+    keyring.issues.length === 0 &&
+    keyring.keys.size > 0 &&
+    !keyring.keys.has(env.INTEGRATIONS_ACTIVE_KEY)
+  ) {
+    issues.push('INTEGRATIONS_ACTIVE_KEY: no figura en INTEGRATIONS_KEYS');
+  }
+  if (isProduction) {
+    if (keyring.rawValues.includes(EXAMPLE_INTEGRATIONS_KEY)) {
+      issues.push('INTEGRATIONS_KEYS: contiene la clave de ejemplo del repositorio; generá otra');
+    }
+    if (keyring.rawValues.includes(env.JWT_SECRET)) {
+      issues.push('INTEGRATIONS_KEYS: no puede repetir JWT_SECRET');
+    }
+  }
+  return issues;
+}
+
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {
   const validated = plainToInstance(EnvironmentVariables, config, {
     enableImplicitConversion: true,
@@ -128,6 +236,7 @@ export function validateEnv(config: Record<string, unknown>): EnvironmentVariabl
     ...errors.map((e) => `${e.property}: ${Object.values(e.constraints ?? {}).join(', ')}`),
     // Las reglas de producción solo se evalúan si la forma básica ya es válida.
     ...(errors.length === 0 ? productionIssues(validated) : []),
+    ...(errors.length === 0 ? integrationIssues(validated, config) : []),
   ];
 
   if (details.length > 0) {

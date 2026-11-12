@@ -1,4 +1,5 @@
 import { EXAMPLE_JWT_SECRET, expiresInToSeconds, validateEnv } from './env.validation';
+import { EXAMPLE_INTEGRATIONS_KEY } from './integrations-keys';
 import { shouldPublishDocs } from '../swagger';
 
 describe('validateEnv (spec api-platform — configuración fail-fast)', () => {
@@ -138,5 +139,142 @@ describe('shouldPublishDocs (spec api-platform)', () => {
     expect(shouldPublishDocs('production')).toBe(false);
     expect(shouldPublishDocs('production', 'false')).toBe(false);
     expect(shouldPublishDocs('production', 'true')).toBe(true);
+  });
+});
+
+// ── change add-integrations-foundation: reglas condicionales de las integraciones ──
+describe('validateEnv — integraciones', () => {
+  const base = {
+    DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
+    JWT_SECRET: 'un-secreto-de-prueba-largo',
+  };
+  const key = (seed: string, bytes = 32): string => Buffer.alloc(bytes, seed).toString('base64');
+  const enabled = {
+    ...base,
+    INTEGRATIONS_ENABLED: 'fake',
+    FAKE_PROVIDER_TOKEN: 'token-de-prueba-fake',
+    INTEGRATIONS_KEYS: `k1:${key('a')}`,
+    INTEGRATIONS_ACTIVE_KEY: 'k1',
+  };
+
+  /** Ejecuta la validación y devuelve el mensaje del error (o '' si fue válida). */
+  function messageOf(config: Record<string, unknown>): string {
+    try {
+      validateEnv(config);
+      return '';
+    } catch (error) {
+      return (error as Error).message;
+    }
+  }
+
+  it('sin ninguna variable INTEGRATIONS_* arranca con todo apagado', () => {
+    const env = validateEnv(base);
+    expect(env.INTEGRATIONS_ENABLED).toBeUndefined();
+    expect(env.INTEGRATIONS_SCHEDULER_ENABLED).toBeUndefined();
+    expect(env.INTEGRATIONS_SYNC_CRON).toBe('0 10 * * *');
+    expect(env.INTEGRATIONS_TICK_SECONDS).toBe(60);
+    expect(env.INTEGRATIONS_JOB_TIMEOUT_MS).toBe(120000);
+    expect(env.INTEGRATIONS_RUN_MAX_MS).toBe(300000);
+  });
+
+  it('FAKE_PROVIDER_TOKEN ausente con INTEGRATIONS_ENABLED vacía es válido', () => {
+    expect(messageOf({ ...base, INTEGRATIONS_ENABLED: '' })).toBe('');
+  });
+
+  it('FAKE_PROVIDER_TOKEN ausente con fake en la lista falla nombrando la variable', () => {
+    const { FAKE_PROVIDER_TOKEN: _omit, ...withoutToken } = enabled;
+    void _omit;
+    expect(messageOf(withoutToken)).toMatch(/FAKE_PROVIDER_TOKEN/);
+  });
+
+  it('con todo lo exigido, fake habilitado es válido', () => {
+    expect(messageOf(enabled)).toBe('');
+  });
+
+  it('un id fuera del catálogo falla nombrando INTEGRATIONS_ENABLED sin imprimir el valor', () => {
+    const message = messageOf({ ...base, INTEGRATIONS_ENABLED: 'gitlab-secreto' });
+    expect(message).toMatch(/INTEGRATIONS_ENABLED/);
+    expect(message).not.toContain('gitlab-secreto');
+  });
+
+  it('INTEGRATIONS_KEYS e INTEGRATIONS_ACTIVE_KEY se exigen solo con proveedores habilitados', () => {
+    expect(messageOf({ ...enabled, INTEGRATIONS_KEYS: undefined })).toMatch(/INTEGRATIONS_KEYS/);
+    expect(messageOf({ ...enabled, INTEGRATIONS_ACTIVE_KEY: undefined })).toMatch(
+      /INTEGRATIONS_ACTIVE_KEY/,
+    );
+    expect(messageOf(base)).toBe('');
+  });
+
+  it('una clave de 16 bytes falla nombrando INTEGRATIONS_KEYS sin imprimirla', () => {
+    const short = key('b', 16);
+    const message = messageOf({ ...enabled, INTEGRATIONS_KEYS: `k1:${short}` });
+    expect(message).toMatch(/INTEGRATIONS_KEYS/);
+    expect(message).not.toContain(short);
+  });
+
+  it('un id de clave inválido o repetido falla nombrando INTEGRATIONS_KEYS', () => {
+    const a = key('a');
+    expect(messageOf({ ...enabled, INTEGRATIONS_KEYS: `K_1:${a}` })).toMatch(/INTEGRATIONS_KEYS/);
+    expect(messageOf({ ...enabled, INTEGRATIONS_KEYS: `k1:${a},k1:${key('c')}` })).toMatch(
+      /repetido/,
+    );
+  });
+
+  it('INTEGRATIONS_ACTIVE_KEY debe estar en el keyring', () => {
+    expect(messageOf({ ...enabled, INTEGRATIONS_ACTIVE_KEY: 'k9' })).toMatch(
+      /INTEGRATIONS_ACTIVE_KEY/,
+    );
+  });
+
+  it('fake está prohibido con NODE_ENV=production', () => {
+    const production = {
+      ...enabled,
+      NODE_ENV: 'production',
+      JWT_SECRET: 'x'.repeat(48),
+      FRONTEND_URL: 'https://portafolio.test',
+    };
+    expect(messageOf(production)).toMatch(/INTEGRATIONS_ENABLED/);
+  });
+
+  it('en producción, la clave de ejemplo y repetir JWT_SECRET fallan nombrando INTEGRATIONS_KEYS', () => {
+    const production = {
+      ...base,
+      NODE_ENV: 'production',
+      JWT_SECRET: key('j'),
+      FRONTEND_URL: 'https://portafolio.test',
+    };
+    const example = messageOf({
+      ...production,
+      INTEGRATIONS_KEYS: `k1:${EXAMPLE_INTEGRATIONS_KEY}`,
+    });
+    expect(example).toMatch(/INTEGRATIONS_KEYS/);
+    expect(example).not.toContain(EXAMPLE_INTEGRATIONS_KEY);
+    expect(messageOf({ ...production, INTEGRATIONS_KEYS: `k1:${key('j')}` })).toMatch(
+      /INTEGRATIONS_KEYS/,
+    );
+  });
+
+  it('un cron inválido falla nombrando INTEGRATIONS_SYNC_CRON sin imprimir el valor', () => {
+    const message = messageOf({ ...base, INTEGRATIONS_SYNC_CRON: 'todos los días' });
+    expect(message).toMatch(/INTEGRATIONS_SYNC_CRON/);
+    expect(message).not.toContain('todos los días');
+  });
+
+  it('valida los rangos de tick, timeout y duración de la corrida', () => {
+    expect(messageOf({ ...base, INTEGRATIONS_TICK_SECONDS: '5' })).toMatch(
+      /INTEGRATIONS_TICK_SECONDS/,
+    );
+    expect(messageOf({ ...base, INTEGRATIONS_TICK_SECONDS: '3601' })).toMatch(
+      /INTEGRATIONS_TICK_SECONDS/,
+    );
+    expect(messageOf({ ...base, INTEGRATIONS_JOB_TIMEOUT_MS: '4999' })).toMatch(
+      /INTEGRATIONS_JOB_TIMEOUT_MS/,
+    );
+    expect(messageOf({ ...base, INTEGRATIONS_RUN_MAX_MS: '9999' })).toMatch(
+      /INTEGRATIONS_RUN_MAX_MS/,
+    );
+    expect(messageOf({ ...base, INTEGRATIONS_SCHEDULER_ENABLED: 'si' })).toMatch(
+      /INTEGRATIONS_SCHEDULER_ENABLED/,
+    );
   });
 });
