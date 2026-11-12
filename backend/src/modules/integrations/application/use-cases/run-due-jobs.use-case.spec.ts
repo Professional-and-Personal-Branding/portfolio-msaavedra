@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await -- dobles asíncronos sin I/O real */
 import { fail, ok } from '../../../../shared/domain/result';
 import {
   CapturingLoggerFactory,

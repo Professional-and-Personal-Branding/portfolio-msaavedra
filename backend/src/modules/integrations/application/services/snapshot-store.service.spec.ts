@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await -- dobles asíncronos sin I/O real */
 import { FakeClock } from '../../../../../test/support/integrations-doubles';
 import { SnapshotRecord, SnapshotRepository } from '../../domain/repositories/snapshot.repository';
 import { canonicalJson, SnapshotStoreService } from './snapshot-store.service';

@@ -23,7 +23,7 @@ interface ErrorBody {
 function errorOf(body: unknown): ErrorBody {
   if (typeof body !== 'object' || body === null) return {};
   const error = (body as { error?: unknown }).error;
-  return typeof error === 'object' && error !== null ? (error as ErrorBody) : {};
+  return typeof error === 'object' && error !== null ? error : {};
 }
 
 /** Día 1 del mes siguiente a las 00:00 UTC: cuando se reinicia el tope mensual de gasto. */

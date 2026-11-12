@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await -- dobles asíncronos sin I/O real */
 /**
  * Dobles en memoria de los puertos de `integrations` para los tests unitarios de los casos de
  * uso (repositorios mockeados, reloj fijo). Ninguno toca Prisma ni la red.

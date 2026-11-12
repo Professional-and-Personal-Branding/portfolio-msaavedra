@@ -53,7 +53,7 @@ export class IntegrationStatusReader {
         return {
           provider,
           enabled: setting.props.enabled,
-          pausedUntil: paused ? setting.props.pausedUntil!.toISOString() : null,
+          pausedUntil: paused ? setting.props.pausedUntil.toISOString() : null,
           pauseReason: paused ? setting.props.pauseReason : null,
           stale: isProviderStale(setting, now),
           lastSuccessAt: setting.props.lastSuccessAt?.toISOString() ?? null,

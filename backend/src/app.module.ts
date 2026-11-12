@@ -14,6 +14,7 @@ import { ProjectModule } from './modules/project/project.module';
 import { SocialLinkModule } from './modules/social-link/social-link.module';
 import { ExperienceModule } from './modules/experience/experience.module';
 import { HealthModule } from './modules/health/health.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { AllExceptionsFilter } from './shared/infrastructure/http/all-exceptions.filter';
 import { buildLoggerOptions } from './shared/infrastructure/http/logger.options';
@@ -58,6 +59,7 @@ import { PrismaModule } from './shared/infrastructure/persistence/prisma.module'
     SocialLinkModule,
     ApplicationTrackingModule,
     CvConsistencyModule,
+    IntegrationsModule,
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: ContentLanguageInterceptor },
