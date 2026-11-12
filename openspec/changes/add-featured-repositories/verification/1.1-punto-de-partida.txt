@@ -1,0 +1,7 @@
+Punto de partida (rama feat/featured-repositories, base 164e4ba)
+- FeaturedRepository sin codigo en backend/src (solo scripts y schema); SECTION_IDS con 9 ids; el seed crea solo repos visibles.
+- backend npm test: 126 suites / 1350 tests verdes.
+- backend npm run test:e2e (base descartable portfolio_repos_e2e, migrada y sembrada con docs/cv-data.json): 20 suites / 338 tests verdes.
+- frontend npm test: 74 archivos / 1136 tests. En la primera corrida (maquina cargada) fallaron 3 de ProfileBuilderPage.test.tsx
+  (timeout, 77 s el archivo); en la segunda 1 (el de "cambiar tags vuelve a previsualizar"); es una flaky por carga ya conocida.
+- frontend npm run build verde; perf:budget: index-*.js 148.9 KB gzip + profile-prefetch.js 1.2 = 150.1 KB (tope 155).
