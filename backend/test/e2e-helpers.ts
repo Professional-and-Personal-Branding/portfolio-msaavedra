@@ -4,7 +4,7 @@
  */
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
+import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { GLOBAL_PREFIX, PREFIX_EXCLUDED_ROUTES } from '../src/app.constants';
@@ -38,8 +38,15 @@ export const E2E_ADMIN = {
   name: 'E2E Admin',
 };
 
-export async function createTestApp(): Promise<{ app: INestApplication; prisma: PrismaService }> {
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+/**
+ * App de pruebas. `customize` permite sustituir proveedores (p. ej. el transporte HTTP y el
+ * resolvedor DNS de `job-posting`, para que ningún e2e salga a internet).
+ */
+export async function createTestApp(
+  customize?: (builder: TestingModuleBuilder) => TestingModuleBuilder,
+): Promise<{ app: INestApplication; prisma: PrismaService }> {
+  const builder = Test.createTestingModule({ imports: [AppModule] });
+  const moduleRef = await (customize ? customize(builder) : builder).compile();
   const app = moduleRef.createNestApplication();
   app.setGlobalPrefix(GLOBAL_PREFIX, { exclude: PREFIX_EXCLUDED_ROUTES });
   app.use(requestIdMiddleware);

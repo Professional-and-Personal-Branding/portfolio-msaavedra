@@ -3,6 +3,7 @@ import { CLOCK, systemClock } from '../../shared/domain/clock';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { AuthModule } from '../auth/auth.module';
 import { EducationModule } from '../education/education.module';
+import { JobPostingModule } from '../job-posting/job-posting.module';
 import { ExperienceModule } from '../experience/experience.module';
 import { ProfileModule } from '../profile/profile.module';
 import { ProjectModule } from '../project/project.module';
@@ -18,6 +19,7 @@ import {
   ListAllCuratedProfilesUseCase,
   UpdateCuratedProfileUseCase,
 } from './application/use-cases/admin/curated-profile-admin.use-cases';
+import { CreateCuratedProfileFromJobPostingUseCase } from './application/use-cases/admin/create-curated-profile-from-job-posting.use-case';
 import {
   ArchiveCuratedProfileUseCase,
   DuplicateCuratedProfileUseCase,
@@ -42,6 +44,7 @@ import { GetProfileHeadUseCase } from './application/use-cases/get-profile-head.
 import { ListCuratedProfilesUseCase } from './application/use-cases/list-curated-profiles.use-case';
 import { ResolveCuratedProfileUseCase } from './application/use-cases/resolve-curated-profile.use-case';
 import { CURATED_PROFILE_REPOSITORY } from './domain/repositories/curated-profile.repository';
+import { TAG_VOCABULARY_READER } from './domain/repositories/tag-vocabulary.reader';
 import { SHARE_LINK_REPOSITORY } from './domain/repositories/share-link.repository';
 import { AdminShareLinkController } from './infrastructure/controllers/admin-share-link.controller';
 import { AdminCuratedProfileController } from './infrastructure/controllers/admin-curated-profile.controller';
@@ -49,6 +52,7 @@ import { CuratedProfileController } from './infrastructure/controllers/curated-p
 import { ProfileHeadController } from './infrastructure/controllers/profile-head.controller';
 import { SitemapController } from './infrastructure/controllers/sitemap.controller';
 import { PrismaCuratedProfileRepository } from './infrastructure/persistence/prisma-curated-profile.repository';
+import { PrismaTagVocabularyReader } from './infrastructure/persistence/prisma-tag-vocabulary.reader';
 import { PrismaShareLinkRepository } from './infrastructure/persistence/prisma-share-link.repository';
 import { CryptoShareCodeGenerator } from './infrastructure/security/crypto-share-code.generator';
 
@@ -68,6 +72,7 @@ import { CryptoShareCodeGenerator } from './infrastructure/security/crypto-share
     EducationModule,
     ProjectModule,
     SocialLinkModule,
+    JobPostingModule,
   ],
   controllers: [
     CuratedProfileController,
@@ -79,6 +84,7 @@ import { CryptoShareCodeGenerator } from './infrastructure/security/crypto-share
   providers: [
     { provide: CURATED_PROFILE_REPOSITORY, useClass: PrismaCuratedProfileRepository },
     { provide: SHARE_LINK_REPOSITORY, useClass: PrismaShareLinkRepository },
+    { provide: TAG_VOCABULARY_READER, useClass: PrismaTagVocabularyReader },
     { provide: SHARE_CODE_GENERATOR, useClass: CryptoShareCodeGenerator },
     { provide: CLOCK, useValue: systemClock },
     PortfolioSectionsLoader,
@@ -88,6 +94,7 @@ import { CryptoShareCodeGenerator } from './infrastructure/security/crypto-share
     ListAllCuratedProfilesUseCase,
     GetCuratedProfileAdminUseCase,
     CreateCuratedProfileUseCase,
+    CreateCuratedProfileFromJobPostingUseCase,
     UpdateCuratedProfileUseCase,
     DeleteCuratedProfileUseCase,
     PreviewCuratedProfileUseCase,

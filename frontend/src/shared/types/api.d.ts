@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: ea49a1e3adc766dd82e2997d9324e6bd196e5f2b8eab96a1a256ff6a1fe3da59
+// openapi-sha256: a5d6133e177d7efb363964e7cc5ef805c25b822d2dadb164265b8f7dd9f1b587
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -366,6 +366,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/curated-profiles/from-job-posting": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Crear un borrador de perfil curado desde una vacante importada
+         * @description Crea el perfil con los `filterTags` elegidos, que deben existir en el vocabulario de tus datos (tags de experiencias y proyectos visibles y de las skills). Nace PRIVATE, no enumerado, sin token y con el encabezado vacío (hereda el del perfil base). La vacante no se modifica.
+         */
+        post: operations["AdminCuratedProfileController_createFromJobPosting"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/curated-profiles/preview": {
         parameters: {
             query?: never;
@@ -458,6 +478,71 @@ export interface paths {
         head?: never;
         /** Editar experiencia (parcial) */
         patch: operations["AdminExperienceController_update"];
+        trace?: never;
+    };
+    "/api/admin/job-postings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar vacantes importadas
+         * @description Por `importedAt` descendente. Antes de leer, borra el texto de las vacantes con más de 90 días.
+         */
+        get: operations["AdminJobPostingController_list"];
+        put?: never;
+        /**
+         * Importar una vacante desde una URL o desde texto
+         * @description `url` **o** `text`. Con URL: Greenhouse, Lever y Ashby por su API pública y, para cualquier otra página https pública, el bloque JSON-LD `JobPosting`. Los portales cerrados (LinkedIn, Indeed, Glassdoor…) responden 422 sin ninguna petición. La política de red rechaza http, IP literales, puertos, nombres locales y direcciones no públicas en cada redirect. Con texto: extracción determinística, sin red. Reimportar la misma vacante la actualiza (200); nueva, 201. Límite: 10 por minuto por IP.
+         */
+        post: operations["AdminJobPostingController_import"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/job-postings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Leer una vacante importada */
+        get: operations["AdminJobPostingController_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Borrar una vacante importada
+         * @description Los perfiles curados creados desde ella no cambian.
+         */
+        delete: operations["AdminJobPostingController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/job-postings/{id}/suggestion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sugerir criterios de un perfil curado desde la vacante
+         * @description Cobertura de los términos detectados contra el vocabulario **vigente** de tus datos (tags de experiencias y proyectos visibles y de las skills). Solo trae la cobertura, hasta 8 tags sugeridos, un título y una base de slug. Se calcula en cada llamada.
+         */
+        get: operations["AdminJobPostingController_suggestion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/admin/languages": {
@@ -1332,6 +1417,15 @@ export interface components {
             source: string;
             views: number;
         };
+        CoveredTagResponse: {
+            /**
+             * @description Ítems visibles de tus datos que llevan el tag
+             * @example 3
+             */
+            evidence: number;
+            /** @example java */
+            tag: string;
+        };
         CreateApplicationDto: {
             /**
              * @description `AAAA-MM-DD`. Nula con `DRAFT`; si falta en otro estado, el día UTC del reloj. No puede pasar de mañana (UTC).
@@ -1441,6 +1535,28 @@ export interface components {
              * @enum {string}
              */
             visibility: "PUBLIC" | "PRIVATE" | "PROTECTED";
+        };
+        CreateCuratedProfileFromJobPostingDto: {
+            /**
+             * @description 1 a 20 tags, sin repetidos, todos del vocabulario de tus datos
+             * @example [
+             *       "java",
+             *       "spring-boot"
+             *     ]
+             */
+            filterTags: string[];
+            /** @description Id de la vacante importada */
+            jobPostingId: string;
+            /**
+             * @description Slug kebab-case. Sin él se arma con la empresa y el puesto, con el primer sufijo libre.
+             * @example acme-ejemplo-tech-lead
+             */
+            slug?: string;
+            /**
+             * @description Título del perfil (1 a 120). Sin él, el de la vacante.
+             * @example Tech Lead Backend en Acme Ejemplo
+             */
+            title?: string;
         };
         CreateEducationDto: {
             degree: components["schemas"]["LocalizedTextDto"];
@@ -1827,6 +1943,76 @@ export interface components {
              */
             technologies: string[];
         };
+        ImportJobPostingDto: {
+            /** @description Empresa (hasta 160); solo con `text`. */
+            company?: string;
+            /**
+             * @description URL https de referencia (hasta 2048); solo con `text`. Se guarda como `sourceUrl` y nunca se pide.
+             * @example https://www.linkedin.com/jobs/view/123
+             */
+            referenceUrl?: string;
+            /** @description Texto de la vacante (50 a 50 000 caracteres tras recortar). Excluyente con `url`. */
+            text?: string;
+            /** @description Título (hasta 200); solo con `text`. Sin él, la primera línea del texto. */
+            title?: string;
+            /**
+             * @description URL https de la vacante: Greenhouse, Lever, Ashby o una página de empleo con JSON-LD. Los portales cerrados (LinkedIn, Indeed…) responden 422. Excluyente con `text`.
+             * @example https://jobs.lever.co/acmeejemplo/0b1c2d3e-aaaa-bbbb-cccc-1234567890ab
+             */
+            url?: string;
+        };
+        JobPostingResponse: {
+            /** @description Solo https */
+            applyUrl: string | null;
+            /** @example Acme Ejemplo */
+            company: string | null;
+            /** @description Tal como lo da la fuente */
+            compensation: string | null;
+            /** @description ISO 8601 */
+            createdAt: string;
+            /** @description Texto plano (hasta 20 000); `null` después de la purga */
+            description: string | null;
+            descriptionTruncated: boolean;
+            /**
+             * @example [
+             *       "java",
+             *       "kubernetes"
+             *     ]
+             */
+            detectedTerms: string[];
+            employmentType: string | null;
+            id: string;
+            /** @description ISO 8601 */
+            importedAt: string;
+            /** @example es */
+            language: string | null;
+            location: string | null;
+            /** @description ISO 8601 */
+            postedAt: string | null;
+            source: components["schemas"]["JobPostingSourceKind"];
+            /** @description URL canónica pedida o de referencia */
+            sourceUrl: string | null;
+            /** @description ISO 8601: cuándo se borra (o se borró) el texto */
+            textPurgeAt: string;
+            /** @description `true` si el texto ya se borró */
+            textPurged: boolean;
+            /** @example Tech Lead Backend */
+            title: string;
+            /** @description ISO 8601 */
+            updatedAt: string;
+            workplaceType: components["schemas"]["WorkplaceType"] | null;
+        };
+        /** @enum {string} */
+        JobPostingSourceKind: "GREENHOUSE" | "LEVER" | "ASHBY" | "JSON_LD" | "PASTED";
+        JobPostingSuggestionResponse: {
+            coverage: components["schemas"]["TagCoverageResponse"];
+            /** @description Hasta 8; siempre dentro del vocabulario de tags de tus datos, sin repetidos */
+            suggestedFilterTags: string[];
+            /** @example acme-ejemplo-tech-lead-backend */
+            suggestedSlugBase: string;
+            /** @description Hasta 120 caracteres */
+            suggestedTitle: string;
+        };
         LanguageResponse: {
             /** @example Oral, escrito y lectura avanzados */
             detail: string;
@@ -2178,6 +2364,15 @@ export interface components {
             /** @example https://github.com/manuXD270516 */
             url: string;
         };
+        TagCoverageResponse: {
+            covered: components["schemas"]["CoveredTagResponse"][];
+            coveredCount: number;
+            detectedCount: number;
+            /** @description `coveredCount / detectedCount` a dos decimales; `null` si no se detectó nada */
+            ratio: number | null;
+            /** @description Detectados sin respaldo en tus datos */
+            uncovered: string[];
+        };
         ThemeResponse: {
             /** @example clx0theme1 */
             id: string;
@@ -2440,6 +2635,8 @@ export interface components {
         };
         /** @enum {string} */
         ViewKind: "HUMAN" | "OWNER" | "BOT";
+        /** @enum {string} */
+        WorkplaceType: "REMOTE" | "HYBRID" | "ONSITE";
     };
     responses: never;
     parameters: never;
@@ -3656,6 +3853,65 @@ export interface operations {
             };
         };
     };
+    AdminCuratedProfileController_createFromJobPosting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCuratedProfileFromJobPostingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCuratedProfileResponse"];
+                };
+            };
+            /** @description Tags vacíos, repetidos o fuera del vocabulario (el mensaje los nombra); slug inválido */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description La vacante no existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Slug ocupado o sin sufijo libre */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
     AdminCuratedProfileController_previewDraft: {
         parameters: {
             query?: {
@@ -4067,6 +4323,215 @@ export interface operations {
                 };
             };
             /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminJobPostingController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobPostingResponse"][];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminJobPostingController_import: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportJobPostingDto"];
+            };
+        };
+        responses: {
+            /** @description Vacante ya importada, actualizada */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobPostingResponse"];
+                };
+            };
+            /** @description Vacante nueva */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobPostingResponse"];
+                };
+            };
+            /** @description `url` y `text` juntos o ninguno, texto fuera de 50 a 50 000, referencia no https */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description No se pudo leer la URL (portal cerrado, política de red, plazo, tamaño, tipo, sin vacante). El mensaje indica pegar el texto */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Más de 10 por minuto */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminJobPostingController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobPostingResponse"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminJobPostingController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminJobPostingController_suggestion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobPostingSuggestionResponse"];
+                };
+            };
+            /** @description Sin sesión de administrador */
             401: {
                 headers: {
                     [name: string]: unknown;

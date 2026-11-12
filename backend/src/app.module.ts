@@ -13,6 +13,7 @@ import { EducationModule } from './modules/education/education.module';
 import { ProjectModule } from './modules/project/project.module';
 import { SocialLinkModule } from './modules/social-link/social-link.module';
 import { ExperienceModule } from './modules/experience/experience.module';
+import { JobPostingModule } from './modules/job-posting/job-posting.module';
 import { HealthModule } from './modules/health/health.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { AllExceptionsFilter } from './shared/infrastructure/http/all-exceptions.filter';
@@ -58,6 +59,7 @@ import { PrismaModule } from './shared/infrastructure/persistence/prisma.module'
     SocialLinkModule,
     ApplicationTrackingModule,
     CvConsistencyModule,
+    JobPostingModule,
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: ContentLanguageInterceptor },

@@ -1,0 +1,9 @@
+== con una sonda temporal en modules/job-posting que importa ../curated-profile/ (debe fallar) ==
+  ● Regla de dependencia (Clean Architecture) › job-posting no importa nada de curated-profile (regla 1)
+    - Expected  - 1
+    + Received  + 3
+    +   "modules\\job-posting\\domain\\__probe__.ts → ../../curated-profile/domain/entities/curated-profile.entity",
+Tests:       1 failed, 14 passed, 15 total
+
+== sin la sonda ==
+Tests:       15 passed, 15 total

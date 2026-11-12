@@ -1,0 +1,12 @@
+Base: portfolio_intake_check (descartable). Dos vacantes vencidas y una vigente insertadas a mano.
+Texto de vacantes purgado: 2
+codigo: 0
+-- segunda corrida (idempotente) --
+Texto de vacantes purgado: 0
+ id | purgada 
+----+---------
+ x1 | t
+ x2 | t
+ x3 | f
+(3 rows)
+
