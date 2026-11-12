@@ -10,3 +10,14 @@
 #### Scenario: Repositorio oculto
 - **WHEN** un repositorio con `visible: false` tiene `description.en` vacío
 - **THEN** no hay issue sobre él
+
+### Requirement: Los repositorios cuentan como referencias de los perfiles curados
+Las reglas de perfiles curados SHALL reconocer los ids de los repositorios, visibles u ocultos, como referencias válidas de `includeIds`/`excludeIds` (sin `curated.orphan-reference`), y SHALL contar los `tags` de los repositorios visibles al decidir si un `filterTags` tiene coincidencia (`curated.unmatched-filter-tag`).
+
+#### Scenario: Referencia a un repositorio oculto
+- **WHEN** un perfil curado incluye en `includeIds` el id de un repositorio con `visible: false`
+- **THEN** no hay `curated.orphan-reference` sobre ese id
+
+#### Scenario: Tag que solo tiene un repositorio
+- **WHEN** un `filterTags` solo coincide con los tags de un repositorio visible
+- **THEN** no hay `curated.unmatched-filter-tag` para ese tag

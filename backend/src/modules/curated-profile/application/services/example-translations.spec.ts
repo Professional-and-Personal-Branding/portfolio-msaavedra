@@ -29,6 +29,12 @@ interface Example {
     summary: Bilingual;
     availability: { modality: Bilingual; contractType: Bilingual; startDate: Bilingual };
     socialLinks?: { label: Bilingual; description?: Bilingual; visible: boolean }[];
+    featuredRepositories?: {
+      id?: string;
+      description: Bilingual;
+      tags: string[];
+      visible?: boolean;
+    }[];
     languages: { name: string; nameI18n: Bilingual; level: Bilingual; detail: Bilingual }[];
   };
   experiences: {
@@ -84,6 +90,15 @@ function inputFor(data: Example, template: Template, locale: Locale): MissingTra
     includeIds: idsOf(template.includeRefs, 'project'),
     excludeIds: idsOf(template.excludeRefs, 'project'),
   };
+  const repoCriteria = {
+    filterTags: template.filterTags,
+    includeIds: idsOf(template.includeRefs, 'repository'),
+    excludeIds: idsOf(template.excludeRefs, 'repository'),
+  };
+  const repositories = visible(profile.featuredRepositories ?? []).map((r, i) => ({
+    ...r,
+    id: r.id ?? `repo-${i}`,
+  }));
   return {
     locale,
     curated: stub({
@@ -103,6 +118,7 @@ function inputFor(data: Example, template: Template, locale: Locale): MissingTra
     experiences: selectByTags(visible(data.experiences), expCriteria).map((e) => stub(e)),
     skillCategories: data.skillCategories.map((c, i) => stub({ id: `cat-${i}`, name: c.name })),
     projects: selectByTags(visible(data.projects), projCriteria).map((p) => stub(p)),
+    repositories: selectByTags(repositories, repoCriteria).map((r) => stub(r)),
     education: visible(data.education).map((e, i) => stub({ id: `edu-${i}`, degree: e.degree })),
     certifications: visible(data.certifications).map((c, i) =>
       stub({ id: `cert-${i}`, name: c.name }),

@@ -7,6 +7,8 @@
  * D3) son compatibles hacia atrás: ausentes, el seed hace exactamente lo de siempre.
  */
 import { fail, ok, Result } from '../../src/shared/domain/result';
+import { githubRepositoryKeyOf } from '../../src/modules/featured-repository/domain/services/parse-github-repository-url';
+import { validateFeaturedRepository } from '../../src/modules/featured-repository/domain/services/validate-featured-repository';
 import { SECTION_IDS } from '../../src/modules/curated-profile/domain/services/resolve-sections';
 import {
   validateCertification,
@@ -34,12 +36,18 @@ export interface SeedSocialLink {
 }
 
 export interface SeedFeaturedRepository {
+  /**
+   * Clave estable para referenciarlo como `repository:<id>` en `includeRefs`/`excludeRefs`;
+   * obligatoria solo si alguna plantilla lo referencia. Único en el archivo.
+   */
+  id?: string;
   name: string;
   url: string;
   language?: string;
   description: LocalizedText;
   tags: string[];
   technologies?: string[];
+  /** Se acepta por compatibilidad y se ignora al escribir: lo llenará la sincronización. */
   stars?: number;
   visible: boolean;
 }
@@ -180,7 +188,7 @@ export interface SeedSourceError {
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 /** Slug del perfil que el seed crea siempre. */
 export const ALL_PROFILE_SLUG = 'all';
-export const REF_KINDS = ['experience', 'project', 'skill'] as const;
+export const REF_KINDS = ['experience', 'project', 'repository', 'skill'] as const;
 export type RefKind = (typeof REF_KINDS)[number];
 
 const VISIBILITIES: readonly string[] = ['PUBLIC', 'PROTECTED', 'PRIVATE'];
@@ -294,6 +302,7 @@ class Checker {
 interface RefIndex {
   experience: Set<string>;
   project: Set<string>;
+  repository: Set<string>;
   /** Nombre de skill → cuántas veces aparece en todo el archivo. */
   skill: Map<string, number>;
 }
@@ -319,7 +328,21 @@ function buildRefIndex(raw: Rec): RefIndex {
       if (name !== null) skill.set(name, (skill.get(name) ?? 0) + 1);
     }
   }
-  return { experience: new Set(idsOf('experiences')), project: new Set(idsOf('projects')), skill };
+  const profile = isRec(raw['profile']) ? raw['profile'] : {};
+  const repositories = Array.isArray(profile['featuredRepositories'])
+    ? (profile['featuredRepositories'] as unknown[])
+    : [];
+  const repository = new Set(
+    repositories.flatMap((item) =>
+      isRec(item) && typeof item['id'] === 'string' ? [item['id']] : [],
+    ),
+  );
+  return {
+    experience: new Set(idsOf('experiences')),
+    project: new Set(idsOf('projects')),
+    repository,
+    skill,
+  };
 }
 
 export function parseRef(ref: string): { kind: RefKind; key: string } | null {
@@ -337,7 +360,10 @@ function checkRefs(c: Checker, v: unknown, path: string, index: RefIndex): void 
     const at = `${path}[${i}]`;
     const parsed = parseRef(ref);
     if (!parsed) {
-      c.add(at, `referencia inválida "${ref}": usá experience:<id>, project:<id> o skill:<nombre>`);
+      c.add(
+        at,
+        `referencia inválida "${ref}": usá experience:<id>, project:<id>, repository:<id> o skill:<nombre>`,
+      );
     } else if (parsed.kind === 'skill') {
       const n = index.skill.get(parsed.key);
       if (n === undefined) c.add(at, `no existe ${ref}`);
@@ -388,19 +414,71 @@ function checkProfile(c: Checker, v: unknown): void {
   }
 
   if (p['featuredRepositories'] !== undefined) {
-    c.list(p['featuredRepositories'], 'profile.featuredRepositories')?.forEach((rp, i) => {
+    const repos = c.list(p['featuredRepositories'], 'profile.featuredRepositories');
+    repos?.forEach((rp, i) => {
       const at = `profile.featuredRepositories[${i}]`;
       const r = c.rec(rp, at);
       if (!r) return;
-      c.str(r['name'], `${at}.name`);
-      c.str(r['url'], `${at}.url`);
-      c.str(r['language'], `${at}.language`, true);
+      c.str(r['id'], `${at}.id`, true);
+      const name = c.str(r['name'], `${at}.name`);
+      const url = c.str(r['url'], `${at}.url`);
+      const language = c.str(r['language'], `${at}.language`, true);
       c.text(r['description'], `${at}.description`);
       c.strings(r['tags'], `${at}.tags`);
       c.strings(r['technologies'], `${at}.technologies`, true);
       c.bool(r['visible'], `${at}.visible`);
+      if (r['stars'] !== undefined && typeof r['stars'] !== 'number') {
+        c.add(`${at}.stars`, 'debe ser un número (se ignora al cargar)');
+      }
+      // Las mismas reglas de dominio que la API del panel (D2, D14): URL de GitHub y límites.
+      if (name !== undefined && url !== undefined) {
+        const valid = validateFeaturedRepository({
+          name,
+          url,
+          language: language ?? null,
+          description: { es: '' },
+          technologies: [],
+          tags: [],
+          order: 0,
+          visible: true,
+        });
+        if (!valid.ok) {
+          for (const field of valid.error.fields.length > 0 ? valid.error.fields : ['url']) {
+            c.add(`${at}.${field}`, valid.error.message);
+          }
+        }
+      }
     });
+    checkUniqueRepositories(c, repos);
   }
+}
+
+/** `id` único en el archivo y un mismo `owner/repo` (sin distinguir mayúsculas) una sola vez. */
+function checkUniqueRepositories(c: Checker, items: unknown[] | null | undefined): void {
+  if (!items) return;
+  const ids = new Set<string>();
+  const keys = new Map<string, number>();
+  items.forEach((item, i) => {
+    if (!isRec(item)) return;
+    const at = `profile.featuredRepositories[${i}]`;
+    const id = item['id'];
+    if (typeof id === 'string') {
+      if (ids.has(id)) c.add(`${at}.id`, `el id "${id}" está repetido`);
+      ids.add(id);
+    }
+    const key = typeof item['url'] === 'string' ? githubRepositoryKeyOf(item['url']) : null;
+    if (key !== null) {
+      const first = keys.get(key);
+      if (first !== undefined) {
+        c.add(
+          `${at}.url`,
+          `el repositorio ya está cargado en profile.featuredRepositories[${first}]`,
+        );
+      } else {
+        keys.set(key, i);
+      }
+    }
+  });
 }
 
 function checkUniqueIds(c: Checker, items: unknown[], path: string): void {
@@ -660,11 +738,12 @@ export function formatSeedErrors(errors: readonly SeedSourceError[]): string {
 export interface CreatedIds {
   experience: ReadonlyMap<string, string>;
   project: ReadonlyMap<string, string>;
+  repository: ReadonlyMap<string, string>;
   /** Nombre de skill → id generado. */
   skill: ReadonlyMap<string, string>;
 }
 
-/** Traduce `experience:<id>`, `project:<id>` y `skill:<nombre>` al id generado por la base. */
+/** Traduce `experience:<id>`, `project:<id>`, `repository:<id>` y `skill:<nombre>` al id generado por la base. */
 export function resolveRefs(refs: readonly string[], created: CreatedIds): string[] {
   return refs.map((ref) => {
     const parsed = parseRef(ref);
@@ -686,6 +765,10 @@ export function refDisplayName(ref: string, source: SeedSource): string | null {
     const p = source.projects.find((x) => x.id === parsed.key);
     return p ? `project:${p.name}` : null;
   }
+  if (parsed.kind === 'repository') {
+    const r = (source.profile.featuredRepositories ?? []).find((x) => x.id === parsed.key);
+    return r ? `repository:${r.name}` : null;
+  }
   return `skill:${parsed.key}`;
 }
 
@@ -704,7 +787,8 @@ export function expectedCounts(
     Certification: source.certifications.length,
     Project: source.projects.length,
     SocialLink: (source.profile.socialLinks ?? []).length,
-    FeaturedRepository: (source.profile.featuredRepositories ?? []).filter((r) => r.visible).length,
+    // Se cargan todos, también los ocultos (como proyectos): `visible` viaja a la fila.
+    FeaturedRepository: (source.profile.featuredRepositories ?? []).length,
     Theme: themePresetCount,
     // Las plantillas más el perfil `all` que el seed crea siempre.
     CuratedProfile: source.profileTemplates.length + 1,

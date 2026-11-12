@@ -180,6 +180,43 @@ function toProjects(output: CuratedProfileOutput): JsonResumeProject[] {
   });
 }
 
+/**
+ * Los repositorios destacados van a `projects` (D10), después de los proyectos, con
+ * `type: "repository"`. `keywords`: el lenguaje primero si no está ya en las tecnologías,
+ * luego las tecnologías, sin repetidos (sin distinguir mayúsculas). Sin fechas ni `roles`.
+ */
+function toRepositoryProjects(output: CuratedProfileOutput): JsonResumeProject[] {
+  return output.repositories.flatMap((repository) => {
+    const name = text(repository.name);
+    if (!name) return [];
+    const language = text(repository.language);
+    const inTechnologies = repository.technologies.some(
+      (tech) => tech.trim().toLowerCase() === language?.toLowerCase(),
+    );
+    const seen = new Set<string>();
+    const keywords = [
+      ...(language && !inTechnologies ? [language] : []),
+      ...repository.technologies,
+    ]
+      .map((keyword) => keyword.trim())
+      .filter((keyword) => {
+        const key = keyword.toLowerCase();
+        if (keyword === '' || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    return [
+      compact<JsonResumeProject>({
+        name,
+        description: text(repository.description),
+        keywords: list(keywords),
+        url: uri(repository.url),
+        type: 'repository',
+      }),
+    ];
+  });
+}
+
 /** `AAAA-MM-DDThh:mm:ss` en UTC, sin milisegundos ni `Z`, como pide la descripción del schema. */
 function lastModified(updatedAt: string | null): string | undefined {
   if (!updatedAt) return undefined;
@@ -207,7 +244,11 @@ export function toJsonResume(
   const certificates = has('certifications') ? toCertificates(output) : [];
   const skills = has('skills') ? toSkills(output) : [];
   const languages = has('contact') ? toLanguages(output) : [];
-  const projects = has('projects') ? toProjects(output) : [];
+  // La clave `projects` sale si está `projects` o `repositories` en `sections`.
+  const projects = [
+    ...(has('projects') ? toProjects(output) : []),
+    ...(has('repositories') ? toRepositoryProjects(output) : []),
+  ];
 
   return {
     $schema: JSON_RESUME_SCHEMA_URL,

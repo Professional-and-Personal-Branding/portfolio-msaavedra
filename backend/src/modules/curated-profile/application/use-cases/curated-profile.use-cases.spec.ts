@@ -6,6 +6,8 @@ import {
   CertificationRepository,
   EducationRepository,
 } from '../../../education/domain/repositories/education.repository';
+import { FeaturedRepository } from '../../../featured-repository/domain/entities/featured-repository.entity';
+import { FeaturedRepositoryRepository } from '../../../featured-repository/domain/repositories/featured-repository.repository';
 import { Project } from '../../../project/domain/entities/project.entity';
 import { ProjectRepository } from '../../../project/domain/repositories/project.repository';
 import { SocialLink } from '../../../social-link/domain/entities/social-link.entity';
@@ -163,6 +165,25 @@ const PROJECTS = [
     visible: true,
   }),
 ];
+function repo(id: string, tags: string[], order: number, visible = true): FeaturedRepository {
+  return FeaturedRepository.create({
+    id,
+    name: `repo-${id}`,
+    url: `https://github.com/octo-org/repo-${id}`,
+    language: 'Java',
+    description: { es: `Descripción ${id}`, en: `Description ${id}` },
+    technologies: ['Spring Boot'],
+    tags,
+    order,
+    visible,
+  });
+}
+
+const REPOSITORIES = [
+  repo('repo-api', ['java'], 1),
+  repo('repo-dash', ['nodejs'], 0),
+  repo('repo-oculto', ['java'], 5, false),
+];
 const EDUCATION = [
   Education.create({
     id: 'edu-1',
@@ -212,13 +233,17 @@ const stubs = () => ({
 });
 
 /** Loader real con repositorios simulados: `findAllVisible` devuelve todo para probar su filtro. */
-function realLoader(projects: Project[]): PortfolioSectionsLoader {
+function realLoader(
+  projects: Project[],
+  repositories: FeaturedRepository[] = REPOSITORIES,
+): PortfolioSectionsLoader {
   const reader = <R>(items: unknown[]): R =>
     ({ findAllVisible: jest.fn().mockResolvedValue(items) }) as unknown as R;
   return new PortfolioSectionsLoader(
     reader<EducationRepository>(EDUCATION),
     reader<CertificationRepository>(CERTIFICATIONS),
     reader<ProjectRepository>(projects),
+    reader<FeaturedRepositoryRepository>(repositories),
     reader<SocialLinkRepository>(SOCIAL_LINKS),
   );
 }
@@ -233,6 +258,8 @@ interface Deps {
    * es él quien descarta los ocultos, como en producción.
    */
   projects?: Project[];
+  /** Repositorios crudos (visibles y ocultos): el loader real descarta los ocultos. */
+  repositories?: FeaturedRepository[];
   themes?: Theme[];
   record?: jest.Mock;
   findByCode?: jest.Mock;
@@ -301,16 +328,18 @@ function build(deps: Deps = {}) {
   };
   const isAdminSession = deps.isAdminSession ?? jest.fn().mockResolvedValue(false);
   const sessions = { isAdminSession };
-  const loader = deps.projects
-    ? realLoader(deps.projects)
-    : ({
-        load: jest.fn().mockResolvedValue({
-          education: EDUCATION,
-          certifications: CERTIFICATIONS,
-          projects: PROJECTS,
-          socialLinks: SOCIAL_LINKS,
-        }),
-      } as unknown as PortfolioSectionsLoader);
+  const loader =
+    deps.projects || deps.repositories
+      ? realLoader(deps.projects ?? PROJECTS, deps.repositories ?? REPOSITORIES)
+      : ({
+          load: jest.fn().mockResolvedValue({
+            education: EDUCATION,
+            certifications: CERTIFICATIONS,
+            projects: PROJECTS,
+            repositories: REPOSITORIES.filter((r) => r.visible),
+            socialLinks: SOCIAL_LINKS,
+          }),
+        } as unknown as PortfolioSectionsLoader);
   const composer = new CuratedProfileComposer(
     profileRepo,
     experienceRepo,
@@ -476,6 +505,105 @@ describe('ResolveCuratedProfileUseCase', () => {
     });
   });
 
+  // Change add-featured-repositories (D5, D6): selección y umbral de la sección `repositories`.
+  describe('repositorios destacados', () => {
+    const ids = (out: { repositories: { id: string }[] }) => out.repositories.map((r) => r.id);
+
+    it('con filterTags vacío trae todos los visibles, ordenados por order', async () => {
+      const out = await resolveOk(build({ curated: curated({ filterTags: [] }) }).useCase);
+      expect(ids(out)).toEqual(['repo-dash', 'repo-api']);
+      expect(out.sections).toContain('repositories');
+    });
+
+    it('la sección va después de projects en el orden por defecto', async () => {
+      const out = await resolveOk(build({ curated: curated({ filterTags: [] }) }).useCase);
+      expect(out.sections.indexOf('repositories')).toBe(out.sections.indexOf('projects') + 1);
+    });
+
+    it('filtra por la intersección de tags', async () => {
+      const out = await resolveOk(build({ curated: curated({ filterTags: ['nodejs'] }) }).useCase);
+      expect(ids(out)).toEqual(['repo-dash']);
+    });
+
+    it('excludeIds gana sobre el tag y sobre includeIds', async () => {
+      const out = await resolveOk(
+        build({
+          curated: curated({
+            filterTags: [],
+            includeIds: ['repo-api'],
+            excludeIds: ['repo-api'],
+          }),
+        }).useCase,
+      );
+      expect(ids(out)).toEqual(['repo-dash']);
+    });
+
+    it('includeIds fuerza un visible sin intersección y respeta el order', async () => {
+      const out = await resolveOk(
+        build({ curated: curated({ filterTags: ['java'], includeIds: ['repo-dash'] }) }).useCase,
+      );
+      expect(ids(out)).toEqual(['repo-dash', 'repo-api']);
+    });
+
+    it('includeIds sobre un oculto se ignora, y un oculto con el tag tampoco aparece', async () => {
+      const out = await resolveOk(
+        build({ curated: curated({ filterTags: ['java'], includeIds: ['repo-oculto'] }) }).useCase,
+      );
+      expect(ids(out)).toEqual(['repo-api']);
+    });
+
+    it('con 1 repo resuelto, la clave trae el dato pero la sección no figura', async () => {
+      const out = await resolveOk(build().useCase); // filterTags ['java'] → solo repo-api
+      expect(ids(out)).toEqual(['repo-api']);
+      expect(out.sections).not.toContain('repositories');
+    });
+
+    it('con 1 repo y la sección declarada en el orden, tampoco figura', async () => {
+      const out = await resolveOk(
+        build({ curated: curated({ sectionsOrder: ['hero', 'repositories'] }) }).useCase,
+      );
+      expect(out.sections).not.toContain('repositories');
+    });
+
+    it('con 2 repos y un orden explícito sin el id, se rellena al final', async () => {
+      const out = await resolveOk(
+        build({ curated: curated({ filterTags: [], sectionsOrder: ['hero', 'experience'] }) })
+          .useCase,
+      );
+      expect(out.sections.slice(0, 2)).toEqual(['hero', 'experience']);
+      expect(out.sections).toContain('repositories');
+    });
+
+    it('una sección oculta no se rellena aunque tenga 2 repos', async () => {
+      const out = await resolveOk(
+        build({ curated: curated({ filterTags: [], sectionsHidden: ['repositories'] }) }).useCase,
+      );
+      expect(ids(out)).toHaveLength(2);
+      expect(out.sections).not.toContain('repositories');
+    });
+
+    it('sin repositorios en la base, la clave es una lista vacía', async () => {
+      const out = await resolveOk(build({ repositories: [] }).useCase);
+      expect(out.repositories).toEqual([]);
+    });
+
+    it('locale en resuelve la descripción y no expone visible ni stars', async () => {
+      const out = await resolveOk(build({ curated: curated({ filterTags: [] }) }).useCase, {
+        locale: 'en',
+      });
+      expect(out.repositories[0]).toEqual({
+        id: 'repo-dash',
+        name: 'repo-repo-dash',
+        url: 'https://github.com/octo-org/repo-repo-dash',
+        language: 'Java',
+        description: 'Description repo-dash',
+        technologies: ['Spring Boot'],
+        tags: ['nodejs'],
+        order: 0,
+      });
+    });
+  });
+
   it('tema: sin themeId usa modern-dark; con themeId usa el propio; overrides se mergean', async () => {
     const def = await resolveOk(build().useCase);
     expect(def.theme?.slug).toBe('modern-dark');
@@ -622,6 +750,7 @@ describe('ResolveCuratedProfileUseCase', () => {
         'experiences',
         'skillCategories',
         'projects',
+        'repositories',
         'education',
         'certifications',
         'socialLinks',

@@ -51,7 +51,7 @@ export const CV_ISSUE_TEMPLATES: Readonly<Record<CvIssueCode, Readonly<Record<Lo
   },
   'curated.orphan-reference': {
     es: '{list} incluye el id {id}, que no corresponde a ninguna experiencia, skill ni proyecto.',
-    en: '{list} includes the id {id}, which does not match any experience, skill or project.',
+    en: '{list} includes the id {id}, which does not match any experience, skill, project or repository.',
   },
   'curated.conflicting-reference': {
     es: 'El id {id} está en includeIds y en excludeIds; gana la exclusión.',
@@ -59,7 +59,7 @@ export const CV_ISSUE_TEMPLATES: Readonly<Record<CvIssueCode, Readonly<Record<Lo
   },
   'curated.unmatched-filter-tag': {
     es: 'El tag «{tag}» no coincide con ninguna experiencia, skill ni proyecto visible.',
-    en: 'The tag “{tag}” does not match any visible experience, skill or project.',
+    en: 'The tag “{tag}” does not match any visible experience, skill, project or repository.',
   },
   'curated.no-experiences': {
     es: 'Con sus criterios actuales no muestra ninguna experiencia.',
@@ -159,6 +159,9 @@ export function cvEntityLabel(snapshot: CvSnapshot, found: CvIssue, locale: Loca
     }
     case 'project':
       label = snapshot.projects.find((p) => p.id === id)?.name;
+      break;
+    case 'repository':
+      label = snapshot.repositories.find((r) => r.id === id)?.name;
       break;
     case 'socialLink':
       label = snapshot.socialLinks.find((l) => l.id === id)?.platform;

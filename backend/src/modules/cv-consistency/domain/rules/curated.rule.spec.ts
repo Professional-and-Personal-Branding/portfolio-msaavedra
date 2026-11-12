@@ -29,6 +29,20 @@ describe('curatedRule', () => {
       ]);
     });
 
+    it('acepta ids de repositorios, visibles y ocultos', () => {
+      const s = cleanSnapshot();
+      const hidden = { ...s.repositories[0], id: 'repo-hidden', visible: false };
+      const snapshot: CvSnapshot = {
+        ...s,
+        repositories: [...s.repositories, hidden],
+        curatedProfiles: s.curatedProfiles.map((c) => ({
+          ...c,
+          includeIds: ['repo-1', 'repo-hidden'],
+        })),
+      };
+      expect(brief(snapshot)).toEqual([]);
+    });
+
     it('acepta ids de experiencias, skills y proyectos', () => {
       expect(curatedRule(withCurated({ includeIds: ['exp-a', 'skill-1', 'proj-1'] }), ctx)).toEqual(
         [],
@@ -77,6 +91,19 @@ describe('curatedRule', () => {
         curatedProfiles: s.curatedProfiles.map((c) => ({ ...c, filterTags: ['backend', 'cobol'] })),
       };
       expect(brief(snapshot)).toEqual(['curated.unmatched-filter-tag:filterTags:{"tag":"cobol"}']);
+    });
+
+    it('un tag que solo tiene un repositorio visible coincide; si está oculto, no', () => {
+      const s = cleanSnapshot();
+      const withRepoTag = (visible: boolean): CvSnapshot => ({
+        ...s,
+        repositories: s.repositories.map((r) => ({ ...r, visible, tags: ['go'] })),
+        curatedProfiles: s.curatedProfiles.map((c) => ({ ...c, filterTags: ['backend', 'go'] })),
+      });
+      expect(brief(withRepoTag(true))).toEqual([]);
+      expect(brief(withRepoTag(false))).toEqual([
+        'curated.unmatched-filter-tag:filterTags:{"tag":"go"}',
+      ]);
     });
 
     it('un tag que solo tiene una skill o un proyecto coincide', () => {

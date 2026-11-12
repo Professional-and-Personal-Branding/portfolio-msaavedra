@@ -9,6 +9,7 @@ export const SECTION_IDS = [
   'experience',
   'skills',
   'projects',
+  'repositories',
   'education',
   'certifications',
   'presence',
@@ -16,6 +17,12 @@ export const SECTION_IDS = [
 ] as const;
 
 export type SectionId = (typeof SECTION_IDS)[number];
+
+/**
+ * La sección `repositories` solo se muestra con 2 o más repositorios resueltos (change
+ * `add-featured-repositories`, D6): con menos, la lista es una vitrina que no aporta.
+ */
+export const MIN_REPOSITORIES_FOR_SECTION = 2;
 
 /** Orden cuando el perfil curado no define uno: el catálogo completo. */
 export const DEFAULT_SECTIONS: readonly SectionId[] = SECTION_IDS;

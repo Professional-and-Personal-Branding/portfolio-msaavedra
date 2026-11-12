@@ -1,5 +1,5 @@
 import { AS_OF, cleanSnapshot } from '../cv-rules.seeded.fixture';
-import { CvExperienceSnapshot, CvSnapshot } from '../cv-snapshot';
+import { CvExperienceSnapshot, CvRepositorySnapshot, CvSnapshot } from '../cv-snapshot';
 import { translationsRule } from './translations.rule';
 
 const ctx = { asOf: AS_OF };
@@ -77,6 +77,41 @@ describe('translationsRule', () => {
         ctx,
       ),
     ).toEqual([]);
+  });
+
+  describe('descripción de los repositorios (change add-featured-repositories, D16)', () => {
+    const withRepository = (changes: Partial<CvRepositorySnapshot>): CvSnapshot => {
+      const s = cleanSnapshot();
+      return { ...s, repositories: s.repositories.map((r) => ({ ...r, ...changes })) };
+    };
+
+    it('visible sin inglés: un issue con locale en sobre description', () => {
+      expect(
+        translationsRule(withRepository({ description: { es: 'API de reservas', en: '' } }), ctx),
+      ).toEqual([
+        {
+          code: 'i18n.missing-translation',
+          severity: 'warning',
+          entityType: 'repository',
+          entityId: 'repo-1',
+          field: 'description',
+          params: { locale: 'en' },
+        },
+      ]);
+    });
+
+    it('oculto sin inglés: no emite nada', () => {
+      expect(
+        translationsRule(
+          withRepository({ visible: false, description: { es: 'API de reservas' } }),
+          ctx,
+        ),
+      ).toEqual([]);
+    });
+
+    it('completo en los dos idiomas: no emite nada', () => {
+      expect(translationsRule(withRepository({}), ctx)).toEqual([]);
+    });
   });
 
   it('cubre perfil, idiomas, categorías, proyectos, formación, certificaciones, enlaces y curados', () => {

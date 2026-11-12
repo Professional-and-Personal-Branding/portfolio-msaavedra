@@ -53,7 +53,47 @@
         "visible": false
       }
     ],
-    "featuredRepositories": [],
+    "featuredRepositories": [
+      {
+        "id": "reservas-api",
+        "name": "reservas-api",
+        "url": "https://github.com/portafolio-ejemplo-ficticio/reservas-api",
+        "language": "Java",
+        "description": {
+          "es": "API de reservas con Spring Boot: disponibilidad, confirmación y cancelación sobre PostgreSQL.",
+          "en": "Booking API built with Spring Boot: availability, confirmation and cancellation on PostgreSQL."
+        },
+        "technologies": ["Spring Boot", "PostgreSQL", "Docker"],
+        "tags": ["java", "microservices"],
+        "visible": true
+      },
+      {
+        "id": "metricas-dashboard",
+        "name": "metricas-dashboard",
+        "url": "https://github.com/portafolio-ejemplo-ficticio/metricas-dashboard",
+        "language": "TypeScript",
+        "description": {
+          "es": "Panel de métricas operativas con React y un servicio NestJS que agrega eventos.",
+          "en": "Operational metrics dashboard with React and a NestJS service that aggregates events."
+        },
+        "technologies": ["React", "NestJS", "Vite"],
+        "tags": ["nodejs", "react", "microservices"],
+        "visible": true
+      },
+      {
+        "id": "experimento-oculto",
+        "name": "experimento-oculto",
+        "url": "https://github.com/portafolio-ejemplo-ficticio/experimento-oculto",
+        "language": "Python",
+        "description": {
+          "es": "Experimento con visibilidad apagada: no aparece en ningún perfil, ni siquiera forzado.",
+          "en": "Experiment with visibility switched off: it shows in no profile, not even when forced."
+        },
+        "technologies": ["Python"],
+        "tags": ["python", "data"],
+        "visible": false
+      }
+    ],
     "summary": {
       "es": "Ingeniera de software con más de diez años construyendo servicios backend, plataformas en la nube y equipos. Perfil ficticio: sirve para aprender a poblar el contenido de la plataforma y como base de referencia del manual.",
       "en": "Software engineer with over ten years building backend services, cloud platforms and teams. Fictional profile: it teaches how to populate the platform content and serves as the reference base of the manual."
@@ -396,11 +436,16 @@
       "roleType": { "es": "Backend", "en": "Backend" },
       "techFocus": "Java / DevOps",
       "description": {
-        "es": "Muestra incluir y excluir: fuerza una experiencia sin tags comunes, intenta forzar una oculta, suma un proyecto y quita una experiencia y una skill que sí coincidían.",
-        "en": "Shows include and exclude: forces an experience with no shared tags, tries to force a hidden one, adds a project and removes an experience and a skill that did match."
+        "es": "Muestra incluir y excluir: fuerza una experiencia sin tags comunes, intenta forzar una oculta (también un repositorio oculto), suma un proyecto y quita una experiencia y una skill que sí coincidían.",
+        "en": "Shows include and exclude: forces an experience with no shared tags, tries to force a hidden one (a hidden repository too), adds a project and removes an experience and a skill that did match."
       },
       "filterTags": ["java", "microservices"],
-      "includeRefs": ["experience:brujula", "experience:terracota", "project:herramienta-interna"],
+      "includeRefs": [
+        "experience:brujula",
+        "experience:terracota",
+        "project:herramienta-interna",
+        "repository:experimento-oculto"
+      ],
       "excludeRefs": ["experience:atlas", "skill:Kotlin"],
       "listed": true
     },
@@ -414,8 +459,8 @@
       "roleType": { "es": "Generalista", "en": "Generalist" },
       "techFocus": "Diseño",
       "description": {
-        "es": "Reordena las nueve secciones, oculta Estadísticas y Presencia, usa el layout sidebar, el preset Elegant y overrides de tipografía y radio.",
-        "en": "Reorders the nine sections, hides Stats and Presence, uses the sidebar layout, the Elegant preset and typography and radius overrides."
+        "es": "Reordena las diez secciones, oculta Estadísticas y Presencia, usa el layout sidebar, el preset Elegant y overrides de tipografía y radio.",
+        "en": "Reorders the ten sections, hides Stats and Presence, uses the sidebar layout, the Elegant preset and typography and radius overrides."
       },
       "filterTags": [],
       "theme": "elegant",
@@ -425,6 +470,7 @@
         "skills",
         "experience",
         "projects",
+        "repositories",
         "education",
         "certifications",
         "stats",
