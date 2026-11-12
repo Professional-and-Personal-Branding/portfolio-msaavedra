@@ -4917,6 +4917,315 @@
           "admin"
         ]
       }
+    },
+    "/api/admin/integrations": {
+      "get": {
+        "description": "Solo aparecen los proveedores de `INTEGRATIONS_ENABLED`. Nunca incluye secretos: de la credencial solo se informa el origen.",
+        "operationId": "AdminIntegrationsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationsOverviewResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Estado de las integraciones",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/integrations/{provider}/sync": {
+      "post": {
+        "description": "Solo encola: responde 202 sin llamar al proveedor y el trabajo corre en el próximo tick del ejecutor (hasta 60 s). Si ya hay un trabajo pendiente, en curso o fallido, devuelve ese con `alreadyQueued: true`.",
+        "operationId": "AdminIntegrationsController_sync",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnqueueSyncResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Proveedor no habilitado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Proveedor pausado a mano",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sincronizar ahora",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/integrations/{provider}": {
+      "patch": {
+        "description": "Pausar no cancela un trabajo en curso: impide reclamar los siguientes y que el planificador encole.",
+        "operationId": "AdminIntegrationsController_update",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetIntegrationEnabledDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campo desconocido o inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Proveedor no habilitado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pausar o reanudar un proveedor",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/integrations/{provider}/credential": {
+      "put": {
+        "description": "Se cifra con AES-256-GCM y nunca se devuelve. Con el secreto definido por una variable de entorno, responde 422.",
+        "operationId": "AdminIntegrationsController_putCredential",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveCredentialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Guardada"
+          },
+          "400": {
+            "description": "Secreto vacío, largo o inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Proveedor no habilitado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La credencial de este proveedor viene de una variable de entorno",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Guardar la credencial de un proveedor",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminIntegrationsController_removeCredential",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Borrada"
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Proveedor no habilitado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Borrar la credencial guardada en la base (idempotente)",
+        "tags": [
+          "admin"
+        ]
+      }
     }
   },
   "info": {
@@ -8629,6 +8938,258 @@
           "experience",
           "summary",
           "issues"
+        ]
+      },
+      "SyncRunOutcome": {
+        "type": "string",
+        "enum": [
+          "SUCCESS",
+          "FAILED",
+          "DEAD",
+          "INTERRUPTED",
+          "TIMEOUT"
+        ],
+        "description": "`null` mientras el intento sigue en curso"
+      },
+      "LastRunResponse": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "nullable": true,
+            "description": "`null` mientras el intento sigue en curso",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SyncRunOutcome"
+              }
+            ]
+          },
+          "startedAt": {
+            "type": "string",
+            "description": "ISO 8601"
+          },
+          "finishedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          },
+          "errorClass": {
+            "type": "string",
+            "nullable": true,
+            "example": "Transient"
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true,
+            "description": "Redactado y de hasta 500 caracteres"
+          }
+        },
+        "required": [
+          "outcome",
+          "startedAt",
+          "finishedAt",
+          "errorClass",
+          "errorMessage"
+        ]
+      },
+      "JobCountsResponse": {
+        "type": "object",
+        "properties": {
+          "pending": {
+            "type": "number"
+          },
+          "running": {
+            "type": "number"
+          },
+          "failed": {
+            "type": "number"
+          },
+          "dead": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "pending",
+          "running",
+          "failed",
+          "dead"
+        ]
+      },
+      "CredentialStatusResponse": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "env",
+              "db"
+            ],
+            "nullable": true,
+            "description": "De dónde sale el secreto: variable de entorno, base cifrada o ninguna"
+          },
+          "keyId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Clave del keyring que la cifró"
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          }
+        },
+        "required": [
+          "source",
+          "keyId",
+          "updatedAt"
+        ]
+      },
+      "IntegrationStatusResponse": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "example": "fake"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "`false` = pausado a mano"
+          },
+          "pausedUntil": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601; solo si la pausa sigue vigente"
+          },
+          "pauseReason": {
+            "type": "string",
+            "nullable": true,
+            "example": "RetryAfter",
+            "description": "`RetryAfter`, `ResetAt`, `BudgetExhausted` o `CircuitOpen`"
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "Más de 48 h sin una corrida exitosa"
+          },
+          "lastSuccessAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          },
+          "lastRun": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastRunResponse"
+              }
+            ]
+          },
+          "jobs": {
+            "$ref": "#/components/schemas/JobCountsResponse"
+          },
+          "lastDeadError": {
+            "type": "string",
+            "nullable": true,
+            "description": "Último error de un trabajo `DEAD`"
+          },
+          "credential": {
+            "$ref": "#/components/schemas/CredentialStatusResponse"
+          }
+        },
+        "required": [
+          "provider",
+          "enabled",
+          "pausedUntil",
+          "pauseReason",
+          "stale",
+          "lastSuccessAt",
+          "lastRun",
+          "jobs",
+          "lastDeadError",
+          "credential"
+        ]
+      },
+      "IntegrationsOverviewResponse": {
+        "type": "object",
+        "properties": {
+          "schedulerEnabled": {
+            "type": "boolean",
+            "description": "`false` = este proceso no tiene timers: lo encolado espera"
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrationStatusResponse"
+            }
+          }
+        },
+        "required": [
+          "schedulerEnabled",
+          "providers"
+        ]
+      },
+      "IntegrationJobStatus": {
+        "type": "string",
+        "enum": [
+          "PENDING",
+          "RUNNING",
+          "DONE",
+          "FAILED",
+          "DEAD"
+        ]
+      },
+      "EnqueueSyncResponse": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrationJobStatus"
+              }
+            ]
+          },
+          "runAt": {
+            "type": "string",
+            "description": "ISO 8601: cuándo puede reclamarse"
+          },
+          "alreadyQueued": {
+            "type": "boolean",
+            "description": "`true` si ya había una sincronización en cola"
+          }
+        },
+        "required": [
+          "jobId",
+          "status",
+          "runAt",
+          "alreadyQueued"
+        ]
+      },
+      "SetIntegrationEnabledDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "`false` pausa el proveedor a mano; `true` lo reanuda"
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "SaveCredentialDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "description": "Secreto del proveedor (1 a 4096 caracteres, sin espacios al borde). Solo se escribe: nunca se devuelve.",
+            "minLength": 1,
+            "maxLength": 4096
+          }
+        },
+        "required": [
+          "secret"
         ]
       }
     }

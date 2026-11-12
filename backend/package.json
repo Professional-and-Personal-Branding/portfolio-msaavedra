@@ -33,6 +33,8 @@
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
     "views:reclassify": "tsx scripts/reclassify-views.ts",
     "cv:lint": "tsx scripts/cv-lint.ts",
+    "integrations:rekey": "tsx scripts/integrations-rekey.ts",
+    "integrations:sync": "ts-node --transpile-only -P tsconfig.json scripts/integrations-sync.ts",
     "openapi:export": "ts-node --transpile-only -P tsconfig.json scripts/export-openapi.ts"
   },
   "prisma": {
