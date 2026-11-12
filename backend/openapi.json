@@ -4096,6 +4096,359 @@
         ]
       }
     },
+    "/api/featured-repositories": {
+      "get": {
+        "operationId": "FeaturedRepositoryController_list",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`).",
+            "schema": {
+              "example": "es",
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "description": "Alias de `locale`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "es",
+                "en"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "headers": {
+              "Content-Language": {
+                "description": "Locale servido",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FeaturedRepositoryResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Repositorios destacados visibles",
+        "tags": [
+          "sections"
+        ]
+      }
+    },
+    "/api/admin/featured-repositories": {
+      "get": {
+        "operationId": "AdminFeaturedRepositoryController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminFeaturedRepositoryResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar repositorios destacados (incluye ocultos, descripción bilingüe cruda)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminFeaturedRepositoryController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFeaturedRepositoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminFeaturedRepositoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El repositorio ya está cargado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear repositorio destacado",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/featured-repositories/{id}": {
+      "get": {
+        "operationId": "AdminFeaturedRepositoryController_find",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminFeaturedRepositoryResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ver repositorio destacado",
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminFeaturedRepositoryController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFeaturedRepositoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminFeaturedRepositoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El repositorio ya está cargado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar repositorio destacado (parcial)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminFeaturedRepositoryController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Borrar repositorio destacado",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/social-links": {
       "get": {
         "operationId": "SocialLinkController_list",
@@ -6049,6 +6402,57 @@
           "order"
         ]
       },
+      "FeaturedRepositoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "reservas-api"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://github.com/octo-org/reservas-api"
+          },
+          "language": {
+            "type": "string",
+            "nullable": true,
+            "example": "Java"
+          },
+          "description": {
+            "type": "string",
+            "description": "Resuelta al locale."
+          },
+          "technologies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "description": "Tags para el filtrado de perfiles curados",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "url",
+          "language",
+          "description",
+          "technologies",
+          "tags",
+          "order"
+        ]
+      },
       "EducationResponse": {
         "type": "object",
         "properties": {
@@ -6307,6 +6711,13 @@
               "$ref": "#/components/schemas/ProjectResponse"
             }
           },
+          "repositories": {
+            "description": "Repositorios destacados seleccionados por tags/overrides. Se conservan aunque haya menos de 2; la sección `repositories` solo figura en `sections` desde 2.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeaturedRepositoryResponse"
+            }
+          },
           "education": {
             "type": "array",
             "items": {
@@ -6343,6 +6754,7 @@
           "experiences",
           "skillCategories",
           "projects",
+          "repositories",
           "education",
           "certifications",
           "socialLinks"
@@ -6356,6 +6768,7 @@
           "experience",
           "skills",
           "projects",
+          "repositories",
           "education",
           "certifications",
           "presence",
@@ -6485,6 +6898,7 @@
               "experience",
               "skillCategory",
               "project",
+              "repository",
               "education",
               "certification",
               "socialLink",
@@ -6618,6 +7032,13 @@
               "$ref": "#/components/schemas/ProjectResponse"
             }
           },
+          "repositories": {
+            "description": "Repositorios destacados seleccionados por tags/overrides. Se conservan aunque haya menos de 2; la sección `repositories` solo figura en `sections` desde 2.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeaturedRepositoryResponse"
+            }
+          },
           "education": {
             "type": "array",
             "items": {
@@ -6661,6 +7082,7 @@
           "experiences",
           "skillCategories",
           "projects",
+          "repositories",
           "education",
           "certifications",
           "socialLinks",
@@ -7968,6 +8390,160 @@
           }
         }
       },
+      "AdminFeaturedRepositoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "reservas-api"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://github.com/octo-org/reservas-api"
+          },
+          "language": {
+            "type": "string",
+            "nullable": true,
+            "example": "Java"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "technologies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "number"
+          },
+          "visible": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "url",
+          "language",
+          "description",
+          "technologies",
+          "tags",
+          "order",
+          "visible"
+        ]
+      },
+      "CreateFeaturedRepositoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "reservas-api",
+            "maxLength": 100
+          },
+          "url": {
+            "type": "string",
+            "example": "https://github.com/octo-org/reservas-api",
+            "description": "Forma canónica https://github.com/<usuario>/<repositorio>"
+          },
+          "language": {
+            "type": "string",
+            "example": "Java",
+            "nullable": true,
+            "maxLength": 40
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "technologies": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "default": [],
+            "description": "Tags para el filtrado de perfiles curados",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "name",
+          "url",
+          "description"
+        ]
+      },
+      "UpdateFeaturedRepositoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "reservas-api",
+            "maxLength": 100
+          },
+          "url": {
+            "type": "string",
+            "example": "https://github.com/octo-org/reservas-api",
+            "description": "Forma canónica https://github.com/<usuario>/<repositorio>"
+          },
+          "language": {
+            "type": "string",
+            "example": "Java",
+            "nullable": true,
+            "maxLength": 40
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "technologies": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "default": [],
+            "description": "Tags para el filtrado de perfiles curados",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
       "AdminSocialLinkResponse": {
         "type": "object",
         "properties": {
@@ -8516,6 +9092,7 @@
           "education",
           "certification",
           "project",
+          "repository",
           "socialLink",
           "curatedProfile"
         ]

@@ -48,7 +48,7 @@
 
 ## 7. Contrato (api-contract-types)
 
-- [ ] 7.1 `npm run openapi:export` y, en `frontend/`, `npm run api:types`. Verificar: `SectionId` con `repositories` entre `projects` y `education`; `git diff --exit-code` tras un segundo export y generación; el test de deriva verde. El frontend **no** compila hasta 8.2 (esperado: registro exhaustivo).
+- [x] 7.1 `npm run openapi:export` y, en `frontend/`, `npm run api:types`. Verificar: `SectionId` con `repositories` entre `projects` y `education`; `git diff --exit-code` tras un segundo export y generación; el test de deriva verde. El frontend **no** compila hasta 8.2 (esperado: registro exhaustivo).
 
 ## 8. Frontend (D8, D9, D12, D13, D17)
 
