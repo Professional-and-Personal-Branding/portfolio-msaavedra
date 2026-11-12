@@ -1,0 +1,22 @@
+Tres corridas seguidas de test/integrations-latency.e2e-spec.ts y la del apagado (base de e2e portfolio_integ_e2e, mismo proceso que la API).
+Umbrales (D22): p95 <= linea de base + 25 ms, max <= 150 ms, p99 del event loop <= 50 ms.
+
+== corrida 1
+    LATENCIA /health/live (ms) línea de base: p50=3.2 p95=5.0 max=7.2 | con trabajo (3280 ms): p50=3.2 p95=8.3 max=8.4 | event loop (resolución 10 ms): p99=24.2 max=24.9
+    SINCRONIZAR AHORA con un trabajo en curso: 22.1 ms
+Tests:       2 passed, 2 total
+
+== corrida 2
+    LATENCIA /health/live (ms) línea de base: p50=3.2 p95=5.0 max=7.1 | con trabajo (3374 ms): p50=3.1 p95=8.2 max=9.1 | event loop (resolución 10 ms): p99=22.9 max=24.4
+    SINCRONIZAR AHORA con un trabajo en curso: 19.7 ms
+Tests:       2 passed, 2 total
+
+== corrida 3
+    LATENCIA /health/live (ms) línea de base: p50=2.7 p95=3.9 max=5.4 | con trabajo (3288 ms): p50=2.8 p95=4.4 max=8.5 | event loop (resolución 10 ms): p99=22.6 max=24.6
+    SINCRONIZAR AHORA con un trabajo en curso: 16.0 ms
+Tests:       2 passed, 2 total
+
+== apagado (test/integrations-shutdown.e2e-spec.ts)
+    APAGADO con un trabajo lento que respeta la señal: app.close() = 18 ms
+    APAGADO con un conector que ignora la señal: app.close() = 3017 ms
+Tests:       2 passed, 2 total

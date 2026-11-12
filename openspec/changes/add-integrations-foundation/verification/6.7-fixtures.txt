@@ -1,0 +1,3 @@
+Tests:       1 failed, 12 passed, 13 total
+--- con el fixture temporal (ghp_ + 36 caracteres) el test 'ninguno contiene...' falla; fixture borrado.
+Tests:       13 passed, 13 total

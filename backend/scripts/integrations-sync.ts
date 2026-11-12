@@ -15,7 +15,6 @@
  */
 import type { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../src/app.module';
 import { EnqueueSyncUseCase } from '../src/modules/integrations/application/use-cases/enqueue-sync.use-case';
 import { PlanDueSyncsUseCase } from '../src/modules/integrations/application/use-cases/plan-due-syncs.use-case';
 import { RunDueJobsUseCase } from '../src/modules/integrations/application/use-cases/run-due-jobs.use-case';
@@ -52,7 +51,13 @@ async function main(): Promise<number> {
 
   let app: INestApplicationContext;
   try {
-    app = await NestFactory.createApplicationContext(AppModule, { logger: ['error', 'warn'] });
+    // Import dinámico: la validación del entorno corre al cargar `AppModule` y tiene que caer
+    // en este `catch` (salida 2) y no abortar el proceso con un stack.
+    const { AppModule } = await import('../src/app.module');
+    app = await NestFactory.createApplicationContext(AppModule, {
+      logger: ['error', 'warn'],
+      abortOnError: false,
+    });
   } catch (error) {
     console.error(
       `❌ Configuración inválida: ${error instanceof Error ? error.message : String(error)}`,

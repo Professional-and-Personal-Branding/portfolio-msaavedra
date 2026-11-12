@@ -1,0 +1,26 @@
+$ (base portfolio_integ_check, INTEGRATIONS_ENABLED=fake, INTEGRATIONS_SCHEDULER_ENABLED sin definir; token y keyring generados al azar)
+
+# 1. --provider fake: encola un trabajo manual y lo ejecuta
+Trabajo manual: encolado (59040f20-b7f8-4519-b868-60ab193308b3).
+Corrida: 1 trabajos (hechos 1, con error y reintento 0, muertos 0, interrumpidos 0).
+exit=0
+estado del trabajo: DONE
+
+# 2. un trabajo con el escenario permanent => queda DEAD => exit 1
+Corrida: 1 trabajos (hechos 0, con error y reintento 0, muertos 1, interrumpidos 0).
+exit=1
+estado: DEAD
+
+# 3. arriendo vigente de otro holder => exit 2
+❌ El arriendo del ejecutor lo tiene otra instancia: no se ejecutó nada.
+exit=2
+
+# 4. INTEGRATIONS_ENABLED=gitlab (fuera del catalogo) => exit 2
+  - INTEGRATIONS_ENABLED: contiene un proveedor que no está en el catálogo (válidos: fake)
+❌ Configuración inválida: Configuración de entorno inválida:
+  - INTEGRATIONS_ENABLED: contiene un proveedor que no está en el catálogo (válidos: fake)
+exit=2
+
+# 5. ningun puerto: sockets en LISTEN antes y durante una corrida de ~6 s
+puertos antes: 84, durante: 84, nuevos durante: 0
+Corrida: 1 trabajos (hechos 1, con error y reintento 0, muertos 0, interrumpidos 0).
