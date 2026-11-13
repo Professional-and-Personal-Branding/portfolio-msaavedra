@@ -211,14 +211,18 @@ describe('Vacantes: sin sesión (e2e)', () => {
   it('las cinco rutas dan 401 y no sale ninguna petición', async () => {
     h.transport.reset();
     const server = h.app.getHttpServer();
-    const results = await Promise.all([
-      request(server).post('/api/admin/job-postings').send({ url: GH_URL }),
-      request(server).get('/api/admin/job-postings'),
-      request(server).get('/api/admin/job-postings/x'),
-      request(server).delete('/api/admin/job-postings/x'),
-      request(server).get('/api/admin/job-postings/x/suggestion'),
-      request(server).post('/api/admin/curated-profiles/from-job-posting').send({}),
-    ]);
+    // En serie: en paralelo, supertest abre un listener efímero por petición y en el CI
+    // alguna conexión se cortaba con ECONNRESET.
+    const calls = [
+      () => request(server).post('/api/admin/job-postings').send({ url: GH_URL }),
+      () => request(server).get('/api/admin/job-postings'),
+      () => request(server).get('/api/admin/job-postings/x'),
+      () => request(server).delete('/api/admin/job-postings/x'),
+      () => request(server).get('/api/admin/job-postings/x/suggestion'),
+      () => request(server).post('/api/admin/curated-profiles/from-job-posting').send({}),
+    ];
+    const results: request.Response[] = [];
+    for (const call of calls) results.push(await call());
     expect(results.map((r) => r.status)).toEqual([401, 401, 401, 401, 401, 401]);
     expect(h.transport.requests).toEqual([]);
     expect(h.resolver.resolved).toEqual([]);
