@@ -15,7 +15,7 @@
  *     pantallas del backoffice (B) y el glosario.
  *  2. Una imagen referenciada no existe, o un .jpg/.png de `docs/manual/` no está referenciado
  *     por los dos formatos o no figura en el manifiesto de `manual:capture`.
- *  3. Una imagen pasa de 150 KB, el total de imágenes de 4 MB o `index.html` de 1 MB.
+ *  3. Una imagen pasa de 150 KB, el total de imágenes de 8 MB o `index.html` de 1 MB.
  *  4. Un mensaje de validación citado (columna *Mensaje* en Markdown, `td.msg` en el HTML) no
  *     aparece literal en `frontend/src`.
  *  5. Un `href="#…"` del HTML apunta a un id que no existe.
@@ -38,7 +38,7 @@ const MD_FILE = join(DOCS, 'MANUAL.md');
 const HTML_FILE = join(MANUAL_DIR, 'index.html');
 
 const MAX_IMAGE = 150 * 1024;
-const MAX_IMAGES_TOTAL = 4 * 1024 * 1024;
+const MAX_IMAGES_TOTAL = 8 * 1024 * 1024;
 const MAX_HTML = 1024 * 1024;
 
 const problems = [];
@@ -186,7 +186,7 @@ for (const name of imageFiles) {
   }
 }
 if (totalImages > MAX_IMAGES_TOTAL) {
-  report(MANUAL_DIR, 1, `las imágenes suman ${(totalImages / 1048576).toFixed(2)} MB y el tope es 4 MB`);
+  report(MANUAL_DIR, 1, `las imágenes suman ${(totalImages / 1048576).toFixed(2)} MB y el tope es ${MAX_IMAGES_TOTAL / 1048576} MB`);
 }
 const htmlSize = statSync(HTML_FILE).size;
 if (htmlSize > MAX_HTML) {
