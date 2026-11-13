@@ -52,6 +52,9 @@ describe('CuratedProfileView — hoja imprimible', () => {
     );
     renderWithProviders(<AppRouter />, { route: '/demo' });
     await screen.findByRole('heading', { level: 1, name: 'Ada Ejemplo' });
+    // El título del documento lo pone un efecto después del primer render: esperar a que
+    // se asiente para no comparar contra el título por defecto.
+    await waitFor(() => expect(document.title).toContain('Ada Ejemplo'));
     const before = urls.length;
     const title = document.title;
 

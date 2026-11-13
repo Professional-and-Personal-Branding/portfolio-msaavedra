@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { AppRouter } from '@/app/router';
-import { makeAdminProject, makeAdminSocialLink } from '@/test/fixtures/admin';
+import { makeAdminProject, makeAdminRepository, makeAdminSocialLink } from '@/test/fixtures/admin';
 import { API, http, HttpResponse, server } from '@/test/msw';
 import { adminHandlers } from '@/test/msw-admin';
 import { renderWithProviders } from '@/test/render';
@@ -25,7 +25,9 @@ describe('ProyectosPage', () => {
     server.use(...adminHandlers);
     const { projects, links } = await openPage();
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Proyectos' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Proyectos, repositorios y enlaces' }),
+    ).toBeInTheDocument();
 
     const hiddenProject = within(projects).getByText('Bot de Pagos').closest('li');
     expect(hiddenProject).not.toBeNull();
@@ -244,5 +246,223 @@ describe('ProyectosPage — aviso al descartar', () => {
     await user.paste('{');
     await user.keyboard('{Escape}');
     expect(await screen.findByText(PROMPT)).toBeInTheDocument();
+  });
+});
+
+// Change add-featured-repositories (D2, D12): bloque «Repositorios destacados».
+describe('ProyectosPage — repositorios destacados', () => {
+  const openRepositories = async () => {
+    renderWithProviders(<AppRouter />, { route: '/admin/proyectos' });
+    const region = await screen.findByRole('region', { name: 'Repositorios destacados' });
+    await within(region).findByText('reservas-api');
+    return region;
+  };
+
+  it('va entre Proyectos y Enlaces y marca los ocultos', async () => {
+    server.use(...adminHandlers);
+    const region = await openRepositories();
+
+    const names = screen.getAllByRole('region').map((r) => r.getAttribute('aria-label'));
+    expect(names.indexOf('Proyectos destacados')).toBeLessThan(
+      names.indexOf('Repositorios destacados'),
+    );
+    expect(names.indexOf('Repositorios destacados')).toBeLessThan(
+      names.indexOf('Enlaces sociales'),
+    );
+
+    const hidden = within(region).getByText('experimento-oculto').closest('li') as HTMLElement;
+    expect(within(hidden).getByText('Oculto')).toBeInTheDocument();
+    expect(hidden).toHaveClass('surface-hidden');
+    const visible = within(region).getByText('reservas-api').closest('li') as HTMLElement;
+    expect(within(visible).queryByText('Oculto')).not.toBeInTheDocument();
+    expect(
+      within(visible).getByRole('link', { name: 'https://github.com/ejemplo/reservas-api' }),
+    ).toHaveAttribute('href', 'https://github.com/ejemplo/reservas-api');
+  });
+
+  it('una URL que no es de GitHub no se envía y muestra el mensaje literal', async () => {
+    let called = false;
+    server.use(
+      http.post(`${API}/admin/featured-repositories`, () => {
+        called = true;
+        return HttpResponse.json(makeAdminRepository(), { status: 201 });
+      }),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    const region = await openRepositories();
+
+    await user.click(within(region).getByRole('button', { name: 'Nuevo repositorio' }));
+    const dialog = await screen.findByRole('dialog');
+    await user.type(within(dialog).getByLabelText(/URL de GitHub/), 'https://gitlab.com/a/b');
+    await user.type(within(dialog).getByLabelText(/^Nombre/), 'x');
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar' }));
+
+    expect(
+      await within(dialog).findByText(
+        'La URL tiene que ser https://github.com/<usuario>/<repositorio>',
+      ),
+    ).toBeInTheDocument();
+    expect(called).toBe(false);
+  });
+
+  it('propone el nombre desde la URL al salir del campo, y es editable', async () => {
+    server.use(...adminHandlers);
+    const user = userEvent.setup();
+    const region = await openRepositories();
+
+    await user.click(within(region).getByRole('button', { name: 'Nuevo repositorio' }));
+    const dialog = await screen.findByRole('dialog');
+    const name = within(dialog).getByLabelText(/^Nombre/);
+    expect(name).toHaveValue('');
+    await user.type(
+      within(dialog).getByLabelText(/URL de GitHub/),
+      'https://github.com/octo-org/api-reservas',
+    );
+    await user.tab();
+    expect(name).toHaveValue('api-reservas');
+
+    await user.clear(name);
+    await user.type(name, 'Mi nombre');
+    await user.click(within(dialog).getByLabelText(/URL de GitHub/));
+    await user.tab();
+    expect(name).toHaveValue('Mi nombre');
+  });
+
+  it('crea un repositorio con el cuerpo esperado, sin stars', async () => {
+    let body: Record<string, unknown> | undefined;
+    server.use(
+      http.post(`${API}/admin/featured-repositories`, async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(makeAdminRepository({ id: 'repo-3' }), { status: 201 });
+      }),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    const region = await openRepositories();
+
+    await user.click(within(region).getByRole('button', { name: 'Nuevo repositorio' }));
+    const dialog = await screen.findByRole('dialog');
+    await user.type(
+      within(dialog).getByLabelText(/URL de GitHub/),
+      'https://github.com/octo-org/api-reservas',
+    );
+    await user.tab();
+    await user.type(within(dialog).getByLabelText('Descripción (es)'), 'API de reservas');
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar' }));
+
+    await waitFor(() => expect(body).toBeDefined());
+    expect(body).toMatchObject({
+      name: 'api-reservas',
+      url: 'https://github.com/octo-org/api-reservas',
+      language: null,
+      description: { es: 'API de reservas' },
+      visible: true,
+    });
+    expect(body).not.toHaveProperty('stars');
+    expect(await screen.findByText('Repositorio creado')).toBeInTheDocument();
+  });
+
+  it('un 409 muestra «Ese repositorio ya está cargado» en el campo URL, sin aviso', async () => {
+    server.use(
+      http.post(`${API}/admin/featured-repositories`, () =>
+        HttpResponse.json(
+          { statusCode: 409, message: 'Repositorio destacado: Ese repositorio ya está cargado' },
+          { status: 409 },
+        ),
+      ),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    const region = await openRepositories();
+
+    await user.click(within(region).getByRole('button', { name: 'Nuevo repositorio' }));
+    const dialog = await screen.findByRole('dialog');
+    const url = within(dialog).getByLabelText(/URL de GitHub/);
+    await user.type(url, 'https://github.com/ejemplo/reservas-api');
+    await user.tab();
+    await user.type(within(dialog).getByLabelText('Descripción (es)'), 'API de reservas');
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar' }));
+
+    expect(await within(dialog).findByText('Ese repositorio ya está cargado')).toBeInTheDocument();
+    expect(screen.queryByText(/Repositorio destacado:/)).not.toBeInTheDocument();
+
+    // Al editar la URL el error del servidor deja de aplicar.
+    await user.type(url, '-2');
+    expect(within(dialog).queryByText('Ese repositorio ya está cargado')).not.toBeInTheDocument();
+  });
+
+  it('editar solo el nombre envía un PATCH', async () => {
+    let id: string | undefined;
+    let body: Record<string, unknown> | undefined;
+    server.use(
+      http.patch(`${API}/admin/featured-repositories/:id`, async ({ request, params }) => {
+        id = String(params.id);
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(makeAdminRepository({ name: 'otro' }));
+      }),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    const region = await openRepositories();
+
+    await user.click(
+      within(region).getByRole('button', { name: 'Editar repositorio reservas-api' }),
+    );
+    const dialog = await screen.findByRole('dialog');
+    const name = within(dialog).getByLabelText(/^Nombre/);
+    await user.clear(name);
+    await user.type(name, 'otro');
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar' }));
+
+    await waitFor(() => expect(body).toBeDefined());
+    expect(id).toBe('repo-1');
+    expect(body).toMatchObject({ name: 'otro', url: 'https://github.com/ejemplo/reservas-api' });
+    expect(await screen.findByText('Repositorio actualizado')).toBeInTheDocument();
+  });
+
+  it('borrar pide confirmación y envía el DELETE', async () => {
+    let deleted: string | undefined;
+    server.use(
+      http.delete(`${API}/admin/featured-repositories/:id`, ({ params }) => {
+        deleted = String(params.id);
+        return new HttpResponse(null, { status: 204 });
+      }),
+      ...adminHandlers,
+    );
+    const user = userEvent.setup();
+    const region = await openRepositories();
+
+    await user.click(
+      within(region).getByRole('button', { name: 'Borrar repositorio reservas-api' }),
+    );
+    const confirm = await screen.findByRole('alertdialog');
+    expect(deleted).toBeUndefined();
+    await user.click(within(confirm).getByRole('button', { name: /Borrar|Confirmar|Sí/ }));
+
+    await waitFor(() => expect(deleted).toBe('repo-1'));
+    expect(await screen.findByText('Repositorio borrado')).toBeInTheDocument();
+  });
+
+  it('cancelar con cambios sin guardar pide confirmación', async () => {
+    server.use(...adminHandlers);
+    const user = userEvent.setup();
+    const region = await openRepositories();
+
+    await user.click(
+      within(region).getByRole('button', { name: 'Editar repositorio reservas-api' }),
+    );
+    const dialog = await screen.findByRole('dialog');
+    await user.type(within(dialog).getByLabelText(/^Nombre/), ' nuevo');
+    await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+
+    expect(await screen.findByText(/cambios sin guardar/i)).toBeInTheDocument();
+  });
+
+  it('?editar=<id> abre el diálogo del repositorio', async () => {
+    server.use(...adminHandlers);
+    renderWithProviders(<AppRouter />, { route: '/admin/proyectos?editar=repo-2' });
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Editar experimento-oculto')).toBeInTheDocument();
   });
 });

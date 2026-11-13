@@ -29,6 +29,7 @@ export const adminKeys = {
   education: ['admin', 'education'] as const,
   certifications: ['admin', 'certifications'] as const,
   projects: ['admin', 'projects'] as const,
+  featuredRepositories: ['admin', 'featured-repositories'] as const,
   socialLinks: ['admin', 'social-links'] as const,
   shareLinks: (profileId: string) => ['admin', 'share-links', profileId] as const,
   applications: ['admin', 'applications'] as const,
@@ -38,6 +39,7 @@ export const adminKeys = {
   jobPosting: (id: string) => ['admin', 'job-postings', 'one', id] as const,
   jobPostingSuggestion: (id: string) => ['admin', 'job-postings', 'suggestion', id] as const,
   consistency: ['admin', 'consistency'] as const,
+  integrations: ['admin', 'integrations'] as const,
   analytics: (from: string, to: string) => ['admin', 'analytics', from, to] as const,
   preview: (draftKey: string, locale: string) => ['admin', 'preview', draftKey, locale] as const,
 };

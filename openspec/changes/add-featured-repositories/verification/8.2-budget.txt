@@ -1,0 +1,6 @@
+perf:budget tras 8.2 (sección de repositorios en chunk diferido)
+
+Antes (1.1): index-*.js 148.9 KB gzip + profile-prefetch.js 1.2 = 150.1 KB
+Después:     index-*.js 149.2 KB gzip + profile-prefetch.js 1.2 = 150.4 KB  (tope 155)
+Crecimiento del arranque: +0.3 KB gzip (<= 0.5 KB); un solo JS de módulo; código de salida 0.
+Chunk de la sección: dist/assets/Repositories-*.js, 1.95 KB (0.87 KB gzip), no figura en dist/index.html.

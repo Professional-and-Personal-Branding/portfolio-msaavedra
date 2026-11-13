@@ -31,6 +31,11 @@ interface CvData {
     summary: Bilingual;
     availability: { modality: Bilingual; contractType: Bilingual; startDate: Bilingual };
     socialLinks?: { label: Bilingual; description?: Bilingual }[];
+    featuredRepositories?: {
+      description: Bilingual;
+      tags: string[];
+      visible: boolean;
+    }[];
     languages: { name: string; nameI18n: Bilingual; level: Bilingual; detail: Bilingual }[];
   };
   experiences: {
@@ -99,6 +104,12 @@ function inputFor(template: CvTemplate, locale: Locale): MissingTranslationsInpu
       data.projects.filter((p) => p.visible),
       criteria,
     ).map((p) => stub(p)),
+    repositories: selectByTags(
+      (profile.featuredRepositories ?? [])
+        .filter((r) => r.visible)
+        .map((r, i) => ({ id: `repo-${i}`, ...r })),
+      criteria,
+    ).map((r) => stub(r)),
     education: data.education.map((e, i) => stub({ id: `edu-${i}`, degree: e.degree })),
     certifications: data.certifications.map((c, i) => stub({ id: `cert-${i}`, name: c.name })),
     socialLinks: (profile.socialLinks ?? []).map((l, i) =>

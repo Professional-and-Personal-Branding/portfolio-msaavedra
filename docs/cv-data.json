@@ -64,21 +64,7 @@
         "visible": true
       }
     ],
-    "featuredRepositories": [
-      {
-        "name": "PENDIENTE-CURAR",
-        "url": "https://github.com/manuXD270516/PENDIENTE",
-        "language": "TypeScript",
-        "description": {
-          "es": "Placeholder: editar cv-data.json con los repos profesionales recientes que Manuel quiera destacar (ver nota en docs/DATA-POPULATION.md).",
-          "en": "Placeholder: edit cv-data.json with the recent professional repos Manuel wants to feature (see note in docs/DATA-POPULATION.md)."
-        },
-        "tags": [
-          "placeholder"
-        ],
-        "visible": false
-      }
-    ],
+    "featuredRepositories": [],
     "summary": {
       "es": "Ingeniero en Sistemas e Informática con más de 10 años de experiencia integral en desarrollo de software y tecnología, especializado en backend Java/Spring Boot y arquitecturas de microservicios escalables, con fuerte experiencia en fintech, banca, seguros, logística y retail. Perfil polyglot con dominio adicional de .NET, Node.js/NestJS y Python. Experiencia probada como Tech Lead y en liderazgo integral de TI.",
       "en": "Systems & Computer Engineer with 10+ years of comprehensive experience in software development and technology, specialized in Java/Spring Boot backend and scalable microservices architectures, with strong experience across fintech, banking, insurance, logistics and retail. Polyglot profile with additional command of .NET, Node.js/NestJS and Python. Proven experience as a Tech Lead and in comprehensive IT leadership."

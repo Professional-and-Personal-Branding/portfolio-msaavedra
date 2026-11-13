@@ -1,0 +1,46 @@
+# 9.1 Calidad web contra la imagen de producción del frontend (Caddy 2 con dist/ y el Caddyfile del repo) y la base de ejemplo descartable portfolio_repos_check
+
+## a11y:check (A11Y_CHECK_PROFILE=ejemplo-backend, con panel)
+admin-experiencias.desktop: sin violaciones
+admin-experiencias-error.desktop: sin violaciones
+admin-skills.desktop: sin violaciones
+admin-formacion.desktop: sin violaciones
+admin-proyectos.desktop: sin violaciones
+admin-cuenta.desktop: sin violaciones
+admin-perfiles.desktop: sin violaciones
+admin-postulaciones.desktop: sin violaciones
+admin-postulaciones-error.desktop: sin violaciones
+admin-revision.desktop: sin violaciones
+admin-builder.desktop: sin violaciones · teclado: ok (30 controles)
+
+# a11y:check · axe-core 4.13.0
+
+Base: http://localhost:8152 · 2026-11-12T23:35:51.678Z · 62 cargas (con panel)
+
+| Regla | Impacto | Nodos | Páginas | Ejemplo |
+|---|---|---|---|---|
+| (ninguna) | | 0 | | |
+
+Violaciones serious/critical: 0 nodos en 0 regla(s).
+Recorrido de teclado: sin problemas.
+Entradas con error a la vista: sin problemas.
+
+exit=0
+
+## perf:check (PERF_CHECK_PROFILE=ejemplo-backend, umbral Performance 85)
+# perf:check · lighthouse@13.5.0 · mobile
+
+Base: http://localhost:8152 · 2026-11-12T23:41:16.785Z · 3 corrida(s) por página pública · umbral Performance 85, resto 90
+
+| Página | Corridas | Perf | A11y | BP | SEO | LCP | TBT | CLS | JS (KB transf.) |
+|---|---|---|---|---|---|---|---|---|---|
+| / | 3 | 94 | 100 | 100 | 100 | 2.9 s | 0 ms | 0.001 | 199 |
+| /ejemplo-backend | 3 | 95 | 100 | 100 | 100 | 2.7 s | 0 ms | 0.001 | 193 |
+| /ejemplo-backend?lang=en&theme=modern-dark&layout=sidebar | 3 | 95 | 100 | 100 | 100 | 2.7 s | 0 ms | 0.001 | 193 |
+| /admin/login (SEO y Perf informativos) | 1 | 90 | 100 | 92 | 66 | 3.4 s | 2 ms | 0.000 | 272 |
+
+Performance por corrida: home [94, 94, 94] · profile [95, 97, 95] · profile-en-dark-sidebar [95, 95, 95] · admin-login [90]
+
+Todas las medianas cumplen el umbral.
+
+exit=0

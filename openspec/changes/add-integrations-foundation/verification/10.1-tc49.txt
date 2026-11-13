@@ -1,0 +1,26 @@
+TC-49 repetido tras la enmienda de D11 (12-13 de noviembre de 2026). API de la rama en localhost:3358 arrancada SIN FAKE_PROVIDER_TOKEN, imagen de frontend/Dockerfile en 8158, base descartable portfolio_integ_check con el ejemplo; sesión por fetch; keyring generado al azar. Sin precarga ni trucos.
+
+OK    login por fetch: 200
+OK    barra: 9 ítems, sin Integraciones
+OK    Cuenta → Integraciones
+OK    Activo, «Todavía no corrió»
+OK    credencial: «Falta la credencial» (arranque sin FAKE_PROVIDER_TOKEN)
+OK    campo Credencial (password) a la vista
+OK    «Ingresá la credencial.» sin llamar a la API
+OK    «Credencial guardada.»
+OK    «Guardada en la base (clave k1)»
+OK    campo vacío y valor fuera del DOM
+OK    tras recargar: guardada, campo vacío, sin valor en el DOM
+OK    «Encolado: corre en el próximo minuto.»
+OK    cola: 1 pendiente
+OK    «Ya había una sincronización en cola.»
+OK    tras el tick: «Exitosa» (refresco automático)
+OK    cola vuelve a 0
+OK    Pausado
+OK    POST …/sync pausado: 422
+OK    Activo
+OK    «Credencial borrada.»
+OK    tras borrar: «Falta la credencial»
+escrituras: PUT /api/admin/integrations/fake/credential, POST /api/admin/integrations/fake/sync, POST /api/admin/integrations/fake/sync, PATCH /api/admin/integrations/fake, POST /api/admin/integrations/fake/sync, PATCH /api/admin/integrations/fake, DELETE /api/admin/integrations/fake/credential
+
+npm run integrations:sync -- --provider fake (sin credencial): Corrida: 1 trabajos (hechos 0, ..., muertos 1, ...) exit=1

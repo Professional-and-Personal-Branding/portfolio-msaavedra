@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: a5d6133e177d7efb363964e7cc5ef805c25b822d2dadb164265b8f7dd9f1b587
+// openapi-sha256: 72797ade0e82272ad893c877fb56117c9ac77507dc28b9f0bb35f9c5ad71029a
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -478,6 +478,124 @@ export interface paths {
         head?: never;
         /** Editar experiencia (parcial) */
         patch: operations["AdminExperienceController_update"];
+        trace?: never;
+    };
+    "/api/admin/featured-repositories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar repositorios destacados (incluye ocultos, descripción bilingüe cruda) */
+        get: operations["AdminFeaturedRepositoryController_list"];
+        put?: never;
+        /** Crear repositorio destacado */
+        post: operations["AdminFeaturedRepositoryController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/featured-repositories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver repositorio destacado */
+        get: operations["AdminFeaturedRepositoryController_find"];
+        put?: never;
+        post?: never;
+        /** Borrar repositorio destacado */
+        delete: operations["AdminFeaturedRepositoryController_remove"];
+        options?: never;
+        head?: never;
+        /** Editar repositorio destacado (parcial) */
+        patch: operations["AdminFeaturedRepositoryController_update"];
+        trace?: never;
+    };
+    "/api/admin/integrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Estado de las integraciones
+         * @description Solo aparecen los proveedores de `INTEGRATIONS_ENABLED`. Nunca incluye secretos: de la credencial solo se informa el origen.
+         */
+        get: operations["AdminIntegrationsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/integrations/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Pausar o reanudar un proveedor
+         * @description Pausar no cancela un trabajo en curso: impide reclamar los siguientes y que el planificador encole.
+         */
+        patch: operations["AdminIntegrationsController_update"];
+        trace?: never;
+    };
+    "/api/admin/integrations/{provider}/credential": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Guardar la credencial de un proveedor
+         * @description Se cifra con AES-256-GCM y nunca se devuelve. Con el secreto definido por una variable de entorno, responde 422.
+         */
+        put: operations["AdminIntegrationsController_putCredential"];
+        post?: never;
+        /** Borrar la credencial guardada en la base (idempotente) */
+        delete: operations["AdminIntegrationsController_removeCredential"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/integrations/{provider}/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sincronizar ahora
+         * @description Solo encola: responde 202 sin llamar al proveedor y el trabajo corre en el próximo tick del ejecutor (hasta 60 s). Si ya hay un trabajo pendiente, en curso o fallido, devuelve ese con `alreadyQueued: true`.
+         */
+        post: operations["AdminIntegrationsController_sync"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/admin/job-postings": {
@@ -999,6 +1117,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/featured-repositories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Repositorios destacados visibles */
+        get: operations["FeaturedRepositoryController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/profile": {
         parameters: {
             query?: never;
@@ -1164,6 +1299,20 @@ export interface components {
             tags: string[];
             technologies: string[];
             updatedAt: string | null;
+            visible: boolean;
+        };
+        AdminFeaturedRepositoryResponse: {
+            description: components["schemas"]["LocalizedTextDto"];
+            id: string;
+            /** @example Java */
+            language: string | null;
+            /** @example reservas-api */
+            name: string;
+            order: number;
+            tags: string[];
+            technologies: string[];
+            /** @example https://github.com/octo-org/reservas-api */
+            url: string;
             visible: boolean;
         };
         AdminLanguageResponse: {
@@ -1613,6 +1762,29 @@ export interface components {
             /** @default true */
             visible: boolean;
         };
+        CreateFeaturedRepositoryDto: {
+            description: components["schemas"]["LocalizedTextDto"];
+            /** @example Java */
+            language?: string | null;
+            /** @example reservas-api */
+            name: string;
+            /** @default 0 */
+            order: number;
+            /**
+             * @description Tags para el filtrado de perfiles curados
+             * @default []
+             */
+            tags: string[];
+            /** @default [] */
+            technologies: string[];
+            /**
+             * @description Forma canónica https://github.com/<usuario>/<repositorio>
+             * @example https://github.com/octo-org/reservas-api
+             */
+            url: string;
+            /** @default true */
+            visible: boolean;
+        };
         CreateLanguageDto: {
             detail?: components["schemas"]["LocalizedTextDto"] | null;
             /** @description Nivel bilingüe; es obligatorio */
@@ -1711,6 +1883,17 @@ export interface components {
             /** @default true */
             visible: boolean;
         };
+        CredentialStatusResponse: {
+            /** @description Clave del keyring que la cifró */
+            keyId: string | null;
+            /**
+             * @description De dónde sale el secreto: variable de entorno, base cifrada o ninguna
+             * @enum {string|null}
+             */
+            source: "env" | "db" | null;
+            /** @description ISO 8601 */
+            updatedAt: string | null;
+        };
         CuratedProfileResponse: {
             certifications: components["schemas"]["CertificationResponse"][];
             /** @description Resuelto al locale. */
@@ -1731,6 +1914,8 @@ export interface components {
             profile: components["schemas"]["ProfileResponse"] | null;
             /** @description Seleccionados por tags/overrides. */
             projects: components["schemas"]["ProjectResponse"][];
+            /** @description Repositorios destacados seleccionados por tags/overrides. Se conservan aunque haya menos de 2; la sección `repositories` solo figura en `sections` desde 2. */
+            repositories: components["schemas"]["FeaturedRepositoryResponse"][];
             /**
              * @description Tipo de rol para agrupar el menú. Resuelto al locale.
              * @example Tech Lead
@@ -1805,7 +1990,7 @@ export interface components {
             summary: components["schemas"]["CvSeveritySummaryResponse"];
         };
         /** @enum {string} */
-        CvEntityType: "profile" | "language" | "experience" | "skillCategory" | "skill" | "education" | "certification" | "project" | "socialLink" | "curatedProfile";
+        CvEntityType: "profile" | "language" | "experience" | "skillCategory" | "skill" | "education" | "certification" | "project" | "repository" | "socialLink" | "curatedProfile";
         CvExperienceSummaryResponse: {
             /**
              * @description `Profile.yearsOfExperience`, tal como se cargó
@@ -1875,6 +2060,14 @@ export interface components {
             /** @example 2024-02 */
             startDate: string;
         };
+        EnqueueSyncResponse: {
+            /** @description `true` si ya había una sincronización en cola */
+            alreadyQueued: boolean;
+            jobId: string;
+            /** @description ISO 8601: cuándo puede reclamarse */
+            runAt: string;
+            status: components["schemas"]["IntegrationJobStatus"];
+        };
         ErrorResponseDto: {
             /** @example Not Found */
             error: string;
@@ -1943,6 +2136,21 @@ export interface components {
              */
             technologies: string[];
         };
+        FeaturedRepositoryResponse: {
+            /** @description Resuelta al locale. */
+            description: string;
+            id: string;
+            /** @example Java */
+            language: string | null;
+            /** @example reservas-api */
+            name: string;
+            order: number;
+            /** @description Tags para el filtrado de perfiles curados */
+            tags: string[];
+            technologies: string[];
+            /** @example https://github.com/octo-org/reservas-api */
+            url: string;
+        };
         ImportJobPostingDto: {
             /** @description Empresa (hasta 160); solo con `text`. */
             company?: string;
@@ -1960,6 +2168,41 @@ export interface components {
              * @example https://jobs.lever.co/acmeejemplo/0b1c2d3e-aaaa-bbbb-cccc-1234567890ab
              */
             url?: string;
+        };
+        /** @enum {string} */
+        IntegrationJobStatus: "PENDING" | "RUNNING" | "DONE" | "FAILED" | "DEAD";
+        IntegrationsOverviewResponse: {
+            providers: components["schemas"]["IntegrationStatusResponse"][];
+            /** @description `false` = este proceso no tiene timers: lo encolado espera */
+            schedulerEnabled: boolean;
+        };
+        IntegrationStatusResponse: {
+            credential: components["schemas"]["CredentialStatusResponse"];
+            /** @description `false` = pausado a mano */
+            enabled: boolean;
+            jobs: components["schemas"]["JobCountsResponse"];
+            /** @description Último error de un trabajo `DEAD` */
+            lastDeadError: string | null;
+            lastRun: components["schemas"]["LastRunResponse"] | null;
+            /** @description ISO 8601 */
+            lastSuccessAt: string | null;
+            /** @description ISO 8601; solo si la pausa sigue vigente */
+            pausedUntil: string | null;
+            /**
+             * @description `RetryAfter`, `ResetAt`, `BudgetExhausted` o `CircuitOpen`
+             * @example RetryAfter
+             */
+            pauseReason: string | null;
+            /** @example fake */
+            provider: string;
+            /** @description Más de 48 h sin una corrida exitosa */
+            stale: boolean;
+        };
+        JobCountsResponse: {
+            dead: number;
+            failed: number;
+            pending: number;
+            running: number;
         };
         JobPostingResponse: {
             /** @description Solo https */
@@ -2024,6 +2267,18 @@ export interface components {
             /** @example Español */
             name: string;
         };
+        LastRunResponse: {
+            /** @example Transient */
+            errorClass: string | null;
+            /** @description Redactado y de hasta 500 caracteres */
+            errorMessage: string | null;
+            /** @description ISO 8601 */
+            finishedAt: string | null;
+            /** @description `null` mientras el intento sigue en curso */
+            outcome: components["schemas"]["SyncRunOutcome"] | null;
+            /** @description ISO 8601 */
+            startedAt: string;
+        };
         LocalizedListDto: {
             /**
              * @example [
@@ -2070,7 +2325,7 @@ export interface components {
              * @example experience
              * @enum {string}
              */
-            entity: "curatedProfile" | "profile" | "experience" | "skillCategory" | "project" | "education" | "certification" | "socialLink" | "language";
+            entity: "curatedProfile" | "profile" | "experience" | "skillCategory" | "project" | "repository" | "education" | "certification" | "socialLink" | "language";
             /**
              * @description Campo bilingüe; los anidados con punto.
              * @example highlights
@@ -2144,6 +2399,8 @@ export interface components {
             profile: components["schemas"]["ProfileResponse"] | null;
             /** @description Seleccionados por tags/overrides. */
             projects: components["schemas"]["ProjectResponse"][];
+            /** @description Repositorios destacados seleccionados por tags/overrides. Se conservan aunque haya menos de 2; la sección `repositories` solo figura en `sections` desde 2. */
+            repositories: components["schemas"]["FeaturedRepositoryResponse"][];
             /**
              * @description Tipo de rol para agrupar el menú. Resuelto al locale.
              * @example Tech Lead
@@ -2299,8 +2556,16 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        SaveCredentialDto: {
+            /** @description Secreto del proveedor (1 a 4096 caracteres, sin espacios al borde). Solo se escribe: nunca se devuelve. */
+            secret: string;
+        };
         /** @enum {string} */
-        SectionId: "hero" | "stats" | "experience" | "skills" | "projects" | "education" | "certifications" | "presence" | "contact";
+        SectionId: "hero" | "stats" | "experience" | "skills" | "projects" | "repositories" | "education" | "certifications" | "presence" | "contact";
+        SetIntegrationEnabledDto: {
+            /** @description `false` pausa el proveedor a mano; `true` lo reanuda */
+            enabled: boolean;
+        };
         /** @enum {string} */
         ShareLinkKind: "MANUAL" | "LINKEDIN_POST";
         ShareLinkResponse: {
@@ -2364,6 +2629,11 @@ export interface components {
             /** @example https://github.com/manuXD270516 */
             url: string;
         };
+        /**
+         * @description `null` mientras el intento sigue en curso
+         * @enum {string}
+         */
+        SyncRunOutcome: "SUCCESS" | "FAILED" | "DEAD" | "INTERRUPTED" | "TIMEOUT";
         TagCoverageResponse: {
             covered: components["schemas"]["CoveredTagResponse"][];
             coveredCount: number;
@@ -2535,6 +2805,29 @@ export interface components {
             tags: string[];
             /** @default [] */
             technologies: string[];
+            /** @default true */
+            visible: boolean;
+        };
+        UpdateFeaturedRepositoryDto: {
+            description?: components["schemas"]["LocalizedTextDto"];
+            /** @example Java */
+            language?: string | null;
+            /** @example reservas-api */
+            name?: string;
+            /** @default 0 */
+            order: number;
+            /**
+             * @description Tags para el filtrado de perfiles curados
+             * @default []
+             */
+            tags: string[];
+            /** @default [] */
+            technologies: string[];
+            /**
+             * @description Forma canónica https://github.com/<usuario>/<repositorio>
+             * @example https://github.com/octo-org/reservas-api
+             */
+            url?: string;
             /** @default true */
             visible: boolean;
         };
@@ -4341,6 +4634,442 @@ export interface operations {
             };
         };
     };
+    AdminFeaturedRepositoryController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminFeaturedRepositoryResponse"][];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminFeaturedRepositoryController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFeaturedRepositoryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminFeaturedRepositoryResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description El repositorio ya está cargado */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminFeaturedRepositoryController_find: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminFeaturedRepositoryResponse"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminFeaturedRepositoryController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminFeaturedRepositoryController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFeaturedRepositoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminFeaturedRepositoryResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin Bearer válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description El repositorio ya está cargado */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminIntegrationsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntegrationsOverviewResponse"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminIntegrationsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetIntegrationEnabledDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntegrationStatusResponse"];
+                };
+            };
+            /** @description Campo desconocido o inválido */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Proveedor no habilitado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminIntegrationsController_putCredential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCredentialDto"];
+            };
+        };
+        responses: {
+            /** @description Guardada */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Secreto vacío, largo o inválido */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Proveedor no habilitado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description La credencial de este proveedor viene de una variable de entorno */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminIntegrationsController_removeCredential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Borrada */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Proveedor no habilitado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminIntegrationsController_sync: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnqueueSyncResponse"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Proveedor no habilitado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Proveedor pausado a mano */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
     AdminJobPostingController_list: {
         parameters: {
             query?: never;
@@ -5962,6 +6691,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    FeaturedRepositoryController_list: {
+        parameters: {
+            query?: {
+                /** @description Alias de `locale`. */
+                lang?: "es" | "en";
+                /** @description Idioma de la respuesta (prioridad sobre `lang` y `Accept-Language`). */
+                locale?: "es" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    /** @description Locale servido */
+                    "Content-Language"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeaturedRepositoryResponse"][];
                 };
             };
         };

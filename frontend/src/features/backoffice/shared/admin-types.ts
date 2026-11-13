@@ -34,6 +34,10 @@ export type UpdateCertificationBody = Schemas['UpdateCertificationDto'];
 export type AdminProject = Schemas['AdminProjectResponse'];
 export type CreateProjectBody = Schemas['CreateProjectDto'];
 export type UpdateProjectBody = Schemas['UpdateProjectDto'];
+// add-featured-repositories: repositorios destacados de GitHub.
+export type AdminRepository = Schemas['AdminFeaturedRepositoryResponse'];
+export type CreateRepositoryBody = Schemas['CreateFeaturedRepositoryDto'];
+export type UpdateRepositoryBody = Schemas['UpdateFeaturedRepositoryDto'];
 export type AdminSocialLink = Schemas['AdminSocialLinkResponse'];
 export type CreateSocialLinkBody = Schemas['CreateSocialLinkDto'];
 export type UpdateSocialLinkBody = Schemas['UpdateSocialLinkDto'];
@@ -60,6 +64,12 @@ export type CvConsistency = Schemas['CvConsistencyResponse'];
 export type CvIssue = Schemas['CvIssueResponse'];
 export type CvSeverity = Schemas['CvSeverity'];
 export type CvEntityType = Schemas['CvEntityType'];
+
+// add-integrations-foundation: estado de las integraciones con terceros.
+export type IntegrationsOverview = Schemas['IntegrationsOverviewResponse'];
+export type IntegrationStatus = Schemas['IntegrationStatusResponse'];
+export type EnqueueSyncResult = Schemas['EnqueueSyncResponse'];
+export type SyncRunOutcome = Schemas['SyncRunOutcome'];
 
 export type AdminTheme = Schemas['ThemeResponse'];
 export type ProfileViews = Schemas['ProfileViewsResponse'];

@@ -51,11 +51,11 @@ import {
   useSkillCategories,
   useThemes,
 } from '../shared/use-admin-api';
-import { useProjects } from '../proyectos/use-proyectos-api';
+import { useProjects, useRepositories } from '../proyectos/use-proyectos-api';
 import { MissingTranslationsNotice } from './MissingTranslationsNotice';
 import { PreviewPanel } from './PreviewPanel';
 import { ResumeDownload } from './ResumeDownload';
-import { ExperiencesBlock, ProjectsBlock, SkillsBlock } from './SelectionBlocks';
+import { ExperiencesBlock, ProjectsBlock, RepositoriesBlock, SkillsBlock } from './SelectionBlocks';
 import { ShareLinksPanel } from './ShareLinksPanel';
 import type { SavedProfileRef } from './share-link-url';
 import { ShareOnLinkedInButton } from './ShareOnLinkedInButton';
@@ -119,6 +119,7 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
   const experiences = useExperiences();
   const categories = useSkillCategories();
   const projects = useProjects();
+  const repositories = useRepositories();
   const themes = useThemes();
   const save = useSaveCuratedProfile();
   const archive = useArchiveCuratedProfile();
@@ -161,18 +162,31 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
   const hasOverrides = draft.themeOverrides !== null;
 
   const tags = useMemo(
-    () => tagUniverse(experiences.data, categories.data, projects.data, draft.filterTags),
-    [experiences.data, categories.data, projects.data, draft.filterTags],
+    () =>
+      tagUniverse(
+        experiences.data,
+        categories.data,
+        projects.data,
+        draft.filterTags,
+        repositories.data,
+      ),
+    [experiences.data, categories.data, projects.data, draft.filterTags, repositories.data],
   );
 
-  // Referencias a ítems borrados (D7): solo se informan con las tres listas cargadas, porque con
+  // Referencias a ítems borrados (D7): solo se informan con las cuatro listas cargadas, porque con
   // una ausente no se puede saber de qué lista era cada id.
   const orphans = useMemo(
     () =>
-      experiences.data && categories.data && projects.data
-        ? orphanOverrideIds(draft, experiences.data, categories.data, projects.data)
+      experiences.data && categories.data && projects.data && repositories.data
+        ? orphanOverrideIds(
+            draft,
+            experiences.data,
+            categories.data,
+            projects.data,
+            repositories.data,
+          )
         : [],
-    [draft, experiences.data, categories.data, projects.data],
+    [draft, experiences.data, categories.data, projects.data, repositories.data],
   );
 
   const update = <K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) =>
@@ -395,6 +409,15 @@ function ProfileEditor({ id, saved, initialDraft }: ProfileEditorProps) {
             <ExperiencesBlock draft={draft} query={experiences} onOverride={applyOverride} />
             <SkillsBlock draft={draft} query={categories} onOverride={applyOverride} />
             <ProjectsBlock draft={draft} query={projects} onOverride={applyOverride} />
+            <RepositoriesBlock
+              draft={draft}
+              query={repositories}
+              onOverride={applyOverride}
+              belowThreshold={
+                preview.data?.repositories.length === 1 &&
+                !preview.data.sections.includes('repositories')
+              }
+            />
           </TabsContent>
 
           <TabsContent value="diseno" className="surface flex flex-col gap-6 p-card">

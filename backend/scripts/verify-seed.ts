@@ -204,6 +204,11 @@ async function main(): Promise<number> {
     for (const p of await prisma.project.findMany({ select: { id: true, name: true } })) {
       nameById.set(p.id, `project:${p.name}`);
     }
+    for (const r of await prisma.featuredRepository.findMany({
+      select: { id: true, name: true },
+    })) {
+      nameById.set(r.id, `repository:${r.name}`);
+    }
     for (const s of await prisma.skill.findMany({ select: { id: true, name: true } })) {
       nameById.set(s.id, `skill:${s.name}`);
     }

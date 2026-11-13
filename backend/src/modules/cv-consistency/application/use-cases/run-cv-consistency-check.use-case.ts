@@ -17,6 +17,10 @@ import {
   ExperienceRepository,
 } from '../../../experience/domain/repositories/experience.repository';
 import {
+  FEATURED_REPOSITORY_REPOSITORY,
+  FeaturedRepositoryRepository,
+} from '../../../featured-repository/domain/repositories/featured-repository.repository';
+import {
   PROFILE_REPOSITORY,
   ProfileRepository,
 } from '../../../profile/domain/repositories/profile.repository';
@@ -42,7 +46,7 @@ export interface RunCvConsistencyCheckInput {
 
 /**
  * Revisión de consistencia del CV (D9 de `add-cv-consistency-rules`). Solo lee: una consulta
- * por repositorio, en paralelo y fijas (ocho), sin importar cuántos ítems haya, y nunca llama a
+ * por repositorio, en paralelo y fijas (nueve), sin importar cuántos ítems haya, y nunca llama a
  * un método de escritura. `asOf` es el mes UTC del reloj inyectado (D11).
  */
 @Injectable()
@@ -54,6 +58,8 @@ export class RunCvConsistencyCheckUseCase {
     @Inject(EDUCATION_REPOSITORY) private readonly education: EducationRepository,
     @Inject(CERTIFICATION_REPOSITORY) private readonly certifications: CertificationRepository,
     @Inject(PROJECT_REPOSITORY) private readonly projects: ProjectRepository,
+    @Inject(FEATURED_REPOSITORY_REPOSITORY)
+    private readonly repositories: FeaturedRepositoryRepository,
     @Inject(SOCIAL_LINK_REPOSITORY) private readonly socialLinks: SocialLinkRepository,
     @Inject(CURATED_PROFILE_REPOSITORY) private readonly curatedProfiles: CuratedProfileRepository,
     @Inject(CLOCK) private readonly clock: Clock,
@@ -67,6 +73,7 @@ export class RunCvConsistencyCheckUseCase {
       education,
       certifications,
       projects,
+      repositories,
       socialLinks,
       curatedProfiles,
     ] = await Promise.all([
@@ -76,6 +83,7 @@ export class RunCvConsistencyCheckUseCase {
       this.education.findAll(),
       this.certifications.findAll(),
       this.projects.findAll(),
+      this.repositories.findAll(),
       this.socialLinks.findAll(),
       this.curatedProfiles.findAll(),
     ]);
@@ -86,6 +94,7 @@ export class RunCvConsistencyCheckUseCase {
       education,
       certifications,
       projects,
+      repositories,
       socialLinks,
       curatedProfiles,
     });

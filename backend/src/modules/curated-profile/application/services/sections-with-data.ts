@@ -1,4 +1,4 @@
-import { SectionId } from '../../domain/services/resolve-sections';
+import { MIN_REPOSITORIES_FOR_SECTION, SectionId } from '../../domain/services/resolve-sections';
 import { CuratedProfileOutput } from '../dto/curated-profile.output';
 
 /**
@@ -13,6 +13,7 @@ export function sectionsWithData(output: CuratedProfileOutput): Set<SectionId> {
     experience: output.experiences.length > 0,
     skills: output.skillCategories.length > 0,
     projects: output.projects.length > 0,
+    repositories: output.repositories.length >= MIN_REPOSITORIES_FOR_SECTION,
     education: output.education.length > 0,
     certifications: output.certifications.length > 0,
     presence: output.socialLinks.length > 0,

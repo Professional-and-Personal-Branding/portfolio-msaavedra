@@ -77,7 +77,30 @@ Guardalos en el gestor de secretos del proveedor, nunca en el repositorio. La AP
 | `ENABLE_API_DOCS` | *(sin definir)* | definila en `true` solo si querés Swagger público |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | los del administrador | **no van en el servicio `api`**: solo se usan al correr `admin:bootstrap` y se definen en la terminal de tu máquina (ver *Primer arranque*) |
 | `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` | *(no hace falta)* | solo Railway, servicio `api`. Ya queda versionado como `drainingSeconds: 10` en `backend/railway.json`; la variable solo sirve si querés pisarlo desde el panel. La API espera hasta 5 s a registrar las visitas en vuelo al apagarse; tiene que quedar **por encima de 5** (ver § 9.5, *Apagado de la API*) |
+| `INTEGRATIONS_ENABLED` | *(sin definir)* | Proveedores de integración habilitados, separados por comas. **Dejala sin definir hasta que llegue un proveedor real** (hoy solo existe `fake`, que está prohibido en producción). Un id fuera del catálogo hace fallar el arranque |
+| `INTEGRATIONS_SCHEDULER_ENABLED` | `false` *(default)* | `true` enciende los timers del planificador y del ejecutor **en este proceso**. Encendelo en **una sola réplica** del servicio `api` |
+| `INTEGRATIONS_SYNC_CRON` | `0 10 * * *` *(default)* | Planificador diario, en **UTC** (06:00 en Bolivia). Una expresión cron inválida impide el arranque |
+| `INTEGRATIONS_TICK_SECONDS` | `60` *(default)* | Cada cuánto el ejecutor busca trabajos vencidos (10 a 3600) |
+| `INTEGRATIONS_JOB_TIMEOUT_MS` | `120000` *(default)* | Tiempo máximo de un trabajo (5000 a 600000 ms) |
+| `INTEGRATIONS_RUN_MAX_MS` | `300000` *(default)* | Duración máxima de una corrida: pasado ese tiempo no se reclaman más trabajos (10000 a 1800000 ms) |
+| `INTEGRATIONS_KEYS` | *(solo con proveedores)* | Keyring `id:base64`, separados por comas, con claves de **32 bytes**. Se exige solo si `INTEGRATIONS_ENABLED` no está vacía. En producción no puede ser la clave del `.env.example` ni repetir `JWT_SECRET` |
+| `INTEGRATIONS_ACTIVE_KEY` | *(solo con proveedores)* | `id` del keyring con el que se cifra; tiene que figurar en `INTEGRATIONS_KEYS` |
 | `CSP_HEADER` | *(sin definir)* | **del servicio `web`, no de la API.** Nombre de la cabecera de la CSP del sitio; sin definir bloquea, con `Content-Security-Policy-Report-Only` solo reporta (ver § 9.5, *Content-Security-Policy del sitio*) |
+
+### Integraciones con terceros (change `add-integrations-foundation`)
+
+Con las ocho variables `INTEGRATIONS_*` sin definir, la API se comporta como antes: sin proveedores, sin timers y la pantalla **Integraciones** dice «No hay integraciones habilitadas». La migración `add_integrations_foundation` agrega seis tablas y no toca ninguna existente.
+
+Cuando llegue un proveedor real:
+
+1. **Keyring.** Generá cada clave con `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` y guardala en el gestor de secretos antes de pegarla: si se pierde, las credenciales guardadas desde el panel quedan ilegibles (se reingresan; las de variables de entorno no dependen del keyring).
+2. **Variables.** `INTEGRATIONS_ENABLED=<proveedor>`, su secreto como variable **opcional** (si no la definís, se carga desde el panel, cifrado con el keyring), `INTEGRATIONS_KEYS=k1:<base64>`, `INTEGRATIONS_ACTIVE_KEY=k1` y `INTEGRATIONS_SCHEDULER_ENABLED=true`.
+3. **Una sola réplica con el scheduler.** El arriendo del ejecutor (una fila en la base) y `FOR UPDATE SKIP LOCKED` impiden que dos procesos ejecuten el mismo trabajo, incluso durante el solapamiento de un deploy; aun así el scheduler se enciende en una sola réplica.
+4. **Drenaje.** `drainingSeconds` tiene que seguir **por encima de 8 s** (hoy 10): el apagado devuelve el trabajo en curso a la cola dentro de los 5 s de drenaje de las tareas en segundo plano.
+5. **Rotar una clave.** Agregá `k2` al keyring → `INTEGRATIONS_ACTIVE_KEY=k2` → redeploy → desde tu terminal, con `DATABASE_URL` de producción solo en ese proceso, `npm run integrations:rekey` (simulación) y `npm run integrations:rekey -- --apply` → quitá `k1`. Es idempotente: la segunda corrida dice «0 filas para recifrar».
+6. **Herramienta manual.** `npm run integrations:sync [-- --provider <id>] [-- --plan]` corre **una** vez el ejecutor sin abrir ningún puerto (no hay servicio cron aparte); sale con 0, 1 (algún trabajo quedó muerto) o 2 (configuración inválida o el arriendo lo tiene otra instancia).
+
+Un trabajo nunca corre dentro de una petición ni la demora: se mide con `GET /health/live` mientras corre un trabajo lento (ver `docs/ARCHITECTURE.md` § 8).
 
 ### Comandos
 
@@ -392,7 +415,7 @@ El `Caddyfile` escucha en `:{$PORT}` —Railway inyecta `PORT`— y reparte así
 - **Si algo deja de cargar** tras un deploy (una fuente, un tema nuevo), pasá a `Report-Only`, abrí la consola, agregá el origen que falte al `Caddyfile` y volvé a `Content-Security-Policy`.
 - Si un tema agrega una familia que no está en Google Fonts, `fonts.ts` no la pide: la política no cambia eso.
 
-**Apagado de la API y visitas en vuelo.** La visita se registra en segundo plano, fuera del camino de la respuesta; al recibir `SIGTERM`, la API espera hasta **5 s** a que terminen las que quedan en vuelo (`drain`) y recién entonces cierra. **Recomendación (P3, no bloquea):** confirmar el valor actual de `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` en el servicio `api` y fijarlo **por encima de ese tope de 5 s**, por ejemplo en `10`. Si queda por debajo, Railway envía `SIGKILL` antes de que termine el drenaje y se pierden las visitas en vuelo (quedan solo en el log).
+**Apagado de la API y visitas en vuelo.** La visita se registra en segundo plano, fuera del camino de la respuesta; al recibir `SIGTERM`, la API espera hasta **5 s** a que terminen las que quedan en vuelo (`drain`) y recién entonces cierra; si hay un trabajo de integración en curso, el apagado lo devuelve a la cola dentro de ese mismo plazo (ver § 3, *Integraciones con terceros*). **Recomendación (P3, no bloquea):** confirmar el valor actual de `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` en el servicio `api` y fijarlo **por encima de ese tope de 5 s**, por ejemplo en `10`. Si queda por debajo, Railway envía `SIGKILL` antes de que termine el drenaje y se pierden las visitas en vuelo (quedan solo en el log).
 
 **IP real del cliente (límites de peticiones y analítica).** Con Caddy en el medio, la API ve la conexión de Caddy, no la del navegador. Railway entrega la IP del cliente en la cabecera `X-Real-IP`, y el `Caddyfile` la copia a `X-Forwarded-For` con `header_up X-Forwarded-For {http.request.header.X-Real-IP}` en los dos proxies (`@backend` y `@head`). Como `app.set('trust proxy', 1)` toma un solo salto, la API usa esa IP para el límite de peticiones, el del login y el `ipHash` de la analítica. Sin esa línea, todos los visitantes compartirían una IP (la del borde): cinco logins fallidos de cualquiera bloquearían al administrador y la analítica contaría un solo visitante. Como `header_up` **reemplaza** el valor, un `X-Forwarded-For` enviado por el cliente no sirve para evadir el límite. Verificación en producción: `DEPLOY-RAILWAY.md` § 7 (el `X-Real-IP` que manda el cliente lo pisa el borde de Railway; comprobarlo es parte de la lista).
 

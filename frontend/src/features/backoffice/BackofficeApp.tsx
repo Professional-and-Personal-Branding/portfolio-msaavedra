@@ -7,6 +7,7 @@ import { ApplicationsPage } from './applications/ApplicationsPage';
 import { DashboardPage } from './dashboard/DashboardPage';
 import { ExperiencesPage } from './experiences/ExperiencesPage';
 import { FormacionPage } from './formacion/FormacionPage';
+import { IntegrationsPage } from './integrations/IntegrationsPage';
 import { PortadaPage } from './portada/PortadaPage';
 import { JobPostingIntakePage } from './job-postings/JobPostingIntakePage';
 import { ProfileBuilderPage } from './curated-profiles/ProfileBuilderPage';
@@ -41,6 +42,8 @@ export function BackofficeApp() {
                     <Route path="perfiles/:id" element={<ProfileBuilderPage />} />
                     <Route path="postulaciones" element={<ApplicationsPage />} />
                     <Route path="revision" element={<RevisionPage />} />
+                    {/* Sin ítem en la barra (D25 de `add-integrations-foundation`): se llega desde Cuenta y desde el aviso del Dashboard. */}
+                    <Route path="integraciones" element={<IntegrationsPage />} />
                   </Routes>
                 </AdminLayout>
               </RequireSession>

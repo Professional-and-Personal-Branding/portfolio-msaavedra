@@ -4,6 +4,7 @@ import {
 } from '../../../education/application/dto/education.output';
 import { ExperienceOutput } from '../../../experience/application/dto/experience.output';
 import { ProfileOutput } from '../../../profile/application/dto/profile.output';
+import { FeaturedRepositoryOutput } from '../../../featured-repository/application/dto/featured-repository.output';
 import { ProjectOutput } from '../../../project/application/dto/project.output';
 import { SocialLinkOutput } from '../../../social-link/application/dto/social-link.output';
 import { CuratedVisibility } from '../../domain/entities/curated-profile.entity';
@@ -47,6 +48,11 @@ export interface CuratedProfileOutput extends CuratedProfileSummaryOutput {
   skillCategories: SkillCategoryOutput[];
   /** Seleccionados por tags/overrides (mismo espacio de ids que experiencias y skills). */
   projects: ProjectOutput[];
+  /**
+   * Repositorios destacados seleccionados (mismos tags y overrides). Se conservan aunque haya
+   * menos de 2: la sección `repositories` solo figura en `sections` desde 2.
+   */
+  repositories: FeaturedRepositoryOutput[];
   education: EducationOutput[];
   certifications: CertificationOutput[];
   socialLinks: SocialLinkOutput[];

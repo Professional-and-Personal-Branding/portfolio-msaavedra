@@ -214,6 +214,119 @@ describe('parseSeedSource', () => {
   });
 });
 
+const repo = (changes: Mutable = {}): Mutable => ({
+  name: 'reservas-api',
+  url: 'https://github.com/octo-org/reservas-api',
+  language: 'Java',
+  description: { es: 'API', en: 'API' },
+  tags: ['java'],
+  technologies: ['Spring Boot'],
+  visible: true,
+  ...changes,
+});
+const withRepos =
+  (...repos: Mutable[]) =>
+  (d: Mutable): void => {
+    (d['profile'] as Mutable)['featuredRepositories'] = repos;
+  };
+
+describe('repositorios destacados (add-featured-repositories, D2 y D14)', () => {
+  it('una URL de gitlab se rechaza nombrando el campo', () => {
+    const r = parseSeedSource(
+      (() => {
+        const d = cvData();
+        withRepos(repo({ url: 'https://gitlab.com/a/b' }))(d);
+        return d;
+      })(),
+    );
+    expect(r.ok).toBe(false);
+    expect(r.ok ? [] : r.error.map((e) => e.path)).toEqual(['profile.featuredRepositories[0].url']);
+  });
+
+  it.each([
+    'https://github.com/a/b/',
+    'https://github.com/a/b.git',
+    'http://github.com/a/b',
+    'https://github.com/a',
+  ])('rechaza %s', (url) => {
+    expect(errorPaths(withRepos(repo({ url })))).toEqual(['profile.featuredRepositories[0].url']);
+  });
+
+  it('rechaza dos repositorios con el mismo owner/repo sin distinguir mayúsculas', () => {
+    expect(
+      errorPaths(
+        withRepos(repo(), repo({ name: 'otro', url: 'https://github.com/OCTO-org/Reservas-API' })),
+      ),
+    ).toEqual(['profile.featuredRepositories[1].url']);
+  });
+
+  it('rechaza un id repetido y valida los límites del nombre', () => {
+    expect(
+      errorPaths(
+        withRepos(
+          repo({ id: 'a' }),
+          repo({ id: 'a', name: 'n'.repeat(101), url: 'https://github.com/octo-org/otro' }),
+        ),
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        'profile.featuredRepositories[1].id',
+        'profile.featuredRepositories[1].name',
+      ]),
+    );
+  });
+
+  it('acepta un archivo con stars y sin id', () => {
+    const d = cvData();
+    withRepos(repo({ stars: 12 }))(d);
+    expect(parseSeedSource(d).ok).toBe(true);
+  });
+
+  it('rechaza stars que no es un número', () => {
+    expect(errorPaths(withRepos(repo({ stars: 'muchas' })))).toEqual([
+      'profile.featuredRepositories[0].stars',
+    ]);
+  });
+
+  it('repository:<id> se resuelve con el id del archivo y rechaza uno inexistente', () => {
+    const ok = cvData();
+    withRepos(repo({ id: 'reservas' }))(ok);
+    templates(ok)[0]['includeRefs'] = ['repository:reservas'];
+    expect(parseSeedSource(ok).ok).toBe(true);
+
+    const missing = cvData();
+    withRepos(repo({ id: 'reservas' }))(missing);
+    templates(missing)[0]['includeRefs'] = ['repository:no-existe'];
+    const r = parseSeedSource(missing);
+    expect(r).toEqual({
+      ok: false,
+      error: [
+        {
+          path: 'profileTemplates[0].includeRefs[0]',
+          message: 'no existe repository:no-existe',
+        },
+      ],
+    });
+  });
+
+  it('expectedCounts cuenta todos los repositorios, también los ocultos', () => {
+    const d = cvData();
+    withRepos(repo({ id: 'a' }), repo({ url: 'https://github.com/octo-org/b', visible: false }))(d);
+    const parsed = parseSeedSource(d);
+    if (!parsed.ok) throw new Error('debe ser válido');
+    expect(expectedCounts(parsed.value, 5).FeaturedRepository).toBe(2);
+  });
+
+  it('refDisplayName usa el nombre del repositorio', () => {
+    const d = cvData();
+    withRepos(repo({ id: 'a' }))(d);
+    const parsed = parseSeedSource(d);
+    if (!parsed.ok) throw new Error('debe ser válido');
+    expect(refDisplayName('repository:a', parsed.value)).toBe('repository:reservas-api');
+    expect(refDisplayName('repository:zz', parsed.value)).toBeNull();
+  });
+});
+
 describe('referencias de overrides (D7)', () => {
   const sourceWith = (refs: Partial<Record<'includeRefs' | 'excludeRefs', string[]>>): Mutable => {
     const d = cvData();
@@ -267,13 +380,12 @@ describe('referencias de overrides (D7)', () => {
     const created: CreatedIds = {
       experience: new Map([['atlas', 'cuid-exp']]),
       project: new Map([['web', 'cuid-pro']]),
+      repository: new Map([['api', 'cuid-repo']]),
       skill: new Map([['Java', 'cuid-skill']]),
     };
-    expect(resolveRefs(['experience:atlas', 'project:web', 'skill:Java'], created)).toEqual([
-      'cuid-exp',
-      'cuid-pro',
-      'cuid-skill',
-    ]);
+    expect(
+      resolveRefs(['experience:atlas', 'project:web', 'repository:api', 'skill:Java'], created),
+    ).toEqual(['cuid-exp', 'cuid-pro', 'cuid-repo', 'cuid-skill']);
     expect(() => resolveRefs(['experience:otra'], created)).toThrow('Referencia sin resolver');
   });
 
@@ -353,6 +465,6 @@ describe('buildSyntheticViews (D8)', () => {
   });
 });
 
-it('el catálogo de secciones sigue siendo de 9 ids', () => {
-  expect(SECTION_IDS).toHaveLength(9);
+it('el catálogo de secciones es de 10 ids', () => {
+  expect(SECTION_IDS).toHaveLength(10);
 });

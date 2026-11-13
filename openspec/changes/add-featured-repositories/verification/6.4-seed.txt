@@ -1,0 +1,66 @@
+# seed:example sobre portfolio_repos_check vacía
+
+> portfolio-backend@0.1.0 seed:example
+> tsx scripts/seed.ts --file ../docs/examples/cv-data.example.json
+
+🛡️  Base descartable confirmada: localhost:5434/portfolio_repos_check
+🌱 Iniciando seed...
+🧹 Limpiando tablas...
+👤 Creando perfil base...
+💼 Creando 6 experiencias...
+🛠️  Creando 4 categorías de skills...
+🎓 Creando 3 registros de educación...
+📜 Creando 3 certificaciones...
+🚀 Creando 3 proyectos...
+🔗 Creando 4 enlaces sociales...
+📦 Creando 3 repositorios destacados...
+🎨 Creando 5 temas preset...
+⭐ Creando 8 perfiles curados...
+👁️  Creando 48 visitas de ejemplo para all...
+👁️  Creando 26 visitas de ejemplo para ejemplo-backend...
+👁️  Creando 11 visitas de ejemplo para ejemplo-secciones...
+👁️  Creando 14 visitas de ejemplo para ejemplo-archivado...
+👁️  Creando 6 visitas de ejemplo para ejemplo-protegido...
+✅ Seed completado con éxito.
+exit seed=0
+
+> portfolio-backend@0.1.0 seed:example:verify
+> tsx scripts/verify-seed.ts --file ../docs/examples/cv-data.example.json
+
+🔎 Verificación del seed (esperado ← D:\projects\portfolio-msaavedra\wt-repos\docs\examples\cv-data.example.json / actual ← DB)
+  ✅ Profile                  esperado=1  actual=1
+  ✅ Language                 esperado=3  actual=3
+  ✅ Experience               esperado=6  actual=6
+  ✅ SkillCategory            esperado=4  actual=4
+  ✅ Skill                    esperado=16  actual=16
+  ✅ Education                esperado=3  actual=3
+  ✅ Certification            esperado=3  actual=3
+  ✅ Project                  esperado=3  actual=3
+  ✅ SocialLink               esperado=4  actual=4
+  ✅ FeaturedRepository       esperado=3  actual=3
+  ✅ Theme                    esperado=5  actual=5
+  ✅ CuratedProfile           esperado=9  actual=9
+  ✅ CuratedProfileSlugAlias  esperado=1  actual=1
+  ✅ ProfileView              esperado=105  actual=105
+  ✅ Experience.role bilingüe (es/en) en Cobalto Ejemplo
+  ✅ Certification.verificationUrl/credentialId/expiresAt
+  ✅ Language.level de Español (fuente={"es":"Nativo","en":"Native"}, db={"en":"Native","es":"Nativo"})
+  ✅ Language.level de Inglés (fuente={"es":"Avanzado (C1)","en":"Advanced (C1)"}, db={"en":"Advanced (C1)","es":"Avanzado (C1)"})
+  ✅ Language.level de Portugués (fuente={"es":"Intermedio","en":"Intermediate"}, db={"en":"Intermediate","es":"Intermedio"})
+  ✅ ejemplo-backend          PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=#1A365D
+  ✅ ejemplo-overrides        PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=undefined
+  ✅ ejemplo-secciones        PUBLIC listed=true archivado=no layout=sidebar tema=elegant accent=#8a5a00
+  ✅ ejemplo-protegido        PROTECTED listed=false archivado=no layout=classic tema=modern-dark accent=undefined
+  ✅ ejemplo-borrador         PRIVATE listed=true archivado=no layout=classic tema=modern-dark accent=undefined
+  ✅ ejemplo-dirigido         PUBLIC listed=false archivado=no layout=classic tema=modern-dark accent=undefined
+  ✅ ejemplo-archivado        PUBLIC listed=true archivado=sí layout=classic tema=modern-dark accent=undefined
+  ✅ ejemplo-renombrado       PUBLIC listed=true archivado=no layout=classic tema=modern-dark accent=undefined
+✅ La base coincide con D:\projects\portfolio-msaavedra\wt-repos\docs\examples\cv-data.example.json.
+exit verify=0
+        name        | visible | order | stars 
+--------------------+---------+-------+-------
+ reservas-api       | t       |     0 |      
+ metricas-dashboard | t       |     1 |      
+ experimento-oculto | f       |     2 |      
+(3 rows)
+

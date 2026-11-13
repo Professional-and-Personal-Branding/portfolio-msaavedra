@@ -21,6 +21,8 @@ export default tseslint.config(
       parserOptions: {
         projectService: {
           allowDefaultProject: ['scripts/*.ts'],
+          // Los scripts de npm (`scripts/*.ts`) ya pasan de 8, el tope por defecto.
+          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 16,
         },
         tsconfigRootDir: import.meta.dirname,
       },

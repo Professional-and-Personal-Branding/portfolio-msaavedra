@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { makeAdminCuratedProfile } from '@/test/fixtures/admin';
+import { makeAdminCuratedProfile, makeAdminRepository } from '@/test/fixtures/admin';
 import type { AdminExperience, AdminProject, AdminSkillCategory } from '../shared/admin-types';
 import {
   allSections,
@@ -137,6 +137,13 @@ describe('tagUniverse', () => {
     expect(tagUniverse([], [], [], ['nuevo'])).toEqual(['nuevo']);
     expect(tagUniverse()).toEqual([]);
   });
+
+  it('suma los tags de los repositorios', () => {
+    expect(tagUniverse([], [], [], [], [makeAdminRepository({ tags: ['go', 'java'] })])).toEqual([
+      'go',
+      'java',
+    ]);
+  });
 });
 
 describe('moveSection', () => {
@@ -158,12 +165,13 @@ describe('allSections', () => {
     const result = allSections(['hero', 'skills']);
     expect(result.slice(0, 2)).toEqual(['hero', 'skills']);
     expect(result).toContain('projects');
+    expect(result).toContain('repositories');
     expect(result).toContain('presence');
     expect(new Set(result).size).toBe(result.length);
   });
 
-  it('ofrece las nueve secciones del catálogo', () => {
-    expect(allSections([])).toHaveLength(9);
+  it('ofrece las diez secciones del catálogo', () => {
+    expect(allSections([])).toHaveLength(10);
   });
 });
 
@@ -180,6 +188,6 @@ describe('toDraft', () => {
   });
 
   it('sin orden guardado arranca con el catálogo completo', () => {
-    expect(toDraft(makeAdminCuratedProfile({ sectionsOrder: [] })).sectionsOrder).toHaveLength(9);
+    expect(toDraft(makeAdminCuratedProfile({ sectionsOrder: [] })).sectionsOrder).toHaveLength(10);
   });
 });

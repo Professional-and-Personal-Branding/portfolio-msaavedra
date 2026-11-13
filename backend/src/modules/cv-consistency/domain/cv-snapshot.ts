@@ -80,6 +80,14 @@ export interface CvProjectSnapshot {
   readonly summary: LocalizedField;
 }
 
+export interface CvRepositorySnapshot {
+  readonly id: string;
+  readonly name: string;
+  readonly visible: boolean;
+  readonly tags: readonly string[];
+  readonly description: LocalizedField;
+}
+
 export interface CvSocialLinkSnapshot {
   readonly id: string;
   readonly platform: string;
@@ -111,6 +119,7 @@ export interface CvSnapshot {
   readonly education: readonly CvEducationSnapshot[];
   readonly certifications: readonly CvCertificationSnapshot[];
   readonly projects: readonly CvProjectSnapshot[];
+  readonly repositories: readonly CvRepositorySnapshot[];
   readonly socialLinks: readonly CvSocialLinkSnapshot[];
   readonly curatedProfiles: readonly CvCuratedProfileSnapshot[];
 }

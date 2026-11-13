@@ -3,7 +3,7 @@ import type { CvEntityType } from '../shared/admin-types';
 import { issueHref } from './issue-links';
 
 describe('issueHref (D12)', () => {
-  // Los diez tipos de entidad del contrato: si el backend suma uno, `Record` no compila.
+  // Los once tipos de entidad del contrato: si el backend suma uno, `Record` no compila.
   const expected: Record<CvEntityType, string> = {
     profile: '/admin/portada',
     language: '/admin/portada',
@@ -13,6 +13,7 @@ describe('issueHref (D12)', () => {
     education: '/admin/formacion?editar=abc',
     certification: '/admin/formacion?editar=abc',
     project: '/admin/proyectos?editar=abc',
+    repository: '/admin/proyectos?editar=abc',
     socialLink: '/admin/proyectos?editar=abc',
     curatedProfile: '/admin/perfiles/abc',
   };
@@ -21,8 +22,8 @@ describe('issueHref (D12)', () => {
     expect(issueHref(type, 'abc')).toBe(href);
   });
 
-  it('cubre los diez tipos', () => {
-    expect(Object.keys(expected)).toHaveLength(10);
+  it('cubre los once tipos', () => {
+    expect(Object.keys(expected)).toHaveLength(11);
   });
 
   it('codifica el id en la URL', () => {

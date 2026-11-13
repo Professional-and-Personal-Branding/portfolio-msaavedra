@@ -12,6 +12,7 @@ const MISSING_TRANSLATION_ENTITIES: MissingTranslationEntity[] = [
   'experience',
   'skillCategory',
   'project',
+  'repository',
   'education',
   'certification',
   'socialLink',

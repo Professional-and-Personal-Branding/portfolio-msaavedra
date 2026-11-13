@@ -81,7 +81,7 @@ El JSON tiene seis secciones:
 |---|---|---|
 | `profile` | Datos base: nombre, headline, contacto, summary, disponibilidad, idiomas | Header del portafolio |
 | `profile.socialLinks` | Enlaces a presencia pública (GitHub, YouTube, etc.) con descripción bilingüe | Sección "Presencia Pública" |
-| `profile.featuredRepositories` | **Curaduría manual** de repos a destacar (NO un dump del API de GitHub) | Sección "Código Destacado" |
+| `profile.featuredRepositories` | **Curaduría manual** de repos a destacar (NO un dump del API de GitHub) | Sección "Repositorios destacados" (desde 2 repos) |
 | `experiences` | Las 15 experiencias laborales con `tags` | Filtrado por perfil |
 | `skillCategories` | Skills agrupadas por categoría | Sección de competencias |
 | `education` | Formación académica | Sección educación |
@@ -235,24 +235,34 @@ Las dos entradas iniciales:
 - **github** — `manuXD270516`, `featured: true` → tarjeta protagonista en la sección.
 - **youtube** — canal técnico mixto, `featured: false` → tarjeta lateral discreta.
 
-### Repos destacados (`featuredRepositories`) — ⚠️ curaduría manual
+### Repos destacados (`featuredRepositories`) — curaduría manual
 
-> ⚠️ **Hoy es inerte:** la tabla `FeaturedRepository` se carga con el seed, pero ninguna sección, endpoint ni pantalla del panel la lee, así que activar un repo con `visible: true` no cambia el sitio. Lo que sigue describe la intención original (curaduría manual) por si se retoma.
+Desde el change `add-featured-repositories` los repos destacados **se muestran**: la sección **Repositorios destacados** (`repositories`, el décimo id del catálogo) va después de Proyectos, y se cargan desde el panel (**Proyectos, repositorios y enlaces → Repositorios destacados**) o desde `cv-data.json`.
 
-**Concepto clave:** esto NO es un dump automático del API de GitHub. Es una lista curada por Manuel de los repos profesionales recientes que quiere mostrar. Por defecto el JSON trae un placeholder con `visible: false` que el seed ignora.
+**Concepto clave:** esto NO es un dump automático del API de GitHub. Es una lista curada de los repos que querés mostrar, con su descripción bilingüe. Nada llama a GitHub: ni las *stars* ni los lenguajes se sincronizan (eso es un change posterior). `stars` se acepta en el archivo por compatibilidad y se ignora.
 
-Para activarlo:
+Reglas que conviene conocer:
+- **Solo GitHub**, con la forma exacta `https://github.com/<usuario>/<repositorio>` (sin `www.`, sin barra final, sin `.git`, sin query). Una URL de otro host o fuera de forma se rechaza, en el panel con «La URL tiene que ser https://github.com/<usuario>/<repositorio>» y en el seed con el campo `profile.featuredRepositories[i].url`.
+- **No se carga dos veces** el mismo `usuario/repositorio`, sin distinguir mayúsculas («Ese repositorio ya está cargado», 409 en la API; el seed rechaza el archivo).
+- **La sección necesita 2 o más repositorios** resueltos para el perfil: con 1, el dato viaja pero la sección no se muestra, ni en el sitio ni en el PDF ni en el JSON Resume. El constructor avisa «La sección Repositorios se muestra desde 2; este perfil resuelve 1».
+- Se filtran por `tags` como los proyectos (`filterTags`, `includeRefs` y `excludeRefs` con `repository:<id>`), y un repo con `visible: false` nunca entra, ni forzado.
+- En el PDF de una página van como **una línea** («Repositorios: a · b · c · y N más»), solo si la hoja tiene lugar; si no, se omite sin aviso. En el JSON Resume salen en `projects`, después de los proyectos, con `type: "repository"`.
+
+Para cargarlos desde el archivo:
 1. Editar `cv-data.json` → `profile.featuredRepositories`.
-2. Para cada repo a destacar, agregar entrada con `name`, `url`, `language`, `description` (bilingüe), `technologies`, `tags`, `visible: true`.
-3. `npm run seed`.
+2. Para cada repo, agregar `name`, `url`, `language` (opcional), `description` (bilingüe), `technologies`, `tags` y `visible`. Un `id` opcional (único) permite referenciarlo desde una plantilla como `repository:<id>`.
+3. `npm run cv:lint` y `npm run seed` (en una base vacía o con `--overwrite`, ver § 8).
 
-**¿Por qué curaduría manual?** Para evitar que aparezcan repos académicos antiguos (UPSA, materias) que diluyen el mensaje profesional. Mostrar 4-6 repos curados con descripción contextual rinde más que 67 repos sin filtro.
+`docs/cv-data.json` viene con `featuredRepositories: []`: cargá los tuyos desde el panel o ahí. El seed carga **todos** los repos del archivo, también los ocultos (`visible: false`), con `order` según su posición.
+
+**¿Por qué curaduría manual?** Para evitar que aparezcan repos académicos antiguos que diluyen el mensaje profesional. Mostrar 3-6 repos curados con descripción contextual rinde más que 67 repos sin filtro.
 
 Ejemplo de entrada bien armada:
 ```jsonc
 {
+  "id": "portfolio-web",
   "name": "portfolio-web",
-  "url": "https://github.com/manuXD270516/portfolio-web",
+  "url": "https://github.com/tu-usuario/portfolio-web",
   "language": "TypeScript",
   "description": {
     "es": "Portafolio administrable con perfiles curados, NestJS + Clean Architecture, React + Vite, sistema de theming con design tokens.",
@@ -260,10 +270,11 @@ Ejemplo de entrada bien armada:
   },
   "technologies": ["NestJS","React","Vite","Prisma","PostgreSQL"],
   "tags": ["fullstack","nodejs","nestjs","ai-engineer"],
-  "stars": 0,
   "visible": true
 }
 ```
+
+El ejemplo (`docs/examples/cv-data.example.json`) trae tres repositorios ficticios bajo la cuenta `portafolio-ejemplo-ficticio` de GitHub; esa cuenta podría existir en algún momento, así que los enlaces del ejemplo no se siguen para verificar nada.
 
 ---
 
@@ -388,9 +399,9 @@ En `LocalizedText`, `es` es obligatorio y `en` puede faltar (la plataforma cae a
 | `availability.startDate` | LocalizedText | Sí | `"A convenir"` | Contacto | Portada → Fecha de inicio |
 | `languages` | lista | Sí (puede ser `[]`) | ver 12.2 | Contacto | Portada → Idiomas |
 | `socialLinks` | lista | No (`[]`) | ver 12.9 | Presencia | Proyectos y enlaces |
-| `featuredRepositories` | lista | No (`[]`) | `[]` | **Nada**: ninguna sección los muestra | Solo en el seed |
+| `featuredRepositories` | lista | No (`[]`) | `[]` | Repositorios destacados (ver 12.10) | Proyectos, repositorios y enlaces → Repositorios destacados |
 
-> `featuredRepositories` es **inerte**: la tabla existe y el seed la carga, pero ninguna sección ni endpoint la lee. El ejemplo no le carga filas visibles.
+> `featuredRepositories` se muestra desde el change `add-featured-repositories` (§ 10): la sección necesita 2 o más repositorios resueltos. `docs/cv-data.json` la trae vacía; el ejemplo trae tres.
 
 ### 12.2 `profile.languages[]`
 
@@ -483,12 +494,12 @@ Cada plantilla crea un perfil curado. Además de las plantillas, el seed crea si
 | `roleType` | LocalizedText | No | `"Backend"` | Agrupa el menú por tipo de rol | Identidad → Tipo de rol |
 | `techFocus` | texto | No | `"Java"` | Etiqueta del menú | Identidad → Tecnología destacada |
 | `filterTags` | lista de texto | Sí (`[]` = todo) | `["java","microservices"]` | Qué experiencias, skills y proyectos entran | Selección → Tags de filtrado |
-| `includeRefs` | lista de referencias | No (`[]`) | `["experience:brujula","project:herramienta-interna"]` | Fuerza la inclusión (solo ítems visibles) | Selección → **Incluir** en cada experiencia, skill (agrupadas por categoría, con buscador) y proyecto; los ocultos no se pueden incluir |
-| `excludeRefs` | lista de referencias | No (`[]`) | `["experience:atlas","skill:Kotlin"]` | Fuerza la exclusión; siempre gana | Selección → **Excluir** en cada experiencia, skill y proyecto; **Incluir** y **Excluir** se apagan entre sí |
+| `includeRefs` | lista de referencias | No (`[]`) | `["experience:brujula","project:herramienta-interna","repository:experimento-oculto"]` | Fuerza la inclusión (solo ítems visibles) | Selección → **Incluir** en cada experiencia, skill (agrupadas por categoría, con buscador), proyecto y repositorio; los ocultos no se pueden incluir |
+| `excludeRefs` | lista de referencias | No (`[]`) | `["experience:atlas","skill:Kotlin"]` | Fuerza la exclusión; siempre gana | Selección → **Excluir** en cada experiencia, skill, proyecto y repositorio; **Incluir** y **Excluir** se apagan entre sí |
 | `themeOverrides` | objeto parcial de tokens | No | `{ "colors": { "accent": "#1A365D" } }` | Colores, tipografía y radio propios | Diseño → customizador |
 | `theme` | slug de preset | No (`modern-dark`) | `"elegant"` | Tema base | Diseño → Tema |
 | `layout` | `classic` \| `sidebar` | No (`classic`) | `"sidebar"` | Estructura de la página | Diseño → Layout |
-| `sectionsOrder` | ids del catálogo, sin repetir | No (las 9 en orden canónico) | `["hero","skills","experience",…]` | Orden de las secciones | Diseño → Secciones |
+| `sectionsOrder` | ids del catálogo, sin repetir | No (las 10 en orden canónico) | `["hero","skills","experience",…]` | Orden de las secciones | Diseño → Secciones |
 | `sectionsHidden` | ids del catálogo | No (`[]`) | `["stats","presence"]` | Secciones ocultas | Diseño → Secciones (ocultar) |
 | `visibility` | `PUBLIC` \| `PROTECTED` \| `PRIVATE` | No (`PUBLIC`) | `"PROTECTED"` | Quién lo abre: PROTECTED pide token (401), PRIVATE da 404 | Publicación → Visibilidad |
 | `accessToken` | texto | **Sí si `PROTECTED`**; si no, ninguno | `"ejemplo-token-2026"` | `X-Access-Token` o `?token=` | Publicación → Token de acceso |
@@ -496,9 +507,9 @@ Cada plantilla crea un perfil curado. Además de las plantillas, el seed crea si
 | `archived` | booleano | No (`false`) | `true` | Archivado: 404 para todos, conserva la analítica | Publicación → Archivar / Desarchivar |
 | `slugAliases` | lista de kebab-case | No (ninguno) | `["ejemplo-nombre-anterior"]` | El slug viejo sigue resolviendo | Identidad → Slug (al cambiarlo, el viejo queda como alias) |
 
-Reglas que valida el seed: los ids de sección deben existir en el catálogo (`hero, stats, experience, skills, projects, education, certifications, presence, contact`); los alias no pueden repetir un slug ni otro alias; una referencia que no existe, o una `skill:` repetida en dos categorías, rechaza el archivo. Una referencia a un ítem con `visible: false` es válida: se guarda, pero el resolvedor la ignora.
+Reglas que valida el seed: los ids de sección deben existir en el catálogo (`hero, stats, experience, skills, projects, repositories, education, certifications, presence, contact`); los alias no pueden repetir un slug ni otro alias; una referencia que no existe, o una `skill:` repetida en dos categorías, rechaza el archivo. Una referencia a un ítem con `visible: false` es válida: se guarda, pero el resolvedor la ignora.
 
-**Referencias** (`includeRefs`, `excludeRefs`): `experience:<id>` y `project:<id>` usan el `id` del JSON; `skill:<nombre>` usa el nombre de la skill. El seed las traduce al id que genera la base y las guarda en `includeIds`/`excludeIds`.
+**Referencias** (`includeRefs`, `excludeRefs`): `experience:<id>`, `project:<id>` y `repository:<id>` usan el `id` del JSON (el de un repositorio es opcional y solo hace falta si alguna plantilla lo referencia); `skill:<nombre>` usa el nombre de la skill. El seed las traduce al id que genera la base y las guarda en `includeIds`/`excludeIds`.
 
 ### 12.9 `profile.socialLinks[]`
 
@@ -513,9 +524,21 @@ Reglas que valida el seed: los ids de sección deben existir en el catálogo (`h
 | `featured` | booleano | Sí | `true` | Tarjeta protagonista vs. lateral | Destacado |
 | `visible` | booleano | Sí | `false` | Oculto: solo en el panel | Visible en el portafolio |
 
-### 12.10 `featuredRepositories[]`
+### 12.10 `featuredRepositories[]` (dentro de `profile`)
 
-Inerte (ver 12.1). Campos: `name`, `url`, `language`, `description` (LocalizedText), `tags`, `technologies`, `stars`, `visible`. Sin pantalla del panel y sin sección que los muestre.
+Se muestran en la sección **Repositorios destacados**, que aparece desde 2 repos resueltos por perfil (ver § 10).
+
+| Campo | Tipo | Obligatorio / defecto | Ejemplo | Dónde se ve | Panel |
+|---|---|---|---|---|---|
+| `id` | texto único | No (solo hace falta si una plantilla lo referencia) | `"experimento-oculto"` | No se ve: clave de `repository:<id>` | Solo en el seed |
+| `name` | texto (1 a 100) | Sí | `"reservas-api"` | Repositorios destacados (nombre enlazado) y la línea del PDF | Proyectos, repositorios y enlaces → Repositorios → Nombre (se propone desde la URL) |
+| `url` | `https://github.com/<usuario>/<repositorio>`, sin repetir | Sí | `"https://github.com/portafolio-ejemplo-ficticio/reservas-api"` | Enlace del nombre (en pestaña nueva) | URL de GitHub |
+| `language` | texto (hasta 40) | No (`null`) | `"Java"` | Repositorios destacados (etiqueta del lenguaje) | Lenguaje |
+| `description` | LocalizedText | Sí | `"API de reservas con Spring Boot…"` | Repositorios destacados | Descripción (ES/EN) |
+| `technologies` | lista de texto | No (`[]`) | `["Spring Boot","PostgreSQL"]` | Repositorios destacados (chips) y `keywords` del JSON Resume | Tecnologías |
+| `tags` | lista de texto | Sí | `["java","microservices"]` | No se ve: filtra por perfil | Tags |
+| `visible` | booleano | Sí | `false` | Oculto: solo en el panel; nunca entra en un perfil | Visible en el sitio |
+| `stars` | número | No | `12` | **Ignorado**: se acepta por compatibilidad con archivos anteriores y la columna queda nula | No se edita |
 
 ### 12.11 `exampleViews[]` (solo el ejemplo)
 

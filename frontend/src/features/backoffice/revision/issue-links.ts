@@ -20,6 +20,7 @@ export function issueHref(entityType: CvEntityType, entityId: string): string {
     case 'certification':
       return `/admin/formacion?${EDIT_PARAM}=${id}`;
     case 'project':
+    case 'repository':
     case 'socialLink':
       return `/admin/proyectos?${EDIT_PARAM}=${id}`;
     case 'curatedProfile':

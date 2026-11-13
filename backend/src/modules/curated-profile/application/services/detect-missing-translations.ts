@@ -1,6 +1,7 @@
 import { Locale, LocalizedField, isMissingTranslation } from '../../../../shared/domain/i18n';
 import { Certification } from '../../../education/domain/entities/certification.entity';
 import { Education } from '../../../education/domain/entities/education.entity';
+import { FeaturedRepository } from '../../../featured-repository/domain/entities/featured-repository.entity';
 import { Experience } from '../../../experience/domain/entities/experience.entity';
 import { Profile } from '../../../profile/domain/entities/profile.entity';
 import { Project } from '../../../project/domain/entities/project.entity';
@@ -14,6 +15,7 @@ export type MissingTranslationEntity =
   | 'experience'
   | 'skillCategory'
   | 'project'
+  | 'repository'
   | 'education'
   | 'certification'
   | 'socialLink'
@@ -39,6 +41,7 @@ export interface MissingTranslationsInput {
   experiences: readonly Experience[];
   skillCategories: readonly SkillCategory[];
   projects: readonly Project[];
+  repositories: readonly FeaturedRepository[];
   education: readonly Education[];
   certifications: readonly Certification[];
   socialLinks: readonly SocialLink[];
@@ -53,6 +56,7 @@ export interface MissingTranslationsInput {
  * - experience: role, summary, highlights
  * - skillCategory: name
  * - project: role, summary
+ * - repository: description
  * - education: degree
  * - certification: name
  * - socialLink: label, description
@@ -96,6 +100,7 @@ export function detectMissingTranslations(input: MissingTranslationsInput): Miss
   }
   for (const c of input.skillCategories) check('skillCategory', c.id, { name: c.name });
   for (const p of input.projects) check('project', p.id, { role: p.role, summary: p.summary });
+  for (const r of input.repositories) check('repository', r.id, { description: r.description });
   for (const e of input.education) check('education', e.id, { degree: e.degree });
   for (const c of input.certifications) check('certification', c.id, { name: c.name });
   for (const s of input.socialLinks) {

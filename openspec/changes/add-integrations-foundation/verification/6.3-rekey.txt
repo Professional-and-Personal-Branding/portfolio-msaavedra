@@ -1,0 +1,21 @@
+$ npm run integrations:rekey   (base portfolio_integ_check, claves generadas al azar; clave activa k2)
+Base: localhost:5434/portfolio_integ_check
+Clave activa: k2
+Credenciales guardadas: 2 (0 ya con la clave activa)
+2 filas para recifrar (k1: 2): rk-dos, rk-uno
+Simulación: no se escribió nada. Usá -- --apply.
+
+$ npm run integrations:rekey -- --apply
+Base: localhost:5434/portfolio_integ_check
+Clave activa: k2
+Credenciales guardadas: 2 (0 ya con la clave activa)
+2 filas para recifrar (k1: 2): rk-dos, rk-uno
+Recifradas: 2
+
+$ npm run integrations:rekey -- --apply   (segunda corrida)
+Base: localhost:5434/portfolio_integ_check
+Clave activa: k2
+Credenciales guardadas: 2 (2 ya con la clave activa)
+0 filas para recifrar
+Recifradas: 0
+(salida 0 en las tres; la fila con clave fuera del keyring y salida 2 se cubre en test/integrations-rekey.e2e-spec.ts)

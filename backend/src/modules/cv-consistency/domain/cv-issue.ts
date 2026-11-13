@@ -41,6 +41,7 @@ export const CV_ENTITY_TYPES = [
   'education',
   'certification',
   'project',
+  'repository',
   'socialLink',
   'curatedProfile',
 ] as const;

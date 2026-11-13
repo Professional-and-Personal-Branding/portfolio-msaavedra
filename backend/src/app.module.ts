@@ -10,11 +10,13 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CvConsistencyModule } from './modules/cv-consistency/cv-consistency.module';
 import { CuratedProfileModule } from './modules/curated-profile/curated-profile.module';
 import { EducationModule } from './modules/education/education.module';
+import { FeaturedRepositoryModule } from './modules/featured-repository/featured-repository.module';
 import { ProjectModule } from './modules/project/project.module';
 import { SocialLinkModule } from './modules/social-link/social-link.module';
 import { ExperienceModule } from './modules/experience/experience.module';
 import { JobPostingModule } from './modules/job-posting/job-posting.module';
 import { HealthModule } from './modules/health/health.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { AllExceptionsFilter } from './shared/infrastructure/http/all-exceptions.filter';
 import { buildLoggerOptions } from './shared/infrastructure/http/logger.options';
@@ -56,10 +58,12 @@ import { PrismaModule } from './shared/infrastructure/persistence/prisma.module'
     AnalyticsModule,
     EducationModule,
     ProjectModule,
+    FeaturedRepositoryModule,
     SocialLinkModule,
     ApplicationTrackingModule,
     CvConsistencyModule,
     JobPostingModule,
+    IntegrationsModule,
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: ContentLanguageInterceptor },

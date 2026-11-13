@@ -11,6 +11,7 @@ const ALL_SECTIONS = [
   'experience',
   'skills',
   'projects',
+  'repositories',
   'education',
   'certifications',
   'presence',
@@ -107,6 +108,7 @@ function view(overrides: Partial<CuratedProfileOutput> = {}): CuratedProfileOutp
         order: 1,
       },
     ],
+    repositories: [],
     education: [
       {
         id: 'ed1',
@@ -310,6 +312,111 @@ describe('toJsonResume', () => {
       view({ sections: ['hero', 'experience'], hiddenSections: ['projects', 'skills'] }),
     );
     expect(keysOf(document)).toEqual(['$schema', 'basics', 'work', 'meta']);
+  });
+
+  describe('repositorios destacados como proyectos (change add-featured-repositories, D10)', () => {
+    const repo = (
+      id: string,
+      overrides: Partial<CuratedProfileOutput['repositories'][number]> = {},
+    ): CuratedProfileOutput['repositories'][number] => ({
+      id,
+      name: `repo-${id}`,
+      url: `https://github.com/octo-org/repo-${id}`,
+      language: 'Java',
+      description: `Descripción ${id}`,
+      technologies: ['Spring Boot', 'PostgreSQL'],
+      tags: ['java'],
+      order: 0,
+      ...overrides,
+    });
+    const TWO = [repo('a'), repo('b', { language: null, technologies: ['Go'] })];
+
+    it('van después de los proyectos con type repository, sin fechas ni roles', () => {
+      const document = mapAndValidate(view({ repositories: TWO }));
+      expect(document.projects).toHaveLength(4);
+      expect(document.projects?.slice(0, 2).map((p) => p.name)).toEqual([
+        'Portafolio',
+        'Herramienta interna',
+      ]);
+      expect(document.projects?.slice(2)).toEqual([
+        {
+          name: 'repo-a',
+          description: 'Descripción a',
+          keywords: ['Java', 'Spring Boot', 'PostgreSQL'],
+          url: 'https://github.com/octo-org/repo-a',
+          type: 'repository',
+        },
+        {
+          name: 'repo-b',
+          description: 'Descripción b',
+          keywords: ['Go'],
+          url: 'https://github.com/octo-org/repo-b',
+          type: 'repository',
+        },
+      ]);
+    });
+
+    it('el lenguaje que ya está en las tecnologías no se repite ni se mueve', () => {
+      const document = mapAndValidate(
+        view({
+          projects: [],
+          repositories: [
+            repo('a', { language: 'java', technologies: ['Spring Boot', 'Java'] }),
+            repo('b'),
+          ],
+        }),
+      );
+      expect(document.projects?.[0].keywords).toEqual(['Spring Boot', 'Java']);
+    });
+
+    it('con projects oculta y repositories visible, projects trae solo los repos', () => {
+      const document = mapAndValidate(
+        view({
+          repositories: TWO,
+          sections: ALL_SECTIONS.filter((id) => id !== 'projects'),
+          hiddenSections: ['projects'],
+        }),
+      );
+      expect(document.projects?.map((p) => p.type)).toEqual(['repository', 'repository']);
+    });
+
+    it('con 1 repo la sección no está en sections: no se exportan', () => {
+      const document = mapAndValidate(
+        view({
+          repositories: [repo('a')],
+          sections: ALL_SECTIONS.filter((id) => id !== 'repositories'),
+        }),
+      );
+      expect(document.projects?.map((p) => p.name)).toEqual(['Portafolio', 'Herramienta interna']);
+    });
+
+    it('con repositories oculta no se exportan aunque haya datos', () => {
+      const document = mapAndValidate(
+        view({
+          repositories: TWO,
+          sections: ALL_SECTIONS.filter((id) => id !== 'repositories'),
+          hiddenSections: ['repositories'],
+        }),
+      );
+      expect(document.projects?.some((p) => p.type === 'repository')).toBe(false);
+    });
+
+    it('ninguna de las dos secciones: la clave projects no sale', () => {
+      const document = mapAndValidate(
+        view({
+          repositories: TWO,
+          sections: ['hero', 'experience'],
+        }),
+      );
+      expect(document).not.toHaveProperty('projects');
+    });
+
+    it('no viajan stars, tags ni el lenguaje como campo propio', () => {
+      const serialized = JSON.stringify(
+        toJsonResume(view({ repositories: TWO }), CTX).projects?.slice(2),
+      );
+      expect(serialized).not.toMatch(/stars|tags|language|visible/);
+    });
   });
 
   it('una sección sin datos no deja su clave', () => {

@@ -15,6 +15,9 @@
  * `admin-login-error` (el POST del login se responde 401 desde el navegador, sin tocar la API) y,
  * con panel, `admin-experiencias-error` («Guardar» vacío: validación del cliente, sin POST) y
  * `admin-postulaciones-error` (lo mismo con «Nueva postulación», change `add-application-tracking`).
+ * `admin-integraciones-error` (change `add-integrations-foundation`) pulsa «Guardar» con la credencial
+ * vacía; solo hay formulario si la API tiene un proveedor cuya credencial no viene de una variable de
+ * entorno: sin él (p. ej. producción, sin proveedores) la entrada audita la pantalla tal cual está.
  * `admin-desde-vacante-error` es el formulario de «Crear desde una vacante» enviado vacío (validación
  * del cliente, sin ningún POST; change `add-job-posting-intake`).
  * Con A11Y_CHECK_ADMIN_EMAIL y A11Y_CHECK_ADMIN_PASSWORD también audita el panel: la sesión
@@ -365,6 +368,32 @@ function dialogErrorEntry(openLabel) {
 }
 
 /**
+ * Pantalla Integraciones con el error de credencial vacía a la vista: «Guardar» sin escribir
+ * valida en el cliente y no sale ninguna escritura a /api/admin/. Si no hay formulario (la
+ * credencial viene de una variable de entorno o no hay proveedores) no hay error que provocar.
+ */
+function credentialErrorEntry() {
+  return {
+    async setup(page) {
+      page.adminPosts = 0;
+      page.on('request', (request) => {
+        if (request.method() !== 'GET' && request.url().includes('/api/admin/')) page.adminPosts++;
+      });
+    },
+    async prepare(page) {
+      const form = await waitFor(page, () => document.querySelector('input[id^="credential-"]'));
+      if (!form) return [];
+      if (!(await clickButton(page, 'Guardar'))) return ['no hay botón «Guardar»'];
+      const seen = await waitFor(page, () => document.querySelector('form [role="alert"]'));
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const problems = seen ? [] : ['no apareció el error de la credencial vacía'];
+      if (page.adminPosts !== 0) problems.push(`salieron ${page.adminPosts} escrituras a /api/admin/`);
+      return problems;
+    },
+  };
+}
+
+/**
  * Entradas con un mensaje de error a la vista (change `fix-error-contrast-and-date-modified`, D4):
  * `setup(page)` corre antes de navegar y `prepare(page)` después de `settle` y antes de axe;
  * devuelve la lista de problemas (vacía si el mensaje esperado apareció).
@@ -401,6 +430,7 @@ const ERROR_ENTRIES = {
   // ningún POST a /api/admin/ (se cuenta).
   'admin-experiencias-error': dialogErrorEntry('Nueva experiencia'),
   'admin-postulaciones-error': dialogErrorEntry('Nueva postulación'),
+  'admin-integraciones-error': credentialErrorEntry(),
   // Crear desde una vacante: «Analizar vacante» con la URL vacía valida en el cliente y no sale
   // ningún POST (no hay importación ni red).
   'admin-desde-vacante-error': {
@@ -597,6 +627,9 @@ if (ADMIN_EMAIL && ADMIN_PASSWORD) {
       : []),
     ['admin-desde-vacante-error', '/admin/perfiles/desde-vacante'],
     ['admin-revision', '/admin/revision'],
+    // Sin ítem en la barra (D25): se audita por su URL.
+    ['admin-integraciones', '/admin/integraciones'],
+    ['admin-integraciones-error', '/admin/integraciones'],
     ...(first?.id ? [['admin-builder', `/admin/perfiles/${first.id}`]] : []),
   ].map(([id, path]) => ({ id, path, keyboard: id === 'admin' || id === 'admin-builder' }));
   for (const viewport of Object.keys(VIEWPORTS)) {

@@ -1,0 +1,1 @@
+Base del owner: no se le aplicó la migración ni se le escribió; todo corrió con bases descartables propias (portfolio_integ_e2e y portfolio_integ_check), ya borradas (consulta a pg_database sin resultados). backend/.env del worktree borrado. Puertos propios 3358/8158 y 3364 (e2e) liberados.

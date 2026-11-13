@@ -218,8 +218,9 @@ async function writeSeed(
   const created: {
     experience: Map<string, string>;
     project: Map<string, string>;
+    repository: Map<string, string>;
     skill: Map<string, string>;
-  } = { experience: new Map(), project: new Map(), skill: new Map() };
+  } = { experience: new Map(), project: new Map(), repository: new Map(), skill: new Map() };
 
   // ── Experiences (orden cronológico inverso por índice del array) ──
   log(`💼 Creando ${data.experiences.length} experiencias...`);
@@ -343,11 +344,12 @@ async function writeSeed(
   }
 
   // ── Featured repositories (curaduría manual) ──
-  const repos = (data.profile.featuredRepositories ?? []).filter((r) => r.visible);
+  // Todos, también los ocultos (como proyectos), con `order` = posición. `stars` se ignora.
+  const repos = data.profile.featuredRepositories ?? [];
   log(`📦 Creando ${repos.length} repositorios destacados...`);
   for (let i = 0; i < repos.length; i++) {
     const r = repos[i];
-    await prisma.featuredRepository.create({
+    const row = await prisma.featuredRepository.create({
       data: {
         name: r.name,
         url: r.url,
@@ -355,11 +357,11 @@ async function writeSeed(
         description: r.description,
         tags: r.tags,
         technologies: r.technologies ?? [],
-        stars: r.stars ?? null,
         order: i,
         visible: r.visible,
       },
     });
+    if (r.id !== undefined) created.repository.set(r.id, row.id);
   }
 
   // ── Themes (presets) ──

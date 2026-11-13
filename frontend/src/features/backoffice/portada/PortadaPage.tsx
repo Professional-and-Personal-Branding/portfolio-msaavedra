@@ -225,6 +225,7 @@ function heroData(profile: ProfilePreview): CuratedProfile {
     experiences: [],
     skillCategories: [],
     projects: [],
+    repositories: [],
     education: [],
     certifications: [],
     socialLinks: [],

@@ -61,6 +61,8 @@ export interface JsonResumeProject {
   startDate?: string;
   endDate?: string;
   url?: string;
+  /** `repository` para los repositorios destacados (change `add-featured-repositories`, D10). */
+  type?: string;
 }
 
 export interface JsonResumeMeta {
