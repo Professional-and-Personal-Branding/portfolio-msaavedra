@@ -1,0 +1,9 @@
+{
+  "_nota": "forma supuesta: reconfirmar en add-ai-foundation",
+  "type": "error",
+  "error": {
+    "type": "rate_limit_error",
+    "message": "You have reached your specified API usage limits.",
+    "details": { "error_code": "enforced_spend_limit_reached" }
+  }
+}

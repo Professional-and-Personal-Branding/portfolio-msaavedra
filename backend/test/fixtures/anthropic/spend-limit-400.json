@@ -1,0 +1,8 @@
+{
+  "_nota": "forma supuesta: reconfirmar en add-ai-foundation",
+  "type": "error",
+  "error": {
+    "type": "invalid_request_error",
+    "message": "Your credit balance is too low or you have reached the workspace spend limit."
+  }
+}

@@ -266,3 +266,16 @@ describe('AccountPage', () => {
     expect(await screen.findByText('Escribí tu contraseña actual')).toBeInTheDocument();
   });
 });
+
+// add-integrations-foundation (D25): la pantalla Integraciones se alcanza desde Cuenta.
+describe('AccountPage — acceso a Integraciones', () => {
+  it('muestra un bloque «Integraciones» con un enlace a /admin/integraciones', async () => {
+    await openAccount();
+
+    const block = screen.getByRole('region', { name: 'Integraciones' });
+    expect(within(block).getByRole('link', { name: 'Integraciones' })).toHaveAttribute(
+      'href',
+      '/admin/integraciones',
+    );
+  });
+});

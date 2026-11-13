@@ -29,6 +29,8 @@ describe('AdminShell', () => {
       'Postulaciones',
       'Revisión',
     ]);
+    // D25 de `add-integrations-foundation`: Integraciones no suma un ítem a la barra.
+    expect(within(nav!).queryByRole('link', { name: 'Integraciones' })).toBeNull();
     expect(within(nav!).getByRole('link', { name: 'Revisión' })).toHaveAttribute(
       'href',
       '/admin/revision',

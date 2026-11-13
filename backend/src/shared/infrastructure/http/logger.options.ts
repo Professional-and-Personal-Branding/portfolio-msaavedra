@@ -19,6 +19,12 @@ export const REDACTED_PATHS = [
   'accessToken',
   'currentPassword',
   'newPassword',
+  // Credenciales de integraciones (change `add-integrations-foundation`, D16).
+  'req.body.secret',
+  'secret',
+  'ciphertext',
+  'credential',
+  'token',
 ];
 
 const TOKEN_QUERY = /([?&]token=)[^&]*/gi;

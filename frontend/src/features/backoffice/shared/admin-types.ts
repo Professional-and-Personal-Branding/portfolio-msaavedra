@@ -55,6 +55,12 @@ export type CvIssue = Schemas['CvIssueResponse'];
 export type CvSeverity = Schemas['CvSeverity'];
 export type CvEntityType = Schemas['CvEntityType'];
 
+// add-integrations-foundation: estado de las integraciones con terceros.
+export type IntegrationsOverview = Schemas['IntegrationsOverviewResponse'];
+export type IntegrationStatus = Schemas['IntegrationStatusResponse'];
+export type EnqueueSyncResult = Schemas['EnqueueSyncResponse'];
+export type SyncRunOutcome = Schemas['SyncRunOutcome'];
+
 export type AdminTheme = Schemas['ThemeResponse'];
 export type ProfileViews = Schemas['ProfileViewsResponse'];
 export type Visibility = AdminCuratedProfile['visibility'];

@@ -368,3 +368,108 @@ model AdminUser {
   /// Versión de sesión: el JWT lleva `sv` y solo vale si coincide. Cambiar la contraseña la incrementa.
   sessionVersion Int @default(0)
 }
+
+// ─────────────────────────────────────────────────────────────
+// INTEGRACIONES (change add-integrations-foundation): cola, estado por proveedor,
+// credenciales cifradas, snapshots y arriendo del ejecutor. Sin FK hacia tablas existentes.
+// ─────────────────────────────────────────────────────────────
+enum IntegrationJobStatus {
+  PENDING
+  RUNNING
+  DONE
+  FAILED
+  DEAD
+}
+
+enum SyncRunOutcome {
+  SUCCESS
+  FAILED
+  DEAD
+  INTERRUPTED
+  TIMEOUT
+}
+
+/// Una fila por proveedor: kill switch, pausa y breaker (D10). Se crea al primer uso.
+model IntegrationSetting {
+  provider            String    @id
+  enabled             Boolean   @default(true)
+  pausedUntil         DateTime?
+  pauseReason         String?
+  consecutiveFailures Int       @default(0)
+  lastSuccessAt       DateTime?
+  enabledSince        DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+/// Secreto del proveedor cifrado con AES-256-GCM (D12). Nunca se devuelve por la API.
+model IntegrationCredential {
+  provider   String   @id
+  ciphertext String
+  keyId      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+/// Cola de trabajos (D7). `idempotencyKey` único: encolar dos veces lo mismo deja una fila. Además, un índice
+/// único PARCIAL (solo en la migración) limita a un trabajo activo por (provider, kind).
+model IntegrationJob {
+  id             String               @id @default(cuid())
+  provider       String
+  kind           String
+  idempotencyKey String               @unique
+  payload        Json
+  status         IntegrationJobStatus @default(PENDING)
+  attempts       Int                  @default(0)
+  maxAttempts    Int                  @default(8)
+  runAt          DateTime             @default(now())
+  lockedBy       String?
+  lockedUntil    DateTime?
+  lastErrorClass String?
+  lastError      String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  finishedAt     DateTime?
+  runs           SyncRun[]
+
+  @@index([status, runAt])
+  @@index([provider, status])
+}
+
+/// Un intento de un trabajo (D16).
+model SyncRun {
+  id           String         @id @default(cuid())
+  job          IntegrationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId        String
+  provider     String
+  startedAt    DateTime       @default(now())
+  finishedAt   DateTime?
+  outcome      SyncRunOutcome?
+  errorClass   String?
+  errorMessage String?
+  itemsChanged Int            @default(0)
+  durationMs   Int?
+
+  @@index([provider, startedAt(sort: Desc)])
+  @@index([jobId])
+}
+
+/// Último cuerpo traído de un recurso externo (D15).
+model ExternalSnapshot {
+  id          String   @id @default(cuid())
+  provider    String
+  resourceKey String
+  etag        String?
+  contentHash String
+  body        Json
+  fetchedAt   DateTime @default(now())
+  changedAt   DateTime @default(now())
+
+  @@unique([provider, resourceKey])
+}
+
+/// Arriendo del ejecutor (D4): una sola fila, `id = 'runner'`, creada por la migración.
+model IntegrationRunnerLease {
+  id        String   @id
+  holder    String
+  expiresAt DateTime
+}

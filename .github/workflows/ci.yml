@@ -99,6 +99,9 @@ jobs:
       - run: npm run prisma:deploy
       - run: npm run seed
       - run: npm run seed:verify
+      # `integrations-env.e2e-spec.ts` arranca `node dist/main` como proceso hijo (change
+      # `add-integrations-foundation`): hace falta el build antes de los e2e.
+      - run: npm run build
       - run: npm run test:e2e
       # Seed por defecto (change `protect-default-seed`): la base ya tiene el CV, así que un
       # segundo `npm run seed` debe negarse (código 2) sin escribir; `--overwrite` recarga y

@@ -1,3 +1,4 @@
+import { parseEnabledProviders } from '../modules/integrations/domain/provider-catalog';
 import { EnvironmentVariables, expiresInToSeconds, NodeEnv, validateEnv } from './env.validation';
 
 export interface JwtConfig {
@@ -17,6 +18,21 @@ export interface ThrottleConfig {
   loginLimit: number;
 }
 
+/** Integraciones con terceros (change `add-integrations-foundation`). Todo apagado por defecto. */
+export interface IntegrationsConfig {
+  /** Ids de `INTEGRATIONS_ENABLED`, ya validados contra el catálogo. */
+  enabledProviders: string[];
+  /** `true` solo si este proceso debe registrar los timers (D2). */
+  schedulerEnabled: boolean;
+  syncCron: string;
+  tickSeconds: number;
+  jobTimeoutMs: number;
+  runMaxMs: number;
+  /** Keyring crudo (`k1:<base64>,…`): lo parsea `Keyring`; nunca se loguea. */
+  keys: string | undefined;
+  activeKeyId: string | undefined;
+}
+
 export interface AppConfig {
   databaseUrl: string;
   port: number;
@@ -30,6 +46,7 @@ export interface AppConfig {
   logLevel: string;
   /** `SameSite` de la cookie de sesión (spec `api-security-headers`). */
   sessionCookieSameSite: 'lax' | 'strict' | 'none';
+  integrations: IntegrationsConfig;
 }
 
 /** Namespace bajo el que ConfigService expone la configuración tipada. */
@@ -58,6 +75,16 @@ export function loadConfiguration(): { [APP_CONFIG]: AppConfig } {
       logLevel: env.LOG_LEVEL ?? (env.NODE_ENV === NodeEnv.Production ? 'info' : 'debug'),
       // Por defecto `lax`: sirve para el desarrollo y para un despliegue en el mismo sitio.
       sessionCookieSameSite: env.SESSION_COOKIE_SAMESITE ?? 'lax',
+      integrations: {
+        enabledProviders: parseEnabledProviders(env.INTEGRATIONS_ENABLED),
+        schedulerEnabled: env.INTEGRATIONS_SCHEDULER_ENABLED === 'true',
+        syncCron: env.INTEGRATIONS_SYNC_CRON,
+        tickSeconds: env.INTEGRATIONS_TICK_SECONDS,
+        jobTimeoutMs: env.INTEGRATIONS_JOB_TIMEOUT_MS,
+        runMaxMs: env.INTEGRATIONS_RUN_MAX_MS,
+        keys: env.INTEGRATIONS_KEYS,
+        activeKeyId: env.INTEGRATIONS_ACTIVE_KEY,
+      },
     },
   };
 }
