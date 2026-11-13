@@ -123,6 +123,12 @@ describe('Arranque con variables de integraciones (e2e, proceso real)', () => {
     expect(output).toContain('INTEGRATIONS_ENABLED');
   }, 40_000);
 
+  it('INTEGRATIONS_KEYS sin INTEGRATIONS_ACTIVE_KEY y sin proveedores sale con código distinto de 0 y nombra la variable (M1)', async () => {
+    const { code, output } = await runUntilExit(childEnv({ INTEGRATIONS_KEYS: KEY }));
+    expect(code).not.toBe(0);
+    expect(output).toContain('INTEGRATIONS_ACTIVE_KEY');
+  }, 40_000);
+
   it('un cron inválido termina con código distinto de 0 y nombra INTEGRATIONS_SYNC_CRON', async () => {
     const { code, output } = await runUntilExit(
       childEnv({ INTEGRATIONS_SYNC_CRON: 'todos los días' }),

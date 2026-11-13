@@ -274,4 +274,26 @@ describe('validateEnv — integraciones', () => {
       /INTEGRATIONS_SCHEDULER_ENABLED/,
     );
   });
+
+  it('con claves en el keyring y sin INTEGRATIONS_ACTIVE_KEY falla nombrando la variable, aunque no haya proveedores (M1)', () => {
+    expect(messageOf({ ...base, INTEGRATIONS_KEYS: `k1:${key('a')}` })).toMatch(
+      /INTEGRATIONS_ACTIVE_KEY/,
+    );
+  });
+
+  it('INTEGRATIONS_JOB_TIMEOUT_MS no puede superar INTEGRATIONS_RUN_MAX_MS (B2)', () => {
+    const message = messageOf({
+      ...base,
+      INTEGRATIONS_JOB_TIMEOUT_MS: '60000',
+      INTEGRATIONS_RUN_MAX_MS: '30000',
+    });
+    expect(message).toMatch(/INTEGRATIONS_JOB_TIMEOUT_MS/);
+    expect(
+      messageOf({
+        ...base,
+        INTEGRATIONS_JOB_TIMEOUT_MS: '30000',
+        INTEGRATIONS_RUN_MAX_MS: '30000',
+      }),
+    ).toBe('');
+  });
 });

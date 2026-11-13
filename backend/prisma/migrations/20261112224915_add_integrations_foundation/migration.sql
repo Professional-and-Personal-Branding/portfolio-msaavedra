@@ -111,6 +111,13 @@ CREATE UNIQUE INDEX "ExternalSnapshot_provider_resourceKey_key" ON "ExternalSnap
 -- AddForeignKey
 ALTER TABLE "SyncRun" ADD CONSTRAINT "SyncRun_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "IntegrationJob"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- Un solo trabajo activo por proveedor y tipo (revisión de seguridad M4): garantiza, sin carreras, que el
+-- planificador y «Sincronizar ahora» no dejen dos trabajos activos. Prisma no modela índices parciales: vive
+-- solo aquí (y `migrate diff` lo ignora).
+CREATE UNIQUE INDEX "IntegrationJob_one_active_per_provider_kind"
+  ON "IntegrationJob"("provider", "kind")
+  WHERE "status" IN ('PENDING', 'RUNNING', 'FAILED');
+
 -- Fila única del arriendo del ejecutor (D4), con `expiresAt` en el pasado: nadie lo tiene.
 INSERT INTO "IntegrationRunnerLease" ("id", "holder", "expiresAt")
 VALUES ('runner', '', TIMESTAMP '1970-01-01 00:00:00');

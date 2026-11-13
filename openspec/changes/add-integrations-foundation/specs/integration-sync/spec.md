@@ -33,6 +33,17 @@ El planificador SHALL correr con `INTEGRATIONS_SYNC_CRON` (por defecto `0 10 * *
 - **WHEN** dos instancias disparan el planificador el mismo día
 - **THEN** existe un solo trabajo con esa clave
 
+### Requirement: Un solo trabajo activo por proveedor y tipo
+La base SHALL garantizar con un índice único parcial que, por proveedor y tipo, haya como máximo un trabajo `PENDING`, `RUNNING` o `FAILED`; encolar con otra clave de idempotencia MUST devolver el trabajo existente (`alreadyQueued: true`) y el planificador MUST respetarlo.
+
+#### Scenario: Encolados en paralelo con claves distintas
+- **WHEN** se encolan a la vez cuatro trabajos `sync` de `fake` con claves distintas
+- **THEN** se crea uno solo y los cuatro resultados apuntan a ese trabajo
+
+#### Scenario: El planificador con uno activo
+- **WHEN** hay un trabajo manual pendiente y corre el planificador diario
+- **THEN** no se encola otro
+
 ### Requirement: Un solo ejecutor a la vez
 Cada corrida SHALL tomar antes un arriendo en la base (una fila con titular y vencimiento, actualizada de forma condicional) y renovarlo antes de cada trabajo; sin arriendo, el tick no hace nada. Cada trabajo SHALL reclamarse con `FOR UPDATE SKIP LOCKED`. En un mismo proceso, un tick con una corrida en curso MUST descartarse.
 
@@ -47,6 +58,13 @@ Cada corrida SHALL tomar antes un arriendo en la base (una fila con titular y ve
 #### Scenario: Arriendo abandonado
 - **WHEN** la instancia que tenía el arriendo muere sin liberarlo
 - **THEN** otra instancia lo toma en el primer tick después de su vencimiento
+
+### Requirement: Resultados de un trabajo con el arriendo perdido
+El guardado del resultado de un trabajo SHALL ser condicional a que siga `RUNNING` con el mismo `lockedBy`; si no escribe nada, el resultado se descarta y se registra.
+
+#### Scenario: Otro proceso se llevó el trabajo
+- **WHEN** el trabajo fue recuperado por otra instancia antes de guardar el resultado
+- **THEN** no se pisa su estado, el intento queda `INTERRUPTED` y el log lo dice
 
 ### Requirement: Locks vencidos
 Al inicio de cada corrida, un trabajo `RUNNING` con el lock vencido SHALL pasar a `FAILED` con un reintento programado, o a `DEAD` si agotó sus intentos. El intento MUST contarse al reclamar.
@@ -69,6 +87,17 @@ Un fallo `Transient` SHALL reprogramarse con una espera al azar entre 1 s y `min
 #### Scenario: Fallo permanente
 - **WHEN** el conector devuelve `Permanent`
 - **THEN** el trabajo queda `DEAD`, no se reprograma y el panel muestra su error
+
+### Requirement: Pistas del tercero acotadas
+Las pistas de espera de un tercero SHALL acotarse: `RetryAfter` a 24 h y `ResetAt`/`BudgetExhausted` a 7 días; un valor no finito o una fecha inválida MUST tratarse como `Transient`, y reanudar un proveedor ya habilitado MUST limpiar su pausa.
+
+#### Scenario: Retry-After enorme
+- **WHEN** el tercero responde `Retry-After: 99999999999999999999`
+- **THEN** el trabajo queda `FAILED` con un `runAt` válido y el proveedor se pausa 24 h como máximo
+
+#### Scenario: Reanudar
+- **WHEN** se pulsa **Reanudar** en un proveedor habilitado con una pausa vigente
+- **THEN** la pausa y el contador del breaker se limpian
 
 ### Requirement: Pausa por proveedor y circuit breaker
 Un fallo `RetryAfter`, `ResetAt` o `BudgetExhausted` con fecha SHALL pausar el proveedor hasta esa fecha. Cinco fallos `Transient` seguidos SHALL pausarlo según la espera del quinto intento; un éxito MUST reiniciar la cuenta. Un proveedor pausado o deshabilitado MUST NOT reclamar trabajos. El estado vive en la base.

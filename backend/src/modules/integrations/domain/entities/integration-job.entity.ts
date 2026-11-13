@@ -2,6 +2,7 @@ import { fail, ok, Result } from '../../../../shared/domain/result';
 import { InvalidJobTransitionError } from '../errors/integration.errors';
 import { ProviderFailure } from '../provider-failure';
 import { hintMargin, nextRetryDelay } from '../services/next-retry-delay';
+import { sanitizeFailure } from '../services/sanitize-failure';
 
 export type IntegrationJobStatus = 'PENDING' | 'RUNNING' | 'DONE' | 'FAILED' | 'DEAD';
 
@@ -113,10 +114,11 @@ export class IntegrationJob {
    * `BudgetExhausted` o intentos agotados). El mensaje ya debe venir redactado.
    */
   fail(
-    failure: ProviderFailure,
+    rawFailure: ProviderFailure,
     now: Date,
     random: () => number = Math.random,
   ): Result<IntegrationJob, InvalidJobTransitionError> {
+    const failure = sanitizeFailure(rawFailure, now);
     const target: IntegrationJobStatus = this.isTerminal(failure) ? 'DEAD' : 'FAILED';
     const error = this.guard(target, 'fail');
     if (error) return fail(error);

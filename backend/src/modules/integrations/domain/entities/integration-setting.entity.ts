@@ -1,5 +1,6 @@
 import { ProviderFailure } from '../provider-failure';
 import { nextRetryDelay } from '../services/next-retry-delay';
+import { sanitizeFailure } from '../services/sanitize-failure';
 
 /** Cuántos `Transient` seguidos abren el breaker (D10). */
 export const BREAKER_THRESHOLD = 5;
@@ -58,7 +59,13 @@ export class IntegrationSetting {
 
   /** Pausa a mano (`enabled = false`) o reanudación; al reanudar se reinicia `enabledSince`. */
   withEnabled(enabled: boolean, now: Date): IntegrationSetting {
-    if (enabled === this.props.enabled) return this;
+    if (enabled === this.props.enabled) {
+      // Reanudar un proveedor ya habilitado limpia una pausa del tercero o del breaker (M2).
+      const paused = this.props.pausedUntil !== null || this.props.consecutiveFailures > 0;
+      return enabled && paused
+        ? this.with({ pausedUntil: null, pauseReason: null, consecutiveFailures: 0 }, now)
+        : this;
+    }
     return this.with(
       enabled ? { enabled, enabledSince: now, pausedUntil: null, pauseReason: null } : { enabled },
       now,
@@ -78,10 +85,11 @@ export class IntegrationSetting {
    * suman al breaker, que abre al llegar a 5 y vuelve a abrir en cada fallo del semiabierto.
    */
   recordFailure(
-    failure: ProviderFailure,
+    rawFailure: ProviderFailure,
     now: Date,
     random: () => number = Math.random,
   ): IntegrationSetting {
+    const failure = sanitizeFailure(rawFailure, now);
     switch (failure.kind) {
       case 'RetryAfter':
         return this.with(

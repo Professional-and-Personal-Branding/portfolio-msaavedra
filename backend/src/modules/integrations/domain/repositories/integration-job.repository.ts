@@ -47,7 +47,11 @@ export interface IntegrationJobRepository {
   ): Promise<IntegrationJob | null>;
   /** Trabajos `RUNNING` con el lock vencido (para pasarlos por `expireLock`). */
   listExpiredLocks(limit: number): Promise<IntegrationJob[]>;
-  save(job: IntegrationJob): Promise<void>;
+  /**
+   * Guarda el trabajo solo si sigue `RUNNING` y con el mismo `lockedBy` (B1): si el arriendo se perdió y
+   * otro proceso lo recuperó o lo reclamó, no se pisa su estado. Devuelve `false` si no escribió nada.
+   */
+  save(job: IntegrationJob, expectedLockedBy: string | null): Promise<boolean>;
   /** Un solo `groupBy` por estado más el último error de un trabajo `DEAD` por proveedor. */
   summarize(providers: readonly string[]): Promise<ReadonlyMap<string, JobSummary>>;
   /** Retención (D23): `DONE` anteriores a `doneOlderThanDays` y `DEAD`/`SyncRun` a `deadOlderThanDays`. */

@@ -180,6 +180,7 @@ export async function addJob(
   prisma: PrismaClient,
   data: {
     key: string;
+    kind?: string;
     payload?: Record<string, unknown>;
     status?: 'PENDING' | 'RUNNING' | 'DONE' | 'FAILED' | 'DEAD';
     attempts?: number;
@@ -193,7 +194,8 @@ export async function addJob(
   return prisma.integrationJob.create({
     data: {
       provider: 'fake',
-      kind: 'sync',
+      // Un tipo distinto por clave: el índice único parcial permite un solo trabajo activo por (proveedor, tipo).
+      kind: data.kind ?? `sync-${data.key}`,
       idempotencyKey: data.key,
       payload: (data.payload ?? {}) as Prisma.InputJsonObject,
       status: data.status ?? 'PENDING',

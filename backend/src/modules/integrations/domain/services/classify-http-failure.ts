@@ -22,9 +22,12 @@ function header(headers: HttpFailureInput['headers'], name: string): string | un
 function retryAfterSeconds(value: string | undefined, now: Date): number | undefined {
   if (value === undefined || value.trim() === '') return undefined;
   const trimmed = value.trim();
-  if (/^\d+$/.test(trimmed)) return Math.max(1, Number(trimmed));
+  if (/^\d+$/.test(trimmed)) {
+    const seconds = Number(trimmed);
+    return Number.isFinite(seconds) ? Math.max(1, seconds) : undefined;
+  }
   const date = Date.parse(trimmed);
-  if (Number.isNaN(date)) return undefined;
+  if (!Number.isFinite(date)) return undefined;
   return Math.max(1, Math.ceil((date - now.getTime()) / 1000));
 }
 
@@ -60,7 +63,12 @@ export function classifyHttpFailure(input: HttpFailureInput): ProviderFailure {
   if (status === 429 || status === 403) {
     const remaining = header(input.headers, 'x-ratelimit-remaining');
     const reset = Number(header(input.headers, 'x-ratelimit-reset'));
-    if (remaining === '0' && Number.isFinite(reset) && reset > 0) {
+    if (
+      remaining === '0' &&
+      Number.isFinite(reset) &&
+      reset > 0 &&
+      Number.isFinite(new Date(reset * 1000).getTime())
+    ) {
       return resetAt(new Date(reset * 1000), `${label}: límite agotado hasta el reinicio`);
     }
   }

@@ -162,6 +162,11 @@ describe('Cola de integraciones (e2e)', () => {
       }),
     ).toBe(1);
 
+    // Cierra el trabajo diario para que el índice de «uno activo» no oculte lo que se prueba acá.
+    await prisma.integrationJob.updateMany({
+      where: { provider: 'fake' },
+      data: { status: 'DONE', finishedAt: new Date() },
+    });
     const repo = ctx.app.get<IntegrationJobRepository>(INTEGRATION_JOB_REPOSITORY);
     const input = {
       provider: 'fake',
@@ -174,6 +179,49 @@ describe('Cola de integraciones (e2e)', () => {
     expect([first.created, second.created].filter(Boolean)).toHaveLength(1);
     expect(first.job.id).toBe(second.job.id);
     expect(await prisma.integrationJob.count({ where: { idempotencyKey: 'q:idem' } })).toBe(1);
+  });
+
+  it('M4: a lo sumo un trabajo activo por proveedor y tipo, también con encolados en paralelo', async () => {
+    const repo = ctx.app.get<IntegrationJobRepository>(INTEGRATION_JOB_REPOSITORY);
+    const input = (key: string) => ({
+      provider: 'fake',
+      kind: 'sync',
+      idempotencyKey: key,
+      payload: {},
+      runAt: new Date(),
+    });
+    // Claves distintas (como dos minutos distintos o manual y diario): la clave de idempotencia no alcanza.
+    const results = await Promise.all(
+      ['m4:a', 'm4:b', 'm4:c', 'm4:d'].map((key) => repo.enqueue(input(key))),
+    );
+    expect(results.filter((r) => r.created)).toHaveLength(1);
+    expect(new Set(results.map((r) => r.job.id)).size).toBe(1);
+    expect(
+      await prisma.integrationJob.count({
+        where: { provider: 'fake', kind: 'sync', status: { in: ['PENDING', 'RUNNING', 'FAILED'] } },
+      }),
+    ).toBe(1);
+
+    // El planificador respeta el trabajo activo y, terminado ese, vuelve a poder encolar.
+    const plan = ctx.app.get(PlanDueSyncsUseCase);
+    expect((await plan.execute()).enqueued).toEqual([]);
+    await executor.execute();
+    expect((await plan.execute()).enqueued).toEqual(['fake']);
+  });
+
+  it('B1: el guardado es condicional: si otro tiene el trabajo, no se pisa', async () => {
+    const repo = ctx.app.get<IntegrationJobRepository>(INTEGRATION_JOB_REPOSITORY);
+    const added = await addJob(prisma, { key: 'b1:job' });
+    const claimed = await repo.claimNext(['fake'], 60_000, 'holder-a');
+    if (!claimed) throw new Error('no se reclamó el trabajo');
+    const done = claimed.complete(new Date());
+    if (!done.ok) throw done.error;
+    expect(await repo.save(done.value, 'holder-b')).toBe(false);
+    expect(await statusOf(added.id)).toBe('RUNNING');
+    expect(await repo.save(done.value, 'holder-a')).toBe(true);
+    expect(await statusOf(added.id)).toBe('DONE');
+    // Ya no está RUNNING: otro guardado tampoco escribe.
+    expect(await repo.save(done.value, 'holder-a')).toBe(false);
   });
 
   describe('reintentos y clasificación', () => {

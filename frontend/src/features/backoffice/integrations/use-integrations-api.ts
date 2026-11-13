@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type MutateOptions } from '@tanstack/react-query';
+
+interface SaveCredentialInput {
+  provider: string;
+  secret: string;
+}
 import { api, apiErrorMessage, HttpError, unwrap } from '@/shared/lib/api-client';
 import type {
   EnqueueSyncResult,
@@ -57,10 +62,15 @@ export function useSetIntegrationEnabled() {
   });
 }
 
+/**
+ * Guardar la credencial. El secreto viaja en `variables` de la mutación: con `gcTime: 0` y un `reset()` al
+ * terminar (también si falla) no queda en la caché de TanStack Query ni en el estado del hook (B3).
+ */
 export function useSaveCredential() {
   const client = useQueryClient();
-  return useMutation({
-    mutationFn: async (input: { provider: string; secret: string }): Promise<void> => {
+  const mutation = useMutation({
+    gcTime: 0,
+    mutationFn: async (input: SaveCredentialInput): Promise<void> => {
       const result = await api.PUT('/api/admin/integrations/{provider}/credential', {
         params: { path: { provider: input.provider } },
         body: { secret: input.secret },
@@ -74,6 +84,21 @@ export function useSaveCredential() {
     },
     onSuccess: () => invalidate(client, adminKeys.integrations),
   });
+  const { mutate, reset } = mutation;
+  return {
+    ...mutation,
+    mutate: (
+      input: SaveCredentialInput,
+      options?: MutateOptions<void, Error, SaveCredentialInput>,
+    ) =>
+      mutate(input, {
+        ...options,
+        onSettled: (...args) => {
+          options?.onSettled?.(...args);
+          reset();
+        },
+      }),
+  };
 }
 
 export function useDeleteCredential() {

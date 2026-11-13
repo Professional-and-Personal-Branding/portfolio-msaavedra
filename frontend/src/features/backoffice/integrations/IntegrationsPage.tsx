@@ -284,7 +284,7 @@ function CredentialForm({ provider, stored }: { provider: string; stored: boolea
           <Input
             id={inputId}
             type="password"
-            autoComplete="off"
+            autoComplete="new-password"
             spellCheck={false}
             aria-invalid={errors.secret ? true : undefined}
             aria-describedby={

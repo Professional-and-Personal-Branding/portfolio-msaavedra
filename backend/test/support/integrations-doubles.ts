@@ -98,7 +98,11 @@ export class InMemoryJobRepository implements IntegrationJobRepository {
   async enqueue(input: EnqueueJobInput): Promise<EnqueueJobResult> {
     this.enqueueCalls += 1;
     const existing = [...this.jobs.values()].find(
-      (j) => j.props.idempotencyKey === input.idempotencyKey,
+      (j) =>
+        j.props.idempotencyKey === input.idempotencyKey ||
+        (j.provider === input.provider &&
+          j.props.kind === input.kind &&
+          ['PENDING', 'RUNNING', 'FAILED'].includes(j.status)),
     );
     if (existing) return { job: existing, created: false };
     const now = this.clock.now();
@@ -163,8 +167,19 @@ export class InMemoryJobRepository implements IntegrationJobRepository {
       .slice(0, limit);
   }
 
-  async save(job: IntegrationJob): Promise<void> {
+  /** Pone en `false` para simular que otro proceso se llevó el trabajo (arriendo perdido). */
+  rejectSaves = false;
+
+  async save(job: IntegrationJob, expectedLockedBy: string | null): Promise<boolean> {
+    const current = this.jobs.get(job.id);
+    if (
+      this.rejectSaves ||
+      (current && (current.status !== 'RUNNING' || current.props.lockedBy !== expectedLockedBy))
+    ) {
+      return false;
+    }
     this.jobs.set(job.id, job);
+    return true;
   }
 
   async summarize(providers: readonly string[]): Promise<ReadonlyMap<string, JobSummary>> {

@@ -9,6 +9,8 @@ export interface RunLogContext {
   readonly syncRunId: string;
   readonly jobId: string;
   readonly provider: string;
+  /** Secretos del trabajo: el logger los redacta del mensaje y de los textos de `data` (B4). */
+  readonly secrets?: readonly string[];
 }
 
 export const RUN_LOGGER_FACTORY = Symbol('RUN_LOGGER_FACTORY');

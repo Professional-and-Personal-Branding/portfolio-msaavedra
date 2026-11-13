@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/require-await -- dobles asíncronos sin I/O real */
+import { getEventListeners } from 'node:events';
 import { fail, ok } from '../../../../shared/domain/result';
 import {
   CapturingLoggerFactory,
@@ -197,7 +198,7 @@ describe('RunDueJobsUseCase', () => {
     });
 
     it('BudgetExhausted con resetAt: DEAD y pausa hasta esa fecha', async () => {
-      const resetAt = new Date('2026-12-01T00:00:00Z');
+      const resetAt = new Date('2026-11-15T00:00:00Z');
       const connector = new ScriptedConnector('fake', async () =>
         fail({ kind: 'BudgetExhausted', resetAt, message: 'tope' }),
       );
@@ -313,12 +314,40 @@ describe('RunDueJobsUseCase', () => {
     expect(lease.holder).toBeNull();
   });
 
+  it('la señal de apagado no acumula listeners: ninguno queda después de N trabajos (M3)', async () => {
+    const controller = new AbortController();
+    const during: number[] = [];
+    const connector = new ScriptedConnector('fake', async () => {
+      await new Promise((r) => setImmediate(r));
+      during.push(getEventListeners(controller.signal, 'abort').length);
+      return ok({ itemsChanged: 0 });
+    });
+    const run = setup(connector);
+    for (let i = 0; i < 5; i++) run.jobs.add(makeJob({ id: `j${i}`, idempotencyKey: `k${i}` }));
+    await run.useCase.execute({ shutdown: controller.signal });
+    expect(during).toEqual([1, 1, 1, 1, 1]);
+    expect(getEventListeners(controller.signal, 'abort')).toHaveLength(0);
+  });
+
+  it('B1: si el arriendo se perdió (el guardado no escribe), el resultado se descarta sin tocar al proveedor', async () => {
+    const { useCase, jobs, syncRuns, settings, loggers } = setup(okConnector());
+    jobs.add(makeJob());
+    jobs.rejectSaves = true;
+    const summary = await useCase.execute();
+    expect(summary.interrupted).toBe(1);
+    expect(syncRuns.runs[0]).toMatchObject({ outcome: 'INTERRUPTED' });
+    expect(settings.rows.get('fake')?.props.lastSuccessAt ?? null).toBeNull();
+    expect(loggers.logger.lines.some((l) => /perdió el arriendo/.test(l.message))).toBe(true);
+  });
+
   it('el logger de cada trabajo lleva syncRunId, jobId y provider', async () => {
     const { useCase, jobs, loggers, syncRuns } = setup(okConnector());
     jobs.add(makeJob());
     await useCase.execute();
     expect(loggers.contexts).toEqual([
-      { syncRunId: syncRuns.runs[0].id, jobId: 'job-1', provider: 'fake' },
+      expect.objectContaining({ syncRunId: syncRuns.runs[0].id, jobId: 'job-1', provider: 'fake' }),
     ]);
+    // El logger recibe el secreto para redactarlo (B4).
+    expect(loggers.contexts[0].secrets).toEqual([SECRET]);
   });
 });

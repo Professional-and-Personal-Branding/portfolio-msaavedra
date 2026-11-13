@@ -67,6 +67,7 @@ export class PrismaIntegrationSettingRepository implements IntegrationSettingRep
         enabledSince: p.enabledSince,
         pausedUntil: p.pausedUntil,
         pauseReason: p.pauseReason,
+        consecutiveFailures: p.consecutiveFailures,
       },
     });
   }

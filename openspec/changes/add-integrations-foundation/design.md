@@ -374,6 +374,19 @@ Alternativa descartada: **décimo ítem en `NAV`.** Ver arriba.
 - **[El texto del 400 de la Console es una suposición]** → P4; el error de etiqueta solo cambia `BudgetExhausted` por `Permanent`, y ninguno de los dos se reintenta.
 - **[Changes en paralelo]** → TC-49 es de este change; el número de pantalla del backoffice (B17) puede chocar en `docs/MANUAL.md`: se toma el siguiente libre al implementar y se resuelve en el merge.
 
+### Revisión de seguridad y su resolución (2026-11-12)
+
+Una revisión independiente no halló hallazgos críticos ni altos. Se corrigieron:
+
+- **M1.** `INTEGRATIONS_KEYS` con claves y sin `INTEGRATIONS_ACTIVE_KEY` tiraba la API al instanciar el cifrador. Ahora la clave activa se exige siempre que haya claves (o proveedores) y, como defensa, sin proveedores habilitados el keyring se arma vacío.
+- **M2.** Pistas del tercero sin tope (NaN, años de pausa). `sanitizeFailure` (dominio) las normaliza antes de usarlas: no finito o fecha inválida pasa a `Transient`; `RetryAfter` ≤ 24 h; `ResetAt`/`BudgetExhausted` ≤ 7 días; fecha pasada = ahora. Los clasificadores no devuelven fechas inválidas y reanudar un proveedor ya habilitado limpia pausa y breaker.
+- **M3.** El ejecutor dejaba un listener anónimo por trabajo en la señal de apagado del proceso (retenía el secreto). Hay un handler con nombre, quitado en el `finally`.
+- **M4.** Podía haber varios trabajos activos por proveedor. Se agregó, en la propia migración (aún sin fusionar), el índice único parcial `IntegrationJob(provider, kind) WHERE status IN ('PENDING','RUNNING','FAILED')`; `enqueue` usa `ON CONFLICT DO NOTHING` sin objetivo y devuelve el existente (`alreadyQueued: true`), y el planificador lo respeta. `kind` hoy es siempre `sync` (manual y diario conviven bajo la misma regla: a lo sumo uno activo); un tipo futuro podrá tener el suyo. Prisma no modela índices parciales: `migrate diff` da sin diferencias.
+- **B1.** `save` es condicional (`id`, `RUNNING` y `lockedBy`) y devuelve si escribió; si no, el resultado se descarta, se loguea y el intento queda `INTERRUPTED`.
+- **B2.** `INTEGRATIONS_JOB_TIMEOUT_MS` ≤ `INTEGRATIONS_RUN_MAX_MS` se valida al arrancar.
+- **B3.** La mutación de la credencial usa `gcTime: 0` y `reset()` al terminar; el campo lleva `autoComplete="new-password"`.
+- **B4.** El logger de cada trabajo redacta el secreto del mensaje y de los textos de `data` (el secreto se resuelve antes de crearlo).
+
 ## Migration Plan
 
 1. **Migración** `<timestamp>_add_integrations_foundation`, generada con `--create-only` contra una base descartable (`portfolio_integrations_check`) y revisada a mano (D21).

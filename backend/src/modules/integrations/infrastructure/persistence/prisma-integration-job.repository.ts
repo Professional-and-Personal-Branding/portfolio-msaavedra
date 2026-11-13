@@ -60,12 +60,24 @@ export class PrismaIntegrationJobRepository implements IntegrationJobRepository 
         (${randomUUID()}, ${input.provider}, ${input.kind}, ${input.idempotencyKey},
          ${payload}::jsonb, 'PENDING', 0, ${input.maxAttempts ?? 8}, ${input.runAt},
          ${NOW_UTC}, ${NOW_UTC})
-      ON CONFLICT ("idempotencyKey") DO NOTHING
+      ON CONFLICT DO NOTHING
       RETURNING "id"`;
-    const row = await this.prisma.integrationJob.findUniqueOrThrow({
-      where: { idempotencyKey: input.idempotencyKey },
-    });
-    return { job: toIntegrationJob(row), created: inserted.length > 0 };
+    // Sin objetivo de conflicto: cubre la clave de idempotencia y el índice único parcial «un trabajo
+    // activo por proveedor y tipo» (M4). Si chocó, se devuelve el existente.
+    const existing =
+      (await this.prisma.integrationJob.findUnique({
+        where: { idempotencyKey: input.idempotencyKey },
+      })) ??
+      (await this.prisma.integrationJob.findFirst({
+        where: {
+          provider: input.provider,
+          kind: input.kind,
+          status: { in: ['PENDING', 'RUNNING', 'FAILED'] },
+        },
+        orderBy: { createdAt: 'asc' },
+      }));
+    if (!existing) throw new Error('No se pudo encolar ni encontrar el trabajo existente');
+    return { job: toIntegrationJob(existing), created: inserted.length > 0 };
   }
 
   async findActiveByProvider(provider: string): Promise<IntegrationJob | null> {
@@ -110,10 +122,10 @@ export class PrismaIntegrationJobRepository implements IntegrationJobRepository 
     return rows.map(toIntegrationJob);
   }
 
-  async save(job: IntegrationJob): Promise<void> {
+  async save(job: IntegrationJob, expectedLockedBy: string | null): Promise<boolean> {
     const p = job.props;
-    await this.prisma.integrationJob.update({
-      where: { id: p.id },
+    const result = await this.prisma.integrationJob.updateMany({
+      where: { id: p.id, status: 'RUNNING', lockedBy: expectedLockedBy },
       data: {
         status: p.status,
         attempts: p.attempts,
@@ -126,6 +138,7 @@ export class PrismaIntegrationJobRepository implements IntegrationJobRepository 
         updatedAt: p.updatedAt,
       },
     });
+    return result.count === 1;
   }
 
   async summarize(providers: readonly string[]): Promise<ReadonlyMap<string, JobSummary>> {

@@ -196,9 +196,19 @@ function integrationIssues(env: EnvironmentVariables): string[] {
     if (!env.INTEGRATIONS_KEYS || env.INTEGRATIONS_KEYS.trim() === '') {
       issues.push('INTEGRATIONS_KEYS: obligatoria si INTEGRATIONS_ENABLED no está vacía');
     }
-    if (!env.INTEGRATIONS_ACTIVE_KEY || env.INTEGRATIONS_ACTIVE_KEY.trim() === '') {
-      issues.push('INTEGRATIONS_ACTIVE_KEY: obligatoria si INTEGRATIONS_ENABLED no está vacía');
-    }
+  }
+  // Con claves en el keyring la activa es obligatoria aunque no haya proveedores (si no, la API caería
+  // al instanciar el cifrador), y con proveedores habilitados también.
+  if (
+    (enabled.length > 0 || keyring.keys.size > 0) &&
+    (!env.INTEGRATIONS_ACTIVE_KEY || env.INTEGRATIONS_ACTIVE_KEY.trim() === '')
+  ) {
+    issues.push(
+      'INTEGRATIONS_ACTIVE_KEY: obligatoria si INTEGRATIONS_ENABLED no está vacía o INTEGRATIONS_KEYS tiene claves',
+    );
+  }
+  if (env.INTEGRATIONS_JOB_TIMEOUT_MS > env.INTEGRATIONS_RUN_MAX_MS) {
+    issues.push('INTEGRATIONS_JOB_TIMEOUT_MS: no puede superar INTEGRATIONS_RUN_MAX_MS');
   }
   if (
     env.INTEGRATIONS_ACTIVE_KEY &&

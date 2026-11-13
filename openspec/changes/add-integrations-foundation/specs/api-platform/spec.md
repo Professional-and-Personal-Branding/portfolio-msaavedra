@@ -18,3 +18,11 @@ La validación de entorno SHALL aceptar `INTEGRATIONS_ENABLED`, `INTEGRATIONS_SC
 #### Scenario: Clave de ejemplo en producción
 - **WHEN** `NODE_ENV=production` y `INTEGRATIONS_KEYS` contiene la clave del `.env.example`
 - **THEN** el arranque falla nombrando `INTEGRATIONS_KEYS`
+
+#### Scenario: Claves sin clave activa
+- **WHEN** `INTEGRATIONS_KEYS` tiene claves, `INTEGRATIONS_ACTIVE_KEY` falta y `INTEGRATIONS_ENABLED` está vacía
+- **THEN** el arranque falla nombrando `INTEGRATIONS_ACTIVE_KEY`
+
+#### Scenario: Timeout mayor que la corrida
+- **WHEN** `INTEGRATIONS_JOB_TIMEOUT_MS` supera a `INTEGRATIONS_RUN_MAX_MS`
+- **THEN** el arranque falla nombrando `INTEGRATIONS_JOB_TIMEOUT_MS`

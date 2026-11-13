@@ -121,6 +121,29 @@ describe('PlanDueSyncsUseCase', () => {
   });
 });
 
+describe('Un solo trabajo activo por proveedor (M4)', () => {
+  it('el planificador no encola si ya hay un trabajo activo (p. ej. uno manual)', async () => {
+    const { clock, jobs, settings, loggers } = base();
+    const manual = await new EnqueueSyncUseCase(jobs, settings, SETTINGS, clock).execute({
+      provider: 'fake',
+    });
+    expect(manual.ok).toBe(true);
+    const out = await new PlanDueSyncsUseCase(jobs, settings, SETTINGS, loggers, clock).execute();
+    expect(out.enqueued).toEqual([]);
+    expect(jobs.jobs.size).toBe(1);
+  });
+
+  it('dos «Sincronizar ahora» en paralelo y en minutos distintos dejan un solo trabajo', async () => {
+    const { clock, jobs, settings } = base();
+    const useCase = new EnqueueSyncUseCase(jobs, settings, SETTINGS, clock);
+    const first = await useCase.execute({ provider: 'fake' });
+    clock.advance(120_000);
+    const second = await useCase.execute({ provider: 'fake' });
+    expect(first.ok && second.ok && second.value.alreadyQueued).toBe(true);
+    expect(jobs.jobs.size).toBe(1);
+  });
+});
+
 describe('SaveCredentialUseCase / DeleteCredentialUseCase', () => {
   function make() {
     const { credentials, loggers } = base();

@@ -89,7 +89,12 @@ import { IntegrationsShutdown } from './infrastructure/scheduler/integrations-sh
       provide: SECRET_CIPHER,
       inject: [INTEGRATIONS_CONFIG],
       useFactory: (config: AppConfig['integrations']) =>
-        new AesGcmSecretCipher(Keyring.fromConfig(config.keys, config.activeKeyId)),
+        // Sin proveedores habilitados no hay nada que cifrar: keyring vacío, la API nunca cae por el keyring.
+        new AesGcmSecretCipher(
+          config.enabledProviders.length === 0
+            ? new Keyring(new Map(), '')
+            : Keyring.fromConfig(config.keys, config.activeKeyId),
+        ),
     },
     { provide: CREDENTIAL_RESOLVER, useClass: CredentialResolverService },
     { provide: SNAPSHOT_STORE, useClass: SnapshotStoreService },

@@ -410,7 +410,8 @@ model IntegrationCredential {
   updatedAt  DateTime @updatedAt
 }
 
-/// Cola de trabajos (D7). `idempotencyKey` único: encolar dos veces lo mismo deja una fila.
+/// Cola de trabajos (D7). `idempotencyKey` único: encolar dos veces lo mismo deja una fila. Además, un índice
+/// único PARCIAL (solo en la migración) limita a un trabajo activo por (provider, kind).
 model IntegrationJob {
   id             String               @id @default(cuid())
   provider       String

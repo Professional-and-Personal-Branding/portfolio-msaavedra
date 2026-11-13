@@ -62,7 +62,7 @@ export function classifyAnthropicError(input: AnthropicErrorInput): ProviderFail
   }
   if (status === 429) {
     const hint = input.retryAfter?.trim();
-    if (hint !== undefined && /^\d+$/.test(hint)) {
+    if (hint !== undefined && /^\d+$/.test(hint) && Number.isFinite(Number(hint))) {
       return retryAfter(Math.max(1, Number(hint)), 'HTTP 429: límite de peticiones');
     }
     return transient('HTTP 429: límite de peticiones sin pistas');

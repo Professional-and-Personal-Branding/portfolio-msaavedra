@@ -134,7 +134,11 @@ export class RunDueJobsUseCase {
     const now = this.clock.now();
     for (const job of await this.jobs.listExpiredLocks(RECOVER_BATCH)) {
       const recovered = job.expireLock(now, this.random);
-      if (recovered.ok) await this.jobs.save(recovered.value);
+      if (recovered.ok && !(await this.jobs.save(recovered.value, job.props.lockedBy))) {
+        this.loggers
+          .general()
+          .warn('Trabajo con el lock vencido ya recuperado por otra instancia', { jobId: job.id });
+      }
     }
   }
 
@@ -152,30 +156,33 @@ export class RunDueJobsUseCase {
   ): Promise<JobResult> {
     const startedAt = this.clock.now();
     const syncRunId = await this.syncRuns.start(job.id, job.provider, startedAt);
-    const log = this.loggers.forRun({ syncRunId, jobId: job.id, provider: job.provider });
+    // El secreto se resuelve antes de crear el logger para que este lo redacte de todo lo que escriba (B4).
+    const connector = this.registry.get(job.provider);
+    const credential = connector ? await this.credentials.resolve(job.provider) : undefined;
+    const secret = credential?.ok ? credential.value.secret : '';
+    const log = this.loggers.forRun({
+      syncRunId,
+      jobId: job.id,
+      provider: job.provider,
+      secrets: secret === '' ? [] : [secret],
+    });
     log.info('Trabajo iniciado', { attempt: job.attempts });
 
-    let secret = '';
     let execution: Execution;
-    const connector = this.registry.get(job.provider);
     if (!connector) {
       execution = {
         type: 'failure',
         failure: permanent('proveedor no habilitado'),
         timeout: false,
       };
+    } else if (credential && !credential.ok) {
+      execution = {
+        type: 'failure',
+        failure: permanent(credential.error.message),
+        timeout: false,
+      };
     } else {
-      const credential = await this.credentials.resolve(job.provider);
-      if (!credential.ok) {
-        execution = {
-          type: 'failure',
-          failure: permanent(credential.error.message),
-          timeout: false,
-        };
-      } else {
-        secret = credential.value.secret;
-        execution = await this.runConnector(connector, job, secret, log, shutdown);
-      }
+      execution = await this.runConnector(connector, job, secret, log, shutdown);
     }
     return this.settle(job, syncRunId, startedAt, execution, secret, log);
   }
@@ -190,8 +197,13 @@ export class RunDueJobsUseCase {
   ): Promise<Execution> {
     const controller = new AbortController();
     const timers: NodeJS.Timeout[] = [];
-    const abortJob = (): void => controller.abort();
     let armGrace: (() => void) | undefined;
+    // Un único handler con nombre (M3): se quita en el `finally` y la señal compartida del proceso no
+    // acumula un listener —ni lo que su cierre retiene, como el secreto— por cada trabajo.
+    const onShutdown = (): void => {
+      controller.abort();
+      armGrace?.();
+    };
 
     const connectorPromise: Promise<Result<SyncOutcome, ProviderFailure>> = (async () => {
       try {
@@ -218,13 +230,8 @@ export class RunDueJobsUseCase {
       armGrace = () => timers.push(setTimeout(() => resolve('interrupted'), SHUTDOWN_GRACE_MS));
     });
     if (shutdown) {
-      if (shutdown.aborted) {
-        abortJob();
-        armGrace?.();
-      } else {
-        shutdown.addEventListener('abort', abortJob, { once: true });
-        shutdown.addEventListener('abort', () => armGrace?.(), { once: true });
-      }
+      if (shutdown.aborted) onShutdown();
+      else shutdown.addEventListener('abort', onShutdown, { once: true });
     }
 
     try {
@@ -248,8 +255,26 @@ export class RunDueJobsUseCase {
       return { type: 'failure', failure: winner.result.error, timeout: false };
     } finally {
       for (const timer of timers) clearTimeout(timer);
-      shutdown?.removeEventListener('abort', abortJob);
+      shutdown?.removeEventListener('abort', onShutdown);
     }
+  }
+
+  /** B1: el arriendo se perdió y otro proceso se hizo cargo del trabajo: se loguea y se descarta el resultado. */
+  private async discard(
+    job: IntegrationJob,
+    syncRunId: string,
+    now: Date,
+    durationMs: number,
+    log: RunLogger,
+  ): Promise<JobResult> {
+    log.warn('Se perdió el arriendo del trabajo: resultado descartado', { jobId: job.id });
+    await this.syncRuns.finish(syncRunId, {
+      outcome: 'INTERRUPTED',
+      errorMessage: 'arriendo perdido: resultado descartado',
+      finishedAt: now,
+      durationMs,
+    });
+    return 'INTERRUPTED';
   }
 
   /** Persiste el resultado: trabajo, estado del proveedor y `SyncRun`. */
@@ -267,7 +292,9 @@ export class RunDueJobsUseCase {
     const setting = await this.settings.getOrCreate(job.provider, now);
 
     if (execution.type === 'ok') {
-      await this.jobs.save(unwrap(job.complete(now)));
+      if (!(await this.jobs.save(unwrap(job.complete(now)), this.holder))) {
+        return this.discard(job, syncRunId, now, durationMs, log);
+      }
       await this.settings.saveHealth(setting.recordSuccess(now));
       await this.syncRuns.finish(syncRunId, {
         outcome: 'SUCCESS',
@@ -280,7 +307,9 @@ export class RunDueJobsUseCase {
     }
 
     if (execution.type === 'interrupted') {
-      await this.jobs.save(unwrap(job.release(now)));
+      if (!(await this.jobs.save(unwrap(job.release(now)), this.holder))) {
+        return this.discard(job, syncRunId, now, durationMs, log);
+      }
       await this.syncRuns.finish(syncRunId, {
         outcome: 'INTERRUPTED',
         finishedAt: now,
@@ -295,7 +324,9 @@ export class RunDueJobsUseCase {
       message: redactSecrets(execution.failure.message, secrets),
     };
     const failed = unwrap(job.fail(failure, now, this.random));
-    await this.jobs.save(failed);
+    if (!(await this.jobs.save(failed, this.holder))) {
+      return this.discard(job, syncRunId, now, durationMs, log);
+    }
     await this.settings.saveHealth(setting.recordFailure(failure, now, this.random));
     const outcome: SyncRunOutcome = execution.timeout
       ? 'TIMEOUT'

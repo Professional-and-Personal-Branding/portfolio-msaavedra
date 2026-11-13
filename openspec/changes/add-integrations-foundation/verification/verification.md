@@ -27,3 +27,7 @@ Ninguno cambia una decisión de arquitectura; se listan para que el arquitecto l
 
 - **12.4** (línea del roadmap y comandos en `CLAUDE.md`) queda para el archivado: no se archivó el change.
 - **12.3:** ver `12.3-bases.txt`.
+
+## Revisión de seguridad y su resolución
+
+Mismo contenido que la sección homónima de `design.md` (M1–M4, B1–B4). Cada arreglo lleva su test: validación y e2e de arranque (M1, B2), `sanitize-failure.spec.ts` (M2), listeners de la señal en `run-due-jobs.use-case.spec.ts` (M3), e2e de concurrencia y de `save` condicional en `integrations-queue.e2e-spec.ts` más los unitarios (M4, B1), `use-save-credential.test.tsx` (B3) y `pino-run-logger.factory.spec.ts` (B4). `prisma migrate diff` contra una base migrada: sin diferencias. La migración editada se copió a `3.1-migracion.sql`.
