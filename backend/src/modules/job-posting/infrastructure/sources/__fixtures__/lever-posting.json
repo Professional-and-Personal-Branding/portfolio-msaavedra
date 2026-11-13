@@ -1,0 +1,22 @@
+{
+  "_fixture": "Ficticio y sanitizado (Acme Ejemplo). Forma segun https://github.com/lever/postings-api, consultada el 2026-11-12. FORMA SUPUESTA: `createdAt` (ms) no figura en la pagina consultada; se asume por la API real.",
+  "id": "0b1c2d3e-aaaa-bbbb-cccc-1234567890ab",
+  "text": "Senior Platform Engineer",
+  "categories": {
+    "location": "Buenos Aires, Argentina",
+    "commitment": "Full-time",
+    "team": "Platform",
+    "department": "Engineering",
+    "allLocations": ["Buenos Aires, Argentina"]
+  },
+  "workplaceType": "hybrid",
+  "descriptionPlain": "Buscamos un ingeniero para nuestro equipo de plataforma. Trabajaras con Kubernetes y Terraform.",
+  "lists": [
+    { "text": "Requisitos", "content": "<li>Experiencia con Docker</li><li>Go o Java</li>" },
+    { "text": "Beneficios", "content": "<li>Obra social</li>" }
+  ],
+  "additionalPlain": "Acme Ejemplo es un empleador que promueve la igualdad.",
+  "applyUrl": "https://jobs.lever.co/acmeejemplo/0b1c2d3e-aaaa-bbbb-cccc-1234567890ab/apply",
+  "hostedUrl": "https://jobs.lever.co/acmeejemplo/0b1c2d3e-aaaa-bbbb-cccc-1234567890ab",
+  "createdAt": 1761840000000
+}

@@ -1,0 +1,18 @@
+<!doctype html>
+<!-- Ficticio y sanitizado (Acme Ejemplo). JSON-LD schema.org/JobPosting dentro de @graph, con @type como arreglo. Consultado el 2026-11-12 (https://schema.org/JobPosting). -->
+<html lang="es"><head><title>Tech Lead - Acme Ejemplo</title>
+<SCRIPT data-x="1" TYPE="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+ {"@type":"WebSite","name":"Acme Ejemplo Careers"},
+ {"@type":["JobPosting","Thing"],
+  "title":"Tech Lead .NET",
+  "description":"&lt;p&gt;Lideraras un equipo con &lt;strong&gt;.NET Core&lt;/strong&gt; y C#.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Microservicios&lt;/li&gt;&lt;li&gt;Azure&lt;/li&gt;&lt;/ul&gt;",
+  "datePosted":"2026-10-25",
+  "employmentType":["FULL_TIME"],
+  "hiringOrganization":{"@type":"Organization","name":"Acme Ejemplo"},
+  "jobLocationType":"TELECOMMUTE",
+  "jobLocation":{"@type":"Place","address":{"@type":"PostalAddress","addressLocality":"Buenos Aires","addressRegion":"CABA","addressCountry":"AR"}},
+  "baseSalary":{"@type":"MonetaryAmount","currency":"USD","value":{"@type":"QuantitativeValue","minValue":4000,"maxValue":6000,"unitText":"MONTH"}},
+  "url":"https://careers.acme-ejemplo.com/jobs/tech-lead-net"}
+]}
+</SCRIPT></head><body><h1>Tech Lead .NET</h1></body></html>

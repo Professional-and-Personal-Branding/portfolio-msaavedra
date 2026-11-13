@@ -14,6 +14,7 @@ import { FeaturedRepositoryModule } from './modules/featured-repository/featured
 import { ProjectModule } from './modules/project/project.module';
 import { SocialLinkModule } from './modules/social-link/social-link.module';
 import { ExperienceModule } from './modules/experience/experience.module';
+import { JobPostingModule } from './modules/job-posting/job-posting.module';
 import { HealthModule } from './modules/health/health.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { ProfileModule } from './modules/profile/profile.module';
@@ -61,6 +62,7 @@ import { PrismaModule } from './shared/infrastructure/persistence/prisma.module'
     SocialLinkModule,
     ApplicationTrackingModule,
     CvConsistencyModule,
+    JobPostingModule,
     IntegrationsModule,
   ],
   providers: [

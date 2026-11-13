@@ -18,10 +18,14 @@
  * `admin-integraciones-error` (change `add-integrations-foundation`) pulsa «Guardar» con la credencial
  * vacía; solo hay formulario si la API tiene un proveedor cuya credencial no viene de una variable de
  * entorno: sin él (p. ej. producción, sin proveedores) la entrada audita la pantalla tal cual está.
+ * `admin-desde-vacante-error` es el formulario de «Crear desde una vacante» enviado vacío (validación
+ * del cliente, sin ningún POST; change `add-job-posting-intake`).
  * Con A11Y_CHECK_ADMIN_EMAIL y A11Y_CHECK_ADMIN_PASSWORD también audita el panel: la sesión
  * se abre con `fetch('/api/auth/login')` desde la página, sin escribir la contraseña en un campo.
  * Para que `admin-postulaciones` audite una lista con filas, antes de recorrer el panel crea (por
- * la API, una sola vez) cinco postulaciones de prueba «Auditoría a11y …» en la base descartable.
+ * la API, una sola vez) cinco postulaciones de prueba «Auditoría a11y …» en la base descartable;
+ * y para `admin-desde-vacante-analisis` importa, por la API y sin red, una vacante PEGADA ficticia
+ * («Auditoría a11y — vacante») que el análisis muestra con su cobertura.
  *
  * Entorno:
  *   A11Y_CHECK_DISPOSABLE_DB=1  OBLIGATORIA: la API tiene que apuntar a una base descartable
@@ -427,6 +431,29 @@ const ERROR_ENTRIES = {
   'admin-experiencias-error': dialogErrorEntry('Nueva experiencia'),
   'admin-postulaciones-error': dialogErrorEntry('Nueva postulación'),
   'admin-integraciones-error': credentialErrorEntry(),
+  // Crear desde una vacante: «Analizar vacante» con la URL vacía valida en el cliente y no sale
+  // ningún POST (no hay importación ni red).
+  'admin-desde-vacante-error': {
+    async setup(page) {
+      page.adminPosts = 0;
+      page.on('request', (request) => {
+        if (request.method() === 'POST' && request.url().includes('/api/admin/')) page.adminPosts++;
+      });
+    },
+    async prepare(page) {
+      if (!(await clickButton(page, 'Analizar vacante')))
+        return ['no hay botón «Analizar vacante»'];
+      const seen = await waitFor(page, () =>
+        [...document.querySelectorAll('[role="alert"]')].some((e) =>
+          /Pegá la URL de la vacante/.test(e.textContent ?? ''),
+        ),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const problems = seen ? [] : ['no apareció «Pegá la URL de la vacante»'];
+      if (page.adminPosts !== 0) problems.push(`salieron ${page.adminPosts} POST a /api/admin/`);
+      return problems;
+    },
+  },
 };
 
 async function audit(entry, viewportName, { keyboard = false, skipLink = true } = {}) {
@@ -530,6 +557,27 @@ async function seedApplications(page, profileId) {
   }, profileId ?? null);
 }
 
+/**
+ * Una vacante PEGADA ficticia (sin red: el texto no sale del servidor) para que
+ * `admin-desde-vacante-analisis` audite el resultado con cobertura. Idempotente: el mismo texto
+ * reimporta la misma fila. Devuelve su id o `null`.
+ */
+async function seedJobPosting(page) {
+  return page.evaluate(async () => {
+    const response = await fetch('/api/admin/job-postings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        title: 'Auditoría a11y — vacante',
+        company: 'Acme Ejemplo',
+        text: 'Auditoría a11y — vacante ficticia. Buscamos un líder técnico con Java, Spring Boot, Kubernetes y liderazgo para nuestro equipo. Modalidad híbrida, tiempo completo.',
+      }),
+    });
+    return response.ok ? (await response.json()).id : null;
+  });
+}
+
 let adminAudited = false;
 if (ADMIN_EMAIL && ADMIN_PASSWORD) {
   const session = await browser.newPage();
@@ -559,6 +607,7 @@ if (ADMIN_EMAIL && ADMIN_PASSWORD) {
   );
   const first = (Array.isArray(profiles) ? profiles : (profiles.items ?? []))[0];
   await seedApplications(session, first?.id);
+  const postingId = await seedJobPosting(session);
   await session.close();
   const adminPages = [
     ['admin', '/admin'],
@@ -572,6 +621,11 @@ if (ADMIN_EMAIL && ADMIN_PASSWORD) {
     ['admin-perfiles', '/admin/perfiles'],
     ['admin-postulaciones', '/admin/postulaciones?estado=todas'],
     ['admin-postulaciones-error', '/admin/postulaciones'],
+    ['admin-desde-vacante', '/admin/perfiles/desde-vacante'],
+    ...(postingId
+      ? [['admin-desde-vacante-analisis', `/admin/perfiles/desde-vacante?vacante=${postingId}`]]
+      : []),
+    ['admin-desde-vacante-error', '/admin/perfiles/desde-vacante'],
     ['admin-revision', '/admin/revision'],
     // Sin ítem en la barra (D25): se audita por su URL.
     ['admin-integraciones', '/admin/integraciones'],

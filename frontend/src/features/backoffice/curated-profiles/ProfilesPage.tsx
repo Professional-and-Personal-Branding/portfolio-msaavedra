@@ -3,6 +3,7 @@ import {
   Copy,
   ExternalLink,
   Eye,
+  FileSearch,
   EyeOff,
   Lock,
   Pencil,
@@ -46,10 +47,19 @@ export function ProfilesPage() {
         title="Perfiles curados"
         description="Cada perfil es una vista filtrada del portafolio, con su propio link para compartir."
         actions={
-          <Button onClick={() => void navigate('/admin/perfiles/nuevo')}>
-            <Plus aria-hidden />
-            Nuevo perfil
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              onClick={() => void navigate('/admin/perfiles/desde-vacante')}
+            >
+              <FileSearch aria-hidden />
+              Desde una vacante
+            </Button>
+            <Button onClick={() => void navigate('/admin/perfiles/nuevo')}>
+              <Plus aria-hidden />
+              Nuevo perfil
+            </Button>
+          </>
         }
       />
 

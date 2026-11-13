@@ -382,6 +382,7 @@
     <a href="#tc48"><span class="dot part"></span><span class="id">TC-48</span> Exportar JSON Resume</a>
     <a href="#tc49"><span class="dot ok"></span><span class="id">TC-49</span> Integraciones</a>
     <a href="#tc50"><span class="dot part"></span><span class="id">TC-50</span> Repositorios destacados</a>
+    <a href="#tc51"><span class="dot part"></span><span class="id">TC-51</span> Crear desde una vacante</a>
     <a href="#tc27"><span class="dot ok"></span><span class="id">TC-27</span> Proyectos</a>
     <a href="#tc28"><span class="dot ok"></span><span class="id">TC-28</span> Aviso en el constructor</a>
     <a href="#tc29"><span class="dot ok"></span><span class="id">TC-29</span> Aviso en la Portada</a>
@@ -515,14 +516,14 @@ $env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del o
       <p class="lede">Último caso ejecutado el 12 de noviembre de 2026 (TC-49 y TC-50); antes, el 7 de noviembre de 2026 (TC-46, TC-47 y TC-48); antes, el 5 de noviembre (TC-45) y el 4 de noviembre (TC-44, pasos 1 a 5). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias); TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real. El historial completo de corridas está en <code>docs/MANUAL.md</code> § 6.</p>
 
       <div class="stats">
-        <div class="stat"><b>50</b><span>casos</span></div>
+        <div class="stat"><b>51</b><span>casos</span></div>
         <div class="stat ok"><b>41</b><span>pasan</span></div>
-        <div class="stat part"><b>9</b><span>parciales</span></div>
+        <div class="stat part"><b>10</b><span>parciales</span></div>
         <div class="stat"><b>2</b><span>defectos corregidos</span></div>
-        <div class="stat"><b>54</b><span>capturas</span></div>
+        <div class="stat"><b>55</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Pasan los 43 casos anteriores, TC-46, TC-47 y TC-49; TC-44, TC-45, TC-48 y TC-50 quedan parciales.</b> TC-49 (<code>add-integrations-foundation</code>) se ejecutó en la app real; el formulario de credencial se recorrió con la variable de <code>fake</code> retirada tras el arranque. TC-44 pide el sitio desplegado para los pasos 6 y 7; en TC-45 y TC-48 los pasos del panel que escriben contraseñas o descargan con sesión no se ejecutaron a mano y quedan cubiertos por la API, los e2e y los tests de la pantalla; en TC-50 solo el diálogo de impresión del paso 9 queda sin ejecutar a mano. Cada caso indica en <b>Observado</b> cuándo y contra qué se ejecutó. D-01 y D-02, los defectos de la primera ejecución, están corregidos (ver <a href="#defectos">Defectos</a>).</div>
+      <div class="note"><b>Pasan los 43 casos anteriores, TC-46, TC-47 y TC-49; TC-44, TC-45, TC-48, TC-50 y TC-51 quedan parciales.</b> TC-49 (<code>add-integrations-foundation</code>) se ejecutó en la app real con la API arrancada sin <code>FAKE_PROVIDER_TOKEN</code>, incluido el formulario de credencial. TC-51 se ejecutó el 12 de noviembre de 2026 en la app real y por la API; el paso con la URL pública de un ATS no se ejecutó (no se hacen peticiones a sitios de terceros) y lo cubren los e2e y los tests de cada fuente. TC-44 pide el sitio desplegado para los pasos 6 y 7; en TC-45 y TC-48 los pasos del panel que escriben contraseñas o descargan con sesión no se ejecutaron a mano y quedan cubiertos por la API, los e2e y los tests de la pantalla; en TC-50 solo el diálogo de impresión del paso 9 queda sin ejecutar a mano. Cada caso indica en <b>Observado</b> cuándo y contra qué se ejecutó. D-01 y D-02, los defectos de la primera ejecución, están corregidos (ver <a href="#defectos">Defectos</a>).</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -641,9 +642,10 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
           <li><b>Diseño</b>: elegí el <b>Tema</b> y el <b>Acento</b>, y ordená u ocultá las <b>Secciones</b>.</li>
           <li><b>Guardar</b>. Después, en <b>Publicación</b>, cambiá la <b>Visibilidad</b> a <code>Público</code> (o <code>Protegido</code> con token) y copiá el <b>Link público</b>.</li>
         </ol>
+        <p><span class="lbl">Variante desde una vacante</span> · En lugar de los pasos 1 a 3: <b>Perfiles</b> → <b>Desde una vacante</b> (<a href="#b17">B17</a>); pegá la URL o el texto de la vacante, dejá marcados los tags con respaldo en tus datos y pulsá <b>Crear borrador</b>. El borrador nace privado y se abre en el constructor; seguí desde el paso 2.</p>
         <p><span class="lbl">Resultado esperado</span> · El link responde 200 y muestra solo lo que pasa el filtro, con el titular y el tema del perfil nuevo. Mientras fue privado, nadie lo veía (404).</p>
         <p><span class="lbl">Errores típicos</span> · <code>Ya existe un perfil con ese slug</code> (409) al elegir un slug tomado, o que es el alias de otro perfil. Si la vista previa queda vacía, los tags no coinciden con ninguna experiencia: mirá los tags disponibles en <b>Selección</b>.</p>
-        <p><span class="lbl">Casos</span> · <a href="#tc12">TC-12</a>, <a href="#tc13">TC-13</a>, <a href="#tc15">TC-15</a>, <a href="#tc16">TC-16</a>, <a href="#tc21">TC-21</a></p>
+        <p><span class="lbl">Casos</span> · <a href="#tc12">TC-12</a>, <a href="#tc13">TC-13</a>, <a href="#tc15">TC-15</a>, <a href="#tc16">TC-16</a>, <a href="#tc21">TC-21</a>, <a href="#tc51">TC-51</a></p>
       </article>
 
       <article class="tour" id="r2">
@@ -993,7 +995,7 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 
       <article class="screen" id="b8">
         <h3>Perfiles</h3>
-        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles</code>. Lista de perfiles curados con su slug, visibilidad, taxonomía y visitas, y las marcas <code>Archivado</code> y <code>No enumerado</code>. Por fila: abrir en el portafolio, editar, <b>Duplicar</b> y borrar. <b>Nuevo perfil</b> abre el constructor vacío.</p>
+        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles</code>. Lista de perfiles curados con su slug, visibilidad, taxonomía y visitas, y las marcas <code>Archivado</code> y <code>No enumerado</code>. Por fila: abrir en el portafolio, editar, <b>Duplicar</b> y borrar. <b>Nuevo perfil</b> abre el constructor vacío y <b>Desde una vacante</b> abre la pantalla <a href="#b17">B17</a>, que arma un borrador a partir de una vacante.</p>
 <div class="tablewrap"><table>
 <thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
 <tbody>
@@ -1242,6 +1244,49 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
         <p><b>Abrir.</b> Lleva a la pantalla del ítem y abre su diálogo de edición (<code>?editar=&lt;id&gt;</code>, que sale de la URL al abrirse): <b>Experiencias</b>, <b>Skills</b> (categoría o skill), <b>Formación</b> (formación o certificación) y <b>Proyectos</b> (proyecto o enlace). Para el perfil base y los idiomas abre <b>Portada</b>; para un perfil curado, su ficha. Los hallazgos de errores no bloquean nada: el panel no deja guardar un dato inválido, así que un error solo puede venir de afuera del panel.</p>
         <p><b>Misma revisión, sin base.</b> <code>npm run cv:lint</code> corre las mismas reglas sobre el archivo del seed (por defecto <code>docs/cv-data.json</code>; otro con <code>-- --file &lt;ruta&gt;</code>) y sale con <b>0</b> sin errores (los avisos y sugerencias no fallan), <b>1</b> con algún error y <b>2</b> si el archivo no existe o el seed lo rechaza. El CI lo corre sobre <code>docs/cv-data.json</code> y sobre el ejemplo.</p>
         <figure class="shot" id="img-bo-revision-b16"><img src="bo-revision.jpg" width="800" height="500" alt="Revisión con un aviso y una sugerencia"></figure>
+      </article>
+
+      <article class="screen" id="b17">
+        <h3>Crear desde una vacante</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/perfiles/desde-vacante</code>. Se llega con el botón <b>Desde una vacante</b> de <b>Perfiles curados</b> (<a href="#b8">B8</a>), junto a <b>Nuevo perfil</b>; el ítem activo del menú sigue siendo <b>Perfiles curados</b>. Pegás la URL o el texto de una vacante y la pantalla te dice <b>qué parte de lo que pide ya está en tus datos</b> y arma un borrador privado del perfil curado. Es un paso determinístico: no usa IA, y la decisión de qué tags usar es tuya.</p>
+        <p><b>Fuentes admitidas.</b> Con <b>URL</b>: Greenhouse (<code>boards.greenhouse.io</code> y <code>job-boards.greenhouse.io</code>), Lever (<code>jobs.lever.co</code>, también <code>jobs.eu.lever.co</code>) y Ashby (<code>jobs.ashbyhq.com</code>) por la API pública de su tablero, y cualquier otra página de empleo https pública que incluya el bloque estructurado <code>JobPosting</code> (JSON-LD). Con <b>Texto</b>: lo que pegues, sin ninguna petición a la red.</p>
+        <p><b>Portales cerrados.</b> LinkedIn, Indeed, Glassdoor, Wellfound, Computrabajo, Bumeran, Laborum, ZonaJobs, Workana, Upwork, Torre, Get on Board y algunos agregadores no permiten leer sus vacantes. Con su URL, el servidor responde 422 sin hacer ninguna petición y la pantalla ofrece <b>Pegar el texto</b>, que cambia a <b>Texto</b> y deja la URL en <b>URL de referencia</b>: copiás el texto de la vacante, lo pegás y conservás el enlace.</p>
+        <p><b>Seguridad de la URL.</b> Solo <code>https://</code> al puerto 443, sin usuario ni contraseña, con un nombre de dominio público: se rechazan las IP (también <code>2130706433</code> o <code>[::1]</code>), <code>localhost</code> y los nombres internos, y se revisa a qué IP resuelve el nombre en cada redirect (hasta tres). Si algo de eso falla, el mensaje termina en «Pegá el texto de la vacante.» y no incluye la IP ni lo que respondió el sitio. Se permiten 10 importaciones por minuto.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Validación</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Origen</td><td>opción URL o Texto</td><td>Sí</td><td>Una sola a la vez</td><td>URL</td></tr>
+<tr><td>URL de la vacante</td><td>texto</td><td>Sí, con URL</td><td><code>https://</code>, hasta 2048 caracteres</td><td><code>https://jobs.lever.co/empresa/…</code></td></tr>
+<tr><td>Texto de la vacante</td><td>área de texto</td><td>Sí, con Texto</td><td>De 50 a 50000 caracteres</td><td>El texto copiado de LinkedIn</td></tr>
+<tr><td>Título</td><td>texto</td><td>No</td><td>Hasta 200; sin él, la primera línea del texto</td><td><code>Tech Lead Backend</code></td></tr>
+<tr><td>Empresa</td><td>texto</td><td>No</td><td>Hasta 160</td><td><code>Atlas Demo</code></td></tr>
+<tr><td>URL de referencia</td><td>texto</td><td>No</td><td><code>https://</code>; se guarda, nunca se abre desde el servidor</td><td><code>https://www.linkedin.com/jobs/view/123</code></td></tr>
+<tr><td>Casilla de cada tag con respaldo</td><td>casilla</td><td>Al menos una</td><td>Los sugeridos vienen marcados</td><td><code>java</code>, en 14 ítems</td></tr>
+<tr><td>Título del perfil</td><td>texto</td><td>No</td><td>Hasta 120; sin él, el de la vacante</td><td><code>Ingeniero Backend Senior</code></td></tr>
+<tr><td>Slug (opcional)</td><td>texto</td><td>No</td><td>Minúsculas, números y guiones; sin él, empresa y puesto con el primer sufijo libre</td><td><code>atlas-demo-backend</code></td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">Pegá la URL de la vacante</td><td><b>Analizar vacante</b> con la URL vacía en el modo URL.</td></tr>
+<tr><td class="msg">Usá una URL que empiece con https://</td><td>La URL (o la URL de referencia) no es https.</td></tr>
+<tr><td class="msg">Pegá al menos 50 caracteres del texto de la vacante</td><td>El texto tiene menos de 50 caracteres.</td></tr>
+<tr><td class="msg">Usá como máximo 50000 caracteres</td><td>El texto pasa de 50000 caracteres.</td></tr>
+<tr><td class="msg">Elegí al menos un tag</td><td><b>Crear borrador</b> con todas las casillas desmarcadas. No sale ninguna petición.</td></tr>
+<tr><td class="msg">Hiciste muchas importaciones seguidas. Esperá un minuto.</td><td>La API respondió 429: más de 10 importaciones en un minuto.</td></tr>
+<tr><td class="msg">Vacante importada</td><td>La vacante era nueva (201).</td></tr>
+<tr><td class="msg">Vacante actualizada</td><td>Ya la habías importado: se actualizó (200) y se renueva el plazo del texto.</td></tr>
+<tr><td class="msg">Borrador creado. Es privado hasta que lo publiques.</td><td>El perfil se creó; se abre el constructor.</td></tr>
+<tr><td class="msg">Vacante borrada</td><td>Se confirmó <b>Borrar</b> en la tabla.</td></tr>
+<tr><td class="msg">Todavía no importaste vacantes</td><td>La tabla de <b>Vacantes importadas</b> está vacía.</td></tr>
+</tbody>
+</table></div>
+        <p><b>Cómo leer la cobertura.</b> «Cubre 4 de 8 requisitos detectados (50 %)» cuenta los términos que la pantalla reconoció en el título y la descripción (con un diccionario de tecnologías y temas, más tus propios tags) y cuántos de ellos existen como tags de tus datos. En <b>Con respaldo en tus datos</b> cada tag lleva una casilla y «en 14 ítems»: cuántas experiencias y proyectos visibles y skills lo tienen; los hasta 8 primeros vienen marcados. <b>Sin respaldo</b> lista lo que la vacante pide y no figura en tus datos: no tiene casilla porque un filtro con un tag que ningún ítem tiene no mostraría nada. Si ocultás una experiencia, sus tags dejan de contar y la próxima vez que abras la vacante pasan a <b>Sin respaldo</b>. Es una ayuda, no un puntaje: un término ausente puede ser un falso negativo (el diccionario no lo conoce) o un falso positivo (una palabra común).</p>
+        <p><b>El borrador.</b> <b>Crear borrador</b> crea un perfil curado <b>Privado</b> y <b>No enumerado</b>, sin token, con los tags que dejaste marcados (o cualquier otro tag de tus datos) y el titular vacío (hereda el del perfil base). El slug sale de la empresa y el puesto, con el primer sufijo libre (<code>-2</code> … <code>-50</code>), o es el que escribas (si está ocupado, 409). No guarda ningún vínculo con la vacante: borrar la vacante no cambia el perfil. Terminalo en el constructor (B9 a B12) y publicalo desde <b>Publicación</b>.</p>
+        <p><b>El texto se guarda 90 días.</b> La descripción se conserva 90 días desde la importación («El texto se borra el 10 feb 2027») y después se borra, con «El texto se borró el …»; título, empresa, ubicación, enlaces, fechas y la cobertura se conservan. Reimportar renueva el plazo. La purga corre sola al listar, abrir o importar vacantes, y también a mano con <code>npm run job-postings:purge</code> en <code>backend/</code>. <b>La respuesta del sitio remoto nunca se guarda.</b></p>
+        <p><b>Vacantes importadas.</b> La tabla muestra Puesto y empresa, Fuente e Importada. <b>Abrir</b> pone <code>?vacante={id}</code> en la URL (se conserva al recargar) y <b>Borrar</b> pide confirmar. Nada de esto se publica: no hay ninguna ruta pública, ni el sitemap ni el head de un perfil muestran vacantes.</p>
+        <figure class="shot" id="img-bo-desde-vacante"><img src="bo-desde-vacante.jpg" width="800" height="500" alt="Crear desde una vacante, con el análisis de una vacante pegada"></figure>
       </article>
 
       <article class="screen" id="b15">
@@ -2004,6 +2049,31 @@ npm run cv:lint -- --file no-existe.json; echo "salida: $?"                     
         <fieldset class="run" data-run="tc47"><legend>Resultado de la corrida · TC-47</legend><label><input type="radio" name="r-tc47" value="pass"> pasa</label><label><input type="radio" name="r-tc47" value="fail"> falla</label><label><input type="radio" name="r-tc47" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-47"></fieldset>
       </article>
 
+      <article class="case" data-status="part" id="tc51" data-area="backoffice" data-change="add-job-posting-intake">
+        <div class="case-head"><span class="case-id">TC-51</span><h3>Crear un perfil desde una vacante</h3><span class="pill part">parcial</span></div>
+        <p><span class="lbl">Precondición</span> · Base de ejemplo <b>descartable</b> (nunca <code>portfolio</code>) sembrada con <code>npm run seed:example</code>, con la API y el frontend levantados (de preferencia la imagen de <code>frontend/Dockerfile</code>) y una sesión del panel. Los pasos 1 a 7 no necesitan internet; el paso 8 pide la URL de una vacante pública real.</p>
+        <p><span class="lbl">Pasos</span> · (1) En <b>Perfiles curados</b>, pulsá <b>Desde una vacante</b> (junto a <b>Nuevo perfil</b>); (2) pulsá <b>Analizar vacante</b> sin escribir nada; después escribí <code>http://careers.acme-ejemplo.com/job/1</code> y pulsá otra vez; (3) escribí <code>https://www.linkedin.com/jobs/view/3900000001</code> y pulsá <b>Analizar vacante</b>; (4) pulsá <b>Pegar el texto</b>; (5) en <b>Texto de la vacante</b> pegá un texto de al menos 50 caracteres que mencione Java, Spring Boot, Kubernetes y liderazgo, y pulsá <b>Analizar vacante</b>; (6) desmarcá un tag, dejá <b>Slug (opcional)</b> vacío y pulsá <b>Crear borrador</b>; (7) en otra ventana, <b>sin sesión</b>, abrí <code>/{slug}</code> y <code>/sitemap.xml</code>; volvé a <b>Desde una vacante</b> y, en <b>Vacantes importadas</b>, pulsá <b>Borrar</b> y confirmá; (8) escribí la URL pública de una vacante de Greenhouse, Lever o Ashby (por ejemplo <code>https://jobs.lever.co/&lt;empresa&gt;/&lt;id&gt;</code>) y pulsá <b>Analizar vacante</b>.</p>
+        <p><span class="lbl">Esperado</span> · (1) Se abre <code>/admin/perfiles/desde-vacante</code> con <b>Perfiles curados</b> activo en el menú y «Todavía no importaste vacantes» en la tabla; (2) aparece «Pegá la URL de la vacante» sin ninguna petición; con <code>http://</code> aparece «Usá una URL que empiece con https://»; (3) aparece, en un aviso con <code>role="alert"</code>, ««LinkedIn» no permite leer sus vacantes. Copiá el texto de la vacante y pegalo en «Texto».», con el botón <b>Pegar el texto</b>; nadie pidió nada a LinkedIn; (4) el origen pasa a <b>Texto</b> y la URL queda en <b>URL de referencia</b>; (5) aparece «Vacante importada»; la URL lleva <code>?vacante={id}</code>; se ve el título, «Híbrido · Texto pegado», «El texto se borra el {fecha a 90 días}» y «Cubre {n} de {m} requisitos detectados ({p} %)», con los tags de tus datos marcados y «en {k} ítems», y el resto en <b>Sin respaldo</b>; (6) aparece «Borrador creado. Es privado hasta que lo publiques.» y se abre el constructor del perfil nuevo: <b>Privado</b>, <b>No enumerado</b>, con los tags que dejaste marcados y un slug armado con la empresa y el puesto; (7) <code>/{slug}</code> responde 404 y el perfil no figura en el sitemap; al borrar aparece «Vacante borrada» y el perfil creado sigue en <b>Perfiles curados</b>; (8) aparece «Vacante importada» con la fuente de esa vacante (Greenhouse, Lever, Ashby o Página de empleo) y su análisis; si ya la habías importado, «Vacante actualizada».</p>
+        <p><span class="lbl">Errores típicos</span> · «La página tardó demasiado en responder», «La página es demasiado grande», «No encontramos esa vacante (puede estar cerrada)», «No encontramos una vacante en esa página» o «La URL apunta a una dirección que no está permitida», todos terminados en «Pegá el texto de la vacante.»: el sitio no se pudo leer; usá <b>Texto</b>. «Hiciste muchas importaciones seguidas. Esperá un minuto.»: pasaste de 10 por minuto. «Estos tags no existen en tus datos: …» (400) al crear el borrador: cambiaste tus datos desde otra pestaña; recargá la vacante. «Perfil curado: el slug «…» ya existe» (409): elegí otro <b>Slug</b>.</p>
+        <p><b>Por la API</b> (Bash; con la cookie de sesión del login de «Sesión para los <code>curl</code>» en <code>s.jar</code>):</p>
+        <div class="codewrap"><pre>API=http://localhost:3300
+post() { curl -s -b s.jar -w ' -&gt; %{http_code}\n' -H 'Content-Type: application/json' -d "$1" $API/api/admin/job-postings; }
+
+curl -s -w ' -&gt; %{http_code}\n' -H 'Content-Type: application/json' -d '{"url":"https://jobs.lever.co/e/1"}' $API/api/admin/job-postings   # 401 sin sesión
+post '{"url":"https://www.linkedin.com/jobs/view/123"}'     # 422 «LinkedIn» no permite leer sus vacantes…
+post '{"url":"https://127.0.0.1/"}'                          # 422 La URL no puede ser una dirección IP. Pegá el texto de la vacante.
+post '{"url":"https://2130706433/"}'                         # 422 (la misma IP en decimal)
+post '{"url":"http://careers.acme-ejemplo.com/job/1"}'       # 422 Usá una URL que empiece con https://
+post '{"url":"https://x.acme-ejemplo.com/","text":"x"}'      # 400 url y text juntos
+post '{"text":"Tech Lead. Buscamos una persona con Java, Spring Boot y Kubernetes para nuestro equipo remoto."}'   # 201 la primera vez, 200 después
+curl -s -b s.jar $API/api/admin/job-postings/&lt;id&gt;/suggestion        # coverage, suggestedFilterTags (solo tags de tus datos), suggestedTitle, suggestedSlugBase
+curl -s -b s.jar -H 'Content-Type: application/json' -d '{"jobPostingId":"&lt;id&gt;","filterTags":["java"]}' $API/api/admin/curated-profiles/from-job-posting   # 201 PRIVATE, listed false
+curl -s -o /dev/null -w '%{http_code}\n' $API/api/job-postings   # 404 sin ruta pública</pre></div>
+        <p><span class="lbl">Observado</span> · 12 de noviembre de 2026, imagen de <code>frontend/Dockerfile</code> en <code>localhost:8154</code>, API de la rama en <code>localhost:3354</code> y la base descartable <code>portfolio_intake_check</code>, sembrada con el ejemplo. Por la API: 401 sin sesión; 422 de portal cerrado, de IP literal (<code>127.0.0.1</code>, <code>2130706433</code>, <code>[::1]</code>) y de <code>http://</code>; 400 con <code>url</code> y <code>text</code> juntos; 404 en <code>GET /api/job-postings</code>. En Chrome: el aviso de portal cerrado, <b>Pegar el texto</b>, el análisis de una vacante pegada («Cubre 4 de 8 requisitos detectados (50 %)»: <code>java</code>, <code>microservices</code>, <code>spring-boot</code> y <code>leadership</code> con respaldo; <code>aws</code>, <code>go</code>, <code>kafka</code> y <code>kubernetes</code> sin él) y <b>Crear borrador</b>, que dejó un perfil <code>PRIVATE</code>, <code>listed: false</code>, fuera del sitemap y con 404 en la ruta pública. <b>No se ejecutó el paso 8:</b> no se hicieron peticiones a sitios de terceros; la lectura de Greenhouse, Lever, Ashby y JSON-LD se verificó con los e2e (transporte y resolvedor de DNS falsos), los tests de cada fuente con fixtures sanitizados y un servidor <code>http</code> local para el cliente HTTP; por eso el caso queda parcial.</p>
+        <figure class="shot" id="img-bo-desde-vacante-tc51"><img src="bo-desde-vacante.jpg" width="800" height="500" alt="Crear desde una vacante"></figure>
+        <fieldset class="run" data-run="tc51"><legend>Resultado de la corrida · TC-51</legend><label><input type="radio" name="r-tc51" value="pass"> pasa</label><label><input type="radio" name="r-tc51" value="fail"> falla</label><label><input type="radio" name="r-tc51" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-48"></fieldset>
+      </article>
+
       <article class="case" data-status="part" id="tc48" data-area="backoffice" data-change="add-json-resume-export">
         <div class="case-head"><span class="case-id">TC-48</span><h3>Exportar un perfil curado como JSON Resume</h3><span class="pill part">parcial</span></div>
         <p><span class="lbl">Precondición</span> · Base de ejemplo <b>descartable</b> (nunca <code>portfolio</code>), con la API y el frontend levantados (de preferencia la imagen de <code>frontend/Dockerfile</code>, para que <code>/api/...</code> pase por Caddy). Sesión del panel con un administrador de prueba.</p>
@@ -2378,6 +2448,9 @@ echo "$SITIO/acme-tech-lead"</pre></div>
         <div class="g"><dt id="g-trabajo">trabajo</dt><dd>Una tarea de la cola de integraciones (por ejemplo, sincronizar un proveedor). Pasa por pendiente, en curso, hecho, con error (se reintenta con espera creciente) o fallido (no se reintenta); cada intento queda registrado. <span class="refs"><a href="#b17">B17 · Integraciones</a>, <a href="#tc49">TC-49</a></span></dd></div>
         <div class="g"><dt id="g-arriendo-del-ejecutor">arriendo del ejecutor</dt><dd>Una fila de la base que asegura que una sola instancia ejecute trabajos a la vez, incluso cuando conviven dos procesos durante un deploy. Vence sola si el proceso muere, así que nada queda trabado. <span class="refs"><a href="#tc49">TC-49</a></span></dd></div>
         <div class="g"><dt id="g-sincronizaci-n-atrasada">sincronización atrasada</dt><dd>Un proveedor habilitado que lleva más de 48 h sin una corrida exitosa. La tarjeta lo marca con «Sin sincronizar hace más de 48 h» y el Dashboard lo avisa; un proveedor pausado a mano no cuenta. <span class="refs"><a href="#b17">B17 · Integraciones</a>, <a href="#tc49">TC-49</a></span></dd></div>
+        <div class="g"><dt id="g-vacante-importada">vacante importada</dt><dd>Una vacante que pegaste o leíste desde una URL en <b>Crear desde una vacante</b>: título, empresa, ubicación, modalidad, enlaces y los términos detectados; el texto se borra a los 90 días. Es privada: no se publica en ningún lado. <span class="refs"><a href="#b17">B17 · Crear desde una vacante</a>, <a href="#tc51">TC-51</a></span></dd></div>
+        <div class="g"><dt id="g-cobertura">cobertura</dt><dd>Cuántos de los requisitos que se detectaron en una vacante existen como tags de tus datos («Cubre 4 de 8 requisitos detectados»). Los que tienen respaldo se pueden marcar para el borrador; los demás figuran como <b>Sin respaldo</b>. <span class="refs"><a href="#b17">B17 · Crear desde una vacante</a>, <a href="#tc51">TC-51</a></span></dd></div>
+        <div class="g"><dt id="g-portal-cerrado">portal cerrado</dt><dd>Un sitio de empleo (LinkedIn, Indeed…) cuyos términos no permiten leer sus vacantes: la plataforma no lo consulta y te pide pegar el texto. <span class="refs"><a href="#b17">B17 · Crear desde una vacante</a>, <a href="#tc51">TC-51</a></span></dd></div>
       </dl>
     </section>
 </main>

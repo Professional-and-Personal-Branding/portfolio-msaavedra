@@ -53,6 +53,12 @@ export type ApplicationSummary = Schemas['ApplicationSummaryResponse'];
 export type CreateApplicationBody = Schemas['CreateApplicationDto'];
 export type UpdateApplicationBody = Schemas['UpdateApplicationDto'];
 
+// add-job-posting-intake: vacantes importadas y borrador de perfil desde una vacante.
+export type JobPosting = Schemas['JobPostingResponse'];
+export type JobPostingSuggestion = Schemas['JobPostingSuggestionResponse'];
+export type ImportJobPostingBody = Schemas['ImportJobPostingDto'];
+export type CreateFromJobPostingBody = Schemas['CreateCuratedProfileFromJobPostingDto'];
+
 // add-cv-consistency-rules: revisión de consistencia del CV.
 export type CvConsistency = Schemas['CvConsistencyResponse'];
 export type CvIssue = Schemas['CvIssueResponse'];

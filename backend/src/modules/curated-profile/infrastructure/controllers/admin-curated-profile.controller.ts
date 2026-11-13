@@ -50,6 +50,7 @@ import {
   DuplicateCuratedProfileUseCase,
   UnarchiveCuratedProfileUseCase,
 } from '../../application/use-cases/admin/curated-profile-lifecycle.use-cases';
+import { CreateCuratedProfileFromJobPostingUseCase } from '../../application/use-cases/admin/create-curated-profile-from-job-posting.use-case';
 import {
   PreviewCuratedProfileOutput,
   PreviewCuratedProfileUseCase,
@@ -70,6 +71,7 @@ import {
   toNewCuratedProfileProps,
   UpdateCuratedProfileDto,
 } from './dto/curated-profile.dto';
+import { CreateCuratedProfileFromJobPostingDto } from './dto/from-job-posting.dto';
 
 @ApiTags('admin')
 @ApiBearerAuth()
@@ -82,6 +84,7 @@ export class AdminCuratedProfileController {
     private readonly listAll: ListAllCuratedProfilesUseCase,
     private readonly getOne: GetCuratedProfileAdminUseCase,
     private readonly createOne: CreateCuratedProfileUseCase,
+    private readonly createFromPosting: CreateCuratedProfileFromJobPostingUseCase,
     private readonly updateOne: UpdateCuratedProfileUseCase,
     private readonly deleteOne: DeleteCuratedProfileUseCase,
     private readonly preview: PreviewCuratedProfileUseCase,
@@ -109,6 +112,30 @@ export class AdminCuratedProfileController {
     @RequestLocale() locale: Locale,
   ): Promise<PreviewCuratedProfileOutput> {
     const result = await this.preview.execute({ draft: toDraftCuratedProfileProps(dto), locale });
+    return result.value;
+  }
+
+  @Post('from-job-posting')
+  @ApiOperation({
+    summary: 'Crear un borrador de perfil curado desde una vacante importada',
+    description:
+      'Crea el perfil con los `filterTags` elegidos, que deben existir en el vocabulario de tus datos ' +
+      '(tags de experiencias y proyectos visibles y de las skills). Nace PRIVATE, no enumerado, sin ' +
+      'token y con el encabezado vacío (hereda el del perfil base). La vacante no se modifica.',
+  })
+  @ApiCreatedResponse({ type: AdminCuratedProfileResponse })
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    description:
+      'Tags vacíos, repetidos o fuera del vocabulario (el mensaje los nombra); slug inválido',
+  })
+  @ApiNotFoundResponse({ type: ErrorResponseDto, description: 'La vacante no existe' })
+  @ApiConflictResponse({ type: ErrorResponseDto, description: 'Slug ocupado o sin sufijo libre' })
+  async createFromJobPosting(
+    @Body() dto: CreateCuratedProfileFromJobPostingDto,
+  ): Promise<AdminCuratedProfileOutput> {
+    const result = await this.createFromPosting.execute(dto);
+    if (!result.ok) throw toHttpException(result.error);
     return result.value;
   }
 

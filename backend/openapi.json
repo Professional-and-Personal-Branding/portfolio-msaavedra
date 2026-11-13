@@ -1563,6 +1563,84 @@
         ]
       }
     },
+    "/api/admin/curated-profiles/from-job-posting": {
+      "post": {
+        "description": "Crea el perfil con los `filterTags` elegidos, que deben existir en el vocabulario de tus datos (tags de experiencias y proyectos visibles y de las skills). Nace PRIVATE, no enumerado, sin token y con el encabezado vacío (hereda el del perfil base). La vacante no se modifica.",
+        "operationId": "AdminCuratedProfileController_createFromJobPosting",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCuratedProfileFromJobPostingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCuratedProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tags vacíos, repetidos o fuera del vocabulario (el mensaje los nombra); slug inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin Bearer válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La vacante no existe",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Slug ocupado o sin sufijo libre",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear un borrador de perfil curado desde una vacante importada",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/admin/curated-profiles": {
       "get": {
         "operationId": "AdminCuratedProfileController_list",
@@ -4782,6 +4860,294 @@
         ]
       }
     },
+    "/api/admin/job-postings": {
+      "post": {
+        "description": "`url` **o** `text`. Con URL: Greenhouse, Lever y Ashby por su API pública y, para cualquier otra página https pública, el bloque JSON-LD `JobPosting`. Los portales cerrados (LinkedIn, Indeed, Glassdoor…) responden 422 sin ninguna petición. La política de red rechaza http, IP literales, puertos, nombres locales y direcciones no públicas en cada redirect. Con texto: extracción determinística, sin red. Reimportar la misma vacante la actualiza (200); nueva, 201. Límite: 10 por minuto por IP.",
+        "operationId": "AdminJobPostingController_import",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportJobPostingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vacante ya importada, actualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobPostingResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Vacante nueva",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobPostingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`url` y `text` juntos o ninguno, texto fuera de 50 a 50 000, referencia no https",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "No se pudo leer la URL (portal cerrado, política de red, plazo, tamaño, tipo, sin vacante). El mensaje indica pegar el texto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Más de 10 por minuto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Importar una vacante desde una URL o desde texto",
+        "tags": [
+          "admin"
+        ]
+      },
+      "get": {
+        "description": "Por `importedAt` descendente. Antes de leer, borra el texto de las vacantes con más de 90 días.",
+        "operationId": "AdminJobPostingController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JobPostingResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar vacantes importadas",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/job-postings/{id}/suggestion": {
+      "get": {
+        "description": "Cobertura de los términos detectados contra el vocabulario **vigente** de tus datos (tags de experiencias y proyectos visibles y de las skills). Solo trae la cobertura, hasta 8 tags sugeridos, un título y una base de slug. Se calcula en cada llamada.",
+        "operationId": "AdminJobPostingController_suggestion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobPostingSuggestionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sugerir criterios de un perfil curado desde la vacante",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/job-postings/{id}": {
+      "get": {
+        "operationId": "AdminJobPostingController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobPostingResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Leer una vacante importada",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "description": "Los perfiles curados creados desde ella no cambian.",
+        "operationId": "AdminJobPostingController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Borrar una vacante importada",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/admin/applications": {
       "get": {
         "description": "Más recientemente editadas primero (`updatedAt` y `id` descendentes). `status` acepta uno o varios estados separados por coma; sin él, todas. Cada una trae las aperturas humanas de su enlace.",
@@ -7398,6 +7764,40 @@
           "missingTranslations"
         ]
       },
+      "CreateCuratedProfileFromJobPostingDto": {
+        "type": "object",
+        "properties": {
+          "jobPostingId": {
+            "type": "string",
+            "description": "Id de la vacante importada"
+          },
+          "filterTags": {
+            "description": "1 a 20 tags, sin repetidos, todos del vocabulario de tus datos",
+            "example": [
+              "java",
+              "spring-boot"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "title": {
+            "type": "string",
+            "description": "Título del perfil (1 a 120). Sin él, el de la vacante.",
+            "example": "Tech Lead Backend en Acme Ejemplo"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Slug kebab-case. Sin él se arma con la empresa y el puesto, con el primer sufijo libre.",
+            "example": "acme-ejemplo-tech-lead"
+          }
+        },
+        "required": [
+          "jobPostingId",
+          "filterTags"
+        ]
+      },
       "AdminCuratedProfileResponse": {
         "type": "object",
         "properties": {
@@ -9036,6 +9436,259 @@
             "default": true
           }
         }
+      },
+      "ImportJobPostingDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL https de la vacante: Greenhouse, Lever, Ashby o una página de empleo con JSON-LD. Los portales cerrados (LinkedIn, Indeed…) responden 422. Excluyente con `text`.",
+            "example": "https://jobs.lever.co/acmeejemplo/0b1c2d3e-aaaa-bbbb-cccc-1234567890ab"
+          },
+          "text": {
+            "type": "string",
+            "description": "Texto de la vacante (50 a 50 000 caracteres tras recortar). Excluyente con `url`."
+          },
+          "title": {
+            "type": "string",
+            "description": "Título (hasta 200); solo con `text`. Sin él, la primera línea del texto."
+          },
+          "company": {
+            "type": "string",
+            "description": "Empresa (hasta 160); solo con `text`."
+          },
+          "referenceUrl": {
+            "type": "string",
+            "description": "URL https de referencia (hasta 2048); solo con `text`. Se guarda como `sourceUrl` y nunca se pide.",
+            "example": "https://www.linkedin.com/jobs/view/123"
+          }
+        }
+      },
+      "JobPostingSourceKind": {
+        "type": "string",
+        "enum": [
+          "GREENHOUSE",
+          "LEVER",
+          "ASHBY",
+          "JSON_LD",
+          "PASTED"
+        ]
+      },
+      "WorkplaceType": {
+        "type": "string",
+        "enum": [
+          "REMOTE",
+          "HYBRID",
+          "ONSITE"
+        ]
+      },
+      "JobPostingResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobPostingSourceKind"
+              }
+            ]
+          },
+          "sourceUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL canónica pedida o de referencia"
+          },
+          "applyUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Solo https"
+          },
+          "title": {
+            "type": "string",
+            "example": "Tech Lead Backend"
+          },
+          "company": {
+            "type": "string",
+            "nullable": true,
+            "example": "Acme Ejemplo"
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          },
+          "workplaceType": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WorkplaceType"
+              }
+            ]
+          },
+          "employmentType": {
+            "type": "string",
+            "nullable": true
+          },
+          "compensation": {
+            "type": "string",
+            "nullable": true,
+            "description": "Tal como lo da la fuente"
+          },
+          "language": {
+            "type": "string",
+            "nullable": true,
+            "example": "es"
+          },
+          "postedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Texto plano (hasta 20 000); `null` después de la purga"
+          },
+          "descriptionTruncated": {
+            "type": "boolean"
+          },
+          "detectedTerms": {
+            "example": [
+              "java",
+              "kubernetes"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "importedAt": {
+            "type": "string",
+            "description": "ISO 8601"
+          },
+          "textPurgeAt": {
+            "type": "string",
+            "description": "ISO 8601: cuándo se borra (o se borró) el texto"
+          },
+          "textPurged": {
+            "type": "boolean",
+            "description": "`true` si el texto ya se borró"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO 8601"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "ISO 8601"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "sourceUrl",
+          "applyUrl",
+          "title",
+          "company",
+          "location",
+          "workplaceType",
+          "employmentType",
+          "compensation",
+          "language",
+          "postedAt",
+          "description",
+          "descriptionTruncated",
+          "detectedTerms",
+          "importedAt",
+          "textPurgeAt",
+          "textPurged",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CoveredTagResponse": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "type": "string",
+            "example": "java"
+          },
+          "evidence": {
+            "type": "number",
+            "description": "Ítems visibles de tus datos que llevan el tag",
+            "example": 3
+          }
+        },
+        "required": [
+          "tag",
+          "evidence"
+        ]
+      },
+      "TagCoverageResponse": {
+        "type": "object",
+        "properties": {
+          "covered": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CoveredTagResponse"
+            }
+          },
+          "uncovered": {
+            "description": "Detectados sin respaldo en tus datos",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "detectedCount": {
+            "type": "number"
+          },
+          "coveredCount": {
+            "type": "number"
+          },
+          "ratio": {
+            "type": "number",
+            "nullable": true,
+            "description": "`coveredCount / detectedCount` a dos decimales; `null` si no se detectó nada"
+          }
+        },
+        "required": [
+          "covered",
+          "uncovered",
+          "detectedCount",
+          "coveredCount",
+          "ratio"
+        ]
+      },
+      "JobPostingSuggestionResponse": {
+        "type": "object",
+        "properties": {
+          "coverage": {
+            "$ref": "#/components/schemas/TagCoverageResponse"
+          },
+          "suggestedFilterTags": {
+            "description": "Hasta 8; siempre dentro del vocabulario de tags de tus datos, sin repetidos",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggestedTitle": {
+            "type": "string",
+            "description": "Hasta 120 caracteres"
+          },
+          "suggestedSlugBase": {
+            "type": "string",
+            "example": "acme-ejemplo-tech-lead-backend"
+          }
+        },
+        "required": [
+          "coverage",
+          "suggestedFilterTags",
+          "suggestedTitle",
+          "suggestedSlugBase"
+        ]
       },
       "ApplicationStatus": {
         "type": "string",

@@ -1,0 +1,6 @@
+manual:capture -- http://localhost:8154 --only bo-desde-vacante (base de ejemplo descartable portfolio_intake_check), dos corridas seguidas:
+ok bo-desde-vacante.jpg  67.1 KB
+1/1 capturas; 0 sobre 150 KB.
+Conteo de vacantes con el titulo de ejemplo despues de la tercera corrida (la primera creo la fila; las demas reimportan):
+1
+Imagen: docs/manual/bo-desde-vacante.jpg (67 KB, tope 150 KB).

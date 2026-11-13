@@ -1,0 +1,12 @@
+Punto de partida en feat/job-posting-intake (main 164e4ba), 2026-11-12.
+Bases: e2e y unit contra la base descartable portfolio_intake_e2e (migrada y sembrada); portfolio no se toco.
+
+Confirmado: no existen el modelo JobPosting ni el modulo job-posting; NAV tiene nueve items; RuleViolationError mapea a 422;
+no hay nock, undici ni parser de HTML en package.json.
+
+backend  npm test        126 suites, 1350 tests, todo verde
+backend  npm run test:e2e 20 suites, 338 tests, todo verde
+backend  npm run lint    sin hallazgos
+frontend npm test        74 archivos, 1136 tests. Una primera corrida con la maquina cargada dio 2 fallos
+                         (flaky por carga); la repeticion dio todo verde.
+frontend npm run lint    sin hallazgos

@@ -18,7 +18,7 @@
  *   - exige MANUAL_CAPTURE_DISPOSABLE_DB=1: las cargas públicas registran visitas;
  *   - `GET /api/profile` debe devolver el `fullName` de `docs/examples/cv-data.example.json`.
  *
- * Sin escrituras, salvo tres: el inicio de sesión (`fetch('/api/auth/login')` desde la página, con
+ * Sin escrituras, salvo cuatro: el inicio de sesión (`fetch('/api/auth/login')` desde la página, con
  * credenciales de prueba por variables de entorno); para la captura `tc41-enlaces` (change
  * `add-share-links`), la creación de UN enlace de seguimiento de ejemplo por la API del panel
  * (`POST /api/admin/curated-profiles/:id/share-links`, solo si el perfil todavía no tiene uno con
@@ -27,8 +27,10 @@
  * cada una solo si todavía no existe una postulación con esa empresa); y, para `bo-integraciones`
  * (change `add-integrations-foundation`), UNA sincronización del proveedor `fake`
  * (`POST /api/admin/integrations/fake/sync`, solo si todavía no corrió ninguna), que exige que la API
- * esté arrancada con `INTEGRATIONS_ENABLED=fake` e `INTEGRATIONS_SCHEDULER_ENABLED=true`. El script no
- * hace ningún otro POST, PATCH ni DELETE, y
+ * esté arrancada con `INTEGRATIONS_ENABLED=fake` e `INTEGRATIONS_SCHEDULER_ENABLED=true`;
+ * y, para `bo-desde-vacante` (change `add-job-posting-intake`), la importación de UNA vacante PEGADA ficticia
+ * (`POST /api/admin/job-postings` con `text`: sin red, y idempotente porque el mismo texto
+ * reimporta la misma fila). El script no hace ningún otro POST, PATCH ni DELETE, y
  * nunca escribe una contraseña real en un campo: la captura del error de credenciales usa un
  * email inexistente y un valor de relleno que no pertenece a nadie, y la de Cuenta (`bo-cuenta`)
  * solo valores de relleno que la validación del cliente rechaza sin enviar nada. Los errores de validación
@@ -317,6 +319,19 @@ const MANIFEST = [
     esperar: 'Atlas Demo',
     pasos: [['esperarTexto', 'Sin abrir'], ['esperar', 500]],
   },
+  // Crear desde una vacante (change `add-job-posting-intake`, B17 y TC-51): el análisis de la
+  // vacante pegada ficticia que el script importa de forma idempotente (sin red).
+  {
+    id: 'bo-desde-vacante',
+    ruta: '/admin/perfiles/desde-vacante',
+    sesion: true,
+    esperar: 'Analizar vacante',
+    pasos: [
+      ['click', 'aria/Abrir Ingeniero Backend Senior (vacante de ejemplo)[role="button"]'],
+      ['esperarTexto', 'requisitos detectados'],
+      ['esperar', 600],
+    ],
+  },
   { id: 'tc27-proyectos', ruta: '/admin/proyectos', sesion: true, esperar: 'Plataforma de Reservas' },
   {
     // Change add-featured-repositories: el bloque Repositorios destacados de /admin/proyectos.
@@ -603,6 +618,29 @@ async function ensureExampleIntegration(page) {
   if (outcome === 'sin-corrida') throw new Error('El trabajo de fake no terminó en 2 minutos.');
 }
 
+/**
+ * Una vacante PEGADA ficticia (sin red: el texto no sale del servidor), con tags del archivo de
+ * ejemplo. El mismo texto reimporta la misma fila (200), así que correr la captura dos veces deja
+ * una sola vacante.
+ */
+const EXAMPLE_JOB_POSTING = {
+  title: 'Ingeniero Backend Senior (vacante de ejemplo)',
+  company: 'Atlas Demo',
+  text: 'Ingeniero Backend Senior (vacante de ejemplo). Buscamos una persona con Java, Spring Boot y microservicios para nuestro equipo de plataforma. Se valora liderazgo, Kafka, Kubernetes, AWS y Terraform. Modalidad híbrida, tiempo completo.',
+};
+
+async function ensureExampleJobPosting(page) {
+  await page.evaluate(async (example) => {
+    const response = await fetch('/api/admin/job-postings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(example),
+    });
+    if (!response.ok) throw new Error(`No pude importar la vacante de ejemplo: ${response.status}`);
+  }, EXAMPLE_JOB_POSTING);
+}
+
 async function waitForText(page, ...candidates) {
   await page.waitForFunction(
     (texts) => texts.some((t) => document.body.innerText.includes(t)),
@@ -665,6 +703,7 @@ for (const entry of selected) {
     if (entry.sesion && !ids) {
       ids = await profileIds(page);
       await ensureExampleApplications(page, ids['ejemplo-backend']);
+      await ensureExampleJobPosting(page);
     }
     const route = entry.ruta.replace(/\{id:([^}]+)\}/g, (_m, slug) => {
       if (!ids?.[slug]) throw new Error(`No existe el perfil ${slug} en la base de ejemplo`);

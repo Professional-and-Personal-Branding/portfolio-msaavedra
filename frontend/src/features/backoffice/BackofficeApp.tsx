@@ -9,6 +9,7 @@ import { ExperiencesPage } from './experiences/ExperiencesPage';
 import { FormacionPage } from './formacion/FormacionPage';
 import { IntegrationsPage } from './integrations/IntegrationsPage';
 import { PortadaPage } from './portada/PortadaPage';
+import { JobPostingIntakePage } from './job-postings/JobPostingIntakePage';
 import { ProfileBuilderPage } from './curated-profiles/ProfileBuilderPage';
 import { ProfilesPage } from './curated-profiles/ProfilesPage';
 import { ProyectosPage } from './proyectos/ProyectosPage';
@@ -37,6 +38,7 @@ export function BackofficeApp() {
                     <Route path="formacion" element={<FormacionPage />} />
                     <Route path="proyectos" element={<ProyectosPage />} />
                     <Route path="perfiles" element={<ProfilesPage />} />
+                    <Route path="perfiles/desde-vacante" element={<JobPostingIntakePage />} />
                     <Route path="perfiles/:id" element={<ProfileBuilderPage />} />
                     <Route path="postulaciones" element={<ApplicationsPage />} />
                     <Route path="revision" element={<RevisionPage />} />

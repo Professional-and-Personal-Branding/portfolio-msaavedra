@@ -1,0 +1,19 @@
+# a11y:check · axe-core 4.13.0
+
+Base: http://localhost:8154 · 2026-11-12T23:32:08.004Z · 68 cargas (con panel)
+
+| Regla | Impacto | Nodos | Páginas | Ejemplo |
+|---|---|---|---|---|
+| (ninguna) | | 0 | | |
+
+Violaciones serious/critical: 0 nodos en 0 regla(s).
+Recorrido de teclado: sin problemas.
+Entradas con error a la vista: sin problemas.
+
+Lineas de las pantallas nuevas (salida de la corrida):
+admin-desde-vacante.mobile: sin violaciones
+admin-desde-vacante-analisis.mobile: sin violaciones
+admin-desde-vacante-error.mobile: sin violaciones
+admin-desde-vacante.desktop: sin violaciones
+admin-desde-vacante-analisis.desktop: sin violaciones
+admin-desde-vacante-error.desktop: sin violaciones

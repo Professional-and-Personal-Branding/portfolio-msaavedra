@@ -1,0 +1,5 @@
+prisma migrate status contra la base del owner (solo lectura; destino leido de backend/.env, que se borra despues):
+Datasource "db": PostgreSQL database "portfolio", schema "public" at "localhost:5434"
+Following migration have not yet been applied:
+20261112230734_add_job_posting_intake
+Bases descartables portfolio_intake_e2e, _check y _shadow borradas; backend/.env del worktree borrado; contenedor y imagen web de prueba eliminados.

@@ -1,0 +1,9 @@
+{
+  "_fixture": "Ficticio y sanitizado. Igual que greenhouse-job.json pero sin company_name (el board se humaniza). Consultado el 2026-11-12.",
+  "id": 4012346,
+  "title": "Backend Engineer",
+  "updated_at": "2026-10-01T09:00:00Z",
+  "absolute_url": "http://boards.greenhouse.io/acme-ejemplo/jobs/4012346",
+  "location": { "name": "Buenos Aires" },
+  "content": "&lt;p&gt;Trabajo hibrido con Python y PostgreSQL.&lt;/p&gt;"
+}

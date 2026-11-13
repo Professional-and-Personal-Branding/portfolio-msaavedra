@@ -1,0 +1,17 @@
+perf:budget en main (164e4ba), worktree de referencia:
+# Presupuesto de JS del arranque público
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-Du8Fgq2z.js | módulo | 148.9 |
+| /profile-prefetch.js | clásico | 1.2 |
+| **Total** | | **150.1** |
+Presupuesto: 155 KB.
+
+perf:budget en feat/job-posting-intake (el codigo nuevo va en el chunk del panel, BackofficeApp):
+# Presupuesto de JS del arranque público
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-DaqQdg6P.js | módulo | 148.9 |
+| /profile-prefetch.js | clásico | 1.2 |
+| **Total** | | **150.1** |
+Presupuesto: 155 KB.

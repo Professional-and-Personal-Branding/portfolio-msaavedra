@@ -1,0 +1,40 @@
+{
+  "_fixture": "Ficticio y sanitizado (Acme Ejemplo). Forma segun https://developers.ashbyhq.com/docs/public-job-posting-api, consultada el 2026-11-12. FORMA SUPUESTA: el campo `id` de cada vacante no esta documentado en esa pagina; se asume por la API real. La compensacion puede venir por vacante (jobs[].compensation).",
+  "apiVersion": "1",
+  "jobs": [
+    {
+      "id": "9f8e7d6c-0000-1111-2222-333344445555",
+      "title": "Staff Software Engineer",
+      "location": "Remote (Argentina)",
+      "employmentType": "FullTime",
+      "workplaceType": "Remote",
+      "isRemote": true,
+      "descriptionPlain": "Build event-driven systems with Kafka and PostgreSQL. You will mentor engineers and own technical direction.",
+      "applyUrl": "https://jobs.ashbyhq.com/acmeejemplo/9f8e7d6c-0000-1111-2222-333344445555/application",
+      "publishedAt": "2026-10-20T12:00:00.000+00:00",
+      "compensation": { "compensationTierSummary": "USD 120K - 150K" }
+    },
+    {
+      "id": "11111111-2222-3333-4444-555555555555",
+      "title": "Product Designer",
+      "location": "Montevideo",
+      "employmentType": "Contract",
+      "workplaceType": "OnSite",
+      "isRemote": false,
+      "descriptionPlain": "Disena interfaces.",
+      "applyUrl": "https://jobs.ashbyhq.com/acmeejemplo/11111111-2222-3333-4444-555555555555/application",
+      "publishedAt": "2026-10-01T12:00:00.000+00:00"
+    },
+    {
+      "id": "66666666-7777-8888-9999-000000000000",
+      "title": "Data Engineer",
+      "location": "Hybrid (Buenos Aires)",
+      "employmentType": "PartTime",
+      "workplaceType": "Hybrid",
+      "isRemote": true,
+      "descriptionPlain": "Pipelines con Spark y Airflow.",
+      "applyUrl": "https://jobs.ashbyhq.com/acmeejemplo/66666666-7777-8888-9999-000000000000/application",
+      "publishedAt": "2026-09-15T12:00:00.000+00:00"
+    }
+  ]
+}

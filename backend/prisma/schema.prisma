@@ -473,3 +473,48 @@ model IntegrationRunnerLease {
   holder    String
   expiresAt DateTime
 }
+
+// ─────────────────────────────────────────────────────────────
+// VACANTES IMPORTADAS (change add-job-posting-intake)
+// ─────────────────────────────────────────────────────────────
+enum JobPostingSourceKind {
+  GREENHOUSE
+  LEVER
+  ASHBY
+  JSON_LD
+  PASTED
+}
+
+enum WorkplaceType {
+  REMOTE
+  HYBRID
+  ONSITE
+}
+
+/// Vacante normalizada que el owner importó desde el panel. Sin relaciones con otras tablas.
+/// La respuesta remota nunca se guarda: solo estos campos; `description` se borra a los 90 días.
+model JobPosting {
+  id                   String               @id @default(cuid())
+  source               JobPostingSourceKind
+  sourceKey            String               @unique
+  sourceUrl            String?
+  applyUrl             String?
+  title                String
+  company              String?
+  location             String?
+  workplaceType        WorkplaceType?
+  employmentType       String?
+  compensation         String?
+  language             String?
+  postedAt             DateTime?
+  description          String?
+  descriptionTruncated Boolean              @default(false)
+  detectedTerms        String[]             @default([])
+  importedAt           DateTime
+  textPurgeAt          DateTime
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  @@index([importedAt])
+  @@index([textPurgeAt])
+}
