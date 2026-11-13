@@ -48,13 +48,17 @@ describe('API de integraciones del panel (e2e)', () => {
   });
 
   it('las cinco rutas exigen sesión (401)', async () => {
-    const responses = await Promise.all([
-      http().get(BASE),
-      http().post(`${BASE}/fake/sync`),
-      http().patch(`${BASE}/fake`).send({ enabled: false }),
-      http().put(`${BASE}/fake/credential`).send({ secret: 'x' }),
-      http().delete(`${BASE}/fake/credential`),
-    ]);
+    // En serie: en paralelo, supertest abre un listener efímero por petición y en el CI
+    // alguna conexión se cortaba con ECONNRESET.
+    const calls = [
+      () => http().get(BASE),
+      () => http().post(`${BASE}/fake/sync`),
+      () => http().patch(`${BASE}/fake`).send({ enabled: false }),
+      () => http().put(`${BASE}/fake/credential`).send({ secret: 'x' }),
+      () => http().delete(`${BASE}/fake/credential`),
+    ];
+    const responses: request.Response[] = [];
+    for (const call of calls) responses.push(await call());
     expect(responses.map((r) => r.status)).toEqual([401, 401, 401, 401, 401]);
   });
 
@@ -118,12 +122,14 @@ describe('API de integraciones del panel (e2e)', () => {
   });
 
   it('un proveedor fuera de INTEGRATIONS_ENABLED da 404 en todas las rutas', async () => {
-    const responses = await Promise.all([
-      authed.post(`${BASE}/github/sync`),
-      authed.patch(`${BASE}/github`).send({ enabled: false }),
-      authed.put(`${BASE}/github/credential`).send({ secret: 'x' }),
-      authed.delete(`${BASE}/github/credential`),
-    ]);
+    const calls = [
+      () => authed.post(`${BASE}/github/sync`),
+      () => authed.patch(`${BASE}/github`).send({ enabled: false }),
+      () => authed.put(`${BASE}/github/credential`).send({ secret: 'x' }),
+      () => authed.delete(`${BASE}/github/credential`),
+    ];
+    const responses: request.Response[] = [];
+    for (const call of calls) responses.push(await call());
     expect(responses.map((r) => r.status)).toEqual([404, 404, 404, 404]);
   });
 
