@@ -31,7 +31,7 @@ El manual SHALL incluir nueve recorridos: preparar un perfil para una vacante, m
 - **THEN** el perfil queda fuera de la home y del sitemap, y su link responde 200
 
 ### Requirement: Manual del backoffice por pantalla
-El manual SHALL recorrer cada pantalla del panel: login, dashboard, portada con idiomas, experiencias, skills, formación, proyectos y enlaces, perfiles, el constructor con sus cuatro pestañas, la vista previa, la cuenta, las postulaciones y la revisión del CV. Cada campo SHALL tener su etiqueta visible, tipo, obligatoriedad, validación y un ejemplo del archivo de ejemplo, según el código vigente del panel y de la API.
+El manual SHALL recorrer cada pantalla del panel: login, dashboard, portada con idiomas, experiencias, skills, formación, proyectos y enlaces, perfiles, el constructor con sus cuatro pestañas, la vista previa, la cuenta, las postulaciones, la revisión del CV y las integraciones. Cada campo SHALL tener su etiqueta visible, tipo, obligatoriedad, validación y un ejemplo del archivo de ejemplo, según el código vigente del panel y de la API.
 
 #### Scenario: Campo con validación
 - **WHEN** se lee la fila de *Plataforma* en la pantalla Proyectos y enlaces
@@ -52,6 +52,10 @@ El manual SHALL recorrer cada pantalla del panel: login, dashboard, portada con 
 #### Scenario: Pantalla Revisión
 - **WHEN** se lee la pantalla Revisión
 - **THEN** explica las tres severidades, que `yearsOfExperience` se carga a mano y la revisión solo avisa si contradice las fechas, que nada se corrige solo y que `npm run cv:lint` corre las mismas reglas sobre el archivo del seed
+
+#### Scenario: Pantalla Integraciones
+- **WHEN** se lee la pantalla Integraciones
+- **THEN** explica que **Sincronizar ahora** solo encola y el trabajo corre en el próximo minuto, qué significa cada estado y el aviso de más de 48 h, que la credencial nunca se vuelve a mostrar y que el scheduler y los proveedores se encienden con variables del servidor
 
 ### Requirement: Mensajes de validación literales
 Los mensajes de error del manual del backoffice SHALL citarse literales, en una columna *Mensaje* en Markdown y en `td.msg` en el HTML. `npm run manual:check` SHALL terminar con código 1 si alguno no aparece literal en `frontend/src`.
@@ -93,11 +97,19 @@ Cada imagen referenciada por el manual SHALL existir en `docs/manual/` y figurar
 - **THEN** termina con código 1 nombrando el archivo
 
 ### Requirement: Tope de tamaño del manual
-Cada imagen de `docs/manual/` MUST pesar hasta 150 KB, el total de imágenes hasta 4 MB e `index.html` hasta 1 MB, para que el manual se pueda publicar como artifact con margen y un peso anómalo (por ejemplo, una imagen embebida) se detecte. `npm run manual:check` SHALL terminar con código 1 si se supera algún tope.
+Cada imagen de `docs/manual/` MUST pesar hasta 150 KB, el total de imágenes hasta 8 MB e `index.html` hasta 1 MB, para que el manual se pueda publicar como artifact con margen y un peso anómalo (por ejemplo, una imagen embebida) se detecte. `npm run manual:check` SHALL terminar con código 1 si se supera algún tope.
 
 #### Scenario: Captura pesada
 - **WHEN** una captura pesa 186 KB y se ejecuta `npm run manual:check`
 - **THEN** termina con código 1 nombrando el archivo y su tamaño
+
+#### Scenario: Imágenes dentro del tope
+- **WHEN** las imágenes de `docs/manual/` suman 5 MB, ninguna pasa de 150 KB y se ejecuta `npm run manual:check`
+- **THEN** no informa un error por el total de imágenes
+
+#### Scenario: Imágenes que superan el total
+- **WHEN** las imágenes de `docs/manual/` suman 8,5 MB y se ejecuta `npm run manual:check`
+- **THEN** termina con código 1 informando el total y el tope de 8 MB
 
 #### Scenario: HTML dentro del tope
 - **WHEN** `index.html` pesa 320 KB y se ejecuta `npm run manual:check`
@@ -138,3 +150,14 @@ El manual SHALL incluir un glosario con al menos estos términos: slug, perfil b
 #### Scenario: Recursos externos
 - **WHEN** se listan los `src` y `href` externos de `index.html`
 - **THEN** solo aparecen `fonts.googleapis.com` y `fonts.gstatic.com`
+
+### Requirement: Pantalla Crear desde una vacante en el manual
+El manual SHALL describir la pantalla Crear desde una vacante (B17): fuentes admitidas y portales cerrados, cada campo con su regla y sus mensajes literales, cómo leer la cobertura, que el borrador nace privado y no enumerado, y que el texto de la vacante se borra a los 90 días. SHALL incluir el caso TC-51 con su captura generada por `manual:capture` sin red.
+
+#### Scenario: Portales cerrados explicados
+- **WHEN** se lee B17
+- **THEN** nombra LinkedIn e Indeed entre los portales que no se pueden leer y explica cómo pegar el texto
+
+#### Scenario: Caso TC-51 alineado
+- **WHEN** se ejecuta `npm run manual:check` con TC-51 en `MANUAL.md` e `index.html`
+- **THEN** termina con código 0 y la captura `bo-desde-vacante.jpg` figura en el inventario

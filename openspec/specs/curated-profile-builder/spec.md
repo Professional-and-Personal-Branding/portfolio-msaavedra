@@ -274,7 +274,7 @@ La pestaña Selección SHALL ofrecer Incluir y Excluir para cada skill, agrupada
 - **THEN** Kotlin muestra Excluir presionado, el proyecto muestra Incluir presionado y su categoría indica una skill excluida
 
 ### Requirement: Ítems ocultos y referencias huérfanas en la selección
-Las experiencias y los proyectos ocultos SHALL listarse marcados como ocultos, con Incluir deshabilitado salvo para quitar una inclusión existente y Excluir habilitado. Los ids de `includeIds`/`excludeIds` sin ítem en las listas MUST conservarse al guardar; con las tres listas cargadas, la pestaña SHALL contarlos y ofrecer quitarlos del borrador.
+Las experiencias, los proyectos y los repositorios ocultos SHALL listarse marcados como ocultos, con Incluir deshabilitado salvo para quitar una inclusión existente y Excluir habilitado. Los ids de `includeIds`/`excludeIds` sin ítem en las listas MUST conservarse al guardar; con las cuatro listas cargadas (experiencias, skills, proyectos y repositorios), la pestaña SHALL contarlos y ofrecer quitarlos del borrador.
 
 #### Scenario: Proyecto oculto
 - **WHEN** la lista de proyectos contiene uno con `visible: false` que no está incluido
@@ -285,7 +285,7 @@ Las experiencias y los proyectos ocultos SHALL listarse marcados como ocultos, c
 - **THEN** su botón Incluir está habilitado y presionado, y al pulsarlo el id sale de `includeIds`
 
 #### Scenario: Referencias huérfanas
-- **WHEN** el perfil guardado tiene en `excludeIds` un id que no corresponde a ninguna experiencia, skill ni proyecto
+- **WHEN** el perfil guardado tiene en `excludeIds` un id que no corresponde a ninguna experiencia, skill, proyecto ni repositorio
 - **THEN** la pestaña indica una referencia a un ítem que ya no existe y abrir la ficha no la marca con cambios sin guardar
 
 #### Scenario: Quitar las referencias huérfanas
@@ -295,6 +295,10 @@ Las experiencias y los proyectos ocultos SHALL listarse marcados como ocultos, c
 #### Scenario: Una lista no cargó
 - **WHEN** la lista de proyectos responde con error
 - **THEN** el bloque de proyectos muestra el error con reintento, no se informan referencias huérfanas y guardar no altera los ids existentes
+
+#### Scenario: Un repositorio incluido no es huérfano
+- **WHEN** el perfil guardado tiene en `includeIds` el id de un repositorio existente
+- **THEN** la pestaña no lo cuenta como referencia huérfana
 
 ### Requirement: Contadores del preview en singular y plural
 Los contadores del preview (experiencias, categorías de skills y proyectos) SHALL concordar en número con la cantidad: singular para 1 y plural para cualquier otra cantidad, incluido 0. Los contadores son parte del panel y SHALL seguir en español aunque el preview muestre el contenido en inglés.
@@ -333,3 +337,37 @@ La pestaña **Publicación** SHALL ofrecer, junto a «Link público», «Descarg
 #### Scenario: Vista pública sin cambios
 - **WHEN** se carga la vista pública de cualquier perfil
 - **THEN** no hay enlace a `resume.json` y `npm run perf:budget` no cambia de tamaño por este change
+
+### Requirement: Selección de repositorios en el constructor
+La pestaña Selección SHALL ofrecer Incluir y Excluir para cada repositorio, mutuamente excluyentes, en los mismos `includeIds`/`excludeIds`. Si el preview trae exactamente 1 repositorio y `sections` no tiene `repositories`, SHALL avisar que la sección se muestra desde 2. El aviso de faltantes SHALL incluir la `description` de cada repositorio seleccionado.
+
+#### Scenario: Incluir un repositorio
+- **WHEN** se incluye un repositorio visible que no comparte tags con el perfil
+- **THEN** su id queda en `includeIds` y el preview lo cuenta en `repositories`
+
+#### Scenario: Excluir un repositorio
+- **WHEN** se pulsa Excluir en un repositorio que figura en `includeIds`
+- **THEN** su id sale de `includeIds`, entra en `excludeIds` y deja de estar en el preview
+
+#### Scenario: Aviso del umbral
+- **WHEN** se abre `ejemplo-renombrado`, que resuelve 1 repositorio
+- **THEN** el bloque Repositorios muestra «La sección Repositorios se muestra desde 2; este perfil resuelve 1»
+
+#### Scenario: Faltante de traducción en un repositorio
+- **WHEN** el preview está en EN y un repositorio seleccionado no tiene `description.en`
+- **THEN** la pestaña Publicación lista ese repositorio entre los faltantes
+
+### Requirement: Acceso a la creación desde una vacante
+El encabezado de `/admin/perfiles` SHALL ofrecer, junto a **Nuevo perfil**, el botón **Desde una vacante**, que lleva a `/admin/perfiles/desde-vacante`. Esa pantalla SHALL mantener activo el ítem **Perfiles curados** de la navegación, que no suma ítems, y el borrador creado SHALL abrirse en la ficha de siempre.
+
+#### Scenario: Botón en Perfiles curados
+- **WHEN** el owner pulsa **Desde una vacante** en la lista de perfiles
+- **THEN** llega a `/admin/perfiles/desde-vacante` y la navegación sigue marcando **Perfiles curados**
+
+#### Scenario: El borrador se edita en el constructor
+- **WHEN** el owner crea un borrador desde una vacante
+- **THEN** se abre su ficha en `/admin/perfiles/{id}` con los `filterTags` elegidos y el preview correspondiente
+
+#### Scenario: La navegación no crece
+- **WHEN** se renderiza el panel
+- **THEN** la barra de navegación tiene los mismos nueve ítems que antes del change
