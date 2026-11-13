@@ -19,7 +19,7 @@ describe('Redacción de las integraciones (e2e)', () => {
   let cookie: string;
 
   beforeAll(async () => {
-    ctx = await createIntegrationsApp();
+    ctx = await createIntegrationsApp({ secretFromEnv: false });
     await createE2eAdmin(ctx.prisma);
     cookie = await loginCookie(ctx.app);
   });

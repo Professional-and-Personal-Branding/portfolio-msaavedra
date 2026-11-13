@@ -15,16 +15,16 @@ La API SHALL registrar solo los proveedores listados en `INTEGRATIONS_ENABLED` (
 - **WHEN** la API arranca con `NODE_ENV=production` e `INTEGRATIONS_ENABLED=fake`
 - **THEN** el arranque falla nombrando `INTEGRATIONS_ENABLED`
 
-### Requirement: Secreto exigido solo al proveedor habilitado
-Cada proveedor SHALL declarar las variables de entorno que necesita. La API MUST exigirlas solo si el proveedor está en `INTEGRATIONS_ENABLED`, y el error MUST nombrar la variable sin imprimir valores.
+### Requirement: Secreto opcional por variable de entorno
+Cada proveedor SHALL declarar una variable de entorno opcional para su secreto. La API MUST NOT exigirla al arrancar: sin ella el secreto sale de la base y, si tampoco hay, el estado muestra que falta la credencial.
 
-#### Scenario: Proveedor desactivado sin su secreto
+#### Scenario: Proveedor desactivado sin su variable
 - **WHEN** la API arranca sin `FAKE_PROVIDER_TOKEN` y con `INTEGRATIONS_ENABLED` vacía
 - **THEN** la API arranca normalmente
 
-#### Scenario: Proveedor habilitado sin su secreto
-- **WHEN** la API arranca con `INTEGRATIONS_ENABLED=fake` y sin `FAKE_PROVIDER_TOKEN`
-- **THEN** el proceso termina con código distinto de 0 y el error nombra `FAKE_PROVIDER_TOKEN`
+#### Scenario: Proveedor habilitado sin su variable
+- **WHEN** la API arranca con `INTEGRATIONS_ENABLED=fake` (con keyring) y sin `FAKE_PROVIDER_TOKEN`
+- **THEN** arranca normalmente y el estado de `fake` muestra `credential.source: null` (falta la credencial)
 
 ### Requirement: Cifrado de credenciales con keyring
 Las credenciales guardadas en la base SHALL cifrarse con AES-256-GCM, IV aleatorio por cifrado y como dato asociado el proveedor, con la clave `INTEGRATIONS_ACTIVE_KEY` del keyring `INTEGRATIONS_KEYS` (ids con claves de 32 bytes). Se descifra con la clave que nombra el payload. Las dos variables MUST exigirse si hay algún proveedor habilitado.

@@ -1,6 +1,4 @@
-a11y:check con panel contra la imagen de frontend/Dockerfile (localhost:8158), API de la rama con INTEGRATIONS_ENABLED=fake y la base descartable portfolio_integ_check (ejemplo). Sesión por fetch.
-Comando: A11Y_CHECK_DISPOSABLE_DB=1 A11Y_CHECK_PROFILE=ejemplo-backend A11Y_CHECK_ADMIN_EMAIL/PASSWORD=<de prueba> node scripts/check-a11y.mjs http://localhost:8158
-
+a11y:check con panel contra la imagen actual (8158), API sin FAKE_PROVIDER_TOKEN: 66 cargas, 0 violaciones serious/critical, teclado sin problemas, entradas con error a la vista sin problemas (incluye admin-integraciones y admin-integraciones-error, con el formulario de credencial presente).
 admin.mobile: sin violaciones · teclado: ok (29 controles)
 admin-cuenta.mobile: sin violaciones
 admin-integraciones.mobile: sin violaciones
@@ -9,15 +7,3 @@ admin.desktop: sin violaciones · teclado: ok (29 controles)
 admin-cuenta.desktop: sin violaciones
 admin-integraciones.desktop: sin violaciones
 admin-integraciones-error.desktop: sin violaciones
-
-# a11y:check · axe-core 4.13.0
-
-Base: http://localhost:8158 · 2026-11-12T23:41:58.048Z · 66 cargas (con panel)
-
-| Regla | Impacto | Nodos | Páginas | Ejemplo |
-|---|---|---|---|---|
-| (ninguna) | | 0 | | |
-
-Violaciones serious/critical: 0 nodos en 0 regla(s).
-Recorrido de teclado: sin problemas.
-Entradas con error a la vista: sin problemas.

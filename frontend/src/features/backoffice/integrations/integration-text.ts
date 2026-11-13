@@ -47,7 +47,7 @@ export function credentialLabel(credential: IntegrationStatus['credential']): st
         ? `Guardada en la base (clave ${credential.keyId})`
         : 'Guardada en la base';
     default:
-      return 'Sin credencial';
+      return 'Falta la credencial';
   }
 }
 

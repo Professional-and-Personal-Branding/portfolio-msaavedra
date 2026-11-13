@@ -868,13 +868,13 @@ Ruta: `/admin/integraciones`. **No tiene ítem en la barra** del panel: se llega
 | Última corrida | Resultado del último intento y su fecha: Exitosa, Con error (se reintenta), Fallida (no se reintenta), Interrumpida por un reinicio o Tiempo agotado; «En curso» si todavía no terminó. |
 | Última exitosa | Fecha de la última corrida exitosa, o «Nunca». |
 | Cola | Trabajos pendientes, en curso, con error (esperan su reintento) y fallidos (no se reintentan). |
-| Credencial | De dónde sale el secreto: «Variable de entorno del servidor», «Guardada en la base (clave k1)» o «Sin credencial». Nunca se muestra el valor. |
+| Credencial | De dónde sale el secreto: «Variable de entorno del servidor», «Guardada en la base (clave k1)» o «Falta la credencial» (con el campo a la vista). Nunca se muestra el valor. |
 | Motivo de la pausa | Solo con una pausa vigente: el proveedor pidió esperar, límite agotado, presupuesto agotado o varios errores seguidos. |
 | Último error fallido / Error de la última corrida | El mensaje del error, ya sin el token (se redacta antes de guardarlo). |
 
 **Botones.** **Sincronizar ahora** encola un trabajo (deshabilitado con el proveedor pausado). **Pausar** y **Reanudar** cambian `enabled`: pausar impide encolar y ejecutar nuevos trabajos, pero no cancela uno en curso.
 
-**Credencial.** Si el secreto no viene de una variable de entorno, la tarjeta ofrece el campo **Credencial** (de tipo contraseña, de 1 a 4096 caracteres, sin espacios al borde) con **Guardar** y, si ya hay una guardada, **Borrar** (con confirmación). Se guarda cifrada (AES-256-GCM, con la clave activa del keyring) y **no se vuelve a mostrar**: el campo nunca se rellena con el valor guardado y la API tampoco lo devuelve. Escribir una nueva reemplaza la anterior. Si el secreto viene de una variable de entorno (siempre en `fake`, que la exige al arrancar), no hay campo y la API responde 422 al `PUT`: no puede haber dos fuentes que diverjan. Un trabajo sin credencial termina «Fallida» con «falta la credencial».
+**Credencial.** Si el secreto no viene de una variable de entorno, la tarjeta ofrece el campo **Credencial** (de tipo contraseña, de 1 a 4096 caracteres, sin espacios al borde) con **Guardar** y, si ya hay una guardada, **Borrar** (con confirmación). Se guarda cifrada (AES-256-GCM, con la clave activa del keyring) y **no se vuelve a mostrar**: el campo nunca se rellena con el valor guardado y la API tampoco lo devuelve. Escribir una nueva reemplaza la anterior. La variable de entorno del proveedor (p. ej. `FAKE_PROVIDER_TOKEN`) es **opcional** y, si está definida, manda: no hay campo y la API responde 422 al `PUT`, para que no haya dos fuentes que diverjan. Sin variable ni credencial guardada la tarjeta dice «Falta la credencial» y un trabajo termina «Fallida» con «falta la credencial».
 
 | Mensaje | Cuándo |
 |---|---|
@@ -1946,31 +1946,33 @@ Antes y después de los `curl`, el contador de visitas de `ejemplo-backend` en *
 
 ### TC-49 — Sincronizar una integración y ver su estado ✅
 
-**Precondición:** base de ejemplo **descartable** (nunca `portfolio`), con la API y el frontend levantados (de preferencia la imagen de `frontend/Dockerfile`) y una sesión de administrador. La API arranca con `INTEGRATIONS_ENABLED=fake`, `INTEGRATIONS_SCHEDULER_ENABLED=true`, `INTEGRATIONS_TICK_SECONDS=10`, `FAKE_PROVIDER_TOKEN` (un valor de prueba) y un keyring (`INTEGRATIONS_KEYS` e `INTEGRATIONS_ACTIVE_KEY`, claves de 32 bytes generadas con `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`).
+**Precondición:** base de ejemplo **descartable** (nunca `portfolio`), con la API y el frontend levantados (de preferencia la imagen de `frontend/Dockerfile`) y una sesión de administrador. La API arranca con `INTEGRATIONS_ENABLED=fake`, `INTEGRATIONS_SCHEDULER_ENABLED=true`, `INTEGRATIONS_TICK_SECONDS=10` y un keyring (`INTEGRATIONS_KEYS` e `INTEGRATIONS_ACTIVE_KEY`, claves de 32 bytes generadas con `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`), **sin** `FAKE_PROVIDER_TOKEN`: el secreto es opcional y se carga desde el panel.
 
 **Pasos:**
 1. Abrí **Cuenta** (`/admin/cuenta`) y pulsá el enlace **Integraciones** del bloque del mismo nombre.
 2. Mirá la tarjeta de `fake`.
-3. Pulsá **Sincronizar ahora**.
-4. Volvé a pulsar **Sincronizar ahora** de inmediato.
-5. Esperá hasta 25 s sin tocar nada.
-6. Pulsá **Pausar** y, por la API, pedí otra sincronización (`POST /api/admin/integrations/fake/sync`). Después pulsá **Reanudar**.
-7. Por la API, intentá guardar una credencial (`PUT /api/admin/integrations/fake/credential` con `{"secret":"x"}`).
-8. Desde `backend/`, corré `npm run integrations:sync -- --provider fake`.
+3. Pulsá **Guardar** con el campo **Credencial** vacío.
+4. Escribí una credencial de prueba (un valor aleatorio que no sea de nadie) y pulsá **Guardar**; recargá la página.
+5. Pulsá **Sincronizar ahora** y, de inmediato, otra vez.
+6. Esperá hasta 25 s sin tocar nada.
+7. Pulsá **Pausar** y, por la API, pedí otra sincronización (`POST /api/admin/integrations/fake/sync`). Después pulsá **Reanudar**.
+8. Pulsá **Borrar** y confirmá.
+9. Desde `backend/`, corré `npm run integrations:sync -- --provider fake` (con la credencial borrada).
 
 **Resultado esperado:**
 1. Se abre `/admin/integraciones`; la barra de navegación sigue con sus nueve ítems y ninguno es **Integraciones**; hay un enlace **Volver a Cuenta**.
-2. Estado «Activo», «Todavía no corrió», «Variable de entorno del servidor» como credencial (sin campo) y ningún aviso de scheduler apagado.
-3. Aparece «Encolado: corre en el próximo minuto.» y la cola muestra «1 pendientes».
-4. Aparece «Ya había una sincronización en cola.» y la cola sigue en 1.
-5. El tick toma el trabajo y la pantalla se refresca sola: la última corrida pasa a «Exitosa», «Última exitosa» tiene fecha y la cola vuelve a «0 pendientes · 0 en curso».
-6. El estado pasa a «Pausado», **Sincronizar ahora** queda deshabilitado y la API responde **422**; al reanudar vuelve «Activo».
-7. La API responde **422** (el secreto viene de una variable de entorno) y no guarda nada; las respuestas de la API llevan `Cache-Control: no-store`.
-8. Salida **0** («Corrida: 1 trabajos (hechos 1, …)») y el trabajo queda `DONE`.
+2. Estado «Activo», «Todavía no corrió», credencial «Falta la credencial» con el campo **Credencial** (tipo contraseña) a la vista y ningún aviso de scheduler apagado.
+3. Aparece «Ingresá la credencial.» y no se llama a la API.
+4. Aparece «Credencial guardada.», el campo queda vacío y la tarjeta dice «Guardada en la base (clave k1)»; tras recargar sigue igual, el campo vacío y el valor no figura en el DOM.
+5. Aparece «Encolado: corre en el próximo minuto.» (cola «1 pendientes») y después «Ya había una sincronización en cola.».
+6. El tick toma el trabajo y la pantalla se refresca sola: la última corrida pasa a «Exitosa», «Última exitosa» tiene fecha y la cola vuelve a «0 pendientes · 0 en curso».
+7. El estado pasa a «Pausado», **Sincronizar ahora** queda deshabilitado y la API responde **422**; al reanudar vuelve «Activo».
+8. Aparece «Credencial borrada.» y la tarjeta vuelve a «Falta la credencial».
+9. Sin credencial el trabajo termina fallido: «Corrida: 1 trabajos (hechos 0, …, muertos 1, …)», salida **1**, y la tarjeta muestra «falta la credencial» como último error fallido.
 
-**Errores típicos:** Con el scheduler apagado (`INTEGRATIONS_SCHEDULER_ENABLED` sin definir) el trabajo se encola pero no corre: la pantalla lo avisa («El scheduler está apagado en este servidor…») y `npm run integrations:sync` lo ejecuta a mano. Un trabajo sin credencial termina «Fallida» con «falta la credencial»: no se reintenta. «Sincronizar ahora» nunca llama al proveedor dentro de la petición: si tarda en correr, esperá al próximo tick (hasta 60 s con el valor por defecto).
+**Errores típicos:** Con `FAKE_PROVIDER_TOKEN` definida en el servidor la credencial viene de la variable: la tarjeta dice «Variable de entorno del servidor», no hay campo y `PUT /api/admin/integrations/fake/credential` responde 422. Con el scheduler apagado (`INTEGRATIONS_SCHEDULER_ENABLED` sin definir) el trabajo se encola pero no corre: la pantalla lo avisa y `npm run integrations:sync` lo ejecuta a mano. «Sincronizar ahora» nunca llama al proveedor dentro de la petición: si tarda en correr, esperá al próximo tick (hasta 60 s con el valor por defecto).
 
-**Observado** (12 de noviembre de 2026, imagen de `frontend/Dockerfile` en `localhost:8158`, API de la rama en `localhost:3358` y la base descartable `portfolio_integ_check`, sembrada con el ejemplo; Chrome controlado con `puppeteer-core` (sesión abierta por `fetch`, sin escribir la contraseña del panel). Los ocho pasos dieron lo esperado, incluido el refresco automático de la pantalla tras el tick de 10 s. **Formulario de credencial:** como `fake` exige su variable al arrancar y esa variable manda, el campo no aparece en un arranque normal; para recorrerlo se arrancó la API una segunda vez con un precarga de prueba que retira la variable 12 s después. Con eso: «Sin credencial» y el campo (tipo contraseña); **Guardar** vacío mostró «Ingresá la credencial.» sin llamar a la API; un valor de prueba generado al azar se guardó («Credencial guardada.», «Guardada en la base (clave k2)»), el campo quedó vacío, el valor no figura en el DOM ni tras recargar ni en los logs de la API y del contenedor, la sincronización terminó «Exitosa» con la credencial de la base y **Borrar** (con confirmación) la quitó. El 401 de la consola es la comprobación de sesión inicial. `a11y:check` con panel (66 cargas, con `/admin/integraciones` y el error de credencial vacía a la vista): 0 violaciones. Evidencia: `openspec/changes/add-integrations-foundation/verification/` (`10.1-tc49.txt`, `10.2-a11y.txt`, `8.2-cli.txt`, `7.4-latencia.txt`).)
+**Observado** (12 de noviembre de 2026 (repetido tras el cambio de D11), imagen de `frontend/Dockerfile` en `localhost:8158`, API de la rama en `localhost:3358` arrancada **sin** `FAKE_PROVIDER_TOKEN` y la base descartable `portfolio_integ_check`, sembrada con el ejemplo; Chrome controlado con `puppeteer-core` (sesión abierta por `fetch`, sin escribir la contraseña del panel). Los pasos 1 a 8 dieron lo esperado en un arranque normal: «Falta la credencial» con el campo a la vista, «Ingresá la credencial.» sin llamar a la API, un valor de prueba generado al azar guardado («Guardada en la base (clave k1)», campo vacío, valor fuera del DOM también tras recargar), «Encolado…», «Ya había…», «Exitosa» tras el tick con refresco automático, Pausar con 422 por la API, Reanudar y Borrar con confirmación. El paso 9 (`integrations:sync` sin credencial) dio la salida 1 con el trabajo fallido «falta la credencial». Con `FAKE_PROVIDER_TOKEN` definida, el `PUT` da 422 y la tarjeta dice «Variable de entorno del servidor» (e2e `integrations-admin`). `a11y:check` con panel contra la imagen actual: ver `10.2-a11y.txt`. Evidencia: `openspec/changes/add-integrations-foundation/verification/` (`10.1-tc49.txt`, `10.2-a11y.txt`, `8.2-cli.txt`, `7.4-latencia.txt`).)
 
 ![Integraciones con el proveedor fake: última corrida exitosa y el campo Credencial](manual/bo-integraciones.jpg)
 

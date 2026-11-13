@@ -343,7 +343,7 @@ export class FakeCredentialResolver implements CredentialResolver {
 }
 
 export class ScriptedConnector implements ConnectorPort {
-  readonly requiredEnv: readonly string[] = [];
+  readonly secretEnv: string | null = null;
   calls = 0;
   constructor(
     readonly id: string,

@@ -26,7 +26,7 @@ export interface SyncOutcome {
  */
 export interface ConnectorPort {
   readonly id: string;
-  readonly requiredEnv: readonly string[];
+  readonly secretEnv: string | null;
   sync(ctx: SyncContext, signal: AbortSignal): Promise<Result<SyncOutcome, ProviderFailure>>;
 }
 

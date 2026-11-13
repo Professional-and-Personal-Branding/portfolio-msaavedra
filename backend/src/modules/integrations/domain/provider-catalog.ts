@@ -4,9 +4,7 @@
  */
 export interface ProviderDescriptor {
   readonly id: string;
-  /** Variables de entorno que se exigen al arrancar si el proveedor está en `INTEGRATIONS_ENABLED`. */
-  readonly requiredEnv: readonly string[];
-  /** Variable que, si está definida, aporta el secreto (tiene prioridad sobre la base, D14). */
+  /** Variable OPCIONAL que, si está definida, aporta el secreto (tiene prioridad sobre la base, D14); nunca se exige al arrancar. */
   readonly secretEnv: string | null;
   readonly allowedInProduction: boolean;
 }
@@ -14,7 +12,6 @@ export interface ProviderDescriptor {
 export const PROVIDER_CATALOG: Readonly<Record<string, ProviderDescriptor>> = {
   fake: {
     id: 'fake',
-    requiredEnv: ['FAKE_PROVIDER_TOKEN'],
     secretEnv: 'FAKE_PROVIDER_TOKEN',
     allowedInProduction: false,
   },

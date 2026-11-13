@@ -35,6 +35,8 @@ import { FRONTEND_URL } from './e2e-helpers';
 
 export interface IntegrationsEnvOptions {
   schedulerEnabled?: boolean;
+  /** `false` arranca sin `FAKE_PROVIDER_TOKEN`: la credencial sale de la base (default `true`). */
+  secretFromEnv?: boolean;
   tickSeconds?: number;
   /** Variables extra (p. ej. `INTEGRATIONS_JOB_TIMEOUT_MS`). */
   extra?: Record<string, string>;
@@ -68,7 +70,8 @@ export interface IntegrationsTestApp {
 export function applyIntegrationsEnv(options: IntegrationsEnvOptions = {}): () => void {
   const previous = new Map(MANAGED.map((name) => [name, process.env[name]]));
   process.env.INTEGRATIONS_ENABLED = 'fake';
-  process.env.FAKE_PROVIDER_TOKEN = TEST_FAKE_TOKEN;
+  if (options.secretFromEnv === false) delete process.env.FAKE_PROVIDER_TOKEN;
+  else process.env.FAKE_PROVIDER_TOKEN = TEST_FAKE_TOKEN;
   process.env.INTEGRATIONS_KEYS = `k1:${randomBytes(32).toString('base64')}`;
   process.env.INTEGRATIONS_ACTIVE_KEY = 'k1';
   process.env.INTEGRATIONS_SCHEDULER_ENABLED = options.schedulerEnabled ? 'true' : 'false';

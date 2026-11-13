@@ -76,17 +76,26 @@ describe('Arranque con variables de integraciones (e2e, proceso real)', () => {
     }
   });
 
-  it('INTEGRATIONS_ENABLED=fake sin FAKE_PROVIDER_TOKEN: sale con código distinto de 0 y nombra la variable', async () => {
-    const { code, output } = await runUntilExit(
-      childEnv({
+  it('INTEGRATIONS_ENABLED=fake sin FAKE_PROVIDER_TOKEN arranca (el secreto es opcional) y /health/live responde 200', async () => {
+    const child = spawn(process.execPath, [MAIN], {
+      cwd: BACKEND,
+      env: childEnv({
         INTEGRATIONS_ENABLED: 'fake',
         INTEGRATIONS_KEYS: KEY,
         INTEGRATIONS_ACTIVE_KEY: 'k1',
       }),
-    );
+    });
+    try {
+      expect(await waitForLive(child)).toBe(200);
+    } finally {
+      child.kill();
+    }
+  }, 40_000);
+
+  it('INTEGRATIONS_ENABLED=fake sin keyring sale con código distinto de 0 y nombra INTEGRATIONS_KEYS', async () => {
+    const { code, output } = await runUntilExit(childEnv({ INTEGRATIONS_ENABLED: 'fake' }));
     expect(code).not.toBe(0);
-    expect(output).toContain('FAKE_PROVIDER_TOKEN');
-    expect(output).not.toContain(KEY.slice(3));
+    expect(output).toContain('INTEGRATIONS_KEYS');
   }, 40_000);
 
   it('sin INTEGRATIONS_ENABLED y sin el token, /health/live responde 200', async () => {

@@ -212,7 +212,7 @@ describe('IntegrationsPage', () => {
       const user = userEvent.setup();
       renderIntegrations();
       const region = await card();
-      expect(within(region).getByText('Sin credencial')).toBeInTheDocument();
+      expect(within(region).getByText('Falta la credencial')).toBeInTheDocument();
 
       const field = within(region).getByLabelText('Credencial');
       expect(field).toHaveAttribute('type', 'password');
@@ -289,7 +289,7 @@ describe('IntegrationsPage', () => {
 
       expect(await within(region).findByText('Credencial borrada.')).toBeInTheDocument();
       expect(backend.deleteCalls).toBe(1);
-      expect(await within(region).findByText('Sin credencial')).toBeInTheDocument();
+      expect(await within(region).findByText('Falta la credencial')).toBeInTheDocument();
     });
 
     it('un 422 del PUT se explica sin mostrar el secreto', async () => {

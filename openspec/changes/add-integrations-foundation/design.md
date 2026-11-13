@@ -49,7 +49,7 @@ modules/integrations/
 └── integrations.module.ts
 ```
 
-- `ConnectorPort` (application): `{ id: ProviderId; requiredEnv: readonly string[]; sync(ctx: SyncContext, signal: AbortSignal): Promise<Result<SyncOutcome, ProviderFailure>> }`. `SyncContext` trae el `payload` del trabajo, el secreto resuelto (D14), el `SnapshotStore` (D15) y un logger con contexto (D16). El conector **devuelve** el fallo clasificado; si lanza, el ejecutor lo trata como `Transient` con el mensaje redactado.
+- `ConnectorPort` (application): `{ id: ProviderId; secretEnv: string | null; sync(ctx: SyncContext, signal: AbortSignal): Promise<Result<SyncOutcome, ProviderFailure>> }`. `SyncContext` trae el `payload` del trabajo, el secreto resuelto (D14), el `SnapshotStore` (D15) y un logger con contexto (D16). El conector **devuelve** el fallo clasificado; si lanza, el ejecutor lo trata como `Transient` con el mensaje redactado.
 - El registro (`providers/registry.ts`) arma la lista de conectores **habilitados** a partir de `INTEGRATIONS_ENABLED`; un id que no está en el catálogo hace fallar el arranque (D11).
 - `RunDueJobsUseCase` es el corazón: no conoce Nest ni Prisma; recibe los repositorios, el reloj, el registro y un `Yield` (D5) por token.
 - Ningún módulo de la ruta pública importa `integrations`. Un caso nuevo en `test/architecture.spec.ts` lo verifica: nada bajo `modules/curated-profile`, `modules/profile` ni el composer importa de `modules/integrations`.
@@ -232,13 +232,15 @@ Alternativa descartada: **breaker en memoria (p. ej. `opossum`).** Dependencia n
 
 ### D11 — Flags: catálogo, `INTEGRATIONS_ENABLED`, kill switches
 
-- **Catálogo** (constante del dominio): por ahora solo `fake`. Cada change de proveedor suma su id y sus `requiredEnv`.
-- **`INTEGRATIONS_ENABLED`**: lista separada por comas de ids (default vacío). Un id fuera del catálogo hace fallar el arranque nombrando la variable. **El secreto de un proveedor se exige solo si está en la lista**: `fake` declara `requiredEnv: ['FAKE_PROVIDER_TOKEN']`; sin `fake` en la lista, la API arranca sin esa variable.
+- **Catálogo** (constante del dominio): por ahora solo `fake`. Cada change de proveedor suma su id y su `secretEnv` (variable opcional del secreto).
+- **`INTEGRATIONS_ENABLED`**: lista separada por comas de ids (default vacío). Un id fuera del catálogo hace fallar el arranque nombrando la variable. **El secreto de un proveedor NO se exige al arrancar** (enmienda del 2026-11-12, abajo): `fake` declara `secretEnv: 'FAKE_PROVIDER_TOKEN'`, una variable opcional.
 - **`fake` está prohibido con `NODE_ENV=production`**: el arranque falla nombrando `INTEGRATIONS_ENABLED`.
 - **`INTEGRATIONS_KEYS` e `INTEGRATIONS_ACTIVE_KEY`** se exigen solo si `INTEGRATIONS_ENABLED` no está vacía (D12).
 - **Kill switch global por proceso:** `INTEGRATIONS_SCHEDULER_ENABLED` (`true`/`false`, default `false`, P1). Apagado, no hay timers; la API del panel sigue respondiendo y «Sincronizar ahora» encola (el trabajo espera a que algún proceso con el scheduler encendido lo tome; el panel lo dice).
 - **Kill switch por proveedor sin redeploy:** `IntegrationSetting.enabled`, desde el panel (Pausar/Reanudar). Pausar no cancela un trabajo en curso; impide reclamar los siguientes y que el planificador encole.
 - **Apagado total:** `INTEGRATIONS_ENABLED` vacía (no hay conectores) o `INTEGRATIONS_SCHEDULER_ENABLED=false` (no hay ejecución).
+
+**Enmienda a D11 (2026-11-12, decisión de la sesión principal).** `requiredEnv` pasa a `secretEnv`: la variable del secreto de un proveedor habilitado es **opcional** y ya no se exige al arrancar. Siguen siendo obligatorias `INTEGRATIONS_KEYS` e `INTEGRATIONS_ACTIVE_KEY` cuando la lista no está vacía (sin ellas no se puede cifrar la credencial de la base), y siguen fallando el arranque un id desconocido y `fake` en producción. D14 no cambia (variable primero, base después, si no hay ninguna el trabajo termina `DEAD` «falta la credencial»; con la variable definida el `PUT` da 422); el panel muestra «Falta la credencial» con el formulario a la vista. **Motivo:** el formulario del panel es utilizable en un arranque normal y no se fuerzan secretos en las variables de Railway; los proveedores reales (GitHub) siguen el mismo modelo. Reemplaza el desvío 1 de `verification/verification.md`.
 
 Alternativa descartada: **una variable `*_ENABLED` por proveedor.** Con la lista, la regla «secreto solo si está habilitado» es una sola función y un id mal escrito falla al arrancar.
 
@@ -346,7 +348,7 @@ En cada corrida del planificador: borrar `IntegrationJob` en `DONE` con `finishe
 
 ### D24 — El proveedor `fake`
 
-- `FakeConnector` (`infrastructure/providers/fake/`), con `requiredEnv: ['FAKE_PROVIDER_TOKEN']`. Lee `payload.scenario`: `ok` (default; escribe un snapshot `fake:items` con un contador), `not-modified`, `slow`, `transient`, `permanent`, `retry-after`, `reset-at`, `budget`, `throw` (lanza en vez de devolver), `leak-secret` (falla con un mensaje que contiene el token) y `ignore-abort` (no escucha la señal).
+- `FakeConnector` (`infrastructure/providers/fake/`), con `secretEnv: 'FAKE_PROVIDER_TOKEN'` (opcional). Lee `payload.scenario`: `ok` (default; escribe un snapshot `fake:items` con un contador), `not-modified`, `slow`, `transient`, `permanent`, `retry-after`, `reset-at`, `budget`, `throw` (lanza en vez de devolver), `leak-secret` (falla con un mensaje que contiene el token) y `ignore-abort` (no escucha la señal).
 - Expone, solo para tests, un contador de llamadas por escenario.
 - Lo usan los e2e, `manual:capture` sobre la base de ejemplo y el TC-49. En producción no puede habilitarse (D11).
 

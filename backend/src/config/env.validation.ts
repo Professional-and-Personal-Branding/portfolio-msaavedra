@@ -165,10 +165,10 @@ function productionIssues(env: EnvironmentVariables): string[] {
 
 /**
  * Reglas de las integraciones (spec `api-platform`): lista contra el catálogo, secreto de cada
- * proveedor solo si está habilitado, keyring y clave activa solo si hay habilitados, `fake`
+ * proveedor opcional (nunca se exige al arrancar), keyring y clave activa solo si hay habilitados, `fake`
  * prohibido en producción y el cron válido. Los mensajes nombran la variable y no el valor.
  */
-function integrationIssues(env: EnvironmentVariables, raw: Record<string, unknown>): string[] {
+function integrationIssues(env: EnvironmentVariables): string[] {
   const issues: string[] = [];
   const isProduction = env.NODE_ENV === NodeEnv.Production;
   const enabled = parseEnabledProviders(env.INTEGRATIONS_ENABLED);
@@ -187,12 +187,6 @@ function integrationIssues(env: EnvironmentVariables, raw: Record<string, unknow
     const descriptor = PROVIDER_CATALOG[id];
     if (isProduction && !descriptor.allowedInProduction) {
       issues.push(`INTEGRATIONS_ENABLED: el proveedor "${id}" no puede habilitarse en producción`);
-    }
-    for (const name of descriptor.requiredEnv) {
-      const value = raw[name];
-      if (typeof value !== 'string' || value.trim() === '') {
-        issues.push(`${name}: obligatoria porque INTEGRATIONS_ENABLED incluye "${id}"`);
-      }
     }
   }
 
@@ -236,7 +230,7 @@ export function validateEnv(config: Record<string, unknown>): EnvironmentVariabl
     ...errors.map((e) => `${e.property}: ${Object.values(e.constraints ?? {}).join(', ')}`),
     // Las reglas de producción solo se evalúan si la forma básica ya es válida.
     ...(errors.length === 0 ? productionIssues(validated) : []),
-    ...(errors.length === 0 ? integrationIssues(validated, config) : []),
+    ...(errors.length === 0 ? integrationIssues(validated) : []),
   ];
 
   if (details.length > 0) {

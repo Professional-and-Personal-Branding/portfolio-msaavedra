@@ -94,7 +94,7 @@ Con las ocho variables `INTEGRATIONS_*` sin definir, la API se comporta como ant
 Cuando llegue un proveedor real:
 
 1. **Keyring.** Generá cada clave con `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` y guardala en el gestor de secretos antes de pegarla: si se pierde, las credenciales guardadas desde el panel quedan ilegibles (se reingresan; las de variables de entorno no dependen del keyring).
-2. **Variables.** `INTEGRATIONS_ENABLED=<proveedor>`, su secreto (p. ej. un token) como variable, `INTEGRATIONS_KEYS=k1:<base64>`, `INTEGRATIONS_ACTIVE_KEY=k1` y `INTEGRATIONS_SCHEDULER_ENABLED=true`.
+2. **Variables.** `INTEGRATIONS_ENABLED=<proveedor>`, su secreto como variable **opcional** (si no la definís, se carga desde el panel, cifrado con el keyring), `INTEGRATIONS_KEYS=k1:<base64>`, `INTEGRATIONS_ACTIVE_KEY=k1` y `INTEGRATIONS_SCHEDULER_ENABLED=true`.
 3. **Una sola réplica con el scheduler.** El arriendo del ejecutor (una fila en la base) y `FOR UPDATE SKIP LOCKED` impiden que dos procesos ejecuten el mismo trabajo, incluso durante el solapamiento de un deploy; aun así el scheduler se enciende en una sola réplica.
 4. **Drenaje.** `drainingSeconds` tiene que seguir **por encima de 8 s** (hoy 10): el apagado devuelve el trabajo en curso a la cola dentro de los 5 s de drenaje de las tareas en segundo plano.
 5. **Rotar una clave.** Agregá `k2` al keyring → `INTEGRATIONS_ACTIVE_KEY=k2` → redeploy → desde tu terminal, con `DATABASE_URL` de producción solo en ese proceso, `npm run integrations:rekey` (simulación) y `npm run integrations:rekey -- --apply` → quitá `k1`. Es idempotente: la segunda corrida dice «0 filas para recifrar».

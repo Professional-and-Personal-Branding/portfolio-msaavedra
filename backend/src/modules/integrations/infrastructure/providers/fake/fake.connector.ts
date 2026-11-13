@@ -46,7 +46,7 @@ function burnCpu(ms: number): void {
 @Injectable()
 export class FakeConnector implements ConnectorPort {
   readonly id = 'fake';
-  readonly requiredEnv: readonly string[] = ['FAKE_PROVIDER_TOKEN'];
+  readonly secretEnv: string | null = 'FAKE_PROVIDER_TOKEN';
   private readonly calls = new Map<string, number>();
 
   /** Llamadas por escenario, solo para tests. */

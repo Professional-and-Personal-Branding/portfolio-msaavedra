@@ -29,7 +29,8 @@ describe('API de integraciones del panel (e2e)', () => {
   };
 
   beforeAll(async () => {
-    ctx = await createIntegrationsApp();
+    // Arranque normal: sin FAKE_PROVIDER_TOKEN (D11 enmendado); la credencial sale de la base.
+    ctx = await createIntegrationsApp({ secretFromEnv: false });
     await createE2eAdmin(ctx.prisma);
     cookie = await loginCookie(ctx.app);
   });
@@ -37,7 +38,7 @@ describe('API de integraciones del panel (e2e)', () => {
   beforeEach(async () => {
     await cleanIntegrations(ctx.prisma);
     ctx.fake.resetCalls();
-    process.env.FAKE_PROVIDER_TOKEN = TEST_FAKE_TOKEN;
+    delete process.env.FAKE_PROVIDER_TOKEN;
   });
 
   afterAll(async () => {
@@ -70,7 +71,7 @@ describe('API de integraciones del panel (e2e)', () => {
       pausedUntil: null,
       lastRun: null,
       jobs: { pending: 0, running: 0, failed: 0, dead: 0 },
-      credential: { source: 'env' },
+      credential: { source: null },
     });
     expect(JSON.stringify(res.body)).not.toContain(TEST_FAKE_TOKEN);
   });
@@ -90,7 +91,8 @@ describe('API de integraciones del panel (e2e)', () => {
     const status = await authed.get(BASE);
     expect(status.body.providers[0].jobs.pending).toBe(1);
 
-    // El conector se llama solo cuando corre el ejecutor (el «próximo tick»).
+    // El conector se llama solo cuando corre el ejecutor (el «próximo tick»), con el secreto de una variable.
+    process.env.FAKE_PROVIDER_TOKEN = TEST_FAKE_TOKEN;
     await ctx.app.get(RunDueJobsUseCase).execute();
     expect(ctx.fake.totalCalls).toBe(1);
     const after = await authed.get(BASE);
@@ -129,6 +131,7 @@ describe('API de integraciones del panel (e2e)', () => {
     const SECRET = 'credencial-guardada-en-la-base-123';
 
     it('con la variable de entorno definida el origen es env y el PUT da 422', async () => {
+      process.env.FAKE_PROVIDER_TOKEN = TEST_FAKE_TOKEN;
       const status = await authed.get(BASE);
       expect(status.body.providers[0].credential.source).toBe('env');
       const put = await authed.put(`${BASE}/fake/credential`).send({ secret: SECRET });
@@ -137,8 +140,6 @@ describe('API de integraciones del panel (e2e)', () => {
     });
 
     it('sin la variable: PUT 204, GET source db sin el valor, el ejecutor la usa y DELETE 204', async () => {
-      delete process.env.FAKE_PROVIDER_TOKEN;
-
       const put = await authed.put(`${BASE}/fake/credential`).send({ secret: SECRET });
       expect(put.status).toBe(204);
       expect(put.headers['cache-control']).toBe('no-store');
@@ -173,7 +174,6 @@ describe('API de integraciones del panel (e2e)', () => {
     });
 
     it('sin credencial alguna, el trabajo termina DEAD con «falta la credencial»', async () => {
-      delete process.env.FAKE_PROVIDER_TOKEN;
       await authed.post(`${BASE}/fake/sync`);
       await ctx.app.get(RunDueJobsUseCase).execute();
       const job = await ctx.prisma.integrationJob.findFirstOrThrow({ where: { provider: 'fake' } });
@@ -194,14 +194,12 @@ describe('API de integraciones del panel (e2e)', () => {
       ['campo desconocido', { secret: 'ok', extra: 1 }],
       ['tipo inválido', { secret: 123 }],
     ])('rechaza el cuerpo %s con 400', async (_name, body) => {
-      delete process.env.FAKE_PROVIDER_TOKEN;
       const res = await authed.put(`${BASE}/fake/credential`).send(body);
       expect(res.status).toBe(400);
       expect(await ctx.prisma.integrationCredential.count()).toBe(0);
     });
 
     it('acepta exactamente 4096 caracteres', async () => {
-      delete process.env.FAKE_PROVIDER_TOKEN;
       const res = await authed.put(`${BASE}/fake/credential`).send({ secret: 'x'.repeat(4096) });
       expect(res.status).toBe(204);
     });

@@ -177,14 +177,11 @@ describe('validateEnv — integraciones', () => {
     expect(env.INTEGRATIONS_RUN_MAX_MS).toBe(300000);
   });
 
-  it('FAKE_PROVIDER_TOKEN ausente con INTEGRATIONS_ENABLED vacía es válido', () => {
+  it('FAKE_PROVIDER_TOKEN ausente es válido con INTEGRATIONS_ENABLED vacía y con fake en la lista (D11 enmendado)', () => {
     expect(messageOf({ ...base, INTEGRATIONS_ENABLED: '' })).toBe('');
-  });
-
-  it('FAKE_PROVIDER_TOKEN ausente con fake en la lista falla nombrando la variable', () => {
     const { FAKE_PROVIDER_TOKEN: _omit, ...withoutToken } = enabled;
     void _omit;
-    expect(messageOf(withoutToken)).toMatch(/FAKE_PROVIDER_TOKEN/);
+    expect(messageOf(withoutToken)).toBe('');
   });
 
   it('con todo lo exigido, fake habilitado es válido', () => {
