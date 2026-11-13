@@ -3,7 +3,7 @@
  * de consistencia del CV (D13 de `add-cv-consistency-rules`). Módulo puro: sin base ni archivos,
  * y sin `@prisma/client`.
  *
- * Ids de los hallazgos: la clave del seed cuando existe (`experience:<id>`, `project:<id>` y el
+ * Ids de los hallazgos: la clave del seed cuando existe (`experience:<id>`, `project:<id>`, `repository:<id>` y el
  * `slug` de cada perfil curado, incluido `all`) o una posicional con el índice base 0 del arreglo
  * (`certification#4`, `education#0`, `skillCategory#3`, `skill#3.2` = categoría 3, skill 2).
  */
@@ -98,6 +98,14 @@ export function seedToCvSnapshot(source: SeedSource): CvSnapshot {
       tags: p.tags,
       role: p.role,
       summary: p.summary,
+    })),
+    repositories: (profile.featuredRepositories ?? []).map((r, i) => ({
+      // La clave del seed si la tiene (`repository:<id>`, la que referencian las plantillas) o la posicional.
+      id: r.id === undefined ? `repository#${i}` : `repository:${r.id}`,
+      name: r.name,
+      visible: r.visible,
+      tags: r.tags,
+      description: r.description,
     })),
     socialLinks: (profile.socialLinks ?? []).map((l, i) => ({
       id: `socialLink#${i}`,

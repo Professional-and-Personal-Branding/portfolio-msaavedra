@@ -11,6 +11,7 @@ const ENTITY_LABELS: Record<MissingTranslation['entity'], string> = {
   experience: 'Experiencias',
   skillCategory: 'Categorías de skills',
   project: 'Proyectos',
+  repository: 'Repositorio',
   education: 'Educación',
   certification: 'Certificaciones',
   socialLink: 'Enlaces',
@@ -49,6 +50,8 @@ function entityName(data: PreviewCuratedProfile, item: MissingTranslation): stri
     }
     case 'project':
       return data.projects.find((project) => project.id === item.id)?.name ?? item.id;
+    case 'repository':
+      return data.repositories.find((repository) => repository.id === item.id)?.name ?? item.id;
     case 'education':
       return data.education.find((entry) => entry.id === item.id)?.institution ?? item.id;
     case 'certification':

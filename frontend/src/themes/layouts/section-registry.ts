@@ -9,6 +9,7 @@ import { Projects } from '@/shared/components/portfolio/Projects';
 import { SkillsGrid } from '@/shared/components/portfolio/SkillsGrid';
 import { Stats } from '@/shared/components/portfolio/Stats';
 import type { SectionProps } from '@/shared/components/portfolio/types';
+import { RepositoriesSection } from './repositories-section';
 import type { SectionId } from './sections';
 
 /** Cada sección conocida → su componente. Todos reciben el perfil curado completo. */
@@ -18,6 +19,7 @@ export const SECTION_COMPONENTS: Record<SectionId, ComponentType<SectionProps>> 
   experience: ExperienceTimeline,
   skills: SkillsGrid,
   projects: Projects,
+  repositories: RepositoriesSection,
   education: Education,
   certifications: Certifications,
   presence: Presence,

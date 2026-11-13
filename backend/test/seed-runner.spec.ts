@@ -72,7 +72,66 @@ const writes = (calls: Call[]): Call[] =>
  * por defecto ya no hace lo de siempre (spec `data-persistence-seed`).
  */
 const LEGACY_CALLS = 79;
-const LEGACY_SHA256 = '24ef8090282a3a9e486ebd7fef0c268ecfbf2c394a21e3910540f37fc26c9922';
+// El digest cambió una sola vez, con `add-featured-repositories`: `sectionsOrder` de cada perfil
+// copia `SECTION_IDS`, que ganó `repositories`. Quitando ese id del resultado, el digest sigue
+// siendo el original (24ef8090…): el resto de lo que escribe el seed no cambió.
+const LEGACY_SHA256 = 'ac70bd16532b013c97857c5793f66e3e6ae73a1967705196264f5d1b5b24bfdd';
+
+describe('executeSeed · repositorios destacados (add-featured-repositories, D14)', () => {
+  const repoRow = (name: string, visible: boolean, extra: Mutable = {}): Mutable => ({
+    name,
+    url: `https://github.com/octo-org/${name}`,
+    description: { es: 'd', en: 'd' },
+    tags: [],
+    visible,
+    ...extra,
+  });
+
+  it('crea todos (también los ocultos) con order = posición, sin stars', async () => {
+    const data = cvData();
+    (data['profile'] as Mutable)['featuredRepositories'] = [
+      repoRow('uno', true, { stars: 99, language: 'Java' }),
+      repoRow('dos', false),
+    ];
+    const { prisma, calls } = fakePrisma();
+    expect(await executeSeed(prisma, data, { guarded: false, env: {}, ...quiet })).toBe(0);
+    const created = calls
+      .filter((c) => c.model === 'featuredRepository' && c.method === 'create')
+      .map((c) => (c.args as { data: Mutable }).data);
+    expect(created).toHaveLength(2);
+    expect(created[0]).toMatchObject({ name: 'uno', order: 0, visible: true, language: 'Java' });
+    expect(created[1]).toMatchObject({ name: 'dos', order: 1, visible: false, language: null });
+    for (const row of created) expect(row).not.toHaveProperty('stars');
+  });
+
+  it('traduce repository:<id> al id generado en includeIds', async () => {
+    const data = cvData();
+    (data['profile'] as Mutable)['featuredRepositories'] = [
+      repoRow('uno', true, { id: 'primero' }),
+      repoRow('dos', false, { id: 'oculto' }),
+    ];
+    (data['profileTemplates'] as Mutable[])[0]['includeRefs'] = ['repository:oculto'];
+    const { prisma, calls } = fakePrisma();
+    expect(await executeSeed(prisma, data, { guarded: false, env: {}, ...quiet })).toBe(0);
+    const profileData = calls
+      .filter((c) => c.model === 'curatedProfile' && c.method === 'create')
+      .map((c) => (c.args as { data: { includeIds?: string[] } }).data)
+      .find((row) => (row.includeIds ?? []).length > 0);
+    expect(profileData?.includeIds).toHaveLength(1);
+    expect(profileData?.includeIds?.[0]).toMatch(/^featuredRepository-\d+$/);
+  });
+
+  it('una URL inválida corta con código 1 antes de escribir', async () => {
+    const data = cvData();
+    (data['profile'] as Mutable)['featuredRepositories'] = [
+      repoRow('uno', true, { url: 'https://gitlab.com/a/b' }),
+    ];
+    const { prisma, calls } = fakePrisma();
+    const code = await executeSeed(prisma, data, { guarded: false, env: {}, ...quiet });
+    expect(code).toBe(1);
+    expect(writes(calls)).toEqual([]);
+  });
+});
 
 describe('executeSeed · seed por defecto (sin --file)', () => {
   it('escribe exactamente lo mismo que antes del formato extendido', async () => {

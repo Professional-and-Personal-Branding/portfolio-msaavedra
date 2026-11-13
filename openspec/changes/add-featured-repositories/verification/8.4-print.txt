@@ -1,0 +1,112 @@
+# 8.4 Calibración de PRINT_CAPACITY_LINES (D9)
+
+Valor final: PRINT_CAPACITY_LINES = 63.
+
+## Corrida de calibración (capacidad 1000: la línea de repositorios siempre se inserta)
+Base: docs/cv-data.json + 2 repos de prueba visibles (tags = unión de los filterTags de los 14 perfiles, para que todos los resuelvan 2).
+tech-lead-dotnet       perfil        es      1   2       9.7:1      FALLA (Letter: 2 páginas)
+tech-lead-dotnet       perfil        en      1   2       9.7:1      FALLA (Letter: 2 páginas)
+tech-lead-dotnet       dark+sidebar  es      1   2       9.7:1      FALLA (Letter: 2 páginas)
+tech-lead-dotnet       dark+sidebar  en      1   2       9.7:1      FALLA (Letter: 2 páginas)
+56 casos (14 perfiles), 4 con problemas. Contraste mínimo: 9.74:1
+
+## Estimado sin repositorios (E_sin) de cada perfil, es/en, con docs/cv-data.json
+tech-lead-dotnet 63/62 (la única que desborda en Letter con la línea) · fullstack-nest-react 61 · generalist-polyglot 61 · all 61 · dotnet-backend 60/59 · ai-software-engineer 60/59 · fullstack-microsoft 60/59 · java-senior-backend 58 · it-leadership 58/57 · software-architect 58 · devops-azure 57 · devops-platform 53,5 · integration-architect 53,5 · backend-payments-ror 53,5
+
+Entra si E_sin + 1,5 <= capacidad: con 63 entran todas las de E_sin <= 61 (fitean en A4 y Letter) y queda fuera la de 62 y 63, que desborda.
+
+# print:check con PRINT_CAPACITY_LINES = 63
+## Base de ejemplo (portfolio_repos_check, API 3352, Caddy 8152)
+
+
+print:check contra http://localhost:8152
+perfil              tema          idioma  A4  Letter  contraste  estado
+------------------  ------------  ------  --  ------  ---------  ------
+ejemplo-backend     perfil        es      1   1       9.7:1      OK    
+ejemplo-backend     perfil        en      1   1       9.7:1      OK    
+ejemplo-backend     dark+sidebar  es      1   1       9.7:1      OK    
+ejemplo-backend     dark+sidebar  en      1   1       9.7:1      OK    
+ejemplo-overrides   perfil        es      1   1       9.7:1      OK    
+ejemplo-overrides   perfil        en      1   1       9.7:1      OK    
+ejemplo-overrides   dark+sidebar  es      1   1       9.7:1      OK    
+ejemplo-overrides   dark+sidebar  en      1   1       9.7:1      OK    
+ejemplo-secciones   perfil        es      1   1       9.7:1      OK    
+ejemplo-secciones   perfil        en      1   1       9.7:1      OK    
+ejemplo-secciones   dark+sidebar  es      1   1       9.7:1      OK    
+ejemplo-secciones   dark+sidebar  en      1   1       9.7:1      OK    
+ejemplo-renombrado  perfil        es      1   1       9.7:1      OK    
+ejemplo-renombrado  perfil        en      1   1       9.7:1      OK    
+ejemplo-renombrado  dark+sidebar  es      1   1       9.7:1      OK    
+ejemplo-renombrado  dark+sidebar  en      1   1       9.7:1      OK    
+all                 perfil        es      1   1       9.7:1      OK    
+all                 perfil        en      1   1       9.7:1      OK    
+all                 dark+sidebar  es      1   1       9.7:1      OK    
+all                 dark+sidebar  en      1   1       9.7:1      OK    
+
+20 casos (5 perfiles), 0 con problemas. Contraste mínimo: 9.74:1
+exit=0
+
+## docs/cv-data.json + 2 repos de prueba visibles (portfolio_repos_print, API 3353, Caddy 8153)
+
+
+print:check contra http://localhost:8153
+perfil                 tema          idioma  A4  Letter  contraste  estado
+---------------------  ------------  ------  --  ------  ---------  ------
+java-senior-backend    perfil        es      1   1       9.7:1      OK    
+java-senior-backend    perfil        en      1   1       9.7:1      OK    
+java-senior-backend    dark+sidebar  es      1   1       9.7:1      OK    
+java-senior-backend    dark+sidebar  en      1   1       9.7:1      OK    
+fullstack-nest-react   perfil        es      1   1       9.7:1      OK    
+fullstack-nest-react   perfil        en      1   1       9.7:1      OK    
+fullstack-nest-react   dark+sidebar  es      1   1       9.7:1      OK    
+fullstack-nest-react   dark+sidebar  en      1   1       9.7:1      OK    
+devops-platform        perfil        es      1   1       9.7:1      OK    
+devops-platform        perfil        en      1   1       9.7:1      OK    
+devops-platform        dark+sidebar  es      1   1       9.7:1      OK    
+devops-platform        dark+sidebar  en      1   1       9.7:1      OK    
+dotnet-backend         perfil        es      1   1       9.7:1      OK    
+dotnet-backend         perfil        en      1   1       9.7:1      OK    
+dotnet-backend         dark+sidebar  es      1   1       9.7:1      OK    
+dotnet-backend         dark+sidebar  en      1   1       9.7:1      OK    
+it-leadership          perfil        es      1   1       9.7:1      OK    
+it-leadership          perfil        en      1   1       9.7:1      OK    
+it-leadership          dark+sidebar  es      1   1       9.7:1      OK    
+it-leadership          dark+sidebar  en      1   1       9.7:1      OK    
+integration-architect  perfil        es      1   1       9.7:1      OK    
+integration-architect  perfil        en      1   1       9.7:1      OK    
+integration-architect  dark+sidebar  es      1   1       9.7:1      OK    
+integration-architect  dark+sidebar  en      1   1       9.7:1      OK    
+ai-software-engineer   perfil        es      1   1       9.7:1      OK    
+ai-software-engineer   perfil        en      1   1       9.7:1      OK    
+ai-software-engineer   dark+sidebar  es      1   1       9.7:1      OK    
+ai-software-engineer   dark+sidebar  en      1   1       9.7:1      OK    
+fullstack-microsoft    perfil        es      1   1       9.7:1      OK    
+fullstack-microsoft    perfil        en      1   1       9.7:1      OK    
+fullstack-microsoft    dark+sidebar  es      1   1       9.7:1      OK    
+fullstack-microsoft    dark+sidebar  en      1   1       9.7:1      OK    
+devops-azure           perfil        es      1   1       9.7:1      OK    
+devops-azure           perfil        en      1   1       9.7:1      OK    
+devops-azure           dark+sidebar  es      1   1       9.7:1      OK    
+devops-azure           dark+sidebar  en      1   1       9.7:1      OK    
+software-architect     perfil        es      1   1       9.7:1      OK    
+software-architect     perfil        en      1   1       9.7:1      OK    
+software-architect     dark+sidebar  es      1   1       9.7:1      OK    
+software-architect     dark+sidebar  en      1   1       9.7:1      OK    
+backend-payments-ror   perfil        es      1   1       9.7:1      OK    
+backend-payments-ror   perfil        en      1   1       9.7:1      OK    
+backend-payments-ror   dark+sidebar  es      1   1       9.7:1      OK    
+backend-payments-ror   dark+sidebar  en      1   1       9.7:1      OK    
+tech-lead-dotnet       perfil        es      1   1       9.7:1      OK    
+tech-lead-dotnet       perfil        en      1   1       9.7:1      OK    
+tech-lead-dotnet       dark+sidebar  es      1   1       9.7:1      OK    
+tech-lead-dotnet       dark+sidebar  en      1   1       9.7:1      OK    
+generalist-polyglot    perfil        es      1   1       9.7:1      OK    
+generalist-polyglot    perfil        en      1   1       9.7:1      OK    
+generalist-polyglot    dark+sidebar  es      1   1       9.7:1      OK    
+generalist-polyglot    dark+sidebar  en      1   1       9.7:1      OK    
+all                    perfil        es      1   1       9.7:1      OK    
+all                    perfil        en      1   1       9.7:1      OK    
+all                    dark+sidebar  es      1   1       9.7:1      OK    
+all                    dark+sidebar  en      1   1       9.7:1      OK    
+
+56 casos (14 perfiles), 0 con problemas. Contraste mínimo: 9.74:1

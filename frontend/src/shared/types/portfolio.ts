@@ -11,6 +11,7 @@ export type Profile = Schemas['ProfileResponse'];
 export type Experience = Schemas['ExperienceResponse'];
 export type SkillCategory = Schemas['SkillCategoryResponse'];
 export type Project = Schemas['ProjectResponse'];
+export type FeaturedRepository = Schemas['FeaturedRepositoryResponse'];
 export type Education = Schemas['EducationResponse'];
 export type Certification = Schemas['CertificationResponse'];
 export type SocialLink = Schemas['SocialLinkResponse'];

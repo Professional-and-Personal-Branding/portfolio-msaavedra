@@ -4,6 +4,7 @@ import { AnalyticsModule } from '../analytics/analytics.module';
 import { AuthModule } from '../auth/auth.module';
 import { EducationModule } from '../education/education.module';
 import { ExperienceModule } from '../experience/experience.module';
+import { FeaturedRepositoryModule } from '../featured-repository/featured-repository.module';
 import { ProfileModule } from '../profile/profile.module';
 import { ProjectModule } from '../project/project.module';
 import { SkillModule } from '../skill/skill.module';
@@ -67,6 +68,7 @@ import { CryptoShareCodeGenerator } from './infrastructure/security/crypto-share
     AuthModule,
     EducationModule,
     ProjectModule,
+    FeaturedRepositoryModule,
     SocialLinkModule,
   ],
   controllers: [

@@ -18,12 +18,14 @@ export function curatedRule(snapshot: CvSnapshot, _ctx: CvRuleContext): CvIssue[
     ...snapshot.experiences.map((e) => e.id),
     ...snapshot.skillCategories.flatMap((c) => c.skills.map((s) => s.id)),
     ...snapshot.projects.map((p) => p.id),
+    ...snapshot.repositories.map((r) => r.id),
   ]);
   const visibleExperiences = snapshot.experiences.filter((e) => e.visible);
   const visibleTagSets: ReadonlyArray<readonly string[]> = [
     ...visibleExperiences.map((e) => e.tags),
     ...snapshot.skillCategories.flatMap((c) => c.skills.map((s) => s.tags)),
     ...snapshot.projects.filter((p) => p.visible).map((p) => p.tags),
+    ...snapshot.repositories.filter((r) => r.visible).map((r) => r.tags),
   ];
 
   const found: CvIssue[] = [];

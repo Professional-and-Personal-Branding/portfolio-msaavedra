@@ -2,10 +2,13 @@ import { ExternalLink, Pencil, Plus, Star, Trash2 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
+import { isHttpError } from '@/shared/lib/api-client';
 import type {
   AdminProject,
+  AdminRepository,
   AdminSocialLink,
   CreateProjectBody,
+  CreateRepositoryBody,
   CreateSocialLinkBody,
 } from '../shared/admin-types';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
@@ -17,16 +20,22 @@ import { useEditParam } from '../shared/use-edit-param';
 import { ProjectForm } from './ProjectForm';
 import {
   toProjectValues,
+  toRepositoryValues,
   toSocialLinkValues,
   type ProjectFormValues,
+  type RepositoryFormValues,
   type SocialLinkFormValues,
 } from './proyectos-form';
+import { RepositoryForm } from './RepositoryForm';
 import { SocialLinkForm } from './SocialLinkForm';
 import {
   useDeleteProject,
+  useDeleteRepository,
   useDeleteSocialLink,
   useProjects,
+  useRepositories,
   useSaveProject,
+  useSaveRepository,
   useSaveSocialLink,
   useSocialLinks,
 } from './use-proyectos-api';
@@ -37,16 +46,21 @@ interface Editing<T> {
   title: string;
 }
 
-/** Proyectos destacados y enlaces sociales (spec `admin-content-management`). */
+/**
+ * Proyectos destacados, repositorios de GitHub y enlaces sociales (spec `admin-content-management`).
+ */
 export function ProyectosPage() {
   // Cada sección abre su propio ítem con `?editar=<id>`; el aviso «El ítem ya no existe.» lo da la
-  // página porque es la única que ve las dos listas (los hooks de datos comparten caché).
+  // página porque es la única que ve las tres listas (los hooks de datos comparten caché).
   const projects = useProjects();
+  const repositories = useRepositories();
   const links = useSocialLinks();
   useEditParam({
-    ready: projects.isSuccess && links.isSuccess,
+    ready: projects.isSuccess && repositories.isSuccess && links.isSuccess,
     find: (id) =>
-      projects.data?.some((item) => item.id === id) || links.data?.some((item) => item.id === id)
+      projects.data?.some((item) => item.id === id) ||
+      repositories.data?.some((item) => item.id === id) ||
+      links.data?.some((item) => item.id === id)
         ? true
         : undefined,
     onFound: () => undefined,
@@ -54,11 +68,12 @@ export function ProyectosPage() {
   return (
     <>
       <PageHeader
-        title="Proyectos"
-        description="Proyectos destacados y enlaces sociales que se muestran en la vista pública."
+        title="Proyectos, repositorios y enlaces"
+        description="Proyectos destacados, repositorios de GitHub y enlaces sociales que se muestran en la vista pública."
       />
       <div className="flex flex-col gap-8">
         <ProjectsSection />
+        <RepositoriesSection />
         <SocialLinksSection />
       </div>
     </>
@@ -191,6 +206,160 @@ function ProjectsSection() {
           title={editing.title}
           initialValues={editing.values}
           saving={save.isPending}
+          onSubmit={handleSubmit}
+          onOpenChange={(open) => !open && setEditing(null)}
+        />
+      )}
+    </Section>
+  );
+}
+
+// ── Repositorios destacados (add-featured-repositories, D12) ────────────────
+function RepositoriesSection() {
+  const repositories = useRepositories();
+  const save = useSaveRepository();
+  const remove = useDeleteRepository();
+  const [editing, setEditing] = useState<Editing<RepositoryFormValues> | null>(null);
+  // La URL que el servidor rechazó por repetida (409): el error va en el campo, no en un aviso.
+  const [conflictUrl, setConflictUrl] = useState<string | null>(null);
+
+  const openEdit = (repository: AdminRepository) => {
+    setConflictUrl(null);
+    setEditing({
+      id: repository.id,
+      values: toRepositoryValues(repository),
+      title: `Editar ${repository.name}`,
+    });
+  };
+  useEditParam({
+    ready: repositories.isSuccess,
+    find: (id) => repositories.data?.find((item) => item.id === id),
+    onFound: openEdit,
+    reportMissing: false,
+  });
+
+  const handleSubmit = (body: CreateRepositoryBody) => {
+    save.mutate(
+      { id: editing?.id, body },
+      {
+        onSuccess: () => {
+          notifySuccess(editing?.id ? 'Repositorio actualizado' : 'Repositorio creado');
+          setEditing(null);
+        },
+        onError: (error) => {
+          if (isHttpError(error, 409)) setConflictUrl(body.url);
+          else notifyError(error);
+        },
+      },
+    );
+  };
+
+  const handleDelete = (repository: AdminRepository) => {
+    remove.mutate(repository.id, {
+      onSuccess: () => notifySuccess('Repositorio borrado'),
+      onError: (error) => notifyError(error, 'No se pudo borrar'),
+    });
+  };
+
+  return (
+    <Section
+      label="Repositorios destacados"
+      action={
+        <Button
+          size="sm"
+          onClick={() => {
+            setConflictUrl(null);
+            setEditing({ title: 'Nuevo repositorio' });
+          }}
+        >
+          <Plus aria-hidden />
+          Nuevo repositorio
+        </Button>
+      }
+    >
+      {repositories.isPending && <LoadingRows rows={2} />}
+      {repositories.isError && (
+        <ErrorPanel
+          message={repositories.error.message}
+          onRetry={() => void repositories.refetch()}
+        />
+      )}
+      {repositories.data?.length === 0 && (
+        <EmptyState
+          title="Todavía no hay repositorios"
+          description="Cargá al menos dos para que la sección se muestre en los perfiles curados."
+        />
+      )}
+
+      {repositories.data && repositories.data.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {repositories.data.map((repository) => (
+            <li
+              key={repository.id}
+              data-visible={repository.visible}
+              className={`${repository.visible ? 'surface' : 'surface-hidden'} flex flex-wrap items-center gap-3 px-4 py-3`}
+            >
+              <div className="min-w-0 flex-1">
+                <p className="flex flex-wrap items-center gap-2 font-semibold">
+                  {repository.name}
+                  {repository.language && (
+                    <span className="text-xs font-normal text-text-dim">{repository.language}</span>
+                  )}
+                  {!repository.visible && <HiddenBadge />}
+                </p>
+                <p className="truncate text-sm text-text-muted">{repository.description.es}</p>
+                <a
+                  href={repository.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-flex max-w-full items-center gap-1 truncate text-xs text-brand-ink hover:underline"
+                >
+                  <ExternalLink className="size-3 shrink-0" aria-hidden />
+                  {repository.url}
+                </a>
+                {repository.tags.length > 0 && (
+                  <p className="mt-1 truncate text-xs text-text-dim">
+                    {repository.tags.join(' · ')}
+                  </p>
+                )}
+              </div>
+
+              <span className="text-xs text-text-dim">orden {repository.order}</span>
+
+              <Button
+                variant="outline"
+                size="icon-sm"
+                aria-label={`Editar repositorio ${repository.name}`}
+                onClick={() => openEdit(repository)}
+              >
+                <Pencil aria-hidden />
+              </Button>
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    aria-label={`Borrar repositorio ${repository.name}`}
+                  >
+                    <Trash2 aria-hidden />
+                  </Button>
+                }
+                title="Borrar repositorio"
+                description={`Se borrará "${repository.name}" de la lista. El repositorio en GitHub no se toca. Esta acción no se puede deshacer.`}
+                onConfirm={() => handleDelete(repository)}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {editing && (
+        <RepositoryForm
+          key={editing.id ?? 'new'}
+          title={editing.title}
+          initialValues={editing.values}
+          saving={save.isPending}
+          conflictUrl={conflictUrl}
           onSubmit={handleSubmit}
           onOpenChange={(open) => !open && setEditing(null)}
         />

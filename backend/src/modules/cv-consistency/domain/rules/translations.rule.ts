@@ -65,6 +65,9 @@ export function translationsRule(snapshot: CvSnapshot, _ctx: CvRuleContext): CvI
   for (const p of snapshot.projects) {
     if (p.visible) check('project', p.id, { role: p.role, summary: p.summary });
   }
+  for (const r of snapshot.repositories) {
+    if (r.visible) check('repository', r.id, { description: r.description });
+  }
   for (const e of snapshot.education) {
     if (e.visible) check('education', e.id, { degree: e.degree });
   }

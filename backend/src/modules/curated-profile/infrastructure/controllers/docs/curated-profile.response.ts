@@ -3,6 +3,7 @@ import {
   CertificationResponse,
   EducationResponse,
 } from '../../../../education/infrastructure/controllers/docs/education.response';
+import { FeaturedRepositoryResponse } from '../../../../featured-repository/infrastructure/controllers/docs/featured-repository.response';
 import { ProjectResponse } from '../../../../project/infrastructure/controllers/docs/project.response';
 import { SocialLinkResponse } from '../../../../social-link/infrastructure/controllers/docs/social-link.response';
 import { ExperienceResponse } from '../../../../experience/infrastructure/controllers/docs/experience.response';
@@ -111,6 +112,13 @@ export class CuratedProfileResponse
 
   @ApiProperty({ type: [ProjectResponse], description: 'Seleccionados por tags/overrides.' })
   projects!: ProjectResponse[];
+
+  @ApiProperty({
+    type: [FeaturedRepositoryResponse],
+    description:
+      'Repositorios destacados seleccionados por tags/overrides. Se conservan aunque haya menos de 2; la sección `repositories` solo figura en `sections` desde 2.',
+  })
+  repositories!: FeaturedRepositoryResponse[];
 
   @ApiProperty({ type: [EducationResponse] })
   education!: EducationResponse[];

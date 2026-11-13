@@ -1,8 +1,10 @@
 import { z } from 'zod';
 import type {
   AdminProject,
+  AdminRepository,
   AdminSocialLink,
   CreateProjectBody,
+  CreateRepositoryBody,
   CreateSocialLinkBody,
 } from '../shared/admin-types';
 import { toLocalizedPayload } from '../shared/fields/localized';
@@ -108,6 +110,88 @@ export function toProjectBody(values: ProjectFormValues): CreateProjectBody {
 export function validateProject(values: ProjectFormValues): Record<string, string> {
   const result = projectSchema.safeParse(values);
   return result.success ? {} : toErrors(result.error.issues);
+}
+
+// ── Repositorio destacado (add-featured-repositories, D2 y D12) ─────────────
+/** Mensaje literal de la regla de URL (el mismo que devuelve la API). */
+export const GITHUB_URL_MESSAGE = 'La URL tiene que ser https://github.com/<usuario>/<repositorio>';
+export const DUPLICATE_REPOSITORY_MESSAGE = 'Ese repositorio ya está cargado';
+
+/** La misma forma canónica que `parseGithubRepositoryUrl` del backend. */
+const GITHUB_URL =
+  /^https:\/\/github\.com\/([A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38})\/([A-Za-z0-9._-]{1,100})$/;
+
+/** `owner` y `repo` de una URL de GitHub canónica; `null` si no lo es. */
+export function parseGithubUrl(value: string): { owner: string; repo: string } | null {
+  const match = GITHUB_URL.exec(value);
+  if (!match) return null;
+  const [, owner, repo] = match as unknown as [string, string, string];
+  return repo === '.' || repo === '..' || repo.endsWith('.git') ? null : { owner, repo };
+}
+
+export const repositorySchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, 'El nombre es obligatorio')
+    .max(100, 'El nombre admite hasta 100 caracteres'),
+  url: z.string().refine((v) => parseGithubUrl(v.trim()) !== null, { message: GITHUB_URL_MESSAGE }),
+  language: z.string().trim().max(40, 'El lenguaje admite hasta 40 caracteres'),
+  description: requiredLocalized('La descripción en español es obligatoria'),
+  technologies: z.array(z.string()),
+  tags: z.array(z.string()),
+  order: z.number().int('El orden debe ser un entero').min(0, 'El orden no puede ser negativo'),
+  visible: z.boolean(),
+});
+
+export type RepositoryFormValues = z.infer<typeof repositorySchema>;
+
+export const EMPTY_REPOSITORY: RepositoryFormValues = {
+  name: '',
+  url: '',
+  language: '',
+  description: { es: '', en: '' },
+  technologies: [],
+  tags: [],
+  order: 0,
+  visible: true,
+};
+
+export function toRepositoryValues(repository: AdminRepository): RepositoryFormValues {
+  return {
+    name: repository.name,
+    url: repository.url,
+    language: repository.language ?? '',
+    description: { es: repository.description.es, en: repository.description.en ?? '' },
+    technologies: [...repository.technologies],
+    tags: [...repository.tags],
+    order: repository.order,
+    visible: repository.visible,
+  };
+}
+
+/** Cuerpo para la API: el lenguaje vacío se envía como `null` (lo quita). */
+export function toRepositoryBody(values: RepositoryFormValues): CreateRepositoryBody {
+  return {
+    name: values.name.trim(),
+    url: values.url.trim(),
+    language: values.language.trim() || null,
+    description: toLocalizedPayload(values.description),
+    technologies: values.technologies,
+    tags: values.tags,
+    order: values.order,
+    visible: values.visible,
+  };
+}
+
+export function validateRepository(values: RepositoryFormValues): Record<string, string> {
+  const result = repositorySchema.safeParse(values);
+  return result.success ? {} : toErrors(result.error.issues);
+}
+
+/** Nombre propuesto al completar la URL: el segmento `repo` (editable). */
+export function proposedRepositoryName(url: string): string {
+  return parseGithubUrl(url.trim())?.repo ?? '';
 }
 
 // ── Enlace social ───────────────────────────────────────────────────────────

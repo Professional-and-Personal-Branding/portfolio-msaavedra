@@ -104,6 +104,7 @@ describe('cv-issue-messages', () => {
       expect(label('education', 'edu-1', 'en')).toBe('Engineering');
       expect(label('certification', 'cert-1', 'en')).toBe('Certification');
       expect(label('project', 'proj-1')).toBe('Portafolio');
+      expect(label('repository', 'repo-1')).toBe('reservas-api');
       expect(label('socialLink', 'link-1')).toBe('github');
       expect(label('curatedProfile', 'cp-1')).toBe('backend');
     });

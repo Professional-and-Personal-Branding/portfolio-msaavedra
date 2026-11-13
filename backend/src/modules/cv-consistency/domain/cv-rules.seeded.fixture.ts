@@ -4,6 +4,7 @@ import {
   CvCuratedProfileSnapshot,
   CvExperienceSnapshot,
   CvProjectSnapshot,
+  CvRepositorySnapshot,
   CvSnapshot,
 } from './cv-snapshot';
 
@@ -60,6 +61,14 @@ const PROJECT: CvProjectSnapshot = {
   tags: ['backend'],
   role: both('Autor', 'Author'),
   summary: both('Resumen del proyecto', 'Project summary'),
+};
+
+const REPOSITORY: CvRepositorySnapshot = {
+  id: 'repo-1',
+  name: 'reservas-api',
+  visible: true,
+  tags: ['backend'],
+  description: both('API de reservas', 'Booking API'),
 };
 
 const CURATED: CvCuratedProfileSnapshot = {
@@ -119,6 +128,7 @@ export function cleanSnapshot(): CvSnapshot {
     ],
     certifications: [CERTIFICATION],
     projects: [PROJECT],
+    repositories: [REPOSITORY],
     socialLinks: [
       {
         id: 'link-1',

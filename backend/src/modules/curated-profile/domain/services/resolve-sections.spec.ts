@@ -2,19 +2,21 @@ import {
   completeSections,
   DEFAULT_SECTIONS,
   isSectionId,
+  MIN_REPOSITORIES_FOR_SECTION,
   resolveSections,
   SECTION_IDS,
   SectionId,
 } from './resolve-sections';
 
 describe('SECTION_IDS', () => {
-  it('son los nueve ids en orden canónico', () => {
+  it('son los diez ids en orden canónico', () => {
     expect(SECTION_IDS).toEqual([
       'hero',
       'stats',
       'experience',
       'skills',
       'projects',
+      'repositories',
       'education',
       'certifications',
       'presence',
@@ -70,6 +72,7 @@ describe('completeSections', () => {
       'stats',
       'skills',
       'projects',
+      'repositories',
       'education',
       'certifications',
       'presence',
@@ -117,5 +120,25 @@ describe('completeSections', () => {
 
   it('un id fuera del catálogo se descarta', () => {
     expect(complete(['hero', 'timeline-3d'], [], new Set(['hero']))).toEqual(['hero']);
+  });
+
+  it('repositories va entre projects y education en el orden por defecto', () => {
+    const result = complete([], []);
+    expect(result).toHaveLength(10);
+    expect(result.indexOf('repositories')).toBe(result.indexOf('projects') + 1);
+    expect(result.indexOf('education')).toBe(result.indexOf('repositories') + 1);
+  });
+
+  it('con un orden explícito sin repositories, se rellena al final', () => {
+    const result = complete(['hero', 'experience'], []);
+    expect(result.slice(0, 2)).toEqual(['hero', 'experience']);
+    expect(result).toContain('repositories');
+    expect(result.indexOf('repositories')).toBeGreaterThan(1);
+  });
+});
+
+describe('MIN_REPOSITORIES_FOR_SECTION', () => {
+  it('es 2', () => {
+    expect(MIN_REPOSITORIES_FOR_SECTION).toBe(2);
   });
 });

@@ -42,6 +42,7 @@ describe('?editar=<id> en las pantallas de listas', () => {
     ['Formación (una certificación)', '/admin/formacion', 'cert-2', 'Editar Arquitecto Cloud'],
     ['Proyectos (un proyecto)', '/admin/proyectos', 'proj-1', 'Editar Portafolio'],
     ['Proyectos (un enlace)', '/admin/proyectos', 'sl-2', 'Editar YouTube'],
+    ['Proyectos (un repositorio)', '/admin/proyectos', 'repo-1', 'Editar reservas-api'],
   ];
 
   it.each(cases)(
@@ -61,7 +62,7 @@ describe('?editar=<id> en las pantallas de listas', () => {
     ['Experiencias', '/admin/experiencias', 'Experiencias'],
     ['Skills', '/admin/skills', 'Skills'],
     ['Formación', '/admin/formacion', 'Formación'],
-    ['Proyectos', '/admin/proyectos', 'Proyectos'],
+    ['Proyectos', '/admin/proyectos', 'Proyectos, repositorios y enlaces'],
   ])('%s: un id inexistente avisa y no abre ningún diálogo', async (_name, path, heading) => {
     server.use(...adminHandlers);
     const error = vi.spyOn(toast, 'error');

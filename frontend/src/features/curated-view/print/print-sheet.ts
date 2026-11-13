@@ -24,6 +24,8 @@ export const PRINT_LIMITS = {
   projects: 2,
   education: 3,
   certifications: 4,
+  /** Nombres de repositorios en la línea compacta (D9 de `add-featured-repositories`). */
+  repositories: 3,
   /** Enlaces `featured` de `presence` que se suman al encabezado, además de LinkedIn. */
   featuredLinks: 2,
 } as const;
@@ -89,6 +91,11 @@ export type PrintBlock =
         credential: PrintLink | null;
         expired: boolean;
       }[];
+    })
+  | (BlockBase & {
+      kind: 'repositories';
+      /** Una sola línea: hasta `PRINT_LIMITS.repositories` nombres enlazados; la URL no se imprime. */
+      items: PrintLink[];
     });
 
 export interface PrintSheetModel {
@@ -99,12 +106,17 @@ export interface PrintSheetModel {
   fullUrl: string;
 }
 
-type OmittedKind = 'experience' | 'skills' | 'projects' | 'education' | 'certifications';
+type OmittedKind =
+  'experience' | 'skills' | 'projects' | 'repositories' | 'education' | 'certifications';
 
 const OMITTED_KEYS: Record<OmittedKind, { one: MessageKey; other: MessageKey }> = {
   experience: { one: 'print.omitted.experience.one', other: 'print.omitted.experience.other' },
   skills: { one: 'print.omitted.skills.one', other: 'print.omitted.skills.other' },
   projects: { one: 'print.omitted.projects.one', other: 'print.omitted.projects.other' },
+  repositories: {
+    one: 'print.omitted.repositories.one',
+    other: 'print.omitted.repositories.other',
+  },
   education: { one: 'print.omitted.education.one', other: 'print.omitted.education.other' },
   certifications: {
     one: 'print.omitted.certifications.one',
@@ -135,10 +147,24 @@ export function buildPrintSheet(
   const t = (key: MessageKey) => translate(locale, key);
   const sections = data.sections as SectionId[];
 
+  // Los repositorios van al final del armado: entran solo si la hoja ya armada tiene lugar (D9).
+  const withoutRepositories: PrintBlock[] = [];
+  for (const section of sections) {
+    if (section === 'repositories') continue;
+    const block = buildBlock(section, data, locale, t, now);
+    if (block) withoutRepositories.push(block);
+  }
+  const repositories = repositoriesFit(withoutRepositories)
+    ? buildRepositoriesBlock(data, locale, t)
+    : null;
   const blocks: PrintBlock[] = [];
   for (const section of sections) {
-    const block = buildBlock(section, data, locale, t, now);
-    if (block) blocks.push(block);
+    if (section !== 'repositories') {
+      const block = withoutRepositories.find((candidate) => candidate.section === section);
+      if (block) blocks.push(block);
+    } else if (repositories) {
+      blocks.push(repositories);
+    }
   }
 
   return {
@@ -146,6 +172,106 @@ export function buildPrintSheet(
     header: buildHeader(data, sections, locale),
     blocks,
     fullUrl: fullVersionUrl(data, locale, origin),
+  };
+}
+
+/**
+ * Peso de cada elemento de la hoja en líneas de texto (D9 de `add-featured-repositories`).
+ * Sirve para decidir de forma determinística si una línea más entra en la página única, sin
+ * medir el DOM (la hoja está en `display: none` en pantalla). No es una medida exacta: se
+ * calibra contra `print:check` y, si falla en el sentido optimista, ese script lo detecta.
+ */
+export const CHARS_PER_LINE = 110;
+const LINES = {
+  header: 5,
+  blockTitle: 1.5,
+  summaryMax: 4,
+  oneLine: 1,
+  closingUrl: 1,
+  repositories: 1.5,
+} as const;
+
+/**
+ * Capacidad de la hoja en líneas estimadas: el mayor valor con el que `print:check` sigue dando
+ * una sola página en todas las combinaciones de las dos bases y en un fixture al límite. El
+ * valor y la tabla de calibración están en D9 de `design.md`.
+ */
+export const PRINT_CAPACITY_LINES = 63;
+
+const linesOf = (text: string): number => Math.ceil(text.length / CHARS_PER_LINE);
+
+/** Líneas estimadas de los bloques ya armados, más el encabezado y la URL de cierre. */
+export function estimatePrintLines(blocks: readonly PrintBlock[]): number {
+  let total = LINES.header + LINES.closingUrl;
+  for (const block of blocks) {
+    total += LINES.blockTitle;
+    switch (block.kind) {
+      case 'summary':
+        total += Math.min(LINES.summaryMax, linesOf(block.text));
+        break;
+      case 'experience':
+        for (const experience of block.detailed) {
+          total += 1 + 1; // rol y empresa + tecnologías
+          for (const achievement of experience.achievements) total += linesOf(achievement);
+        }
+        total += block.lines.length * LINES.oneLine;
+        break;
+      case 'skills':
+        for (const category of block.categories) {
+          total += linesOf(`${category.name}: ${category.skills.join(' · ')}`);
+        }
+        break;
+      case 'projects':
+        for (const project of block.items) {
+          total += 1 + linesOf(project.summary) + (project.url ? 1 : 0);
+        }
+        break;
+      case 'education':
+        total += block.items.length * LINES.oneLine;
+        break;
+      case 'certifications':
+        total += linesOf(block.items.map((item) => item.text).join(' · '));
+        break;
+      case 'repositories':
+        // El título va en la misma línea: el peso del bloque ya está en `LINES.repositories`.
+        total += LINES.repositories - LINES.blockTitle;
+        break;
+    }
+    if (block.omittedLabel && block.kind !== 'repositories') total += LINES.oneLine;
+  }
+  return total;
+}
+
+function repositoriesFit(blocks: readonly PrintBlock[]): boolean {
+  return estimatePrintLines(blocks) + LINES.repositories <= PRINT_CAPACITY_LINES;
+}
+
+/** Nombres de más de 40 caracteres: se recortan con «…» en el dato, no con CSS. */
+const MAX_REPOSITORY_NAME = 40;
+function printableName(name: string): string {
+  return name.length > MAX_REPOSITORY_NAME
+    ? `${name.slice(0, MAX_REPOSITORY_NAME - 1).trimEnd()}…`
+    : name;
+}
+
+/** Una línea compacta «Repositorios: a · b · c · y N más» (D9); `null` si no hay repositorios. */
+function buildRepositoriesBlock(
+  data: CuratedProfile,
+  locale: Locale,
+  t: (key: MessageKey) => string,
+): PrintBlock | null {
+  const all = data.repositories;
+  if (all.length === 0) return null;
+  const shown = all.slice(0, PRINT_LIMITS.repositories);
+  return {
+    kind: 'repositories',
+    section: 'repositories',
+    label: t('print.block.repositories'),
+    items: shown.map((repository) => ({
+      text: printableName(repository.name),
+      href: repository.url,
+    })),
+    ...omitted('repositories', all.length - shown.length, locale),
   };
 }
 

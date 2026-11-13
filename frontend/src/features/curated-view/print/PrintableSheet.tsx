@@ -103,6 +103,30 @@ function LinkOrText({ link }: { link: PrintLink }) {
 }
 
 function Block({ block }: { block: PrintBlock }) {
+  // Los repositorios son una sola línea con el rótulo en línea (D9 de `add-featured-repositories`).
+  if (block.kind === 'repositories') {
+    return (
+      <section data-print-block={block.section} className="border-t border-border py-1">
+        <p className="line-clamp-1">
+          <span className="font-heading text-[8pt] font-bold tracking-wider text-text-muted uppercase">
+            {block.label}:
+          </span>{' '}
+          {block.items.map((item, index) => (
+            <Fragment key={item.href ?? item.text}>
+              {index > 0 && <span aria-hidden> · </span>}
+              <LinkOrText link={item} />
+            </Fragment>
+          ))}
+          {block.omittedLabel && (
+            <>
+              <span aria-hidden> · </span>
+              <span className="text-text-muted italic">{block.omittedLabel}</span>
+            </>
+          )}
+        </p>
+      </section>
+    );
+  }
   return (
     <section
       data-print-block={block.section}
@@ -208,6 +232,8 @@ function BlockBody({ block }: { block: PrintBlock }) {
           ))}
         </p>
       );
+    case 'repositories':
+      return null; // lo dibuja `Block`
   }
 }
 

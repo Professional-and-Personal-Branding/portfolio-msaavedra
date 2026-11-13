@@ -88,6 +88,11 @@ export class CuratedProfileComposer {
       ),
     );
     const projects = selectByTags(portfolio.projects, criteria).sort((a, b) => a.order - b.order);
+    // Repositorios: mismo espacio de ids y de tags que los proyectos. La clave se conserva
+    // aunque la sección no llegue al mínimo (el constructor la usa para avisar).
+    const repositories = selectByTags(portfolio.repositories, criteria).sort(
+      (a, b) => a.order - b.order,
+    );
 
     // Skills por categoría (sin categorías vacías).
     const skillCategories = selectSkillCategories(allCategories, criteria);
@@ -105,6 +110,7 @@ export class CuratedProfileComposer {
       experiences,
       skillCategories,
       projects,
+      repositories,
       education: portfolio.education,
       certifications: portfolio.certifications,
       socialLinks: portfolio.socialLinks,

@@ -3,12 +3,13 @@ import { Education } from '../../education/domain/entities/education.entity';
 import { CuratedProfile } from '../../curated-profile/domain/entities/curated-profile.entity';
 import { Experience } from '../../experience/domain/entities/experience.entity';
 import { Profile } from '../../profile/domain/entities/profile.entity';
+import { FeaturedRepository } from '../../featured-repository/domain/entities/featured-repository.entity';
 import { Project } from '../../project/domain/entities/project.entity';
 import { SkillCategory } from '../../skill/domain/entities/skill-category.entity';
 import { SocialLink } from '../../social-link/domain/entities/social-link.entity';
 import { CvSnapshot } from '../domain/cv-snapshot';
 
-/** Lo que el caso de uso lee de los siete módulos (una consulta por repositorio). */
+/** Lo que el caso de uso lee de los ocho módulos (una consulta por repositorio). */
 export interface CvSources {
   readonly profile: Profile | null;
   readonly experiences: readonly Experience[];
@@ -16,6 +17,7 @@ export interface CvSources {
   readonly education: readonly Education[];
   readonly certifications: readonly Certification[];
   readonly projects: readonly Project[];
+  readonly repositories: readonly FeaturedRepository[];
   readonly socialLinks: readonly SocialLink[];
   readonly curatedProfiles: readonly CuratedProfile[];
 }
@@ -84,6 +86,13 @@ export function toCvSnapshot(sources: CvSources): CvSnapshot {
       tags: p.tags,
       role: p.role,
       summary: p.summary,
+    })),
+    repositories: sources.repositories.map((r) => ({
+      id: r.id,
+      name: r.name,
+      visible: r.visible,
+      tags: r.tags,
+      description: r.description,
     })),
     socialLinks: sources.socialLinks.map((l) => ({
       id: l.id,

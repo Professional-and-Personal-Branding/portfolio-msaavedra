@@ -17,6 +17,22 @@ Base reutilizable para hablar con terceros sin demorar ninguna petición, sin ej
 - **CI.** El job `backend-e2e` suma `npm run build` antes de los e2e: `integrations-env.e2e-spec.ts` arranca `node dist/main` como proceso hijo.
 - **Docs.** `docs/DEPLOY.md` y `docs/DEPLOY-RAILWAY.md` (variables, keyring, rotación, una sola réplica, `drainingSeconds` > 8 s), `docs/ARCHITECTURE.md` (módulo, rutas y presupuesto de los trabajos) y `docs/MANUAL.md` con `index.html` (B17, TC-49, glosario, `bo-integraciones.jpg`).
 
+## Update — Noviembre 2026 (`add-featured-repositories`)
+
+Los repositorios destacados dejan de ser inertes: se cargan a mano desde el panel, se muestran en una sección nueva y viajan al PDF y al JSON Resume.
+
+- **Módulo `featured-repository`.** Entidad, puerto, reglas de dominio, casos de uso públicos y de administración, adaptador Prisma y controllers, sobre la plantilla de `project`. `GET /api/featured-repositories` (visibles, al locale) y CRUD en `/api/admin/featured-repositories`. **Sin migración y sin dependencias nuevas:** la tabla de `init` alcanza; `stars` queda sin exponer.
+- **URL solo de GitHub.** `parseGithubRepositoryUrl` (función pura del dominio) valida `https://github.com/<usuario>/<repositorio>` en la API, el panel (Zod) y el seed; el mismo `usuario/repositorio`, sin distinguir mayúsculas, no se carga dos veces (409).
+- **Sección `repositories`, décimo id del catálogo**, entre Proyectos y Educación. Se filtra por `tags` e `includeIds`/`excludeIds` como los proyectos y **se muestra solo con 2 o más repositorios resueltos**; con menos, la vista conserva el dato en `repositories` pero la sección no figura en `sections`. Una migración de datos (`order_repositories_section`, sin cambios de schema, idempotente) inserta `repositories` después de `projects` en los perfiles sembrados con el orden anterior de nueve ids.
+- **Vista pública.** `Repositories.tsx` en un chunk diferido (`lazyWithPreload`) que se precarga cuando `sections` trae `repositories`; el nombre es un enlace a GitHub (`target="_blank"`, `rel="noopener noreferrer"`). Arranque público: 149,7 KB gzip contra 148,9 antes (+0,8 KB: 0,3 de la sección y sus rótulos y 0,5 de la línea del PDF); el tope sigue en 155 KB.
+- **PDF de una página.** Una línea «Repositorios: a · b · c · y N más», solo si entra según `estimatePrintLines` y `PRINT_CAPACITY_LINES = 63` (calibrada con `print:check`: el perfil de 62 líneas estimadas desborda en Letter). Sin línea de omitidos cuando no entra.
+- **JSON Resume.** Los repositorios van en `projects`, después de los proyectos, con `type: "repository"` y `keywords` (lenguaje y tecnologías).
+- **Panel.** Bloque **Repositorios destacados** en `/admin/proyectos` (la página pasa a llamarse «Proyectos, repositorios y enlaces»), bloque **Repositorios** en la pestaña Selección del constructor (Incluir/Excluir, ocultos marcados, aviso «se muestra desde 2», referencias huérfanas con las cuatro listas) y los repositorios en el aviso de faltantes de traducción.
+- **Consistencia del CV.** `i18n.missing-translation` cubre la descripción de los repositorios visibles; los ids y los tags de los repositorios cuentan como referencias válidas en las reglas de perfiles curados.
+- **Seed.** Carga todos los repositorios (también los ocultos), acepta `id` opcional para `repository:<id>` en `includeRefs`/`excludeRefs`, valida la URL antes de escribir y sigue aceptando `stars` (se ignora). `docs/cv-data.json` pasa su placeholder a `featuredRepositories: []`. El digest del seed por defecto cambió solo por el nuevo id en `sectionsOrder`.
+- **Ejemplo.** Tres repositorios ficticios bajo `portafolio-ejemplo-ficticio` (uno oculto), `ejemplo-secciones` con las diez secciones y `ejemplo-renombrado` como caso del umbral.
+- **Contrato y docs.** `openapi.json` y `api.d.ts` regenerados. Manual: TC-50, B7, B10, glosario y tres capturas; `DATA-POPULATION.md` § 10 y § 12.10.
+
 ## Update — Noviembre 2026 (`add-cv-consistency-rules`)
 
 El CV se contrasta consigo mismo: una pantalla del panel y un comando sin base listan lo que se contradice.

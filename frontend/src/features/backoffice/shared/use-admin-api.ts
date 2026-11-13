@@ -29,6 +29,7 @@ export const adminKeys = {
   education: ['admin', 'education'] as const,
   certifications: ['admin', 'certifications'] as const,
   projects: ['admin', 'projects'] as const,
+  featuredRepositories: ['admin', 'featured-repositories'] as const,
   socialLinks: ['admin', 'social-links'] as const,
   shareLinks: (profileId: string) => ['admin', 'share-links', profileId] as const,
   applications: ['admin', 'applications'] as const,

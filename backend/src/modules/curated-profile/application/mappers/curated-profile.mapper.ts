@@ -9,6 +9,8 @@ import { toExperienceOutput } from '../../../experience/application/mappers/expe
 import { Experience } from '../../../experience/domain/entities/experience.entity';
 import { toProfileOutput } from '../../../profile/application/mappers/profile.mapper';
 import { Profile } from '../../../profile/domain/entities/profile.entity';
+import { toFeaturedRepositoryOutput } from '../../../featured-repository/application/mappers/featured-repository.mapper';
+import { FeaturedRepository } from '../../../featured-repository/domain/entities/featured-repository.entity';
 import { toProjectOutput } from '../../../project/application/mappers/project.mapper';
 import { Project } from '../../../project/domain/entities/project.entity';
 import { SkillCategory } from '../../../skill/domain/entities/skill-category.entity';
@@ -63,6 +65,8 @@ export interface CuratedProfileResolution {
   skillCategories: readonly SkillCategory[];
   /** Ya seleccionados por tags/overrides. */
   projects: readonly Project[];
+  /** Ya seleccionados por tags/overrides, ordenados por `order`. */
+  repositories: readonly FeaturedRepository[];
   education: readonly Education[];
   certifications: readonly Certification[];
   socialLinks: readonly SocialLink[];
@@ -83,6 +87,7 @@ export function toCuratedProfileOutput(r: CuratedProfileResolution): CuratedProf
     experiences: r.experiences.map((e) => toExperienceOutput(e, l)),
     skillCategories: r.skillCategories.map((c) => toSkillCategoryOutput(c, l)),
     projects: r.projects.map((p) => toProjectOutput(p, l)),
+    repositories: r.repositories.map((x) => toFeaturedRepositoryOutput(x, l)),
     education: r.education.map((e) => toEducationOutput(e, l)),
     certifications: r.certifications.map((c) => toCertificationOutput(c, l)),
     socialLinks: r.socialLinks.map((s) => toSocialLinkOutput(s, l)),

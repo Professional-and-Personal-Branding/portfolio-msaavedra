@@ -1,0 +1,42 @@
+== ANTES (estado de main + casos borde)
+ai-software-engineer|
+all|hero,projects,repositories,contact
+backend-payments-ror|hero,contact
+devops-azure|projects,hero
+devops-platform|hero,stats,experience,skills,projects,education,certifications,presence,contact
+dotnet-backend|hero,stats,experience,skills,projects,education,certifications,presence,contact
+fullstack-microsoft|hero,stats,experience,skills,projects,education,certifications,presence,contact
+fullstack-nest-react|hero,stats,experience,skills,projects,education,certifications,presence,contact
+generalist-polyglot|hero,stats,experience,skills,projects,education,certifications,presence,contact
+integration-architect|hero,stats,experience,skills,projects,education,certifications,presence,contact
+it-leadership|hero,stats,experience,skills,projects,education,certifications,presence,contact
+java-senior-backend|hero,stats,experience,skills,projects,education,certifications,presence,contact
+software-architect|hero,stats,experience,skills,projects,education,certifications,presence,contact
+tech-lead-dotnet|hero,stats,experience,skills,projects,education,certifications,presence,contact
+Applying migration `20261112235611_order_repositories_section`
+The following migration(s) have been applied:
+  └─ 20261112235611_order_repositories_section/
+All migrations have been successfully applied.
+== DESPUES de aplicar
+ai-software-engineer|
+all|hero,projects,repositories,contact
+backend-payments-ror|hero,contact
+devops-azure|projects,repositories,hero
+devops-platform|hero,stats,experience,skills,projects,repositories,education,certifications,presence,contact
+dotnet-backend|hero,stats,experience,skills,projects,repositories,education,certifications,presence,contact
+fullstack-microsoft|hero,stats,experience,skills,projects,repositories,education,certifications,presence,contact
+fullstack-nest-react|hero,stats,experience,skills,projects,repositories,education,certifications,presence,contact
+generalist-polyglot|hero,stats,experience,skills,projects,repositories,education,certifications,presence,contact
+integration-architect|hero,stats,experience,skills,projects,repositories,education,certifications,presence,contact
+it-leadership|hero,stats,experience,skills,projects,repositories,education,certifications,presence,contact
+java-senior-backend|hero,stats,experience,skills,projects,repositories,education,certifications,presence,contact
+software-architect|hero,stats,experience,skills,projects,repositories,education,certifications,presence,contact
+tech-lead-dotnet|hero,stats,experience,skills,projects,repositories,education,certifications,presence,contact
+== Segunda aplicación del UPDATE: md5 antes a7fe34dcde891fc0cef9efa4de99e93e, después a7fe34dcde891fc0cef9efa4de99e93e (sin cambios)
+== prisma migrate diff (migraciones vs schema)
+
+== prisma migrate diff (migraciones vs schema)
+
+No difference detected.
+
+exit=0

@@ -10,6 +10,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CvConsistencyModule } from './modules/cv-consistency/cv-consistency.module';
 import { CuratedProfileModule } from './modules/curated-profile/curated-profile.module';
 import { EducationModule } from './modules/education/education.module';
+import { FeaturedRepositoryModule } from './modules/featured-repository/featured-repository.module';
 import { ProjectModule } from './modules/project/project.module';
 import { SocialLinkModule } from './modules/social-link/social-link.module';
 import { ExperienceModule } from './modules/experience/experience.module';
@@ -56,6 +57,7 @@ import { PrismaModule } from './shared/infrastructure/persistence/prisma.module'
     AnalyticsModule,
     EducationModule,
     ProjectModule,
+    FeaturedRepositoryModule,
     SocialLinkModule,
     ApplicationTrackingModule,
     CvConsistencyModule,

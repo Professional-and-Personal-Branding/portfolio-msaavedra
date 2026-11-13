@@ -346,6 +346,40 @@ export const ADMIN_PROJECTS: AdminProjectFixture[] = [
   }),
 ];
 
+type AdminRepositoryFixture = components['schemas']['AdminFeaturedRepositoryResponse'];
+
+export function makeAdminRepository(
+  overrides: Partial<AdminRepositoryFixture> = {},
+): AdminRepositoryFixture {
+  return {
+    id: 'repo-1',
+    name: 'reservas-api',
+    url: 'https://github.com/ejemplo/reservas-api',
+    language: 'Java',
+    description: { es: 'API de reservas.', en: 'Booking API.' },
+    technologies: ['Spring Boot'],
+    tags: ['java'],
+    order: 0,
+    visible: true,
+    ...overrides,
+  };
+}
+
+export const ADMIN_REPOSITORIES: AdminRepositoryFixture[] = [
+  makeAdminRepository(),
+  makeAdminRepository({
+    id: 'repo-2',
+    name: 'experimento-oculto',
+    url: 'https://github.com/ejemplo/experimento-oculto',
+    language: null,
+    description: { es: 'Experimento sin publicar.', en: 'Unpublished experiment.' },
+    technologies: [],
+    tags: ['python'],
+    order: 1,
+    visible: false,
+  }),
+];
+
 export function makeAdminSocialLink(
   overrides: Partial<AdminSocialLinkFixture> = {},
 ): AdminSocialLinkFixture {

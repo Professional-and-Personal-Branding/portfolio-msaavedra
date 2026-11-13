@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { makeAdminExperience, makeAdminProject, ADMIN_CATEGORIES } from '@/test/fixtures/admin';
+import {
+  makeAdminExperience,
+  makeAdminProject,
+  makeAdminRepository,
+  ADMIN_CATEGORIES,
+} from '@/test/fixtures/admin';
 import type { AdminSkillCategory } from '../shared/admin-types';
 import { EMPTY_DRAFT, type ProfileDraft } from './profile-draft';
 import {
@@ -64,21 +69,34 @@ describe('overrideState y setOverride', () => {
 describe('orphanOverrideIds y removeOverrideIds', () => {
   const experiences = [makeAdminExperience({ id: 'exp-1' })];
   const projects = [makeAdminProject({ id: 'proj-1' })];
+  const repositories = [makeAdminRepository({ id: 'repo-1' })];
 
   it('solo devuelve el id que no existe en ninguna lista, uno de cada tipo existente no cuenta', () => {
-    const current = draft(['exp-1', 'sk-1'], ['proj-1', 'borrado']);
-    expect(orphanOverrideIds(current, experiences, ADMIN_CATEGORIES, projects)).toEqual([
-      'borrado',
+    const current = draft(['exp-1', 'sk-1', 'repo-1'], ['proj-1', 'borrado']);
+    expect(
+      orphanOverrideIds(current, experiences, ADMIN_CATEGORIES, projects, repositories),
+    ).toEqual(['borrado']);
+  });
+
+  it('un repositorio existente, visible u oculto, no es huérfano; uno borrado sí', () => {
+    const hidden = [makeAdminRepository({ id: 'repo-oculto', visible: false })];
+    const current = draft(['repo-oculto'], ['repo-borrado']);
+    expect(orphanOverrideIds(current, experiences, ADMIN_CATEGORIES, projects, hidden)).toEqual([
+      'repo-borrado',
     ]);
   });
 
   it('no repite un id huérfano presente en los dos arreglos', () => {
     const current = draft(['viejo'], ['viejo']);
-    expect(orphanOverrideIds(current, experiences, ADMIN_CATEGORIES, projects)).toEqual(['viejo']);
+    expect(
+      orphanOverrideIds(current, experiences, ADMIN_CATEGORIES, projects, repositories),
+    ).toEqual(['viejo']);
   });
 
   it('sin overrides no hay huérfanos', () => {
-    expect(orphanOverrideIds(draft(), experiences, ADMIN_CATEGORIES, projects)).toEqual([]);
+    expect(
+      orphanOverrideIds(draft(), experiences, ADMIN_CATEGORIES, projects, repositories),
+    ).toEqual([]);
   });
 
   it('removeOverrideIds saca los ids de los dos arreglos y conserva el resto', () => {

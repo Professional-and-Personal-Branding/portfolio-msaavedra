@@ -34,6 +34,7 @@ function output(overrides: Partial<CuratedProfileOutput> = {}): CuratedProfileOu
     experiences: [],
     skillCategories: [],
     projects: [],
+    repositories: [],
     education: [],
     certifications: [],
     socialLinks: [{ url: 'https://github.com/ada' }] as CuratedProfileOutput['socialLinks'],

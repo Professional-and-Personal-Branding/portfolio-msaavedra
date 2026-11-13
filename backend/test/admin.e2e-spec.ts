@@ -454,7 +454,7 @@ describe('Backoffice (e2e)', () => {
         expect(await prisma.curatedProfile.count()).toBe(antes);
       });
 
-      it('PATCH con un id inválido → 400 y el perfil queda igual; los nueve del catálogo → 200', async () => {
+      it('PATCH con un id inválido → 400 y el perfil queda igual; los diez del catálogo → 200', async () => {
         const row = await prisma.curatedProfile.findUniqueOrThrow({
           where: { slug: 'tech-lead-dotnet' },
         });

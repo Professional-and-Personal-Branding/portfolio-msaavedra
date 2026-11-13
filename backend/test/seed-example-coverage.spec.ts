@@ -45,6 +45,14 @@ describe('el ejemplo es ficticio', () => {
     for (const url of urls) expect(isReserved(url)).toBe(true);
   });
 
+  it('las URL de los repositorios son de la cuenta ficticia de GitHub (D15)', () => {
+    const repositories = ex.profile.featuredRepositories ?? [];
+    expect(repositories.length).toBeGreaterThan(0);
+    for (const r of repositories) {
+      expect(r.url.startsWith('https://github.com/portafolio-ejemplo-ficticio/')).toBe(true);
+    }
+  });
+
   it('muestra una credencial vigente con enlace e ID y una vencida sin enlace (D9)', () => {
     const valid = ex.certifications.filter((c) => c.verificationUrl);
     expect(valid).toHaveLength(1);
@@ -58,15 +66,20 @@ describe('el ejemplo es ficticio', () => {
     expect(expired[0].verificationUrl ?? null).toBeNull();
   });
 
-  it('solo los referrer de las visitas imitan orígenes reales', () => {
-    const rest = JSON.stringify({ ...ex, exampleViews: undefined });
+  it('solo los referrer de las visitas y los repositorios imitan orígenes reales', () => {
+    // Los repositorios son la excepción a RFC 2606: la URL tiene que ser de github.com (D15).
+    const rest = JSON.stringify({
+      ...ex,
+      exampleViews: undefined,
+      profile: { ...ex.profile, featuredRepositories: undefined },
+    });
     const hosts = [...rest.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)].map((m) => m[1].toLowerCase());
     for (const host of hosts) expect(host).toMatch(/(^|\.)example\.(com|org|net)$/);
   });
 });
 
 describe('cobertura de entidades y secciones', () => {
-  it('cada tabla de contenido tiene filas, salvo FeaturedRepository', () => {
+  it('cada tabla de contenido tiene filas', () => {
     expect(ex.profile.languages).toHaveLength(3);
     expect(ex.experiences).toHaveLength(6);
     expect(ex.skillCategories).toHaveLength(4);
@@ -75,7 +88,7 @@ describe('cobertura de entidades y secciones', () => {
     expect(ex.certifications).toHaveLength(3);
     expect(ex.projects).toHaveLength(3);
     expect(ex.profile.socialLinks).toHaveLength(4);
-    expect((ex.profile.featuredRepositories ?? []).filter((r) => r.visible)).toEqual([]);
+    expect(ex.profile.featuredRepositories).toHaveLength(3);
   });
 
   it('incluye los casos de borde de cada entidad', () => {
@@ -97,6 +110,7 @@ describe('cobertura de entidades y secciones', () => {
     expect(ex.certifications.some((c) => c.visible === false)).toBe(true);
     expect(ex.projects.some((p) => p.visible === false)).toBe(true);
     expect((ex.profile.socialLinks ?? []).some((l) => !l.visible)).toBe(true);
+    expect((ex.profile.featuredRepositories ?? []).some((r) => !r.visible)).toBe(true);
   });
 
   it('los idiomas cubren nativo, MCER con detalle e intermedio', () => {
@@ -130,7 +144,7 @@ describe('cobertura de los mecanismos del perfil curado', () => {
     );
   });
 
-  it('hay un sectionsOrder con las 9 secciones y distinto del canónico', () => {
+  it('hay un sectionsOrder con las 10 secciones y distinto del canónico', () => {
     const order = tpl('ejemplo-secciones').sectionsOrder ?? [];
     expect([...order].sort()).toEqual([...SECTION_IDS].sort());
     expect(order).not.toEqual([...SECTION_IDS]);
@@ -211,6 +225,45 @@ describe('cobertura de los mecanismos del perfil curado', () => {
       excludeIds: [],
     }).map((s) => s.id);
     expect(withoutExclusion).toContain('Kotlin');
+  });
+
+  // Change add-featured-repositories (D6, D15): umbral de 2 y override sobre un repositorio oculto.
+  describe('repositorios destacados', () => {
+    const pick = (refs: string[] | undefined) =>
+      (refs ?? [])
+        .filter((r) => r.startsWith('repository:'))
+        .map((r) => r.slice('repository:'.length));
+    const resolved = (slug: string): string[] => {
+      const t = slug === 'all' ? { filterTags: [], includeRefs: [], excludeRefs: [] } : tpl(slug);
+      const repos = (ex.profile.featuredRepositories ?? [])
+        .filter((r) => r.visible)
+        .map((r) => ({ ...r, id: r.id ?? r.name }));
+      return selectByTags(repos, {
+        filterTags: t.filterTags,
+        includeIds: pick(t.includeRefs),
+        excludeIds: pick(t.excludeRefs),
+      }).map((r) => r.id);
+    };
+
+    it('all, ejemplo-backend, ejemplo-dirigido y ejemplo-secciones resuelven 2 (la sección se muestra)', () => {
+      for (const slug of ['all', 'ejemplo-backend', 'ejemplo-dirigido', 'ejemplo-secciones']) {
+        expect(resolved(slug)).toHaveLength(2);
+      }
+    });
+
+    it('ejemplo-renombrado resuelve 1: el caso del umbral (la sección no se muestra)', () => {
+      expect(resolved('ejemplo-renombrado')).toEqual(['metricas-dashboard']);
+    });
+
+    it('ejemplo-overrides fuerza un repositorio oculto y no lo trae; los demás sí', () => {
+      expect(pick(tpl('ejemplo-overrides').includeRefs)).toEqual(['experimento-oculto']);
+      expect(resolved('ejemplo-overrides')).toEqual(['reservas-api', 'metricas-dashboard']);
+    });
+
+    it('la plantilla que referencia un repositorio por id lo declara con id', () => {
+      const ids = (ex.profile.featuredRepositories ?? []).map((r) => r.id);
+      expect(ids).toContain('experimento-oculto');
+    });
   });
 
   it('el perfil archivado conserva visitas sintéticas', () => {

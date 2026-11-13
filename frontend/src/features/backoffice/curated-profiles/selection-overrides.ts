@@ -1,9 +1,14 @@
-import type { AdminExperience, AdminProject, AdminSkillCategory } from '../shared/admin-types';
+import type {
+  AdminExperience,
+  AdminProject,
+  AdminRepository,
+  AdminSkillCategory,
+} from '../shared/admin-types';
 import type { ProfileDraft } from './profile-draft';
 
 /**
  * Overrides de selección del borrador (change `add-builder-skill-project-overrides`).
- * Experiencias, skills y proyectos comparten `includeIds`/`excludeIds` como ids crudos (D2);
+ * Experiencias, skills, proyectos y repositorios comparten `includeIds`/`excludeIds` como ids crudos (D2);
  * el tipo de cada id se reconoce por pertenencia a la lista cargada, nunca por su formato.
  */
 export type OverrideMode = 'include' | 'exclude' | 'none';
@@ -39,19 +44,22 @@ export function setOverride<T extends Overrides>(draft: T, id: string, mode: Ove
 }
 
 /**
- * Ids de los dos arreglos que no corresponden a ninguna experiencia, skill ni proyecto
- * cargados (el ítem se borró). Sin duplicados; el núcleo los ignora (D7).
+ * Ids de los dos arreglos que no corresponden a ninguna experiencia, skill, proyecto ni
+ * repositorio cargados (el ítem se borró). Sin duplicados; el núcleo los ignora (D7). Solo tiene
+ * sentido con las cuatro listas cargadas: con una ausente no se sabe de qué lista era cada id.
  */
 export function orphanOverrideIds(
   draft: Overrides,
   experiences: readonly AdminExperience[],
   categories: readonly AdminSkillCategory[],
   projects: readonly AdminProject[],
+  repositories: readonly AdminRepository[],
 ): string[] {
   const known = new Set<string>([
     ...experiences.map((experience) => experience.id),
     ...categories.flatMap((category) => category.skills.map((skill) => skill.id)),
     ...projects.map((project) => project.id),
+    ...repositories.map((repository) => repository.id),
   ]);
   return [...new Set([...draft.includeIds, ...draft.excludeIds])].filter((id) => !known.has(id));
 }

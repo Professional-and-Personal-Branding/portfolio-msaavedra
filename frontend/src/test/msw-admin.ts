@@ -10,7 +10,7 @@ import {
   makeCvConsistency,
 } from './fixtures/admin';
 import { makeCuratedProfile } from './fixtures/curated-profile';
-import { ADMIN_PROJECTS, ADMIN_SOCIAL_LINKS } from './fixtures/admin';
+import { ADMIN_PROJECTS, ADMIN_REPOSITORIES, ADMIN_SOCIAL_LINKS } from './fixtures/admin';
 import { ADMIN_CERTIFICATIONS, ADMIN_EDUCATION } from './fixtures/admin';
 import { EMPTY_APPLICATION_SUMMARY } from './fixtures/applications';
 import { EMPTY_INTEGRATIONS } from './fixtures/integrations';
@@ -37,6 +37,7 @@ export const adminHandlers: HttpHandler[] = [
   http.get(`${API}/admin/education`, () => HttpResponse.json(ADMIN_EDUCATION)),
   http.get(`${API}/admin/certifications`, () => HttpResponse.json(ADMIN_CERTIFICATIONS)),
   http.get(`${API}/admin/projects`, () => HttpResponse.json(ADMIN_PROJECTS)),
+  http.get(`${API}/admin/featured-repositories`, () => HttpResponse.json(ADMIN_REPOSITORIES)),
   http.get(`${API}/admin/social-links`, () => HttpResponse.json(ADMIN_SOCIAL_LINKS)),
   http.get(`${API}/admin/integrations`, () => HttpResponse.json(EMPTY_INTEGRATIONS)),
   http.get(`${API}/admin/applications/summary`, () => HttpResponse.json(EMPTY_APPLICATION_SUMMARY)),

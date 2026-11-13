@@ -34,6 +34,10 @@ export type UpdateCertificationBody = Schemas['UpdateCertificationDto'];
 export type AdminProject = Schemas['AdminProjectResponse'];
 export type CreateProjectBody = Schemas['CreateProjectDto'];
 export type UpdateProjectBody = Schemas['UpdateProjectDto'];
+// add-featured-repositories: repositorios destacados de GitHub.
+export type AdminRepository = Schemas['AdminFeaturedRepositoryResponse'];
+export type CreateRepositoryBody = Schemas['CreateFeaturedRepositoryDto'];
+export type UpdateRepositoryBody = Schemas['UpdateFeaturedRepositoryDto'];
 export type AdminSocialLink = Schemas['AdminSocialLinkResponse'];
 export type CreateSocialLinkBody = Schemas['CreateSocialLinkDto'];
 export type UpdateSocialLinkBody = Schemas['UpdateSocialLinkDto'];

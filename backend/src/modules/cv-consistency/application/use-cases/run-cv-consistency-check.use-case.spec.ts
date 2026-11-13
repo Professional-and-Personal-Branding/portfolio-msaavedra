@@ -79,6 +79,12 @@ function build(
       update: jest.fn(),
       delete: jest.fn(),
     },
+    repositories: {
+      findAll: jest.fn().mockResolvedValue([]),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
     socialLinks: {
       findAll: jest.fn().mockResolvedValue([]),
       create: jest.fn(),
@@ -100,6 +106,7 @@ function build(
     repos.education as never,
     repos.certifications as never,
     repos.projects as never,
+    repos.repositories as never,
     repos.socialLinks as never,
     repos.curated as never,
     clock,
