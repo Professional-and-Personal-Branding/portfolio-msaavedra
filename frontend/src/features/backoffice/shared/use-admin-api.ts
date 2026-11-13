@@ -36,6 +36,7 @@ export const adminKeys = {
   applicationList: (status: string) => ['admin', 'applications', 'list', status] as const,
   applicationSummary: ['admin', 'applications', 'summary'] as const,
   consistency: ['admin', 'consistency'] as const,
+  integrations: ['admin', 'integrations'] as const,
   analytics: (from: string, to: string) => ['admin', 'analytics', from, to] as const,
   preview: (draftKey: string, locale: string) => ['admin', 'preview', draftKey, locale] as const,
 };

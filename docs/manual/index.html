@@ -380,6 +380,7 @@
     <a href="#tc46"><span class="dot ok"></span><span class="id">TC-46</span> Postulaciones</a>
     <a href="#tc47"><span class="dot ok"></span><span class="id">TC-47</span> Revisar la consistencia del CV</a>
     <a href="#tc48"><span class="dot part"></span><span class="id">TC-48</span> Exportar JSON Resume</a>
+    <a href="#tc49"><span class="dot ok"></span><span class="id">TC-49</span> Integraciones</a>
     <a href="#tc50"><span class="dot part"></span><span class="id">TC-50</span> Repositorios destacados</a>
     <a href="#tc27"><span class="dot ok"></span><span class="id">TC-27</span> Proyectos</a>
     <a href="#tc28"><span class="dot ok"></span><span class="id">TC-28</span> Aviso en el constructor</a>
@@ -511,17 +512,17 @@ $env:PORT = "3310"; npm run start:dev                 # API de ejemplo; la del o
     <!-- ───────────── Resumen ───────────── -->
     <section id="resumen" class="block">
       <h2>Resumen de la última ejecución</h2>
-      <p class="lede">Último caso ejecutado el 12 de noviembre de 2026 (TC-50); antes, el 7 de noviembre de 2026 (TC-46, TC-47 y TC-48); antes, el 5 de noviembre (TC-45) y el 4 de noviembre (TC-44, pasos 1 a 5). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias); TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real. El historial completo de corridas está en <code>docs/MANUAL.md</code> § 6.</p>
+      <p class="lede">Último caso ejecutado el 12 de noviembre de 2026 (TC-49 y TC-50); antes, el 7 de noviembre de 2026 (TC-46, TC-47 y TC-48); antes, el 5 de noviembre (TC-45) y el 4 de noviembre (TC-44, pasos 1 a 5). Todo el manual parte de la <b>base de ejemplo</b> (<code>portfolio_example</code>, 9 perfiles curados y 6 experiencias); TC-33 a TC-35 conservan la evidencia del 15 de octubre, con el CV real. El historial completo de corridas está en <code>docs/MANUAL.md</code> § 6.</p>
 
       <div class="stats">
-        <div class="stat"><b>48</b><span>casos</span></div>
-        <div class="stat ok"><b>40</b><span>pasan</span></div>
-        <div class="stat part"><b>8</b><span>parciales</span></div>
+        <div class="stat"><b>50</b><span>casos</span></div>
+        <div class="stat ok"><b>41</b><span>pasan</span></div>
+        <div class="stat part"><b>9</b><span>parciales</span></div>
         <div class="stat"><b>2</b><span>defectos corregidos</span></div>
-        <div class="stat"><b>50</b><span>capturas</span></div>
+        <div class="stat"><b>54</b><span>capturas</span></div>
       </div>
 
-      <div class="note"><b>Pasan los 43 casos anteriores, TC-46 y TC-47; TC-44, TC-45, TC-48 y TC-50 quedan parciales.</b> TC-44 pide el sitio desplegado para los pasos 6 y 7; en TC-45 y TC-48 los pasos del panel que escriben contraseñas o descargan con sesión no se ejecutaron a mano y quedan cubiertos por la API, los e2e y los tests de la pantalla; en TC-50 solo el diálogo de impresión del paso 9 queda sin ejecutar a mano. Cada caso indica en <b>Observado</b> cuándo y contra qué se ejecutó. D-01 y D-02, los defectos de la primera ejecución, están corregidos (ver <a href="#defectos">Defectos</a>).</div>
+      <div class="note"><b>Pasan los 43 casos anteriores, TC-46, TC-47 y TC-49; TC-44, TC-45, TC-48 y TC-50 quedan parciales.</b> TC-49 (<code>add-integrations-foundation</code>) se ejecutó en la app real; el formulario de credencial se recorrió con la variable de <code>fake</code> retirada tras el arranque. TC-44 pide el sitio desplegado para los pasos 6 y 7; en TC-45 y TC-48 los pasos del panel que escriben contraseñas o descargan con sesión no se ejecutaron a mano y quedan cubiertos por la API, los e2e y los tests de la pantalla; en TC-50 solo el diálogo de impresión del paso 9 queda sin ejecutar a mano. Cada caso indica en <b>Observado</b> cuándo y contra qué se ejecutó. D-01 y D-02, los defectos de la primera ejecución, están corregidos (ver <a href="#defectos">Defectos</a>).</div>
 
       <p><span class="lbl">Estados</span></p>
       <div class="tablewrap">
@@ -1300,6 +1301,50 @@ pwsh ./suite-backoffice.ps1 -Api http://localhost:3310   # API de ejemplo; se ni
 
         <p><span class="lbl">Acciones y avisos</span> · <b>Abierto el…</b> es la fecha de la <b>primera apertura de una persona</b> del enlace asociado (<code>firstOpenedAt</code>), en tu fecha local, o <b>Sin abrir</b> si nadie lo abrió. No cuentan tus visitas con la sesión del panel ni las de bots, igual que en <b>Por enlace</b> del Dashboard; la cantidad de aperturas está en el <code>title</code> de la celda. Si mandaste el link antes de registrar la postulación, esas aperturas previas también cuentan: el enlace es de esa postulación. <b>Sin datos de contacto.</b> Bajo <b>Notas</b> el diálogo avisa «No guardes datos de contacto de personas»: la plataforma no tiene campos de nombre, email ni teléfono del reclutador y la API rechaza cualquier campo desconocido con 400. <b>Exportar CSV</b> descarga las postulaciones con el filtro vigente (<code>postulaciones-AAAA-MM-DD.csv</code>, 14 columnas: Empresa, Puesto, Estado, Portal, URL de la vacante, Fecha de postulación, Último cambio de estado, Perfil, Enlace, Abierto el, Aperturas, Notas, Creada y Actualizada). Está en UTF-8 con BOM, separado por comas y con todas las celdas entre comillas. Una celda que empieza con <code>=</code>, <code>+</code>, <code>-</code>, <code>@</code>, tabulación o retorno de carro lleva un apóstrofo delante, para que la planilla no la ejecute como fórmula: se ve <code>'=1+1</code> como texto. <b>Para abrirlo:</b> en Excel, <b>Datos → Desde texto/CSV</b>, origen UTF-8 y delimitador coma (con doble clic suele alcanzar); en Google Sheets o LibreOffice, <b>Archivo → Importar</b>. La franja del Dashboard (B2) resume el estado actual: «Postulaciones activas: 3 · 2 postuladas · 1 con oferta» con el enlace <b>Ver postulaciones</b>; no depende del rango de fechas.</p>
         <figure class="shot" id="img-bo-postulaciones"><img src="bo-postulaciones.jpg" width="800" height="500" alt="Postulaciones con el filtro Todas"></figure>
+      </article>
+
+      <article class="screen" id="b17">
+        <h3>Integraciones</h3>
+        <p><span class="lbl">Ruta</span> · <code>/admin/integraciones</code>. <b>No tiene ítem en la barra</b> del panel: se llega desde <b>Cuenta</b> (bloque <b>Integraciones</b>, enlace <b>Integraciones</b>) y, si hay una sincronización atrasada o un trabajo fallido, desde el aviso del <b>Dashboard</b> («Hay integraciones que requieren atención», con el enlace <b>Ver integraciones</b>). Muestra, por cada proveedor habilitado en el servidor (<code>INTEGRATIONS_ENABLED</code>), su estado, la última corrida, la última exitosa, la cola, el último error y el origen de la credencial. Hoy el único proveedor es <code>fake</code>, de prueba y prohibido en producción; los reales llegan con sus propios changes. <b>Sincronizar ahora solo encola:</b> el trabajo corre en el próximo minuto (el ejecutor mira la cola cada <code>INTEGRATIONS_TICK_SECONDS</code>, 60 por defecto) y nunca dentro de la petición, así que la pantalla responde al instante aunque el proveedor esté lento. Mientras haya trabajos pendientes o en curso, la pantalla se refresca sola cada 15 s.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Estado</th><th>Qué significa</th></tr></thead>
+<tbody>
+<tr><td>Activo</td><td>Se puede sincronizar. El planificador encola un trabajo por día (06:00 en Bolivia por defecto, <code>INTEGRATIONS_SYNC_CRON</code>, en UTC).</td></tr>
+<tr><td>En pausa hasta {fecha}</td><td>El proveedor pidió esperar (límite de peticiones), se agotó su presupuesto o falló cinco veces seguidas (el circuito se abre). Se reanuda solo al vencer; la tarjeta dice el motivo.</td></tr>
+<tr><td>Pausado</td><td>Lo pausaste vos con <b>Pausar</b>: no se encola ni se ejecuta nada hasta <b>Reanudar</b>. Un trabajo en curso termina.</td></tr>
+<tr><td>Sin sincronizar hace más de 48 h</td><td>Insignia roja: pasaron más de 48 h sin una corrida exitosa. Un proveedor pausado a mano no se marca; uno pausado por el circuito, sí.</td></tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Campo de la tarjeta</th><th>Qué muestra</th></tr></thead>
+<tbody>
+<tr><td>Última corrida</td><td>Resultado del último intento y su fecha: Exitosa, Con error (se reintenta), Fallida (no se reintenta), Interrumpida por un reinicio o Tiempo agotado; «En curso» si todavía no terminó.</td></tr>
+<tr><td>Última exitosa</td><td>Fecha de la última corrida exitosa, o «Nunca».</td></tr>
+<tr><td>Cola</td><td>Trabajos pendientes, en curso, con error (esperan su reintento) y fallidos (no se reintentan).</td></tr>
+<tr><td>Credencial</td><td>De dónde sale el secreto: «Variable de entorno del servidor», «Guardada en la base (clave k1)» o «Falta la credencial» (con el campo a la vista). Nunca se muestra el valor.</td></tr>
+<tr><td>Motivo de la pausa</td><td>Solo con una pausa vigente: el proveedor pidió esperar, límite agotado, presupuesto agotado o varios errores seguidos.</td></tr>
+<tr><td>Último error fallido / Error de la última corrida</td><td>El mensaje del error, ya sin el token (se redacta antes de guardarlo).</td></tr>
+</tbody>
+</table></div>
+        <p><b>Botones.</b> <b>Sincronizar ahora</b> encola un trabajo (deshabilitado con el proveedor pausado). <b>Pausar</b> y <b>Reanudar</b> cambian <code>enabled</code>: pausar impide encolar y ejecutar nuevos trabajos, pero no cancela uno en curso.</p>
+        <p><b>Credencial.</b> Si el secreto no viene de una variable de entorno, la tarjeta ofrece el campo <b>Credencial</b> (de tipo contraseña, de 1 a 4096 caracteres, sin espacios al borde) con <b>Guardar</b> y, si ya hay una guardada, <b>Borrar</b> (con confirmación). Se guarda cifrada (AES-256-GCM, con la clave activa del keyring) y <b>no se vuelve a mostrar</b>: el campo nunca se rellena con el valor guardado y la API tampoco lo devuelve. Escribir una nueva reemplaza la anterior. La variable de entorno del proveedor (p. ej. <code>FAKE_PROVIDER_TOKEN</code>) es <b>opcional</b> y, si está definida, manda: no hay campo y la API responde 422 al <code>PUT</code>, para que no haya dos fuentes que diverjan. Sin variable ni credencial guardada la tarjeta dice «Falta la credencial» y un trabajo termina «Fallida» con «falta la credencial».</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Mensaje</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td class="msg">Encolado: corre en el próximo minuto.</td><td><b>Sincronizar ahora</b> creó un trabajo.</td></tr>
+<tr><td class="msg">Ya había una sincronización en cola.</td><td>Ya había un trabajo pendiente, en curso o con error del proveedor: no se crea otro.</td></tr>
+<tr><td class="msg">El scheduler está apagado en este servidor: lo que encoles queda en espera.</td><td>El servidor no tiene <code>INTEGRATIONS_SCHEDULER_ENABLED=true</code>: lo encolado espera a que algún proceso con el scheduler encendido (o <code>npm run integrations:sync</code>) lo tome.</td></tr>
+<tr><td class="msg">No hay integraciones habilitadas.</td><td><code>INTEGRATIONS_ENABLED</code> está vacía en el servidor.</td></tr>
+<tr><td class="msg">Se activan con la variable INTEGRATIONS_ENABLED del servidor.</td><td>Segunda línea del mensaje anterior: los proveedores no se encienden desde el panel.</td></tr>
+<tr><td class="msg">Sin sincronizar hace más de 48 h</td><td>Insignia de la tarjeta (<code>stale: true</code> en la API).</td></tr>
+<tr><td class="msg">Ingresá la credencial.</td><td><b>Guardar</b> con el campo vacío o con solo espacios. No se llama a la API.</td></tr>
+<tr><td class="msg">La credencial no puede superar 4096 caracteres.</td><td>El valor tiene más de 4096 caracteres. No se llama a la API.</td></tr>
+<tr><td class="msg">La credencial no puede empezar ni terminar con espacios.</td><td>El valor tiene espacios al borde (la API también los rechaza).</td></tr>
+<tr><td class="msg">Hay integraciones que requieren atención</td><td>Aviso del <b>Dashboard</b>: algún proveedor está atrasado o tiene un trabajo fallido.</td></tr>
+</tbody>
+</table></div>
+        <p><b>Fuera del panel.</b> <code>npm run integrations:sync [-- --provider &lt;id&gt;] [-- --plan]</code> corre el ejecutor <b>una</b> vez, sin abrir ningún puerto ni servicio aparte (sale con <b>0</b>, <b>1</b> si algún trabajo quedó fallido, <b>2</b> si la configuración es inválida o el arriendo lo tiene otra instancia). <code>npm run integrations:rekey</code> recifra las credenciales con la clave activa después de rotar el keyring (simulación por defecto; <code>-- --apply</code> escribe). Las variables y la rotación están en <code>DEPLOY-RAILWAY.md</code>.</p>
+        <figure class="shot" id="img-bo-integraciones-b17"><img src="bo-integraciones.jpg" width="800" height="500" alt="Integraciones con el proveedor fake: última corrida exitosa y el campo Credencial"></figure>
       </article>
 
     </section>
@@ -2135,6 +2180,17 @@ GET /api/admin/analytics/views?from=2026-10-05&amp;to=2026-10-06  -> total=13, b
         <p><span class="lbl">Regresión</span> · <code>range-boundaries.spec.ts</code> y un caso e2e en <code>admin.e2e-spec.ts</code>: una visita recién registrada aparece en <code>?from=hoy&amp;to=hoy</code>. Sin el arreglo da <code>total=0</code>.</p>
       </article>
 
+      <article class="case" data-status="ok" id="tc49" data-area="backoffice" data-change="add-integrations-foundation">
+        <div class="case-head"><span class="case-id">TC-49</span><h3>Sincronizar una integración y ver su estado</h3><span class="pill ok">pasa</span></div>
+        <p><span class="lbl">Precondición</span> · base de ejemplo <b>descartable</b> (nunca <code>portfolio</code>), con la API y el frontend levantados (de preferencia la imagen de <code>frontend/Dockerfile</code>) y una sesión de administrador. La API arranca con <code>INTEGRATIONS_ENABLED=fake</code>, <code>INTEGRATIONS_SCHEDULER_ENABLED=true</code>, <code>INTEGRATIONS_TICK_SECONDS=10</code> y un keyring (<code>INTEGRATIONS_KEYS</code> e <code>INTEGRATIONS_ACTIVE_KEY</code>, claves de 32 bytes generadas con <code>node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"</code>), <b>sin</b> <code>FAKE_PROVIDER_TOKEN</code>: el secreto es opcional y se carga desde el panel.</p>
+        <p><span class="lbl">Pasos</span> · (1) Abrí <b>Cuenta</b> (<code>/admin/cuenta</code>) y pulsá el enlace <b>Integraciones</b> del bloque del mismo nombre.; (2) Mirá la tarjeta de <code>fake</code>.; (3) Pulsá <b>Guardar</b> con el campo <b>Credencial</b> vacío.; (4) Escribí una credencial de prueba (un valor aleatorio que no sea de nadie) y pulsá <b>Guardar</b>; recargá la página.; (5) Pulsá <b>Sincronizar ahora</b> y, de inmediato, otra vez.; (6) Esperá hasta 25 s sin tocar nada.; (7) Pulsá <b>Pausar</b> y, por la API, pedí otra sincronización (<code>POST /api/admin/integrations/fake/sync</code>). Después pulsá <b>Reanudar</b>.; (8) Pulsá <b>Borrar</b> y confirmá.; (9) Desde <code>backend/</code>, corré <code>npm run integrations:sync -- --provider fake</code> (con la credencial borrada)..</p>
+        <p><span class="lbl">Esperado</span> · (1) Se abre <code>/admin/integraciones</code>; la barra de navegación sigue con sus nueve ítems y ninguno es <b>Integraciones</b>; hay un enlace <b>Volver a Cuenta</b>.; (2) Estado «Activo», «Todavía no corrió», credencial «Falta la credencial» con el campo <b>Credencial</b> (tipo contraseña) a la vista y ningún aviso de scheduler apagado.; (3) Aparece «Ingresá la credencial.» y no se llama a la API.; (4) Aparece «Credencial guardada.», el campo queda vacío y la tarjeta dice «Guardada en la base (clave k1)»; tras recargar sigue igual, el campo vacío y el valor no figura en el DOM.; (5) Aparece «Encolado: corre en el próximo minuto.» (cola «1 pendientes») y después «Ya había una sincronización en cola.».; (6) El tick toma el trabajo y la pantalla se refresca sola: la última corrida pasa a «Exitosa», «Última exitosa» tiene fecha y la cola vuelve a «0 pendientes · 0 en curso».; (7) El estado pasa a «Pausado», <b>Sincronizar ahora</b> queda deshabilitado y la API responde <b>422</b>; al reanudar vuelve «Activo».; (8) Aparece «Credencial borrada.» y la tarjeta vuelve a «Falta la credencial».; (9) Sin credencial el trabajo termina fallido: «Corrida: 1 trabajos (hechos 0, …, muertos 1, …)», salida <b>1</b>, y la tarjeta muestra «falta la credencial» como último error fallido..</p>
+        <p><span class="lbl">Errores típicos</span> · Con <code>FAKE_PROVIDER_TOKEN</code> definida en el servidor la credencial viene de la variable: la tarjeta dice «Variable de entorno del servidor», no hay campo y <code>PUT /api/admin/integrations/fake/credential</code> responde 422. Con el scheduler apagado (<code>INTEGRATIONS_SCHEDULER_ENABLED</code> sin definir) el trabajo se encola pero no corre: la pantalla lo avisa y <code>npm run integrations:sync</code> lo ejecuta a mano. «Sincronizar ahora» nunca llama al proveedor dentro de la petición: si tarda en correr, esperá al próximo tick (hasta 60 s con el valor por defecto).</p>
+        <p><span class="lbl">Observado</span> · 12 de noviembre de 2026 (repetido tras el cambio de D11), imagen de <code>frontend/Dockerfile</code> en <code>localhost:8158</code>, API de la rama en <code>localhost:3358</code> arrancada <b>sin</b> <code>FAKE_PROVIDER_TOKEN</code> y la base descartable <code>portfolio_integ_check</code>, sembrada con el ejemplo; Chrome controlado con <code>puppeteer-core</code> (sesión abierta por <code>fetch</code>, sin escribir la contraseña del panel). Los pasos 1 a 8 dieron lo esperado en un arranque normal: «Falta la credencial» con el campo a la vista, «Ingresá la credencial.» sin llamar a la API, un valor de prueba generado al azar guardado («Guardada en la base (clave k1)», campo vacío, valor fuera del DOM también tras recargar), «Encolado…», «Ya había…», «Exitosa» tras el tick con refresco automático, Pausar con 422 por la API, Reanudar y Borrar con confirmación. El paso 9 (<code>integrations:sync</code> sin credencial) dio la salida 1 con el trabajo fallido «falta la credencial». Con <code>FAKE_PROVIDER_TOKEN</code> definida, el <code>PUT</code> da 422 y la tarjeta dice «Variable de entorno del servidor» (e2e <code>integrations-admin</code>). <code>a11y:check</code> con panel contra la imagen actual: ver <code>10.2-a11y.txt</code>. Evidencia: <code>openspec/changes/add-integrations-foundation/verification/</code> (<code>10.1-tc49.txt</code>, <code>10.2-a11y.txt</code>, <code>8.2-cli.txt</code>, <code>7.4-latencia.txt</code>).</p>
+        <figure class="shot" id="img-bo-integraciones-tc49"><img src="bo-integraciones.jpg" width="800" height="500" alt="Integraciones con el proveedor fake: última corrida exitosa y el campo Credencial"></figure>
+        <fieldset class="run" data-run="tc49"><legend>Resultado de la corrida · TC-49</legend><label><input type="radio" name="r-tc49" value="pass"> pasa</label><label><input type="radio" name="r-tc49" value="fail"> falla</label><label><input type="radio" name="r-tc49" value="skip"> omitido</label><input class="note-in" type="text" maxlength="140" placeholder="Nota (opcional)" aria-label="Nota de TC-49"></fieldset>
+      </article>
+
       <article class="case" data-status="ok">
         <div class="case-head"><span class="case-id">D-02</span><h3>Omitir un objeto obligatorio devuelve 500 en lugar de 400</h3><span class="pill ok">corregido</span></div>
         <p><span class="lbl">Severidad</span> · Media; solo afecta endpoints autenticados del panel.</p>
@@ -2318,6 +2374,10 @@ echo "$SITIO/acme-tech-lead"</pre></div>
         <div class="g"><dt id="g-referencia-huerfana">referencia huérfana</dt><dd>Un id de <code>includeIds</code> o <code>excludeIds</code> que ya no corresponde a ninguna experiencia, skill ni proyecto (el ítem se borró). El sitio lo ignora; el constructor lo cuenta y deja quitarlo. <span class="refs"><a href="#b10">B10 · Constructor · Selección</a>, <a href="#tc43">TC-43</a></span></dd></div>
         <div class="g"><dt id="g-postulaci-n">postulación</dt><dd>Un proceso de selección que registrás en el panel: empresa, puesto, estado, fecha y, si querés, el perfil y el enlace de seguimiento que mandaste. Es privada: no se publica en ningún lado. <span class="refs"><a href="#b15">B15 · Postulaciones</a>, <a href="#tc46">TC-46</a></span></dd></div>
         <div class="g"><dt id="g-abierto-el">Abierto el</dt><dd>La fecha de la primera apertura de una persona del enlace asociado a una postulación, o «Sin abrir». Las tuyas y las de bots no cuentan. <span class="refs"><a href="#b15">B15 · Postulaciones</a>, <a href="#tc46">TC-46</a></span></dd></div>
+        <div class="g"><dt id="g-integraci-n">integración</dt><dd>Un servicio externo con el que la plataforma se sincroniza fuera del camino de las peticiones (hoy solo <code>fake</code>, de prueba). Se habilita en el servidor con <code>INTEGRATIONS_ENABLED</code>; el panel muestra su estado y permite pausarla, sincronizarla y cargar su credencial. <span class="refs"><a href="#b17">B17 · Integraciones</a>, <a href="#tc49">TC-49</a></span></dd></div>
+        <div class="g"><dt id="g-trabajo">trabajo</dt><dd>Una tarea de la cola de integraciones (por ejemplo, sincronizar un proveedor). Pasa por pendiente, en curso, hecho, con error (se reintenta con espera creciente) o fallido (no se reintenta); cada intento queda registrado. <span class="refs"><a href="#b17">B17 · Integraciones</a>, <a href="#tc49">TC-49</a></span></dd></div>
+        <div class="g"><dt id="g-arriendo-del-ejecutor">arriendo del ejecutor</dt><dd>Una fila de la base que asegura que una sola instancia ejecute trabajos a la vez, incluso cuando conviven dos procesos durante un deploy. Vence sola si el proceso muere, así que nada queda trabado. <span class="refs"><a href="#tc49">TC-49</a></span></dd></div>
+        <div class="g"><dt id="g-sincronizaci-n-atrasada">sincronización atrasada</dt><dd>Un proveedor habilitado que lleva más de 48 h sin una corrida exitosa. La tarjeta lo marca con «Sin sincronizar hace más de 48 h» y el Dashboard lo avisa; un proveedor pausado a mano no cuenta. <span class="refs"><a href="#b17">B17 · Integraciones</a>, <a href="#tc49">TC-49</a></span></dd></div>
       </dl>
     </section>
 </main>

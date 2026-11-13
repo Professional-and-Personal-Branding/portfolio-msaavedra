@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { KeyRound } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { Link } from 'react-router';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
@@ -128,6 +129,21 @@ export function AccountPage() {
             </Button>
           </div>
         </form>
+      </section>
+
+      <section aria-labelledby="account-integrations" className="surface mt-6 max-w-xl p-card">
+        <h2 id="account-integrations" className="mb-1 text-lg font-semibold">
+          Integraciones
+        </h2>
+        <p className="mb-3 text-sm text-text-muted">
+          Sincronización con servicios externos: estado, cola, pausa y credenciales.
+        </p>
+        <Link
+          to="/admin/integraciones"
+          className="text-sm font-medium text-brand-ink hover:underline"
+        >
+          Integraciones
+        </Link>
       </section>
     </>
   );

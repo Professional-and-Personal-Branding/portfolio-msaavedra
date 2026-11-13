@@ -71,6 +71,9 @@ backend/src/
 │   ├── skill/                # Skills y categorías
 │   ├── curated-profile/      # ⭐ Perfiles curados (núcleo del producto)
 │   ├── education/            # Formación académica
+│   ├── integrations/         # Base de integraciones con terceros (change `add-integrations-foundation`): cola con reintentos,
+│   │                         #   scheduler en proceso (apagado por defecto), credenciales cifradas, snapshots y estado por proveedor.
+│   │                         #   Puerto `ConnectorPort` por proveedor; hoy solo `fake` (tests). Ningún módulo público lo importa.
 │   └── auth/                 # Autenticación del backoffice
 ├── shared/                   # Código transversal
 │   ├── domain/               # Base entities, Result type, errores de dominio
@@ -237,6 +240,7 @@ model ProfileView { /* analítica: slug, timestamp, referrer */ }
 - `GET|POST /api/admin/curated-profiles` · `GET|PATCH|DELETE /api/admin/curated-profiles/:id`
 - `GET /api/admin/analytics/views?from&to` — visitas por perfil, idioma y día
 - Postulaciones (`add-application-tracking`, solo panel, sin rutas públicas): `GET|POST /api/admin/applications` (`?status=A,B` filtra por estado) · `GET /api/admin/applications/summary` (conteo por estado y `active`) · `GET /api/admin/applications/export` (CSV UTF-8 con BOM, sin fórmulas ejecutables) · `GET|PATCH|DELETE /api/admin/applications/:id`. Una transición de estado inválida da **422** (`RuleViolationError`), no 400.
+- Integraciones (`add-integrations-foundation`, solo panel; la pantalla se alcanza desde **Cuenta**): `GET /api/admin/integrations` (estado de los proveedores de `INTEGRATIONS_ENABLED`) · `POST /api/admin/integrations/:provider/sync` (**202**, solo encola) · `PATCH /api/admin/integrations/:provider` (`{ enabled }`, pausar/reanudar) · `PUT|DELETE /api/admin/integrations/:provider/credential` (204; el secreto solo se escribe, nunca se devuelve). Todas con `Cache-Control: no-store`.
 - Contraseñas: argon2id. Administrador único vía `npm run admin:bootstrap`. Rate limiting, Helmet y cookies: Fase 6.
 
 ---
@@ -400,6 +404,7 @@ model Theme {
 - **Prisma sobre TypeORM:** mejor DX, type-safety, migraciones más simples. Encaja con el énfasis en TypeScript estricto. (CONFIRMADO)
 - **Monorepo opcional:** considerar Nx o Turborepo si se quiere compartir tipos entre back y front. Para el MVP, dos carpetas independientes es suficiente.
 - **Tipos compartidos:** generar tipos del frontend desde el OpenAPI del backend (openapi-typescript) para mantener contrato único.
+- **Trabajos contra terceros (change `add-integrations-foundation`):** viven en el proceso de la API bajo un presupuesto fijo —un trabajo a la vez, timeout de 120 s, corrida de hasta 300 s y 20 trabajos, todo I/O asíncrono, una conexión del pool a la vez y cediendo el turno entre trabajos— y nunca dentro de una petición (**«Sincronizar ahora» solo encola**). Un proveedor que necesite CPU sincrónica relevante (p. ej. parsear un ZIP grande) lo justifica en su propio change o se muda a un proceso aparte. La medición (`GET /health/live` con un trabajo lento corriendo) es un e2e obligatorio. Detalle: `openspec/changes/archive/*add-integrations-foundation/design.md` (D3–D6, D22).
 - **Resultado type (Result/Either):** en domain, usar un patrón Result para manejo de errores explícito sin excepciones, alineado con Clean Architecture.
 
 ---

@@ -24,8 +24,11 @@
  * (`POST /api/admin/curated-profiles/:id/share-links`, solo si el perfil todavía no tiene uno con
  * esa etiqueta); y, para `bo-postulaciones` y la franja del dashboard (change
  * `add-application-tracking`, D14), tres postulaciones ficticias (`POST /api/admin/applications`,
- * cada una solo si todavía no existe una postulación con esa empresa). El script no hace ningún
- * otro POST, PATCH ni DELETE, y
+ * cada una solo si todavía no existe una postulación con esa empresa); y, para `bo-integraciones`
+ * (change `add-integrations-foundation`), UNA sincronización del proveedor `fake`
+ * (`POST /api/admin/integrations/fake/sync`, solo si todavía no corrió ninguna), que exige que la API
+ * esté arrancada con `INTEGRATIONS_ENABLED=fake` e `INTEGRATIONS_SCHEDULER_ENABLED=true`. El script no
+ * hace ningún otro POST, PATCH ni DELETE, y
  * nunca escribe una contraseña real en un campo: la captura del error de credenciales usa un
  * email inexistente y un valor de relleno que no pertenece a nadie, y la de Cuenta (`bo-cuenta`)
  * solo valores de relleno que la validación del cliente rechaza sin enviar nada. Los errores de validación
@@ -256,6 +259,16 @@ const MANIFEST = [
       ['esperarTexto', 'Las contraseñas no coinciden'],
       ['esperar', 400],
     ],
+  },
+  // Integraciones (change `add-integrations-foundation`, B17 y TC-49): la tarjeta del proveedor
+  // `fake` con una corrida exitosa. Sin ítem en la barra (D25): se abre por su URL.
+  {
+    id: 'bo-integraciones',
+    ruta: '/admin/integraciones',
+    sesion: true,
+    esperar: 'Sincronizar ahora',
+    preparar: 'integracion-de-ejemplo',
+    pasos: [['esperarTexto', 'Exitosa'], ['esperar', 500]],
   },
   {
     id: 'bo-skills-dialogo',
@@ -556,6 +569,40 @@ async function ensureExampleApplications(page, profileId) {
   );
 }
 
+/**
+ * La integración `fake` con una corrida exitosa (idempotente): si todavía no corrió, la encola por
+ * la API del panel y espera al tick del ejecutor. Falla con un mensaje claro si la API no tiene
+ * `INTEGRATIONS_ENABLED=fake` o si el scheduler está apagado (nada correría).
+ */
+async function ensureExampleIntegration(page) {
+  const outcome = await page.evaluate(async () => {
+    const json = async (path, init) => {
+      const response = await fetch(path, { credentials: 'same-origin', ...init });
+      if (!response.ok) throw new Error(`${init?.method ?? 'GET'} ${path}: ${response.status}`);
+      return response.json();
+    };
+    const overview = await json('/api/admin/integrations');
+    const fake = overview.providers.find((p) => p.provider === 'fake');
+    if (!fake) return 'sin-fake';
+    if (fake.lastRun?.outcome === 'SUCCESS') return 'listo';
+    if (!overview.schedulerEnabled) return 'scheduler-apagado';
+    await json('/api/admin/integrations/fake/sync', { method: 'POST' });
+    for (let i = 0; i < 40; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      const again = (await json('/api/admin/integrations')).providers.find((p) => p.provider === 'fake');
+      if (again?.lastRun?.outcome === 'SUCCESS') return 'listo';
+    }
+    return 'sin-corrida';
+  });
+  if (outcome === 'sin-fake') {
+    throw new Error('La API no tiene el proveedor fake: arrancala con INTEGRATIONS_ENABLED=fake (ver docs/MANUAL.md § 5.1).');
+  }
+  if (outcome === 'scheduler-apagado') {
+    throw new Error('La API tiene el scheduler apagado: arrancala con INTEGRATIONS_SCHEDULER_ENABLED=true.');
+  }
+  if (outcome === 'sin-corrida') throw new Error('El trabajo de fake no terminó en 2 minutos.');
+}
+
 async function waitForText(page, ...candidates) {
   await page.waitForFunction(
     (texts) => texts.some((t) => document.body.innerText.includes(t)),
@@ -627,6 +674,10 @@ for (const entry of selected) {
     if (entry.preparar === 'enlace-de-ejemplo') {
       // El `fetch` relativo necesita el origen de la página: se crea acá y se recarga para verlo.
       await ensureExampleLink(page, ids['ejemplo-backend']);
+      await page.reload({ waitUntil: 'networkidle0' });
+    }
+    if (entry.preparar === 'integracion-de-ejemplo') {
+      await ensureExampleIntegration(page);
       await page.reload({ waitUntil: 'networkidle0' });
     }
     if (entry.esperar) await waitForText(page, entry.esperar);

@@ -89,6 +89,26 @@ describe('Regla de dependencia (Clean Architecture)', () => {
     expect(writers.map((file) => path.relative(SRC, file))).toEqual([]);
   });
 
+  // add-integrations-foundation (D1): la ruta pública no depende de las integraciones.
+  it.each(['curated-profile', 'profile', 'analytics'])(
+    'modules/%s no importa nada de modules/integrations',
+    (name) => {
+      const files = walk(path.join(SRC, 'modules', name));
+      expect(files.length).toBeGreaterThan(0);
+      expect(
+        violations(files, [/(^|\/)modules\/integrations(\/|$)/, /(^|\/)integrations\//]),
+      ).toEqual([]);
+    },
+  );
+
+  it('el composer del perfil curado no importa de integrations', () => {
+    const composer = walk(path.join(SRC, 'modules', 'curated-profile')).filter((file) =>
+      /composer/i.test(path.basename(file)),
+    );
+    expect(composer.length).toBeGreaterThan(0);
+    expect(violations(composer, [/integrations/])).toEqual([]);
+  });
+
   it('el detector realmente detecta un import prohibido (autocontrol)', () => {
     const tmp = path.join(__dirname, '__arch_probe__.ts');
     fs.writeFileSync(
@@ -100,5 +120,40 @@ describe('Regla de dependencia (Clean Architecture)', () => {
     } finally {
       fs.unlinkSync(tmp);
     }
+  });
+});
+
+// D16: ningún fixture versionado puede contener un token con forma de credencial real.
+describe('Fixtures sin tokens (riesgo «Se filtra un token»)', () => {
+  const FIXTURE_DIRS = [
+    path.resolve(__dirname, 'fixtures'),
+    path.resolve(__dirname, '../../docs/fixtures'),
+  ];
+  const TOKEN = /(?:ghp_|github_pat_|sk-ant-)[A-Za-z0-9_-]{20,}/;
+
+  function allFiles(dir: string): string[] {
+    if (!fs.existsSync(dir)) return [];
+    return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const full = path.join(dir, entry.name);
+      return entry.isDirectory() ? allFiles(full) : [full];
+    });
+  }
+
+  it('hay fixtures que escanear', () => {
+    expect(FIXTURE_DIRS.flatMap(allFiles).length).toBeGreaterThan(0);
+  });
+
+  it('ninguno contiene ghp_, github_pat_ o sk-ant- seguidos de 20 o más caracteres', () => {
+    const leaks = FIXTURE_DIRS.flatMap(allFiles).filter((file) =>
+      TOKEN.test(fs.readFileSync(file, 'utf-8')),
+    );
+    expect(leaks.map((file) => path.relative(path.resolve(__dirname, '../..'), file))).toEqual([]);
+  });
+
+  it('el detector detecta un token de ejemplo (autocontrol)', () => {
+    expect(TOKEN.test(`ghp_${'a'.repeat(36)}`)).toBe(true);
+    expect(TOKEN.test(`github_pat_${'B'.repeat(30)}`)).toBe(true);
+    expect(TOKEN.test(`sk-ant-api03-${'c'.repeat(30)}`)).toBe(true);
+    expect(TOKEN.test('ghp_corto')).toBe(false);
   });
 });

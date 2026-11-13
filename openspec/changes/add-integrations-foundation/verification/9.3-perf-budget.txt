@@ -1,0 +1,10 @@
+
+| Script | Tipo | gzip (KB) |
+|---|---|---|
+| /assets/index-DJj8QIfW.js | módulo | 148.9 |
+| /profile-prefetch.js | clásico | 1.2 |
+| **Total** | | **150.1** |
+
+Presupuesto: 155 KB.
+
+Arranque de main (origin/main 164e4ba, construido aparte): index 148.9 KB + profile-prefetch.js 1.2 KB = 150.1 KB gzip. Con esta rama: idéntico (la pantalla vive en el chunk del panel, BackofficeApp).

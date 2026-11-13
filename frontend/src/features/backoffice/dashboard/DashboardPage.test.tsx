@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { AppRouter } from '@/app/router';
 import { ANALYTICS, EMPTY_ANALYTICS, makeAdminCuratedProfile } from '@/test/fixtures/admin';
 import { makeSummary } from '@/test/fixtures/applications';
+import { makeIntegrations, makeIntegrationStatus } from '@/test/fixtures/integrations';
 import { API, http, HttpResponse, server } from '@/test/msw';
 import { adminHandlers } from '@/test/msw-admin';
 import { renderWithProviders } from '@/test/render';
@@ -470,5 +471,66 @@ describe('DashboardPage — franja de postulaciones (D12)', () => {
       screen.queryByRole('region', { name: 'Resumen de postulaciones, estado actual' }),
     ).toBeNull();
     expect(screen.queryByText(/Sin postulaciones activas/)).toBeNull();
+  });
+});
+
+// add-integrations-foundation (D25): aviso del Dashboard hacia la pantalla Integraciones.
+describe('DashboardPage — aviso de integraciones', () => {
+  const dashboardWith = async (overview: ReturnType<typeof makeIntegrations>) => {
+    server.use(
+      http.get(`${API}/admin/integrations`, () => HttpResponse.json(overview)),
+      ...adminHandlers,
+    );
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+    await screen.findByRole('region', { name: 'Totales' });
+  };
+
+  it('con una sincronización atrasada avisa y enlaza a /admin/integraciones', async () => {
+    await dashboardWith(makeIntegrations([makeIntegrationStatus({ stale: true })]));
+    const notice = await screen.findByRole('region', { name: 'Aviso de integraciones' });
+    expect(
+      within(notice).getByText('Hay integraciones que requieren atención'),
+    ).toBeInTheDocument();
+    expect(within(notice).getByRole('link', { name: 'Ver integraciones' })).toHaveAttribute(
+      'href',
+      '/admin/integraciones',
+    );
+  });
+
+  it('con un trabajo muerto también avisa', async () => {
+    await dashboardWith(
+      makeIntegrations([
+        makeIntegrationStatus({ jobs: { pending: 0, running: 0, failed: 0, dead: 1 } }),
+      ]),
+    );
+    expect(
+      await screen.findByRole('region', { name: 'Aviso de integraciones' }),
+    ).toBeInTheDocument();
+  });
+
+  it('sin atrasos ni trabajos muertos no muestra nada', async () => {
+    await dashboardWith(makeIntegrations([makeIntegrationStatus()]));
+    // Dejo que la consulta del aviso termine antes de afirmar que no hay aviso.
+    await waitFor(() =>
+      expect(screen.queryByText('Hay integraciones que requieren atención')).toBeNull(),
+    );
+    expect(screen.queryByRole('region', { name: 'Aviso de integraciones' })).toBeNull();
+  });
+
+  it('sin proveedores no muestra nada', async () => {
+    await dashboardWith(makeIntegrations([]));
+    expect(screen.queryByRole('region', { name: 'Aviso de integraciones' })).toBeNull();
+  });
+
+  it('si la consulta falla, el resto del Dashboard sigue sin aviso', async () => {
+    server.use(
+      http.get(`${API}/admin/integrations`, () =>
+        HttpResponse.json({ statusCode: 500, message: 'x' }, { status: 500 }),
+      ),
+      ...adminHandlers,
+    );
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+    expect(await screen.findByRole('region', { name: 'Totales' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Aviso de integraciones' })).toBeNull();
   });
 });

@@ -1,0 +1,9 @@
+Punto de partida (rama feat/integrations-foundation sobre main 164e4ba), 2026-11-12.
+Confirmado: no existian el modulo integrations, los modelos Integration*/SyncRun/ExternalSnapshot ni @nestjs/schedule; NAV con nueve items.
+Bases: portfolio_integ_e2e (migrada y sembrada con npm run seed), nunca la del owner.
+
+backend  npm test           126 suites, 1350 tests, verde
+backend  npm run test:e2e    20 suites,  338 tests, verde
+frontend npm test            71 de 74 archivos y 1133 de 1136 tests; fallan 3 por timeout bajo carga
+                             (CuratedProfileView.staged, ProfileBuilderPage, ShareLinks) con otras suites
+                             corriendo en paralelo; al repetir los tres archivos aislados falla 1 (carga de la maquina).

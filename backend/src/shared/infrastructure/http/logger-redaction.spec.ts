@@ -86,6 +86,38 @@ describe('Redacción real del logger (spec api-observability)', () => {
     expect(output).toContain('[Redacted]');
   });
 
+  it('redacta secret, ciphertext, credential y token de las integraciones, también en req.body', () => {
+    const { logger, lines } = captureLogger();
+
+    logger.info({
+      secret: 'secreto-de-integracion',
+      ciphertext: 'v1.k1.cifrado.tag.ct',
+      credential: 'credencial-en-claro',
+      token: 'token-de-integracion',
+    });
+    logger.info({
+      req: {
+        id: 'r',
+        method: 'PUT',
+        url: '/api/admin/integrations/fake/credential',
+        body: { secret: 'secreto-del-cuerpo' },
+      },
+    });
+
+    const output = lines();
+    for (const leaked of [
+      'secreto-de-integracion',
+      'v1.k1.cifrado.tag.ct',
+      'credencial-en-claro',
+      'token-de-integracion',
+      'secreto-del-cuerpo',
+    ]) {
+      expect(output).not.toContain(leaked);
+    }
+    expect(output).toContain('[Redacted]');
+    expect(output).toContain('/api/admin/integrations/fake/credential');
+  });
+
   it('de la respuesta solo escribe el status: la cookie emitida nunca sale', () => {
     const { logger, lines } = captureLogger();
 

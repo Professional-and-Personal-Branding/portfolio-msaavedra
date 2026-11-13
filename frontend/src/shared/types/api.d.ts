@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 6c15825d6b9b40502f4075f6db52db30c7638d64f47c97d92210b6bfbac4e149
+// openapi-sha256: a96ca22acf240577b5cd2f610c3bfde2c9d0a4a9bc70db717d3bcc8c147bf186
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -495,6 +495,87 @@ export interface paths {
         head?: never;
         /** Editar repositorio destacado (parcial) */
         patch: operations["AdminFeaturedRepositoryController_update"];
+        trace?: never;
+    };
+    "/api/admin/integrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Estado de las integraciones
+         * @description Solo aparecen los proveedores de `INTEGRATIONS_ENABLED`. Nunca incluye secretos: de la credencial solo se informa el origen.
+         */
+        get: operations["AdminIntegrationsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/integrations/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Pausar o reanudar un proveedor
+         * @description Pausar no cancela un trabajo en curso: impide reclamar los siguientes y que el planificador encole.
+         */
+        patch: operations["AdminIntegrationsController_update"];
+        trace?: never;
+    };
+    "/api/admin/integrations/{provider}/credential": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Guardar la credencial de un proveedor
+         * @description Se cifra con AES-256-GCM y nunca se devuelve. Con el secreto definido por una variable de entorno, responde 422.
+         */
+        put: operations["AdminIntegrationsController_putCredential"];
+        post?: never;
+        /** Borrar la credencial guardada en la base (idempotente) */
+        delete: operations["AdminIntegrationsController_removeCredential"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/integrations/{provider}/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sincronizar ahora
+         * @description Solo encola: responde 202 sin llamar al proveedor y el trabajo corre en el próximo tick del ejecutor (hasta 60 s). Si ya hay un trabajo pendiente, en curso o fallido, devuelve ese con `alreadyQueued: true`.
+         */
+        post: operations["AdminIntegrationsController_sync"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/admin/languages": {
@@ -1686,6 +1767,17 @@ export interface components {
             /** @default true */
             visible: boolean;
         };
+        CredentialStatusResponse: {
+            /** @description Clave del keyring que la cifró */
+            keyId: string | null;
+            /**
+             * @description De dónde sale el secreto: variable de entorno, base cifrada o ninguna
+             * @enum {string|null}
+             */
+            source: "env" | "db" | null;
+            /** @description ISO 8601 */
+            updatedAt: string | null;
+        };
         CuratedProfileResponse: {
             certifications: components["schemas"]["CertificationResponse"][];
             /** @description Resuelto al locale. */
@@ -1852,6 +1944,14 @@ export interface components {
             /** @example 2024-02 */
             startDate: string;
         };
+        EnqueueSyncResponse: {
+            /** @description `true` si ya había una sincronización en cola */
+            alreadyQueued: boolean;
+            jobId: string;
+            /** @description ISO 8601: cuándo puede reclamarse */
+            runAt: string;
+            status: components["schemas"]["IntegrationJobStatus"];
+        };
         ErrorResponseDto: {
             /** @example Not Found */
             error: string;
@@ -1935,6 +2035,41 @@ export interface components {
             /** @example https://github.com/octo-org/reservas-api */
             url: string;
         };
+        /** @enum {string} */
+        IntegrationJobStatus: "PENDING" | "RUNNING" | "DONE" | "FAILED" | "DEAD";
+        IntegrationsOverviewResponse: {
+            providers: components["schemas"]["IntegrationStatusResponse"][];
+            /** @description `false` = este proceso no tiene timers: lo encolado espera */
+            schedulerEnabled: boolean;
+        };
+        IntegrationStatusResponse: {
+            credential: components["schemas"]["CredentialStatusResponse"];
+            /** @description `false` = pausado a mano */
+            enabled: boolean;
+            jobs: components["schemas"]["JobCountsResponse"];
+            /** @description Último error de un trabajo `DEAD` */
+            lastDeadError: string | null;
+            lastRun: components["schemas"]["LastRunResponse"] | null;
+            /** @description ISO 8601 */
+            lastSuccessAt: string | null;
+            /** @description ISO 8601; solo si la pausa sigue vigente */
+            pausedUntil: string | null;
+            /**
+             * @description `RetryAfter`, `ResetAt`, `BudgetExhausted` o `CircuitOpen`
+             * @example RetryAfter
+             */
+            pauseReason: string | null;
+            /** @example fake */
+            provider: string;
+            /** @description Más de 48 h sin una corrida exitosa */
+            stale: boolean;
+        };
+        JobCountsResponse: {
+            dead: number;
+            failed: number;
+            pending: number;
+            running: number;
+        };
         LanguageResponse: {
             /** @example Oral, escrito y lectura avanzados */
             detail: string;
@@ -1945,6 +2080,18 @@ export interface components {
             level: string;
             /** @example Español */
             name: string;
+        };
+        LastRunResponse: {
+            /** @example Transient */
+            errorClass: string | null;
+            /** @description Redactado y de hasta 500 caracteres */
+            errorMessage: string | null;
+            /** @description ISO 8601 */
+            finishedAt: string | null;
+            /** @description `null` mientras el intento sigue en curso */
+            outcome: components["schemas"]["SyncRunOutcome"] | null;
+            /** @description ISO 8601 */
+            startedAt: string;
         };
         LocalizedListDto: {
             /**
@@ -2223,8 +2370,16 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        SaveCredentialDto: {
+            /** @description Secreto del proveedor (1 a 4096 caracteres, sin espacios al borde). Solo se escribe: nunca se devuelve. */
+            secret: string;
+        };
         /** @enum {string} */
         SectionId: "hero" | "stats" | "experience" | "skills" | "projects" | "repositories" | "education" | "certifications" | "presence" | "contact";
+        SetIntegrationEnabledDto: {
+            /** @description `false` pausa el proveedor a mano; `true` lo reanuda */
+            enabled: boolean;
+        };
         /** @enum {string} */
         ShareLinkKind: "MANUAL" | "LINKEDIN_POST";
         ShareLinkResponse: {
@@ -2288,6 +2443,11 @@ export interface components {
             /** @example https://github.com/manuXD270516 */
             url: string;
         };
+        /**
+         * @description `null` mientras el intento sigue en curso
+         * @enum {string}
+         */
+        SyncRunOutcome: "SUCCESS" | "FAILED" | "DEAD" | "INTERRUPTED" | "TIMEOUT";
         ThemeResponse: {
             /** @example clx0theme1 */
             id: string;
@@ -4419,6 +4579,232 @@ export interface operations {
             };
             /** @description El repositorio ya está cargado */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminIntegrationsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntegrationsOverviewResponse"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminIntegrationsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetIntegrationEnabledDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntegrationStatusResponse"];
+                };
+            };
+            /** @description Campo desconocido o inválido */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Proveedor no habilitado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminIntegrationsController_putCredential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCredentialDto"];
+            };
+        };
+        responses: {
+            /** @description Guardada */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Secreto vacío, largo o inválido */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Proveedor no habilitado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description La credencial de este proveedor viene de una variable de entorno */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminIntegrationsController_removeCredential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Borrada */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Proveedor no habilitado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminIntegrationsController_sync: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnqueueSyncResponse"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Proveedor no habilitado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Proveedor pausado a mano */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
