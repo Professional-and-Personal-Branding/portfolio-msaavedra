@@ -1,5 +1,9 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`raise-manual-images-cap`)
+
+- **Tope del total de imágenes del manual en 8 MB.** `npm run manual:check` admitía hasta 4 MB y las 55 capturas ya sumaban 3,99 MB: para fusionar `add-job-posting-intake` hubo que recomprimir tres. El tope por imagen (150 KB) y el de `index.html` (1 MB) no cambian, y el mensaje de error toma el valor de la constante.
+
 ## Update — Noviembre 2026 (`add-job-posting-intake`)
 
 De una vacante a un borrador de perfil curado, sin IA: se importa una URL o un texto, se cruza con los tags reales del owner y se crea un borrador privado.
