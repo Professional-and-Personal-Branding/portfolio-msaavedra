@@ -12,7 +12,7 @@ import {
   FIXTURE_INVALID_TOKEN,
   FixtureGithubTransport,
 } from '../src/modules/integrations/infrastructure/providers/github/fixture-github-transport';
-import { fail } from '../src/shared/domain/result';
+import { fail, ok } from '../src/shared/domain/result';
 import { createE2eAdmin, deleteE2eAdmin, loginCookie, settleBackgroundTasks } from './e2e-helpers';
 import { createIntegrationsApp, IntegrationsTestApp } from './integrations-helpers';
 
@@ -393,6 +393,38 @@ describe('Evidencia de código de GitHub (e2e, transporte de fixtures)', () => {
     });
     expect(setting.pausedUntil).not.toBeNull();
     await ctx.prisma.featuredRepository.deleteMany({ where: { name: 'limite' } });
+  });
+
+  it('guarda sin error una descripción con emoji en el borde, un surrogate suelto y stars enormes (M1, B1)', async () => {
+    const description = 'a'.repeat(349) + '😀' + 'zz�';
+    const spy = jest.spyOn(transport, 'get').mockImplementation((path) =>
+      Promise.resolve(
+        ok({
+          status: 200,
+          headers: { etag: '"edge"' },
+          body: path.endsWith('/languages')
+            ? { ['Java�']: 9_999_999_999 }
+            : {
+                full_name: 'portafolio-ejemplo-ficticio/x',
+                private: false,
+                stargazers_count: 5_000_000_000,
+                language: 'Ja va',
+                topics: ['t�'],
+                description,
+              },
+        }),
+      ),
+    );
+    const result = await runSync();
+    spy.mockRestore();
+    expect(result.status).toBe('DONE');
+    const row = await ctx.prisma.repositoryEvidence.findFirstOrThrow({
+      where: { repoKey: `${OWNER}/reservas-api` },
+    });
+    expect(row.stars).toBe(2_147_483_647);
+    expect(Array.from(row.githubDescription ?? '')).toHaveLength(350);
+    expect(row.primaryLanguage).toBe('Java');
+    expect(row.topics).toEqual(['t�']);
   });
 
   describe('credencial', () => {

@@ -7,6 +7,8 @@ export interface EvidenceTarget {
   readonly featuredRepositoryId: string;
   readonly url: string;
   readonly order: number;
+  /** Los ocultos se verifican igual, pero después de los visibles (tope por trabajo). */
+  readonly visible: boolean;
 }
 
 /**

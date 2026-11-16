@@ -57,7 +57,7 @@ Alternativas descartadas:
 
 Por trabajo (diario `sync:github:daily:<fecha>` o manual), con payload `{}`:
 
-1. `listTargets()`, ordenados por `order` y `id`; se descartan las URLs que no parsean (no debería haber) y las claves repetidas. Tope **50 repositorios** por trabajo (`MAX_REPOSITORIES_PER_SYNC`, constante); si hay más, se procesan los 50 primeros y se loguea un `warn`.
+1. `listTargets()`, ordenados por `order` y `id`; se descartan las URLs que no parsean (no debería haber) y las claves repetidas. Tope **50 repositorios** por trabajo (`MAX_REPOSITORIES_PER_SYNC`, constante); si hay más, se procesan los 50 primeros y se loguea un `warn`. **Enmienda (revisión de seguridad B2):** antes de cortar se ordenan primero los **visibles** (por `order` e `id`) y después los **ocultos**, para que un repositorio oculto no desplace a uno visible fuera del tope.
 2. Por cada objetivo, **en serie**:
    - `GET /repos/{owner}/{repo}` con el ETag del snapshot `repo:<clave>`;
    - si el repo dio 200 o 304 y no es privado, `GET /repos/{owner}/{repo}/languages` con el ETag del snapshot `languages:<clave>`;
@@ -255,6 +255,15 @@ Encender en Railway: `INTEGRATIONS_ENABLED=github`, las claves del keyring (si l
 - **[Fixtures en el código de producción]** → `FixtureGithubTransport` existe en el bundle pero el arranque lo prohíbe en producción, igual que `fake`.
 - **[Changes en paralelo]** → `schema.prisma` (modelos al final), `provider-catalog.ts`, `integrations.module.ts`, `featured-repository.output.ts`, `Repositories.tsx`, `messages.ts`, `openapi.json`/`api.d.ts` (regenerar, nunca a mano), `MANUAL.md` (TC-52 reservado para este change).
 - **[Los specs de `featured-repositories` e `integration-*` no están archivados]** → todo es `ADDED`; si se archivan antes, sigue siendo válido. Si se archivara este primero, `code-evidence` no depende de requisitos ajenos por nombre.
+
+### Revisión de seguridad y su resolución
+
+La revisión independiente no encontró nada crítico ni alto. Resolución de los hallazgos menores:
+
+- **M1 (surrogates sueltos).** `slice` por unidades UTF-16 podía dejar medio emoji; Postgres lo rechaza en JSONB y el trabajo quedaba `DEAD` en cada reintento, sin verificar los repositorios siguientes. Ahora todo string remoto que se guarda pasa por `wellFormed` (surrogates sueltos → U+FFFD y NUL fuera) y se corta por code points (`truncateCodePoints`): descripción, topics, lenguaje principal y nombres de lenguajes. Tests unitarios (emoji justo en el borde) y un e2e contra la base que lo guarda sin error.
+- **B1 (conteos sin tope).** Stars y bytes se acotan a 2 147 483 647 (columna INTEGER); cada topic y cada nombre de lenguaje, a 50 code points.
+- **B2 (ocultos dentro del tope).** Enmienda de D3: visibles primero, ocultos después. Test con 52 repositorios.
+- **B3 (`AbortSignal.any`).** Exige Node 20.3 o posterior. `backend/package.json` ya fija `"engines": { "node": "22.x" }` (que lo cumple y que Railpack respeta); se mantuvo ese valor, más estricto que `>=20.3`, y se documentó en `docs/DEPLOY-RAILWAY.md`.
 
 ## Migration Plan
 

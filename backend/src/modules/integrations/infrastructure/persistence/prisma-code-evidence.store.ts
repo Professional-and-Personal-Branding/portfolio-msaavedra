@@ -29,10 +29,15 @@ export class PrismaCodeEvidenceStore implements CodeEvidenceStore {
 
   async listTargets(): Promise<EvidenceTarget[]> {
     const rows = await this.prisma.featuredRepository.findMany({
-      select: { id: true, url: true, order: true },
+      select: { id: true, url: true, order: true, visible: true },
       orderBy: [{ order: 'asc' }, { id: 'asc' }],
     });
-    return rows.map((row) => ({ featuredRepositoryId: row.id, url: row.url, order: row.order }));
+    return rows.map((row) => ({
+      featuredRepositoryId: row.id,
+      url: row.url,
+      order: row.order,
+      visible: row.visible,
+    }));
   }
 
   async find(featuredRepositoryId: string): Promise<RepositoryEvidence | null> {

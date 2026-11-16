@@ -47,6 +47,7 @@ function setup(names: string[]) {
       featuredRepositoryId: `id-${name}`,
       url: `https://github.com/octo-org/${name}`,
       order: index,
+      visible: true,
     });
     api.publish(`/repos/octo-org/${name}`, repoBody(name));
     api.publish(`/repos/octo-org/${name}/languages`, { Java: 8200, CSS: 1200 });
@@ -279,18 +280,48 @@ describe('SyncGithubEvidenceService (D3, D4, D6, D7, D8)', () => {
     it('descarta las URLs repetidas (sin distinguir mayúsculas) y las inválidas', async () => {
       const { api, store, run } = setup(['a']);
       store.targets.push(
-        { featuredRepositoryId: 'dup', url: 'https://github.com/Octo-Org/A', order: 5 },
-        { featuredRepositoryId: 'bad', url: 'https://gitlab.com/octo/a', order: 6 },
+        {
+          featuredRepositoryId: 'dup',
+          url: 'https://github.com/Octo-Org/A',
+          order: 5,
+          visible: true,
+        },
+        { featuredRepositoryId: 'bad', url: 'https://gitlab.com/octo/a', order: 6, visible: true },
       );
       await run();
       expect(api.pathsRequested()).toEqual(['/repos/octo-org/a', '/repos/octo-org/a/languages']);
     });
 
+    it('los ocultos no desplazan a los visibles dentro del tope de 50', async () => {
+      const names = Array.from({ length: 52 }, (_, i) => 'r' + i);
+      const { api, store, run } = setup(names);
+      // Los 10 primeros por `order` están ocultos: igual van después de los visibles.
+      store.targets = store.targets.map((t, i) => ({ ...t, visible: i >= 10 }));
+      await run();
+      const requested = api.pathsRequested().filter((p) => !p.endsWith('/languages'));
+      expect(requested).toHaveLength(MAX_REPOSITORIES_PER_SYNC);
+      expect(requested[0]).toBe('/repos/octo-org/r10');
+      // Los 42 visibles entran todos y completan el cupo con los 8 primeros ocultos.
+      expect(requested).toContain('/repos/octo-org/r51');
+      expect(requested).toContain('/repos/octo-org/r7');
+      expect(requested).not.toContain('/repos/octo-org/r8');
+    });
+
     it('respeta el orden por `order`', async () => {
       const { api, store, run } = setup(['a', 'b']);
       store.targets = [
-        { featuredRepositoryId: 'id-b', url: 'https://github.com/octo-org/b', order: 0 },
-        { featuredRepositoryId: 'id-a', url: 'https://github.com/octo-org/a', order: 1 },
+        {
+          featuredRepositoryId: 'id-b',
+          url: 'https://github.com/octo-org/b',
+          order: 0,
+          visible: true,
+        },
+        {
+          featuredRepositoryId: 'id-a',
+          url: 'https://github.com/octo-org/a',
+          order: 1,
+          visible: true,
+        },
       ];
       await run();
       expect(api.pathsRequested()[0]).toBe('/repos/octo-org/b');

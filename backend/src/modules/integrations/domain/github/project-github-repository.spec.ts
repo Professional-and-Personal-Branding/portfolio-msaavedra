@@ -1,4 +1,8 @@
-import { projectGithubLanguages, projectGithubRepository } from './project-github-repository';
+import {
+  projectGithubLanguages,
+  projectGithubRepository,
+  wellFormed,
+} from './project-github-repository';
 
 const FULL = {
   id: 1,
@@ -106,5 +110,55 @@ describe('projectGithubLanguages', () => {
   it('un cuerpo que no es un objeto da un mapa vacío', () => {
     expect(projectGithubLanguages(null)).toEqual({});
     expect(projectGithubLanguages([1, 2])).toEqual({});
+  });
+});
+
+describe('saneamiento de strings remotos y conteos (revisión de seguridad M1 y B1)', () => {
+  const EMOJI = '\u{1F600}';
+
+  it('un emoji justo en el borde del corte no deja un surrogate suelto', () => {
+    // 349 caracteres + un emoji (2 unidades UTF-16): slice por unidades lo partiría.
+    const description = 'a'.repeat(349) + EMOJI + 'zzz';
+    const out = projectGithubRepository({ description }).description as string;
+    expect(Array.from(out)).toHaveLength(350);
+    expect(out.endsWith(EMOJI)).toBe(true);
+    expect(out).toBe(out.normalize()); // cadena válida
+    expect(/[\uD800-\uDFFF]/.test(out.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ''))).toBe(false);
+    expect(JSON.stringify(out)).toBe(JSON.stringify(out.toString()));
+  });
+
+  it('wellFormed reemplaza surrogates sueltos y quita NUL', () => {
+    expect(wellFormed('a\uD83Db')).toBe('a�b');
+    expect(wellFormed('a\uDE00b')).toBe('a�b');
+    expect(wellFormed('a\u0000b')).toBe('ab');
+    expect(wellFormed(`x${EMOJI}y`)).toBe(`x${EMOJI}y`);
+  });
+
+  it('aplica el saneamiento a descripción, topics, lenguaje y nombres de lenguajes', () => {
+    const bad = 'ab\uD83D';
+    const repo = projectGithubRepository({
+      description: bad,
+      topics: [bad],
+      language: bad,
+    });
+    expect(repo.description).toBe('ab�');
+    expect(repo.topics).toEqual(['ab�']);
+    expect(repo.language).toBe('ab�');
+    expect(projectGithubLanguages({ [bad]: 10 })).toEqual({ 'ab�': 10 });
+  });
+
+  it('acota stars y bytes a 2^31-1 (columna INTEGER)', () => {
+    expect(projectGithubRepository({ stargazers_count: 5_000_000_000 }).stargazers_count).toBe(
+      2_147_483_647,
+    );
+    expect(projectGithubLanguages({ Java: 9_999_999_999 })).toEqual({ Java: 2_147_483_647 });
+  });
+
+  it('acota cada topic y cada nombre de lenguaje a 50 code points', () => {
+    const long = EMOJI.repeat(80);
+    const repo = projectGithubRepository({ topics: [long] });
+    expect(Array.from(repo.topics[0])).toHaveLength(50);
+    const names = Object.keys(projectGithubLanguages({ [long]: 1 }));
+    expect(Array.from(names[0])).toHaveLength(50);
   });
 });

@@ -112,8 +112,13 @@ export class SyncGithubEvidenceService {
   private parseTargets(targets: readonly EvidenceTarget[]): ParsedTarget[] {
     const seen = new Set<string>();
     const parsed: ParsedTarget[] = [];
+    // Primero los visibles y después los ocultos (cada grupo por `order` e `id`): los ocultos no
+    // desplazan a los visibles dentro del tope (revisión de seguridad B2, enmienda de D3).
     const sorted = [...targets].sort(
-      (a, b) => a.order - b.order || a.featuredRepositoryId.localeCompare(b.featuredRepositoryId),
+      (a, b) =>
+        Number(b.visible) - Number(a.visible) ||
+        a.order - b.order ||
+        a.featuredRepositoryId.localeCompare(b.featuredRepositoryId),
     );
     for (const target of sorted) {
       const url = parseGithubRepositoryUrl(target.url);

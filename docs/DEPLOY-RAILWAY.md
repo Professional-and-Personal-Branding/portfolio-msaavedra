@@ -84,6 +84,8 @@ En producción la API **no arranca** si el `JWT_SECRET` es el del `.env.example`
   | Restart policy | `ON_FAILURE` |
 
   Comprobá en el panel que esos campos figuren como definidos por el archivo y que el **Pre-deploy Timeout** diga `300`.
+
+  **Versión de Node.** `backend/package.json` fija `"engines": { "node": "22.x" }` y Railpack la respeta. El conector `github` usa `AbortSignal.any`, que exige Node 20.3 o posterior: no bajes de esa versión.
 - [ ] **App Sleeping apagado** (Settings → Serverless). Si el servicio durmiera, la primera visita del día pagaría el arranque.
 - [ ] Variables → Raw Editor, pegar y completar:
 

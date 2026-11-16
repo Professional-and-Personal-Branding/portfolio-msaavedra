@@ -7,6 +7,7 @@ import {
   GithubLanguagesProjection,
   GithubRepositoryProjection,
   MAX_PRIMARY_LANGUAGE_LENGTH,
+  truncateCodePoints,
 } from './project-github-repository';
 import type { GithubRepoProblem } from './classify-github-response';
 
@@ -42,7 +43,10 @@ export function buildOkEvidence(input: {
       repoKey,
       status: 'OK',
       stars: repository.stargazers_count,
-      primaryLanguage: repository.language?.slice(0, MAX_PRIMARY_LANGUAGE_LENGTH) ?? null,
+      primaryLanguage:
+        repository.language === null
+          ? null
+          : truncateCodePoints(repository.language, MAX_PRIMARY_LANGUAGE_LENGTH),
       languages: { ...languages },
       topics: [...repository.topics],
       pushedAt: repository.pushed_at === null ? null : new Date(repository.pushed_at),
