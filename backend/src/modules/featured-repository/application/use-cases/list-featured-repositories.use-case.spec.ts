@@ -31,6 +31,7 @@ describe('ListFeaturedRepositoriesUseCase', () => {
         technologies: ['Spring Boot'],
         tags: ['java'],
         order: 0,
+        evidence: null,
       },
     ]);
   });

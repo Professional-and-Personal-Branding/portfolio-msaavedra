@@ -15,6 +15,13 @@ export const PROVIDER_CATALOG: Readonly<Record<string, ProviderDescriptor>> = {
     secretEnv: 'FAKE_PROVIDER_TOKEN',
     allowedInProduction: false,
   },
+  // `add-github-code-evidence` (D1): token OPCIONAL (fine-grained, solo lectura de repos públicos).
+  // No se llama GITHUB_TOKEN: es el nombre que inyectan GitHub Actions y otras herramientas.
+  github: {
+    id: 'github',
+    secretEnv: 'GITHUB_SYNC_TOKEN',
+    allowedInProduction: true,
+  },
 };
 
 export function isKnownProvider(id: string): boolean {

@@ -327,6 +327,7 @@ describe('toJsonResume', () => {
       technologies: ['Spring Boot', 'PostgreSQL'],
       tags: ['java'],
       order: 0,
+      evidence: null,
       ...overrides,
     });
     const TWO = [repo('a'), repo('b', { language: null, technologies: ['Go'] })];

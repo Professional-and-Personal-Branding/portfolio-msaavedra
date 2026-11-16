@@ -172,9 +172,10 @@ model FeaturedRepository {
   description  Json                       // LocalizedText
   technologies String[]
   tags         String[]                   // para filtrado por perfil curado
-  stars        Int?                       // opcional, manual
+  stars        Int?                       // columna inerte desde `add-github-code-evidence` (P3): las stars viven en RepositoryEvidence
   order        Int      @default(0)
   visible      Boolean  @default(true)
+  evidence     RepositoryEvidence?
 
   @@index([order])
 }
@@ -517,4 +518,34 @@ model JobPosting {
 
   @@index([importedAt])
   @@index([textPurgeAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// EVIDENCIA DE CÓDIGO (change `add-github-code-evidence`)
+// ─────────────────────────────────────────────────────────────
+// Lo verificado contra GitHub por repositorio destacado. La escribe SOLO el conector `github`
+// (modules/integrations); `featured-repository` la lee. Se borra en cascada con el repositorio.
+enum RepositoryEvidenceStatus {
+  OK
+  NOT_FOUND
+  INACCESSIBLE
+  PRIVATE
+}
+
+model RepositoryEvidence {
+  featuredRepositoryId String                   @id
+  featuredRepository   FeaturedRepository       @relation(fields: [featuredRepositoryId], references: [id], onDelete: Cascade)
+  repoKey              String                   // `owner/repo` en minúsculas, tal como se pidió al sincronizar
+  status               RepositoryEvidenceStatus
+  stars                Int?
+  primaryLanguage      String?
+  languages            Json?                    // { lenguaje: bytes }, hasta 20
+  topics               String[]                 @default([])
+  pushedAt             DateTime?
+  archived             Boolean                  @default(false)
+  isFork               Boolean                  @default(false)
+  movedTo              String?                  // `full_name` si GitHub lo movió (D5)
+  githubDescription    String?                  // solo para el panel
+  verifiedAt           DateTime                 // última vez que GitHub respondió por este repo
+  changedAt            DateTime                 // última vez que cambió el contenido
 }

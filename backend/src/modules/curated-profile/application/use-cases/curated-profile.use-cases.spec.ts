@@ -600,6 +600,7 @@ describe('ResolveCuratedProfileUseCase', () => {
         technologies: ['Spring Boot'],
         tags: ['nodejs'],
         order: 0,
+        evidence: null,
       });
     });
   });
