@@ -262,7 +262,7 @@ const MANIFEST = [
       ['esperar', 400],
     ],
   },
-  // Integraciones (change `add-integrations-foundation`, B17 y TC-49): la tarjeta del proveedor
+  // Integraciones (change `add-integrations-foundation`, B18 y TC-49): la tarjeta del proveedor
   // `fake` con una corrida exitosa. Sin ítem en la barra (D25): se abre por su URL.
   {
     id: 'bo-integraciones',
@@ -354,6 +354,64 @@ const MANIFEST = [
       ['borrarYEscribir', '#repository-name', 'repo-de-prueba'],
       ['click', 'aria/Guardar[role="button"]'],
       ['esperarTexto', 'La URL tiene que ser'],
+      ['esperar', 500],
+    ],
+  },
+  // Evidencia de GitHub (change `add-github-code-evidence`, B7, B18 y TC-52). Sin escrituras: exigen
+  // que ANTES se haya sincronizado el proveedor `github` con `GITHUB_TRANSPORT=fixture` contra la base
+  // de ejemplo (`npm run integrations:sync -- --provider github`); `tc52-token-vencido` y
+  // `bo-integraciones-github-fallida` exigen además que la última corrida haya quedado `DEAD` (credencial
+  // `fixture-invalid-token`). Se generan con `--only`: el resto del manual se conserva tal cual.
+  {
+    id: 'tc52-tarjeta',
+    ruta: `/${L}`,
+    pasos: [
+      ['verSeccion', '#repositories'],
+      ['esperarTexto', 'Verificado en GitHub el'],
+      ['esperar', 500],
+    ],
+  },
+  {
+    id: 'tc52-panel',
+    ruta: '/admin/proyectos',
+    sesion: true,
+    esperar: 'experimento-oculto',
+    pasos: [
+      ['esperarTexto', 'Verificado el'],
+      ['verSeccion', 'section[aria-label="Repositorios destacados"]'],
+      ['esperar', 500],
+    ],
+  },
+  {
+    id: 'tc52-token-vencido',
+    ruta: '/admin/proyectos',
+    sesion: true,
+    esperar: 'experimento-oculto',
+    pasos: [
+      ['esperarTexto', 'La última sincronización con GitHub falló'],
+      ['verSeccion', 'section[aria-label="Repositorios destacados"]'],
+      ['esperar', 500],
+    ],
+  },
+  {
+    id: 'bo-integraciones-github',
+    ruta: '/admin/integraciones',
+    sesion: true,
+    esperar: 'Sincronizar ahora',
+    pasos: [
+      ['esperarTexto', 'Exitosa'],
+      ['verSeccion', 'section[aria-labelledby="integration-github"]'],
+      ['esperar', 500],
+    ],
+  },
+  {
+    id: 'bo-integraciones-github-fallida',
+    ruta: '/admin/integraciones',
+    sesion: true,
+    esperar: 'Sincronizar ahora',
+    pasos: [
+      ['esperarTexto', 'Fallida (no se reintenta)'],
+      ['verSeccion', 'section[aria-labelledby="integration-github"]'],
       ['esperar', 500],
     ],
   },

@@ -77,7 +77,7 @@ Guardalos en el gestor de secretos del proveedor, nunca en el repositorio. La AP
 | `ENABLE_API_DOCS` | *(sin definir)* | definila en `true` solo si querés Swagger público |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | los del administrador | **no van en el servicio `api`**: solo se usan al correr `admin:bootstrap` y se definen en la terminal de tu máquina (ver *Primer arranque*) |
 | `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` | *(no hace falta)* | solo Railway, servicio `api`. Ya queda versionado como `drainingSeconds: 10` en `backend/railway.json`; la variable solo sirve si querés pisarlo desde el panel. La API espera hasta 5 s a registrar las visitas en vuelo al apagarse; tiene que quedar **por encima de 5** (ver § 9.5, *Apagado de la API*) |
-| `INTEGRATIONS_ENABLED` | *(sin definir)* | Proveedores de integración habilitados, separados por comas. **Dejala sin definir hasta que llegue un proveedor real** (hoy solo existe `fake`, que está prohibido en producción). Un id fuera del catálogo hace fallar el arranque |
+| `INTEGRATIONS_ENABLED` | *(sin definir)* | Proveedores de integración habilitados, separados por comas. **Dejala sin definir hasta que quieras encender un proveedor** (existen `fake`, de prueba y prohibido en producción, y `github`, ver más abajo). Un id fuera del catálogo hace fallar el arranque |
 | `INTEGRATIONS_SCHEDULER_ENABLED` | `false` *(default)* | `true` enciende los timers del planificador y del ejecutor **en este proceso**. Encendelo en **una sola réplica** del servicio `api` |
 | `INTEGRATIONS_SYNC_CRON` | `0 10 * * *` *(default)* | Planificador diario, en **UTC** (06:00 en Bolivia). Una expresión cron inválida impide el arranque |
 | `INTEGRATIONS_TICK_SECONDS` | `60` *(default)* | Cada cuánto el ejecutor busca trabajos vencidos (10 a 3600) |
@@ -85,6 +85,8 @@ Guardalos en el gestor de secretos del proveedor, nunca en el repositorio. La AP
 | `INTEGRATIONS_RUN_MAX_MS` | `300000` *(default)* | Duración máxima de una corrida: pasado ese tiempo no se reclaman más trabajos (10000 a 1800000 ms) |
 | `INTEGRATIONS_KEYS` | *(solo con proveedores)* | Keyring `id:base64`, separados por comas, con claves de **32 bytes**. Se exige solo si `INTEGRATIONS_ENABLED` no está vacía. En producción no puede ser la clave del `.env.example` ni repetir `JWT_SECRET` |
 | `INTEGRATIONS_ACTIVE_KEY` | *(solo con proveedores)* | `id` del keyring con el que se cifra; tiene que figurar en `INTEGRATIONS_KEYS` |
+| `GITHUB_SYNC_TOKEN` | *(opcional)* | Token del proveedor `github` (change `add-github-code-evidence`). Si está definido manda sobre la credencial guardada desde el panel (y el `PUT` de la credencial responde 422); si no, se usa la cifrada. Habilitar `github` **no** lo exige al arrancar. Se redacta de logs y errores y nunca se devuelve por la API. **No se llama `GITHUB_TOKEN`** a propósito |
+| `GITHUB_TRANSPORT` | `http` *(default)* | `http` (la API real, URL base fija `https://api.github.com`, sin variable para cambiarla) o `fixture` (respuestas inventadas del repositorio, solo desarrollo y pruebas). Otro valor, o `fixture` con `NODE_ENV=production`, impide el arranque |
 | `CSP_HEADER` | *(sin definir)* | **del servicio `web`, no de la API.** Nombre de la cabecera de la CSP del sitio; sin definir bloquea, con `Content-Security-Policy-Report-Only` solo reporta (ver § 9.5, *Content-Security-Policy del sitio*) |
 
 ### Integraciones con terceros (change `add-integrations-foundation`)
@@ -101,6 +103,19 @@ Cuando llegue un proveedor real:
 6. **Herramienta manual.** `npm run integrations:sync [-- --provider <id>] [-- --plan]` corre **una** vez el ejecutor sin abrir ningún puerto (no hay servicio cron aparte); sale con 0, 1 (algún trabajo quedó muerto) o 2 (configuración inválida o el arriendo lo tiene otra instancia).
 
 Un trabajo nunca corre dentro de una petición ni la demora: se mide con `GET /health/live` mientras corre un trabajo lento (ver `docs/ARCHITECTURE.md` § 8).
+
+#### Proveedor `github` — evidencia de código (change `add-github-code-evidence`)
+
+Verifica cada repositorio destacado contra GitHub (stars, lenguajes, topics, último push y archivado) y publica esos datos con su fecha de verificación. La ruta pública **nunca** llama a GitHub: lee la tabla `RepositoryEvidence`. Con `github` fuera de `INTEGRATIONS_ENABLED` todo se ve como antes; si lo apagás después, la evidencia guardada se sigue mostrando con su fecha.
+
+1. **Crear el token.** En GitHub → *Settings* → *Developer settings* → *Personal access tokens* → **Fine-grained tokens** → *Generate new token*: *Resource owner* tu usuario, **vencimiento** (cuanto más corto, mejor; anotá la fecha), *Repository access* → **Public repositories (read-only)** y **ningún permiso adicional**. No hace falta un token clásico ni ningún scope: el token solo sirve para tener el límite de 5 000 peticiones por hora en lugar del anónimo. Guardalo en el gestor de secretos antes de pegarlo.
+2. **Dónde cargarlo.** O bien la variable `GITHUB_SYNC_TOKEN` del servicio `api`, o bien el campo **Credencial** de la tarjeta `github` en **Integraciones** (cifrado con el keyring). Con la variable definida el campo no aparece.
+3. **Encender.** `INTEGRATIONS_ENABLED=github`, el keyring (`INTEGRATIONS_KEYS` e `INTEGRATIONS_ACTIVE_KEY`, también si el token va por variable) e `INTEGRATIONS_SCHEDULER_ENABLED=true`, en una sola réplica. Después, **Sincronizar ahora** en Integraciones (o `npm run integrations:sync -- --provider github`) y revisá el bloque **Repositorios destacados** de `/admin/proyectos`: cada fila dice «Verificado el …».
+4. **Cuánto consume.** Un trabajo por día, en serie: como máximo 2 peticiones por repositorio y 50 repositorios (100 peticiones), casi todas condicionales con `If-None-Match` y siempre con `Authorization`: un `304` autorizado no gasta cuota. Si quedan 50 peticiones o menos en la ventana, el trabajo se detiene y el proveedor se pausa hasta el reinicio del límite.
+5. **Cuando el token vence.** GitHub responde 401: el trabajo queda «Fallida (no se reintenta)» con «GitHub rechazó el token (401): renovalo en Integraciones o en GITHUB_SYNC_TOKEN», el Dashboard y el bloque **Repositorios destacados** lo avisan, y **el sitio sigue mostrando los últimos datos verificados con su fecha**. Para resolverlo, generá un token nuevo, reemplazalo (variable o campo **Credencial**) y pulsá **Sincronizar ahora**.
+6. **Repositorios privados o movidos.** Un repositorio privado queda «Privado: no se publica» y no se guarda nada de su cuerpo; uno renombrado o transferido sigue sincronizando y el panel pide actualizar la URL (la URL curada nunca se cambia sola).
+7. **Migración y vuelta atrás.** `add_github_code_evidence` solo agrega un tipo y una tabla (corre en el `preDeployCommand`; sin backfill: la tabla nace vacía). Quitar `github` de `INTEGRATIONS_ENABLED` deja de sincronizar; `DELETE FROM "RepositoryEvidence"` vuelve las tarjetas a como estaban antes del change.
+8. **`GITHUB_TRANSPORT=fixture` no es para producción:** responde datos inventados y el arranque lo rechaza con `NODE_ENV=production`.
 
 ### Comandos
 

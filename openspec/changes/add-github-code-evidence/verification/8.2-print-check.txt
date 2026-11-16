@@ -1,0 +1,29 @@
+
+> portfolio-frontend@0.1.0 print:check
+> node scripts/check-print-pages.mjs http://localhost:8155
+
+print:check contra http://localhost:8155
+perfil              tema          idioma  A4  Letter  contraste  estado
+------------------  ------------  ------  --  ------  ---------  ------
+ejemplo-backend     perfil        es      1   1       9.7:1      OK    
+ejemplo-backend     perfil        en      1   1       9.7:1      OK    
+ejemplo-backend     dark+sidebar  es      1   1       9.7:1      OK    
+ejemplo-backend     dark+sidebar  en      1   1       9.7:1      OK    
+ejemplo-overrides   perfil        es      1   1       9.7:1      OK    
+ejemplo-overrides   perfil        en      1   1       9.7:1      OK    
+ejemplo-overrides   dark+sidebar  es      1   1       9.7:1      OK    
+ejemplo-overrides   dark+sidebar  en      1   1       9.7:1      OK    
+ejemplo-secciones   perfil        es      1   1       9.7:1      OK    
+ejemplo-secciones   perfil        en      1   1       9.7:1      OK    
+ejemplo-secciones   dark+sidebar  es      1   1       9.7:1      OK    
+ejemplo-secciones   dark+sidebar  en      1   1       9.7:1      OK    
+ejemplo-renombrado  perfil        es      1   1       9.7:1      OK    
+ejemplo-renombrado  perfil        en      1   1       9.7:1      OK    
+ejemplo-renombrado  dark+sidebar  es      1   1       9.7:1      OK    
+ejemplo-renombrado  dark+sidebar  en      1   1       9.7:1      OK    
+all                 perfil        es      1   1       9.7:1      OK    
+all                 perfil        en      1   1       9.7:1      OK    
+all                 dark+sidebar  es      1   1       9.7:1      OK    
+all                 dark+sidebar  en      1   1       9.7:1      OK    
+
+20 casos (5 perfiles), 0 con problemas. Contraste mínimo: 9.74:1
