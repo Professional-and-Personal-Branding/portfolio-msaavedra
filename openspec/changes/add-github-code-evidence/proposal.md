@@ -20,7 +20,7 @@ La base de integraciones ya resuelve la parte difícil (cola, reintentos, pausa 
 - **Panel** (D12): en el bloque Repositorios de `/admin/proyectos`, el estado de verificación de cada repo y un aviso con enlace a Integraciones si la última sincronización de GitHub falló. **Sin ítem nuevo en la barra.** La tarjeta `github` de Integraciones es la genérica de la base.
 - **JSON Resume** (D13): el lenguaje efectivo entra en `keywords`; sin stars ni fechas (el schema no tiene dónde). **PDF sin cambios** (D14).
 - **Transporte de fixtures** (D15): `GITHUB_TRANSPORT=fixture`, prohibido en producción, responde desde `backend/test/fixtures/github/` con ETag y 304; lo usan los e2e, `manual:capture` y el TC-52 sin red ni token real.
-- **Docs y contrato:** `openapi.json` y `api.d.ts` regenerados; `docs/MANUAL.md` e `index.html` con **TC-52** y la ampliación de B7 y B17; `docs/DEPLOY-RAILWAY.md` (cómo crear el PAT fine-grained y encender el proveedor); `backend/.env.example`; `docs/ARCHITECTURE.md`; `docs/CHANGELOG.md`; la línea del roadmap en `CLAUDE.md` al archivar.
+- **Docs y contrato:** `openapi.json` y `api.d.ts` regenerados; `docs/MANUAL.md` e `index.html` con **TC-52** y la ampliación de B7 y B18; `docs/DEPLOY-RAILWAY.md` (cómo crear el PAT fine-grained y encender el proveedor); `backend/.env.example`; `docs/ARCHITECTURE.md`; `docs/CHANGELOG.md`; la línea del roadmap en `CLAUDE.md` al archivar.
 
 ## Non-goals
 
