@@ -359,6 +359,82 @@ describe('Exportación JSON Resume (e2e)', () => {
     });
   });
 
+  // add-github-code-evidence (D13): el lenguaje efectivo entra en `keywords`; stars, topics y
+  // fechas de GitHub NO se exportan y la exportación no llama a GitHub (la evidencia sale de la base).
+  describe('repositorios con evidencia de GitHub', () => {
+    const URL_BASE = `https://github.com/${PREFIX}-owner`;
+    const evidence = (repoKey: string, primaryLanguage: string) => ({
+      repoKey,
+      status: 'OK' as const,
+      stars: 1234,
+      primaryLanguage,
+      languages: { [primaryLanguage]: 1000 },
+      topics: ['tema-de-github'],
+      pushedAt: new Date('2026-10-30T12:00:00Z'),
+      verifiedAt: new Date('2026-11-16T10:00:00Z'),
+      changedAt: new Date('2026-11-16T10:00:00Z'),
+    });
+    const cleanRepos = () =>
+      prisma.featuredRepository.deleteMany({ where: { url: { startsWith: URL_BASE } } });
+
+    beforeAll(async () => {
+      await cleanRepos();
+      const base = { description: { es: 'x', en: 'x' }, technologies: [] as string[], tags: [] };
+      const sinManual = await prisma.featuredRepository.create({
+        data: { ...base, name: `${PREFIX}-sin-manual`, url: `${URL_BASE}/sin-manual`, order: 900 },
+      });
+      const conManual = await prisma.featuredRepository.create({
+        data: {
+          ...base,
+          name: `${PREFIX}-con-manual`,
+          url: `${URL_BASE}/con-manual`,
+          language: 'TypeScript',
+          order: 901,
+        },
+      });
+      await prisma.repositoryEvidence.create({
+        data: {
+          featuredRepositoryId: sinManual.id,
+          ...evidence(`${PREFIX}-owner/sin-manual`, 'Java'),
+        },
+      });
+      await prisma.repositoryEvidence.create({
+        data: {
+          featuredRepositoryId: conManual.id,
+          ...evidence(`${PREFIX}-owner/con-manual`, 'JavaScript'),
+        },
+      });
+    });
+
+    afterAll(cleanRepos);
+
+    it('sin lenguaje manual, el principal de GitHub es el primer keyword; con manual manda el manual', async () => {
+      const res = await resume('all').expect(200);
+      const doc = res.body as Omit<Resume, 'projects'> & {
+        projects: { name: string; keywords?: string[]; type?: string }[];
+      };
+      const entry = (name: string) => doc.projects.find((p) => p.name === name);
+      expect(entry(`${PREFIX}-sin-manual`)?.keywords?.[0]).toBe('Java');
+      expect(entry(`${PREFIX}-con-manual`)?.keywords?.[0]).toBe('TypeScript');
+      expect(entry(`${PREFIX}-sin-manual`)?.type).toBe('repository');
+    });
+
+    it('no exporta stars, topics ni fechas de GitHub y valida contra el schema', async () => {
+      for (const locale of LOCALES) {
+        const res = await resume('all', `?lang=${locale}`).expect(200);
+        const doc = res.body as Resume;
+        const entries = (doc.projects ?? []).filter((p) => p.name.startsWith(PREFIX));
+        expect(entries).toHaveLength(2);
+        const serialized = JSON.stringify(entries);
+        expect(serialized).not.toContain('1234');
+        expect(serialized).not.toContain('tema-de-github');
+        expect(serialized).not.toContain('2026-11-16');
+        expect(serialized).not.toMatch(/stars|topics|verifiedAt/i);
+        expect(validateJsonResume(doc).errors).toEqual([]);
+      }
+    });
+  });
+
   describe('ruta del panel', () => {
     it('sin sesión: 401', async () => {
       const row = await prisma.curatedProfile.findUniqueOrThrow({
