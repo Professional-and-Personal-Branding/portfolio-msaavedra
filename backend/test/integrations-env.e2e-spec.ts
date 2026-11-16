@@ -22,6 +22,8 @@ function childEnv(overrides: Record<string, string | undefined>): NodeJS.Process
     'INTEGRATIONS_KEYS',
     'INTEGRATIONS_ACTIVE_KEY',
     'INTEGRATIONS_SCHEDULER_ENABLED',
+    'GITHUB_SYNC_TOKEN',
+    'GITHUB_TRANSPORT',
     'NODE_ENV',
   ]) {
     delete env[name];
@@ -127,6 +129,54 @@ describe('Arranque con variables de integraciones (e2e, proceso real)', () => {
     const { code, output } = await runUntilExit(childEnv({ INTEGRATIONS_KEYS: KEY }));
     expect(code).not.toBe(0);
     expect(output).toContain('INTEGRATIONS_ACTIVE_KEY');
+  }, 40_000);
+
+  // add-github-code-evidence (D1, D15, D16)
+  it('INTEGRATIONS_ENABLED=github sin GITHUB_SYNC_TOKEN arranca (el token es opcional) y /health/live responde 200', async () => {
+    const child = spawn(process.execPath, [MAIN], {
+      cwd: BACKEND,
+      env: childEnv({
+        INTEGRATIONS_ENABLED: 'github',
+        INTEGRATIONS_KEYS: KEY,
+        INTEGRATIONS_ACTIVE_KEY: 'k1',
+      }),
+    });
+    try {
+      expect(await waitForLive(child)).toBe(200);
+    } finally {
+      child.kill();
+    }
+  }, 40_000);
+
+  it('sin GITHUB_TRANSPORT arranca con el transporte http por defecto', async () => {
+    const child = spawn(process.execPath, [MAIN], { cwd: BACKEND, env: childEnv({}) });
+    try {
+      expect(await waitForLive(child)).toBe(200);
+    } finally {
+      child.kill();
+    }
+  }, 40_000);
+
+  it('un GITHUB_TRANSPORT desconocido falla nombrando la variable y sin imprimir el valor', async () => {
+    const { code, output } = await runUntilExit(childEnv({ GITHUB_TRANSPORT: 'proxy-secreto' }));
+    expect(code).not.toBe(0);
+    expect(output).toContain('GITHUB_TRANSPORT');
+    expect(output).not.toContain('proxy-secreto');
+  }, 40_000);
+
+  it('GITHUB_TRANSPORT=fixture con NODE_ENV=production falla nombrando la variable', async () => {
+    const { code, output } = await runUntilExit(
+      childEnv({
+        NODE_ENV: 'production',
+        JWT_SECRET: 'x'.repeat(48),
+        FRONTEND_URL: 'https://portafolio.test',
+        GITHUB_TRANSPORT: 'fixture',
+        GITHUB_SYNC_TOKEN: 'token-de-prueba-no-real',
+      }),
+    );
+    expect(code).not.toBe(0);
+    expect(output).toContain('GITHUB_TRANSPORT');
+    expect(output).not.toContain('token-de-prueba-no-real');
   }, 40_000);
 
   it('un cron inválido termina con código distinto de 0 y nombra INTEGRATIONS_SYNC_CRON', async () => {

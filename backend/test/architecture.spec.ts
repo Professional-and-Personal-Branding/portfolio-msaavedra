@@ -90,7 +90,9 @@ describe('Regla de dependencia (Clean Architecture)', () => {
   });
 
   // add-integrations-foundation (D1): la ruta pública no depende de las integraciones.
-  it.each(['curated-profile', 'profile', 'analytics'])(
+  // add-github-code-evidence (D2): `featured-repository` también lee la evidencia de la base y no
+  // conoce al conector que la escribe.
+  it.each(['curated-profile', 'profile', 'analytics', 'featured-repository'])(
     'modules/%s no importa nada de modules/integrations',
     (name) => {
       const files = walk(path.join(SRC, 'modules', name));
@@ -107,6 +109,52 @@ describe('Regla de dependencia (Clean Architecture)', () => {
     );
     expect(composer.length).toBeGreaterThan(0);
     expect(violations(composer, [/integrations/])).toEqual([]);
+  });
+
+  // add-github-code-evidence (D2): solo el almacén del conector `github` escribe RepositoryEvidence
+  // (el borrado en cascada lo hace la base al borrar el repositorio destacado).
+  const WRITES_REPOSITORY_EVIDENCE =
+    /\.repositoryEvidence\.(create|createMany|update|updateMany|upsert|delete|deleteMany)/;
+  const EVIDENCE_WRITER = 'prisma-code-evidence.store.ts';
+
+  const evidenceWriters = (files: string[]): string[] =>
+    files
+      .filter((file) => WRITES_REPOSITORY_EVIDENCE.test(fs.readFileSync(file, 'utf-8')))
+      .filter((file) => path.basename(file) !== EVIDENCE_WRITER)
+      .map((file) => path.relative(SRC, file));
+
+  it('solo prisma-code-evidence.store.ts escribe repositoryEvidence', () => {
+    const files = walk(SRC);
+    expect(files.some((file) => path.basename(file) === EVIDENCE_WRITER)).toBe(true);
+    expect(evidenceWriters(files)).toEqual([]);
+  });
+
+  it('el escritor permitido existe y realmente escribe (la regla no está vacía)', () => {
+    const store = walk(SRC).find((file) => path.basename(file) === EVIDENCE_WRITER);
+    expect(store).toBeDefined();
+    expect(WRITES_REPOSITORY_EVIDENCE.test(fs.readFileSync(store as string, 'utf-8'))).toBe(true);
+  });
+
+  it('autocontrol: la regla detecta un escritor de ejemplo y deja pasar una lectura', () => {
+    const probe = path.join(__dirname, '__arch_probe_evidence__.ts');
+    fs.writeFileSync(
+      probe,
+      'export const f = (prisma: unknown) => prisma.repositoryEvidence.upsert({});\n',
+    );
+    try {
+      expect(evidenceWriters([probe])).toHaveLength(1);
+    } finally {
+      fs.unlinkSync(probe);
+    }
+    fs.writeFileSync(
+      probe,
+      'export const f = (prisma: unknown) => prisma.repositoryEvidence.findUnique({});\n',
+    );
+    try {
+      expect(evidenceWriters([probe])).toEqual([]);
+    } finally {
+      fs.unlinkSync(probe);
+    }
   });
 
   // add-job-posting-intake (D19): `job-posting` sugiere y `curated-profile` crea; la dependencia
