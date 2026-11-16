@@ -104,6 +104,7 @@ export function makeCuratedProfile(overrides: Partial<CuratedProfile> = {}): Cur
         technologies: ['Spring Boot', 'PostgreSQL'],
         tags: ['java'],
         order: 1,
+        evidence: null,
       },
       {
         id: 'repo-2',
@@ -114,6 +115,7 @@ export function makeCuratedProfile(overrides: Partial<CuratedProfile> = {}): Cur
         technologies: ['React'],
         tags: ['nodejs'],
         order: 2,
+        evidence: null,
       },
     ],
     education: [

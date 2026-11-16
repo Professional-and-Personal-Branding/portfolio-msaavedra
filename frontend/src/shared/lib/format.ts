@@ -14,6 +14,20 @@ export function formatMonthYear(isoDate: string, locale: Locale): string {
   return formatted.replace('.', '');
 }
 
+/** `2026-11-16T10:00:00Z` → `16 nov 2026` / `Nov 16, 2026`, siempre en UTC. Inválidas, tal cual. */
+export function formatDate(isoDate: string, locale: Locale): string {
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return isoDate;
+  return new Intl.DateTimeFormat(INTL_LOCALE[locale], {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+    .format(date)
+    .replace(/\./g, '');
+}
+
 export function formatPeriod(
   startDate: string,
   endDate: string | null,

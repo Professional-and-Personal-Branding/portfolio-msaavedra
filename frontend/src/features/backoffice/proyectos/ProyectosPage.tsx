@@ -26,6 +26,7 @@ import {
   type RepositoryFormValues,
   type SocialLinkFormValues,
 } from './proyectos-form';
+import { GithubSyncNotice, RepositoryEvidenceStatus } from './RepositoryEvidenceStatus';
 import { RepositoryForm } from './RepositoryForm';
 import { SocialLinkForm } from './SocialLinkForm';
 import {
@@ -277,6 +278,7 @@ function RepositoriesSection() {
         </Button>
       }
     >
+      <GithubSyncNotice />
       {repositories.isPending && <LoadingRows rows={2} />}
       {repositories.isError && (
         <ErrorPanel
@@ -317,6 +319,7 @@ function RepositoriesSection() {
                   <ExternalLink className="size-3 shrink-0" aria-hidden />
                   {repository.url}
                 </a>
+                <RepositoryEvidenceStatus evidence={repository.evidence} />
                 {repository.tags.length > 0 && (
                   <p className="mt-1 truncate text-xs text-text-dim">
                     {repository.tags.join(' · ')}
@@ -358,6 +361,7 @@ function RepositoriesSection() {
           key={editing.id ?? 'new'}
           title={editing.title}
           initialValues={editing.values}
+          evidence={repositories.data?.find((item) => item.id === editing.id)?.evidence ?? null}
           saving={save.isPending}
           conflictUrl={conflictUrl}
           onSubmit={handleSubmit}
