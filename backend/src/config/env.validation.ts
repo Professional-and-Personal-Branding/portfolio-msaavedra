@@ -6,6 +6,7 @@ import {
   IsIn,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   IsUrl,
@@ -15,6 +16,7 @@ import {
   MinLength,
   validateSync,
 } from 'class-validator';
+import { AI_FAKE_SCENARIOS } from '../modules/ai/domain/fake-scenarios';
 import {
   isKnownProvider,
   parseEnabledProviders,
@@ -146,6 +148,49 @@ export class EnvironmentVariables {
   /** `http` (la API real) o `fixture` (respuestas de `backend/test/fixtures/github`; prohibido en producción). */
   @IsIn(['http', 'fixture'])
   GITHUB_TRANSPORT: 'http' | 'fixture' = 'http';
+
+  /** Enciende la IA (change add-ai-foundation). Apagada por defecto: sin cambios de comportamiento. */
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  AI_ENABLED?: string;
+
+  /** `anthropic` (la API real) o `fake` (determinista y sin red; prohibido en producción). */
+  @IsIn(['anthropic', 'fake'])
+  AI_PROVIDER: 'anthropic' | 'fake' = 'anthropic';
+
+  /**
+   * Clave de la API de Anthropic. Solo del entorno (nunca del panel ni del keyring) y nunca se
+   * imprime. No se valida el prefijo: puede cambiar. La URL base NO es configurable.
+   */
+  @IsOptional()
+  @IsString()
+  ANTHROPIC_API_KEY?: string;
+
+  /** Tope mensual de gasto en USD (0 a 1000, hasta 2 decimales). `0` = encendida pero sin presupuesto. */
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0)
+  @Max(1000)
+  AI_MONTHLY_BUDGET_USD: number = 10;
+
+  @IsInt()
+  @Min(5000)
+  @Max(120000)
+  AI_REQUEST_TIMEOUT_MS: number = 60000;
+
+  @IsInt()
+  @Min(1)
+  @Max(4)
+  AI_MAX_CONCURRENCY: number = 2;
+
+  @IsInt()
+  @Min(1000)
+  @Max(100000)
+  AI_MAX_INPUT_TOKENS: number = 50000;
+
+  /** Solo con `AI_PROVIDER=fake`. */
+  @IsOptional()
+  @IsIn([...AI_FAKE_SCENARIOS])
+  AI_FAKE_SCENARIO?: string;
 }
 
 /** Valor de ejemplo del repositorio: jamás debe llegar a producción. */
@@ -247,6 +292,33 @@ function integrationIssues(env: EnvironmentVariables): string[] {
   return issues;
 }
 
+/**
+ * Reglas de la IA (spec `api-platform`): con la IA encendida y el proveedor `anthropic` la clave es
+ * obligatoria; `fake` no puede usarse en producción. Con la IA apagada las demás variables se
+ * validan igual si están. Los mensajes nombran la variable y NUNCA imprimen su valor.
+ */
+function aiIssues(env: EnvironmentVariables): string[] {
+  const issues: string[] = [];
+  const enabled = env.AI_ENABLED === 'true';
+  const key = env.ANTHROPIC_API_KEY;
+  if (env.AI_PROVIDER === 'fake' && env.NODE_ENV === NodeEnv.Production) {
+    issues.push('AI_PROVIDER: el proveedor "fake" no puede usarse en producción');
+  }
+  if (enabled && env.AI_PROVIDER === 'anthropic' && (key === undefined || key === '')) {
+    issues.push('ANTHROPIC_API_KEY: obligatoria si AI_ENABLED=true con AI_PROVIDER=anthropic');
+  }
+  if (key !== undefined && key !== '' && /\s/.test(key)) {
+    issues.push('ANTHROPIC_API_KEY: no puede tener espacios');
+  }
+  if (Math.round(env.AI_MONTHLY_BUDGET_USD * 100) / 100 !== env.AI_MONTHLY_BUDGET_USD) {
+    issues.push('AI_MONTHLY_BUDGET_USD: admite hasta 2 decimales');
+  }
+  if (env.AI_FAKE_SCENARIO !== undefined && env.AI_PROVIDER !== 'fake') {
+    issues.push('AI_FAKE_SCENARIO: solo se admite con AI_PROVIDER=fake');
+  }
+  return issues;
+}
+
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {
   const validated = plainToInstance(EnvironmentVariables, config, {
     enableImplicitConversion: true,
@@ -259,6 +331,7 @@ export function validateEnv(config: Record<string, unknown>): EnvironmentVariabl
     // Las reglas de producción solo se evalúan si la forma básica ya es válida.
     ...(errors.length === 0 ? productionIssues(validated) : []),
     ...(errors.length === 0 ? integrationIssues(validated) : []),
+    ...(errors.length === 0 ? aiIssues(validated) : []),
   ];
 
   if (details.length > 0) {

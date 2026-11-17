@@ -157,6 +157,7 @@ export class AiTaskRunner {
     const signal = options.signal ?? new AbortController().signal;
     const request: LlmRequest<O> = {
       task: task.id,
+      cacheKey: identity.cacheKey,
       model: task.model,
       effort: task.effort,
       thinking: task.thinking,

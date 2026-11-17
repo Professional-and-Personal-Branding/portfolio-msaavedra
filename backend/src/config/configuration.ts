@@ -35,6 +35,19 @@ export interface IntegrationsConfig {
   githubTransport: 'http' | 'fixture';
 }
 
+/** IA (change `add-ai-foundation`). Apagada por defecto. */
+export interface AiConfig {
+  enabled: boolean;
+  provider: 'anthropic' | 'fake';
+  /** Solo del entorno; nunca se loguea. */
+  apiKey: string | undefined;
+  monthlyBudgetUsd: number;
+  requestTimeoutMs: number;
+  maxConcurrency: number;
+  maxInputTokens: number;
+  fakeScenario: string;
+}
+
 export interface AppConfig {
   databaseUrl: string;
   port: number;
@@ -49,6 +62,7 @@ export interface AppConfig {
   /** `SameSite` de la cookie de sesión (spec `api-security-headers`). */
   sessionCookieSameSite: 'lax' | 'strict' | 'none';
   integrations: IntegrationsConfig;
+  ai: AiConfig;
 }
 
 /** Namespace bajo el que ConfigService expone la configuración tipada. */
@@ -87,6 +101,16 @@ export function loadConfiguration(): { [APP_CONFIG]: AppConfig } {
         keys: env.INTEGRATIONS_KEYS,
         activeKeyId: env.INTEGRATIONS_ACTIVE_KEY,
         githubTransport: env.GITHUB_TRANSPORT,
+      },
+      ai: {
+        enabled: env.AI_ENABLED === 'true',
+        provider: env.AI_PROVIDER,
+        apiKey: env.ANTHROPIC_API_KEY === '' ? undefined : env.ANTHROPIC_API_KEY,
+        monthlyBudgetUsd: env.AI_MONTHLY_BUDGET_USD,
+        requestTimeoutMs: env.AI_REQUEST_TIMEOUT_MS,
+        maxConcurrency: env.AI_MAX_CONCURRENCY,
+        maxInputTokens: env.AI_MAX_INPUT_TOKENS,
+        fakeScenario: env.AI_FAKE_SCENARIO ?? 'ok',
       },
     },
   };

@@ -4,7 +4,7 @@ import { AiTaskDefinition, loadPrompt } from './ai-task';
 export const AI_SMOKE_TASK_ID = 'ai.smoke';
 const PROMPT_VERSION = 1;
 /** SHA-256 de `prompts/ai.smoke/v1.md` (LF). Si cambia el texto, hay que crear `v2.md` y registrarlo. */
-const PROMPT_SHA256 = 'fa0305a9dc9e01595bfe4e12b5cebd8c988b766ee9fdf9bdc05dd58b8f3c7d56';
+const PROMPT_SHA256 = 'a6a55e3df049d1451041888943b84f5c52d83d43cf5176cae19b0672698cb1ec';
 
 export const aiSmokeOutputSchema = z.object({ estado: z.enum(['ok']) });
 export type AiSmokeOutput = z.infer<typeof aiSmokeOutputSchema>;

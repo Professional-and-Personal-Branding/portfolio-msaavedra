@@ -48,7 +48,7 @@ export class BudgetGuard {
     amountMicroUsd: number,
   ): Promise<Result<AiRun, AiBudgetExhaustedError>> {
     const now = identity.now;
-    await this.repository.abandonExpired(identity.budgetMonth, now);
+    await this.repository.abandonExpired(now);
     const expiresAt = new Date(now.getTime() + this.options.requestTimeoutMs + ORPHAN_GRACE_MS);
     const run = AiRun.reserved(identity, amountMicroUsd, expiresAt);
     const outcome = await this.repository.reserve({

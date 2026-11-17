@@ -96,3 +96,17 @@ describe('buildLoggerOptions', () => {
     expect(genReqId({})).toMatch(/^[0-9a-f-]{36}$/);
   });
 });
+
+// add-ai-foundation (D21): la clave de Anthropic jamás se loguea.
+describe('REDACTED_PATHS — IA', () => {
+  it('redacta x-api-key, apiKey y ANTHROPIC_API_KEY', () => {
+    expect(REDACTED_PATHS).toEqual(
+      expect.arrayContaining([
+        'req.headers["x-api-key"]',
+        'headers["x-api-key"]',
+        'apiKey',
+        'ANTHROPIC_API_KEY',
+      ]),
+    );
+  });
+});

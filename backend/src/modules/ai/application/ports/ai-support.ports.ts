@@ -12,6 +12,9 @@ export interface AiSettings {
   readonly knownSecrets: readonly string[];
 }
 
+/** Token con el que los casos de uso de IA de cada feature reciben el runner. */
+export const AI_TASK_RUNNER = Symbol('AiTaskRunner');
+
 /** Generador de ids de corrida (inyectable para los tests). */
 export const AI_NEW_ID = Symbol('AiNewId');
 export type AiNewId = () => string;

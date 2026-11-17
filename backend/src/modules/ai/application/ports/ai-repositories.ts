@@ -54,8 +54,11 @@ export interface AiBudgetRepository {
   reserve(request: ReserveRequest): Promise<ReserveOutcome>;
   /** Cierra la corrida y concilia el contador. `false` si ya no estaba `RESERVED` (la barrió el barrido). */
   settle(request: SettleRequest): Promise<boolean>;
-  /** Pasa a `ABANDONED` las `RESERVED` vencidas del mes, imputando su reserva entera como gasto. */
-  abandonExpired(month: string, now: Date): Promise<number>;
+  /**
+   * Pasa a `ABANDONED` las `RESERVED` vencidas (de cualquier mes: cada una concilia el suyo),
+   * imputando su reserva entera como gasto.
+   */
+  abandonExpired(now: Date): Promise<number>;
   blockProvider(month: string, until: Date, reason: string): Promise<void>;
   getMonth(month: string): Promise<BudgetMonthSnapshot | null>;
 }

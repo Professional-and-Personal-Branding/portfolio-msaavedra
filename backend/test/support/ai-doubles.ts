@@ -146,13 +146,12 @@ export class InMemoryAiStore implements AiRunRepository, AiBudgetRepository {
     return Promise.resolve(true);
   }
 
-  abandonExpired(month: string, now: Date): Promise<number> {
+  abandonExpired(now: Date): Promise<number> {
     let count = 0;
     for (const run of [...this.runs.values()]) {
       const expires = run.props.reservationExpiresAt;
       if (
         run.status === 'RESERVED' &&
-        run.props.budgetMonth === month &&
         expires !== null &&
         expires <= now
       ) {
@@ -165,7 +164,7 @@ export class InMemoryAiStore implements AiRunRepository, AiBudgetRepository {
           finishedAt: now,
         });
         if (!closed.ok) continue;
-        const row = this.month(month);
+        const row = this.month(run.props.budgetMonth);
         row.reserved -= run.props.reservedMicroUsd;
         row.spent += run.props.reservedMicroUsd;
         this.runs.set(run.id, closed.value);

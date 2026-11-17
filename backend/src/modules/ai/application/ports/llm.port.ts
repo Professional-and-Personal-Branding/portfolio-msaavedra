@@ -16,6 +16,8 @@ export type AiThinking = 'off' | 'adaptive';
  */
 export interface LlmRequest<T = unknown> {
   readonly task: string;
+  /** Clave de caché de la corrida: no se envía; la usan los cassettes y los logs de prueba. */
+  readonly cacheKey: string;
   readonly model: AiModelId;
   readonly effort: AiEffort;
   readonly thinking: AiThinking;
