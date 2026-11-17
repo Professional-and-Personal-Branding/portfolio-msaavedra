@@ -26,6 +26,11 @@ export interface AiTaskDefinition<I, O> {
   readonly outputSchema: ZodType<O>;
   /** Salida válida de ejemplo: la devuelve el proveedor `fake` (D20). */
   readonly fakeExample: O;
+  /**
+   * Origen de ejemplo armado con los datos FICTICIOS de `docs/examples/cv-data.example.json`: lo
+   * usa el test de lista negra (D13, capa 3) para comprobar que `buildInput` no deja salir el email.
+   */
+  sampleSource(exampleCv: Readonly<Record<string, unknown>>): I;
   /** Arma el payload con lista blanca, campo por campo (D13, capa 1). Nunca hace spread de una entidad. */
   buildInput(source: I): LlmPayload;
 }

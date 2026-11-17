@@ -5,7 +5,7 @@ import { ProviderFailure } from '../../../../shared/domain/provider-failure/prov
 import { sanitizeFailure } from '../../../../shared/domain/provider-failure/sanitize-failure';
 import { redactSecrets } from '../../../../shared/domain/redact-secrets';
 import { fail, ok, Result } from '../../../../shared/domain/result';
-import { interpretMessage } from '../shared/interpret-message';
+import { interpretMessage, RawMessage } from '../shared/interpret-message';
 import {
   LlmCompletion,
   LlmFailure,
@@ -22,6 +22,11 @@ export interface AnthropicAdapterOptions {
   readonly timeoutMs: number;
   /** Secretos a redactar de cualquier mensaje de error (la clave, como mínimo). */
   readonly knownSecrets: readonly string[];
+  /**
+   * Recibe cada respuesta tal como llegó (solo texto, estado y uso: sin cabeceras ni id de la
+   * petición). La usa `npm run ai:eval -- --record` para grabar cassettes.
+   */
+  readonly onResponse?: (cacheKey: string, raw: RawMessage) => void;
 }
 
 /**
@@ -84,6 +89,7 @@ export class AnthropicLlmAdapter implements LlmPort {
       return fail(this.translate(error));
     }
 
+    this.options.onResponse?.(request.cacheKey, toRaw(message));
     return interpretMessage(message, request.schema, requestId);
   }
 
@@ -135,4 +141,22 @@ export class AnthropicLlmAdapter implements LlmPort {
   private cleaned(failure: ProviderFailure): ProviderLlmFailure {
     return failure.kind === 'BudgetExhausted' ? failure : sanitizeFailure(failure, new Date());
   }
+}
+
+/** Lo mínimo de la respuesta que interesa conservar: nada de cabeceras ni ids. */
+function toRaw(message: Anthropic.Message): RawMessage {
+  return {
+    content: message.content.flatMap((block) =>
+      block.type === 'text' ? [{ type: 'text', text: block.text }] : [],
+    ),
+    stop_reason: message.stop_reason,
+    stop_details: message.stop_details ? { category: message.stop_details.category } : null,
+    usage: {
+      input_tokens: message.usage.input_tokens,
+      output_tokens: message.usage.output_tokens,
+      cache_read_input_tokens: message.usage.cache_read_input_tokens ?? 0,
+      cache_creation_input_tokens: message.usage.cache_creation_input_tokens ?? 0,
+    },
+    model: message.model,
+  };
 }

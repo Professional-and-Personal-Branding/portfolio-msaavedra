@@ -21,6 +21,18 @@ function escapeRegExp(text: string): string {
  * de un tercero o de un conector (change `add-integrations-foundation`, D16).
  */
 export function redactSecrets(text: string, knownSecrets: readonly string[] = []): string {
+  const out = redactSecretsUntruncated(text, knownSecrets);
+  return out.length > MAX_REDACTED_LENGTH ? out.slice(0, MAX_REDACTED_LENGTH) : out;
+}
+
+/**
+ * Igual que `redactSecrets` pero sin recortar: para textos que se guardan enteros (los cassettes de
+ * `add-ai-foundation`) y donde un recorte rompería el contenido.
+ */
+export function redactSecretsUntruncated(
+  text: string,
+  knownSecrets: readonly string[] = [],
+): string {
   let out = text;
   const needles = new Set<string>();
   for (const secret of knownSecrets) {
@@ -35,5 +47,5 @@ export function redactSecrets(text: string, knownSecrets: readonly string[] = []
   for (const pattern of TOKEN_PATTERNS) out = out.replace(pattern, MARKER);
   out = out.replace(/(\bBearer\s+)[A-Za-z0-9._~+/=-]+/gi, `$1${MARKER}`);
   out = out.replace(/(\btoken=)[^&\s"']*/gi, `$1${MARKER}`);
-  return out.length > MAX_REDACTED_LENGTH ? out.slice(0, MAX_REDACTED_LENGTH) : out;
+  return out;
 }

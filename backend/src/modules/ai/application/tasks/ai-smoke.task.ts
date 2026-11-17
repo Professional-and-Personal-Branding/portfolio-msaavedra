@@ -10,10 +10,16 @@ export const aiSmokeOutputSchema = z.object({ estado: z.enum(['ok']) });
 export type AiSmokeOutput = z.infer<typeof aiSmokeOutputSchema>;
 
 /**
+ * La prueba real no lleva datos del usuario. `caso` solo distingue las entradas de las evals (cada
+ * caso tiene su cassette); sin él, vale `conexion`.
+ */
+export type AiSmokeSource = { readonly caso?: string } | undefined;
+
+/**
  * Tarea de humo (D18): texto fijo sin datos del usuario con Haiku 5.5. Sirve para probar la clave,
  * el presupuesto y el registro de punta a punta.
  */
-export const aiSmokeTask: AiTaskDefinition<void, AiSmokeOutput> = {
+export const aiSmokeTask: AiTaskDefinition<AiSmokeSource, AiSmokeOutput> = {
   id: AI_SMOKE_TASK_ID,
   promptVersion: PROMPT_VERSION,
   promptSha256: PROMPT_SHA256,
@@ -26,8 +32,12 @@ export const aiSmokeTask: AiTaskDefinition<void, AiSmokeOutput> = {
   schemaVersion: 1,
   outputSchema: aiSmokeOutputSchema,
   fakeExample: { estado: 'ok' },
-  buildInput: () => ({
-    structured: { mensaje: 'Verificación de conexión: confirmá con estado ok.' },
+  sampleSource: () => undefined,
+  buildInput: (source) => ({
+    structured: {
+      mensaje: 'Verificación de conexión: confirmá con estado ok.',
+      caso: source?.caso ?? 'conexion',
+    },
     freeText: {},
   }),
 };

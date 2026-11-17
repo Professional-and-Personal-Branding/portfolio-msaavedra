@@ -54,6 +54,7 @@ function setup(
 const textTask: AiTaskDefinition<{ texto: string; email?: string }, { estado: 'ok' }> = {
   ...aiSmokeTask,
   id: 'ai.eco',
+  sampleSource: () => ({ texto: 'hola' }),
   outputSchema: z.object({ estado: z.enum(['ok']) }),
   buildInput: (source) => ({
     structured: (source.email ? { email: source.email } : { a: 1 }) as Record<

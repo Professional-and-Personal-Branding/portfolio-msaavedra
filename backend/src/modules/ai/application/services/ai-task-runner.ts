@@ -2,9 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CLOCK, Clock } from '../../../../shared/domain/clock';
 import { redactSecrets } from '../../../../shared/domain/redact-secrets';
 import { fail, ok, Result } from '../../../../shared/domain/result';
-import { buildCacheKey, canonicalJson, hashInput } from '../../domain/ai-cache-key';
+import { hashInput } from '../../domain/ai-cache-key';
 import { AiRun, AiRunFinish, AiRunIdentity } from '../../domain/ai-run.entity';
-import { assertLlmSafe, LlmPayload } from '../../domain/data-boundary/data-boundary';
 import {
   AiBudgetExhaustedError,
   AiBusyError,
@@ -33,6 +32,9 @@ import {
 import { LLM_PORT, LlmFailure, LlmPort, LlmRequest } from '../ports/llm.port';
 import { AiTaskDefinition } from '../tasks/ai-task';
 import { BudgetGuard, budgetMonthOf } from './budget-guard';
+import { prepareTaskRun } from './prepare-task-run';
+
+export { buildUserMessage } from './prepare-task-run';
 
 export const BUDGET_GUARD = Symbol('BudgetGuard');
 
@@ -58,19 +60,6 @@ export type AiTaskError =
   | AiBusyError
   | ForbiddenDataError
   | AiRunFailedError;
-
-/** Cierra la sección de datos: un texto libre no puede salirse de su delimitador. */
-const DELIMITER_TAGS = /<\/?\s*(datos|texto)[^>]*>/gi;
-
-/** Mensaje del usuario con la entrada delimitada como dato (D5): nunca son instrucciones. */
-export function buildUserMessage(payload: LlmPayload): string {
-  const parts = [`<datos>\n${canonicalJson(payload.structured)}\n</datos>`];
-  for (const name of Object.keys(payload.freeText).sort()) {
-    const text = payload.freeText[name].replace(DELIMITER_TAGS, '');
-    parts.push(`<texto nombre="${name}">\n${text}\n</texto>`);
-  }
-  return parts.join('\n');
-}
 
 /**
  * Orquesta una corrida de IA (D1): guardián de datos → caché → semáforo → conteo → reserva →
@@ -101,27 +90,14 @@ export class AiTaskRunner {
     const month = budgetMonthOf(startedAt);
 
     // 1. Guardián: antes de la caché, del conteo y de la reserva (D13).
-    const safe = assertLlmSafe(task.buildInput(source), this.settings.knownSecrets);
-    if (!safe.ok) {
-      const hash = hashInput({ bloqueado: safe.error.reason });
+    const prepared = prepareTaskRun(task, source, this.settings.knownSecrets);
+    if (!prepared.ok) {
+      const hash = hashInput({ bloqueado: prepared.error.reason });
       const identity = this.identity(task, hash, hash, month, startedAt);
-      await this.record(AiRun.blocked(identity, 'ForbiddenData', safe.error.message));
-      return fail(safe.error);
+      await this.record(AiRun.blocked(identity, 'ForbiddenData', prepared.error.message));
+      return fail(prepared.error);
     }
-    const payload = safe.value.payload;
-    const input = { structured: payload.structured, freeText: payload.freeText };
-    const inputHash = hashInput(input);
-    const cacheKey = buildCacheKey({
-      task: task.id,
-      promptVersion: task.promptVersion,
-      promptHash: task.promptSha256,
-      model: task.model,
-      effort: task.effort,
-      thinking: task.thinking,
-      maxTokens: task.maxTokens,
-      schemaVersion: task.schemaVersion,
-      input,
-    });
+    const { cacheKey, inputHash } = prepared.value;
     const identity = this.identity(task, inputHash, cacheKey, month, startedAt);
 
     // 2. Caché por hash: ni conteo ni llamada (D11).
@@ -141,7 +117,7 @@ export class AiTaskRunner {
     const release = await this.limiter.acquire(CONCURRENCY_WAIT_MS);
     if (release === null) return fail(new AiBusyError());
     try {
-      return await this.callAndSettle(task, payload, identity, startedAt, options);
+      return await this.callAndSettle(task, prepared.value.request, identity, startedAt, options);
     } finally {
       release();
     }
@@ -149,24 +125,12 @@ export class AiTaskRunner {
 
   private async callAndSettle<I, O>(
     task: AiTaskDefinition<I, O>,
-    payload: LlmPayload,
+    request: LlmRequest<O>,
     identity: AiRunIdentity,
     startedAt: Date,
     options: AiRunOptions,
   ): Promise<Result<AiTaskSuccess<O>, AiTaskError>> {
     const signal = options.signal ?? new AbortController().signal;
-    const request: LlmRequest<O> = {
-      task: task.id,
-      cacheKey: identity.cacheKey,
-      model: task.model,
-      effort: task.effort,
-      thinking: task.thinking,
-      maxTokens: task.maxTokens,
-      system: task.systemPrompt,
-      cacheSystemPrompt: task.cacheSystemPrompt,
-      user: buildUserMessage(payload),
-      schema: task.outputSchema,
-    };
 
     // 4. Conteo (gratis): si falla, no se llama a `messages` (falla cerrado).
     const counted = await this.llm.countInputTokens(request, signal);
