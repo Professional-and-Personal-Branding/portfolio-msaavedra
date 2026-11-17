@@ -1,9 +1,22 @@
 import * as React from 'react';
 import { cn } from '@/shared/lib/utils';
 
-function Table({ className, ...props }: React.ComponentProps<'table'>) {
+/**
+ * Con `regionLabel`, el contenedor que desplaza la tabla es una región con nombre y foco
+ * (`polish-pre-deploy-cleanup`, D7): sin nada enfocable adentro, el teclado no puede desplazarla
+ * y axe marca `scrollable-region-focusable`. Sin la prop queda como antes.
+ */
+function Table({
+  className,
+  regionLabel,
+  ...props
+}: React.ComponentProps<'table'> & { regionLabel?: string }) {
+  const region =
+    regionLabel === undefined
+      ? {}
+      : { role: 'region' as const, 'aria-label': regionLabel, tabIndex: 0 };
   return (
-    <div data-slot="table-container" className="relative w-full overflow-x-auto">
+    <div data-slot="table-container" className="relative w-full overflow-x-auto" {...region}>
       <table
         data-slot="table"
         className={cn('w-full caption-bottom text-sm', className)}

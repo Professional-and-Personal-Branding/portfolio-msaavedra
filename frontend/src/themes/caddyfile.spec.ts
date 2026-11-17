@@ -19,7 +19,9 @@ describe('Caddyfile: Cache-Control por defecto', () => {
   });
 
   it('los assets y las fuentes siguen siendo inmutables', () => {
-    expect(lineas).toContain('header /assets/* Cache-Control "public, max-age=31536000, immutable"');
+    expect(lineas).toContain(
+      'header /assets/* Cache-Control "public, max-age=31536000, immutable"',
+    );
     expect(lineas).toContain('header /fonts/* Cache-Control "public, max-age=31536000, immutable"');
   });
 });

@@ -26,6 +26,13 @@
  * la API, una sola vez) cinco postulaciones de prueba «Auditoría a11y …» en la base descartable;
  * y para `admin-desde-vacante-analisis` importa, por la API y sin red, una vacante PEGADA ficticia
  * («Auditoría a11y — vacante») que el análisis muestra con su cobertura.
+ * Para que `admin-dashboard-tablas` audite las tablas «Por enlace» y «Por portal» con filas (change
+ * `polish-pre-deploy-cleanup`, D8) crea, una sola vez, un enlace de seguimiento con etiqueta larga en
+ * el perfil `all` y registra desde Node, sin la cookie del panel y con un User-Agent de navegador
+ * común, dos visitas con `?via=` y una con `?src=`: la API las clasifica como de persona (`HUMAN`) y
+ * las atribuye. Sin eso las dos tablas siempre estarían vacías (las visitas de Chrome sin cabeza son
+ * `BOT`, las del panel `OWNER`) y el Dashboard con filas nunca se auditaría. Si los datos no producen
+ * el escenario, la entrada falla con código 1 en lugar de pasar en vacío.
  *
  * Entorno:
  *   A11Y_CHECK_DISPOSABLE_DB=1  OBLIGATORIA: la API tiene que apuntar a una base descartable
@@ -387,7 +394,8 @@ function credentialErrorEntry() {
       const seen = await waitFor(page, () => document.querySelector('form [role="alert"]'));
       await new Promise((resolve) => setTimeout(resolve, 300));
       const problems = seen ? [] : ['no apareció el error de la credencial vacía'];
-      if (page.adminPosts !== 0) problems.push(`salieron ${page.adminPosts} escrituras a /api/admin/`);
+      if (page.adminPosts !== 0)
+        problems.push(`salieron ${page.adminPosts} escrituras a /api/admin/`);
       return problems;
     },
   };
@@ -455,6 +463,38 @@ const ERROR_ENTRIES = {
     },
   },
 };
+
+/**
+ * Dashboard con las tablas «Por enlace» y «Por portal» con filas (change `polish-pre-deploy-cleanup`,
+ * D8). Exige filas en las dos tablas y, en móvil, que la de «Por enlace» desborde (`scrollWidth >
+ * clientWidth`): si no, la entrada no prueba lo que dice. Que el contenedor sea enfocable lo juzga axe.
+ */
+const dashboardTablesEntry = {
+  async setup() {},
+  async prepare(page) {
+    // La preparación no depende de que las tablas ya sean regiones con nombre: eso lo juzga axe.
+    const ready = await waitFor(page, () =>
+      ['por-enlace', 'por-portal'].every(
+        (id) => document.querySelectorAll(`section[aria-labelledby="${id}"] tbody tr`).length > 0,
+      ),
+    );
+    if (!ready)
+      return [
+        'las tablas «Por enlace» y «Por portal» no tienen filas: las visitas de preparación no llegaron a HUMAN con enlace y portal',
+      ];
+    if (!page.viewport()?.isMobile) return [];
+    const overflow = await page.evaluate(() => {
+      const el = document.querySelector(
+        'section[aria-labelledby="por-enlace"] [data-slot="table-container"]',
+      );
+      return el ? el.scrollWidth - el.clientWidth : -1;
+    });
+    return overflow > 0
+      ? []
+      : [`en móvil la tabla «Por enlace» no desborda (scrollWidth - clientWidth = ${overflow})`];
+  },
+};
+ERROR_ENTRIES['admin-dashboard-tablas'] = dashboardTablesEntry;
 
 async function audit(entry, viewportName, { keyboard = false, skipLink = true } = {}) {
   const page = await browser.newPage();
@@ -557,6 +597,65 @@ async function seedApplications(page, profileId) {
   }, profileId ?? null);
 }
 
+const SHARE_LINK_LABEL = 'Auditoría a11y — enlace de seguimiento con etiqueta larga para el móvil';
+const SHARE_LINK_PORTAL = 'portal-de-empleo-ejemplo';
+// Un navegador de escritorio común, sin `HeadlessChrome` ni ningún token de la lista de bots.
+const HUMAN_UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+
+/**
+ * Visitas de PERSONA con enlace y portal para que el Dashboard tenga filas en «Por enlace» y «Por
+ * portal» (D8). El enlace se crea una sola vez (idempotente por etiqueta) con la sesión del panel;
+ * las visitas salen desde Node, sin cookies, y esperan a que la agregación las muestre (la
+ * atribución se resuelve en segundo plano). Devuelve la lista de problemas de preparación.
+ */
+async function seedShareLinkVisits(page, homeId) {
+  if (!homeId) return ['no hay perfil `all` en la lista del panel: no se crean visitas con enlace'];
+  const link = await page.evaluate(
+    async (id, label) => {
+      const call = async (method, body) => {
+        const response = await fetch(`/api/admin/curated-profiles/${id}/share-links`, {
+          method,
+          headers: body ? { 'Content-Type': 'application/json' } : undefined,
+          body: body ? JSON.stringify(body) : undefined,
+          credentials: 'same-origin',
+        });
+        return response.ok ? response.json() : null;
+      };
+      const existing = (await call('GET')) ?? [];
+      return (
+        existing.find((l) => l.label === label) ??
+        (await call('POST', { label, portal: 'linkedin' }))
+      );
+    },
+    homeId,
+    SHARE_LINK_LABEL,
+  );
+  if (!link?.code)
+    return ['no se pudo crear ni encontrar el enlace de seguimiento de la auditoría'];
+  for (const query of [`via=${link.code}`, `via=${link.code}`, `src=${SHARE_LINK_PORTAL}`]) {
+    const response = await fetch(`${BASE}/api/curated-profiles/all?${query}`, {
+      headers: { 'User-Agent': HUMAN_UA },
+    });
+    if (!response.ok)
+      return [`GET /api/curated-profiles/all?${query.split('=')[0]}= respondió ${response.status}`];
+  }
+  // La atribución corre en segundo plano: se consulta hasta 5 s a que aparezcan las filas.
+  for (let i = 0; i < 25; i++) {
+    const attributed = await page.evaluate(async () => {
+      const response = await fetch('/api/admin/analytics/views', { credentials: 'same-origin' });
+      if (!response.ok) return false;
+      const views = await response.json();
+      return views.byShareLink.length > 0 && views.bySource.length > 0;
+    });
+    if (attributed) return [];
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+  return [
+    'las visitas con enlace y portal no aparecieron en /api/admin/analytics/views (¿se clasificaron como BOT?)',
+  ];
+}
+
 /**
  * Una vacante PEGADA ficticia (sin red: el texto no sale del servidor) para que
  * `admin-desde-vacante-analisis` audite el resultado con cobertura. Idempotente: el mismo texto
@@ -579,6 +678,7 @@ async function seedJobPosting(page) {
 }
 
 let adminAudited = false;
+const setupProblems = [];
 if (ADMIN_EMAIL && ADMIN_PASSWORD) {
   const session = await browser.newPage();
   await session.goto(`${BASE}/admin/login`, { waitUntil: 'networkidle0' });
@@ -607,10 +707,17 @@ if (ADMIN_EMAIL && ADMIN_PASSWORD) {
   );
   const first = (Array.isArray(profiles) ? profiles : (profiles.items ?? []))[0];
   await seedApplications(session, first?.id);
+  const profileList = Array.isArray(profiles) ? profiles : (profiles.items ?? []);
+  const visitProblems = await seedShareLinkVisits(
+    session,
+    profileList.find((p) => p.slug === 'all')?.id,
+  );
+  setupProblems.push(...visitProblems);
   const postingId = await seedJobPosting(session);
   await session.close();
   const adminPages = [
     ['admin', '/admin'],
+    ['admin-dashboard-tablas', '/admin'],
     ['admin-portada', '/admin/portada'],
     ['admin-experiencias', '/admin/experiencias'],
     ['admin-experiencias-error', '/admin/experiencias'],
@@ -669,9 +776,10 @@ const keyboardProblems = results.flatMap((r) =>
   (r.keyboard?.problems ?? []).map((p) => `${r.page}.${r.viewport}: ${p}`),
 );
 // Una entrada con error a la vista que no vio el error no prueba nada: cuenta como problema.
-const failedPrepare = results.flatMap((r) =>
-  (r.prepareProblems ?? []).map((p) => `${r.page}.${r.viewport}: ${p}`),
-);
+const failedPrepare = [
+  ...setupProblems.map((p) => `preparación: ${p}`),
+  ...results.flatMap((r) => (r.prepareProblems ?? []).map((p) => `${r.page}.${r.viewport}: ${p}`)),
+];
 
 let md = `# a11y:check · axe-core ${axeVersion}\n\nBase: ${BASE} · ${new Date().toISOString()} · ${results.length} cargas${adminAudited ? ' (con panel)' : ' (sin panel)'}\n\n`;
 md += '| Regla | Impacto | Nodos | Páginas | Ejemplo |\n|---|---|---|---|---|\n';
