@@ -207,8 +207,8 @@ npm run perf:check -- <base>   # Lighthouse mobile, mediana de PERF_CHECK_RUNS (
   - [x] `add-featured-repositories` — repositorios de GitHub cargados a mano (solo URLs de GitHub), décima sección `repositories` (visible con 2 o más), línea en el PDF solo si entra, JSON Resume y constructor; migración de datos que ubica `repositories` después de `projects` en los perfiles ya sembrados (archivado 2026-11-13)
   - [x] `add-job-posting-intake` — perfil curado borrador (`PRIVATE`) desde una vacante: URL de Greenhouse/Lever/Ashby o JSON-LD con guarda SSRF, o texto pegado (portales cerrados → 422), cobertura de tags, texto crudo purgado a los 90 días (perezoso y `npm run job-postings:purge`); pantalla `/admin/perfiles/desde-vacante` (archivado 2026-11-13)
   - [x] `raise-manual-images-cap` — el tope del total de imágenes de `manual:check` pasa de 4 MB a 8 MB; por imagen sigue en 150 KB (archivado 2026-11-13)
-  - [ ] `add-github-code-evidence` — siguiente: depende de integraciones y repositorios
-  - Pendientes para el deploy: programar `job-postings:purge` (cron de Railway) y dejar `INTEGRATIONS_SCHEDULER_ENABLED` apagado hasta que haya un proveedor real
+  - [x] `add-github-code-evidence` — primer proveedor real (`github`): verifica los repositorios destacados contra la API REST en serie, con ETag y un PAT de solo lectura (`GITHUB_SYNC_TOKEN` opcional o credencial del panel) que no sale de `api.github.com`; tabla `RepositoryEvidence` (migración aditiva), lo manual nunca se pisa, tarjeta con stars, lenguajes, topics y «Verificado en GitHub el…», cero red en la ruta pública y `GITHUB_TRANSPORT=fixture` (prohibido en producción) para tests y capturas; Integraciones pasa a B18 en el manual (archivado 2026-11-17)
+  - Pendientes para el deploy: programar `job-postings:purge` (cron de Railway); para la evidencia de GitHub, crear el token fine-grained de solo lectura, habilitar `INTEGRATIONS_ENABLED=github` con el keyring y encender `INTEGRATIONS_SCHEDULER_ENABLED` en una sola réplica (`docs/DEPLOY-RAILWAY.md`), y ejecutar TC-52 contra GitHub real
 
 ---
 
