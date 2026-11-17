@@ -180,7 +180,7 @@ El frontend se despliega como un contenedor: Node compila y **Caddy** sirve `dis
 | `API_ORIGIN` | `http://<nombre-del-servicio-api>.railway.internal:8080` |
 | `VITE_API_URL` | **vacío** (el cliente usa rutas relativas y las resuelve el proxy) |
 
-El `try_files` es el que evita que `/tech-lead-dotnet` devuelva 404. Los assets de Vite (`/assets/*`, con hash en el nombre) y las fuentes propias (`/fonts/*`) salen con `Cache-Control: public, max-age=31536000, immutable`; el HTML y todo lo demás, con `no-cache`.
+El `try_files` es el que evita que `/tech-lead-dotnet` devuelva 404. Los assets de Vite (`/assets/*`, con hash en el nombre) y las fuentes propias (`/fonts/*`) salen con `Cache-Control: public, max-age=31536000, immutable`; el HTML y todo lo demás, con `no-cache` **salvo que la API mande su propio `Cache-Control`**, que se respeta sola (la regla `header @noCache ?Cache-Control "no-cache"` solo pone el valor por defecto: sin el `?` las rutas con política propia, como `no-store` en el panel, saldrían con dos líneas). El CI cuenta las líneas de cinco respuestas en el paso «Frontend · Caddy con la imagen de producción».
 
 Cuatro detalles del arranque público (change `improve-mobile-performance`):
 
@@ -455,6 +455,27 @@ La tercera migración (`init`, `curated_profile_lifecycle`, `retire_accent_color
 - Sobre una base vacía (el primer deploy) el `UPDATE` afecta 0 filas y la columna nace sin existir. Después se corre el seed, que ya trae los acentos en `themeOverrides`.
 - **Respaldo previo recomendado** si la base ya tiene datos: `pg_dump -Fc` como en el § 7, o un backup de Railway, antes del deploy que incluya esta migración.
 - **Rollback:** restaurar ese respaldo y volver a desplegar la imagen anterior. El código nuevo sin la migración no arranca, y el viejo no funciona con la columna borrada.
+
+#### Migración `retire_featured_repository_stars` (destructiva)
+
+Hace `DROP COLUMN "stars"` sobre `FeaturedRepository` (change `polish-pre-deploy-cleanup`). Era una columna inerte: desde `add-featured-repositories` ninguna API ni vista la expone, y las stars verificadas viven en `RepositoryEvidence`, que no se toca.
+
+- Corre en el `preDeployCommand` con `prisma migrate deploy`, como las demás. Nunca con `migrate dev` ni `db push`.
+- Sobre una base vacía (el primer deploy) la columna se crea en `init` y se borra en esta migración sin filas: no se pierde nada.
+- **Comprobación previa** si la base ya tiene datos, antes del deploy que incluya esta migración:
+
+```sql
+SELECT count(*) FROM "FeaturedRepository" WHERE "stars" IS NOT NULL;
+```
+
+  Si da más de 0, hacé un `pg_dump -Fc` como en el § 7 (o un backup de Railway) y anotá los valores si te interesan: no hay otro lugar donde guardarlos. Son números cargados a mano antes de `add-featured-repositories` que ninguna vista muestra.
+- **Rollback por SQL** (sin pérdida de lo que hoy se usa; los valores viejos de `stars` solo vuelven con el respaldo):
+
+```sql
+ALTER TABLE "FeaturedRepository" ADD COLUMN "stars" INTEGER;
+```
+
+  y volver a desplegar la imagen anterior. El código anterior no lee ni escribe la columna, así que funciona con ella nula.
 
 #### Migración `localize_language_level` (de datos, no destructiva)
 
