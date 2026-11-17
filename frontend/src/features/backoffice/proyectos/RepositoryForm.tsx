@@ -10,7 +10,7 @@ import {
 } from '@/shared/components/ui/dialog';
 import { Label } from '@/shared/components/ui/label';
 import { Switch } from '@/shared/components/ui/switch';
-import type { CreateRepositoryBody } from '../shared/admin-types';
+import type { AdminRepository, CreateRepositoryBody } from '../shared/admin-types';
 import { UnsavedChangesPrompt } from '../shared/UnsavedChangesPrompt';
 import { useDialogDiscardGuard } from '../shared/use-dialog-discard-guard';
 import { ChipListField } from '../shared/fields/ChipListField';
@@ -28,6 +28,8 @@ import { TextField } from './TextField';
 interface RepositoryFormProps {
   title: string;
   initialValues?: RepositoryFormValues;
+  /** Lo verificado contra GitHub (solo lectura): descripción de referencia y lenguaje de respaldo. */
+  evidence?: AdminRepository['evidence'];
   saving: boolean;
   /** URL que el servidor rechazó por repetida (409): mientras no se edite, el error va en el campo. */
   conflictUrl?: string | null;
@@ -38,6 +40,7 @@ interface RepositoryFormProps {
 export function RepositoryForm({
   title,
   initialValues,
+  evidence,
   saving,
   conflictUrl,
   onSubmit,
@@ -72,6 +75,10 @@ export function RepositoryForm({
 
   const duplicate =
     conflictUrl && conflictUrl === values.url.trim() ? DUPLICATE_REPOSITORY_MESSAGE : undefined;
+  // La evidencia de un repositorio con la URL cambiada (`stale`) no describe lo que se edita.
+  const usableEvidence = evidence && !evidence.stale ? evidence : null;
+  const githubLanguage = usableEvidence?.primaryLanguage ?? null;
+  const githubDescription = usableEvidence?.githubDescription ?? null;
 
   return (
     <Dialog open onOpenChange={(next) => !next && guard.requestClose()}>
@@ -111,8 +118,8 @@ export function RepositoryForm({
             <TextField
               id="repository-language"
               label="Lenguaje"
-              placeholder="TypeScript"
-              description="Opcional."
+              placeholder={githubLanguage ? `De GitHub: ${githubLanguage}` : 'TypeScript'}
+              description="Opcional. Si lo dejás vacío se usa el lenguaje verificado en GitHub."
               value={values.language}
               error={errors.language}
               onValueChange={(value) => set('language', value)}
@@ -127,6 +134,11 @@ export function RepositoryForm({
             error={errors.description}
             onChange={(value) => set('description', { es: value.es, en: value.en ?? '' })}
           />
+          {githubDescription && (
+            <p className="-mt-2 text-xs text-text-muted">
+              <span className="font-medium">Descripción en GitHub:</span> {githubDescription}
+            </p>
+          )}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <ChipListField

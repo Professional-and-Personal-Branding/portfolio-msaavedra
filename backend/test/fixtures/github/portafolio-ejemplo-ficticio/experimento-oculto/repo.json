@@ -1,0 +1,31 @@
+{
+  "id": 1003,
+  "full_name": "portafolio-ejemplo-ficticio/experimento-oculto",
+  "private": false,
+  "fork": false,
+  "archived": false,
+  "stargazers_count": 3,
+  "watchers_count": 3,
+  "open_issues_count": 0,
+  "language": "Python",
+  "topics": [
+    "experimento"
+  ],
+  "pushed_at": "2026-09-30T08:00:00Z",
+  "updated_at": "2026-11-10T09:00:00Z",
+  "description": "Experimento sin publicar (repositorio ficticio de ejemplo).",
+  "html_url": "https://github.com/portafolio-ejemplo-ficticio/experimento-oculto",
+  "owner": {
+    "login": "portafolio-ejemplo-ficticio",
+    "type": "Organization"
+  },
+  "license": {
+    "key": "mit",
+    "name": "MIT License"
+  },
+  "permissions": {
+    "admin": false,
+    "push": false,
+    "pull": true
+  }
+}

@@ -15,6 +15,9 @@ function isNotFound(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025';
 }
 
+/** Todas las lecturas traen la evidencia verificada (solo se LEE: la escribe el conector `github`). */
+const WITH_EVIDENCE = { evidence: true } as const;
+
 @Injectable()
 export class PrismaFeaturedRepositoryRepository implements FeaturedRepositoryRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -23,23 +26,31 @@ export class PrismaFeaturedRepositoryRepository implements FeaturedRepositoryRep
     const records = await this.prisma.featuredRepository.findMany({
       where: { visible: true },
       orderBy: { order: 'asc' },
+      include: WITH_EVIDENCE,
     });
     return records.map(toFeaturedRepositoryEntity);
   }
 
   async findAll(): Promise<FeaturedRepository[]> {
-    const records = await this.prisma.featuredRepository.findMany({ orderBy: { order: 'asc' } });
+    const records = await this.prisma.featuredRepository.findMany({
+      orderBy: { order: 'asc' },
+      include: WITH_EVIDENCE,
+    });
     return records.map(toFeaturedRepositoryEntity);
   }
 
   async findById(id: string): Promise<FeaturedRepository | null> {
-    const record = await this.prisma.featuredRepository.findUnique({ where: { id } });
+    const record = await this.prisma.featuredRepository.findUnique({
+      where: { id },
+      include: WITH_EVIDENCE,
+    });
     return record ? toFeaturedRepositoryEntity(record) : null;
   }
 
   async create(props: NewFeaturedRepositoryProps): Promise<FeaturedRepository> {
     const record = await this.prisma.featuredRepository.create({
       data: toFeaturedRepositoryData(props),
+      include: WITH_EVIDENCE,
     });
     return toFeaturedRepositoryEntity(record);
   }
@@ -49,6 +60,7 @@ export class PrismaFeaturedRepositoryRepository implements FeaturedRepositoryRep
       const record = await this.prisma.featuredRepository.update({
         where: { id: repository.id },
         data: toFeaturedRepositoryData(repository.toProps()),
+        include: WITH_EVIDENCE,
       });
       return toFeaturedRepositoryEntity(record);
     } catch (error) {

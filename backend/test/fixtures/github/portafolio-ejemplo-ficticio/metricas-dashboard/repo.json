@@ -1,0 +1,33 @@
+{
+  "id": 1002,
+  "full_name": "portafolio-ejemplo-ficticio/metricas-dashboard",
+  "private": false,
+  "fork": false,
+  "archived": true,
+  "stargazers_count": 0,
+  "watchers_count": 0,
+  "open_issues_count": 0,
+  "language": "TypeScript",
+  "topics": [
+    "react",
+    "nestjs",
+    "dashboard"
+  ],
+  "pushed_at": "2025-08-19T18:05:00Z",
+  "updated_at": "2026-11-10T09:00:00Z",
+  "description": "Panel de metricas operativas (repositorio ficticio de ejemplo).",
+  "html_url": "https://github.com/portafolio-ejemplo-ficticio/metricas-dashboard",
+  "owner": {
+    "login": "portafolio-ejemplo-ficticio",
+    "type": "Organization"
+  },
+  "license": {
+    "key": "mit",
+    "name": "MIT License"
+  },
+  "permissions": {
+    "admin": false,
+    "push": false,
+    "pull": true
+  }
+}

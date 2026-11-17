@@ -378,6 +378,7 @@ describe('buildPrintSheet — repositorios (D9)', () => {
     technologies: ['Java'],
     tags: [],
     order: i,
+    evidence: null,
     ...overrides,
   });
   const repos = (n: number) => Array.from({ length: n }, (_, i) => repo(i));

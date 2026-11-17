@@ -1,0 +1,31 @@
+{
+  "id": 1004,
+  "full_name": "portafolio-ejemplo-ficticio/moved-v2",
+  "private": false,
+  "fork": false,
+  "archived": false,
+  "stargazers_count": 7,
+  "watchers_count": 0,
+  "open_issues_count": 0,
+  "language": "Go",
+  "topics": [
+    "migracion"
+  ],
+  "pushed_at": "2026-10-01T10:00:00Z",
+  "updated_at": "2026-11-10T09:00:00Z",
+  "description": "Repositorio renombrado: GitHub responde con el full_name nuevo (ficticio).",
+  "html_url": "https://github.com/portafolio-ejemplo-ficticio/moved-v2",
+  "owner": {
+    "login": "portafolio-ejemplo-ficticio",
+    "type": "Organization"
+  },
+  "license": {
+    "key": "mit",
+    "name": "MIT License"
+  },
+  "permissions": {
+    "admin": false,
+    "push": false,
+    "pull": true
+  }
+}

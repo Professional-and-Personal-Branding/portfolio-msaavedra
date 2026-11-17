@@ -1,0 +1,29 @@
+{
+  "id": 1005,
+  "full_name": "portafolio-ejemplo-ficticio/private-repo",
+  "private": true,
+  "fork": false,
+  "archived": false,
+  "stargazers_count": 1,
+  "watchers_count": 0,
+  "open_issues_count": 0,
+  "language": "Rust",
+  "topics": [],
+  "pushed_at": null,
+  "updated_at": "2026-11-10T09:00:00Z",
+  "description": "Repositorio privado ficticio: jamas se publica.",
+  "html_url": "https://github.com/portafolio-ejemplo-ficticio/private-repo",
+  "owner": {
+    "login": "portafolio-ejemplo-ficticio",
+    "type": "Organization"
+  },
+  "license": {
+    "key": "mit",
+    "name": "MIT License"
+  },
+  "permissions": {
+    "admin": false,
+    "push": false,
+    "pull": true
+  }
+}

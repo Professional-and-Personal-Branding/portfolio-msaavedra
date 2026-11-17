@@ -239,7 +239,7 @@ Las dos entradas iniciales:
 
 Desde el change `add-featured-repositories` los repos destacados **se muestran**: la sección **Repositorios destacados** (`repositories`, el décimo id del catálogo) va después de Proyectos, y se cargan desde el panel (**Proyectos, repositorios y enlaces → Repositorios destacados**) o desde `cv-data.json`.
 
-**Concepto clave:** esto NO es un dump automático del API de GitHub. Es una lista curada de los repos que querés mostrar, con su descripción bilingüe. Nada llama a GitHub: ni las *stars* ni los lenguajes se sincronizan (eso es un change posterior). `stars` se acepta en el archivo por compatibilidad y se ignora.
+**Concepto clave:** esto NO es un dump automático del API de GitHub. Es una lista curada de los repos que querés mostrar, con su descripción bilingüe. Los datos **que escribís vos** (abajo) nunca los toca la sincronización; los **verificados** (stars, lenguajes, topics, último push, archivado) los trae el proveedor `github` de Integraciones, si lo encendés (change `add-github-code-evidence`; ver *Qué es manual y qué viene de GitHub*). `stars` se acepta en el archivo por compatibilidad y se ignora: la columna quedó inerte.
 
 Reglas que conviene conocer:
 - **Solo GitHub**, con la forma exacta `https://github.com/<usuario>/<repositorio>` (sin `www.`, sin barra final, sin `.git`, sin query). Una URL de otro host o fuera de forma se rechaza, en el panel con «La URL tiene que ser https://github.com/<usuario>/<repositorio>» y en el seed con el campo `profile.featuredRepositories[i].url`.
@@ -254,6 +254,17 @@ Para cargarlos desde el archivo:
 3. `npm run cv:lint` y `npm run seed` (en una base vacía o con `--overwrite`, ver § 8).
 
 `docs/cv-data.json` viene con `featuredRepositories: []`: cargá los tuyos desde el panel o ahí. El seed carga **todos** los repos del archivo, también los ocultos (`visible: false`), con `order` según su posición.
+
+**Qué es manual y qué viene de GitHub** (change `add-github-code-evidence`):
+
+| Dato | Fuente |
+|---|---|
+| Nombre, URL, descripción en ES/EN, tecnologías, tags, orden y visibilidad | **Solo a mano**: la sincronización nunca los escribe |
+| Lenguaje mostrado | El que cargues a mano (**manda**, es un override explícito); si lo dejás vacío, el lenguaje principal de GitHub |
+| Stars, lenguajes con porcentaje, topics, último push, archivado y «Verificado en GitHub el…» | **Solo GitHub** (la tarjeta muestra las stars desde 1, hasta 3 lenguajes y hasta 5 topics que no repitan tus tecnologías) |
+| Descripción de GitHub | Solo el panel, como referencia al curar la tuya |
+
+La evidencia solo se publica si el repositorio responde público y su URL no cambió desde la última verificación; si no (privado, no encontrado, sin acceso, URL nueva o sin sincronizar) la tarjeta queda como antes. El panel muestra el estado de cada repositorio («Verificado el…», «Sin verificar», «No encontrado en GitHub», «GitHub no da acceso», «Privado: no se publica») y el PDF no cambia. El seed **no** carga evidencia: se obtiene sincronizando.
 
 **¿Por qué curaduría manual?** Para evitar que aparezcan repos académicos antiguos que diluyen el mensaje profesional. Mostrar 3-6 repos curados con descripción contextual rinde más que 67 repos sin filtro.
 

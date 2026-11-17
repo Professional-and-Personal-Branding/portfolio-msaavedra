@@ -7,6 +7,9 @@ import { PinoLogger } from 'nestjs-pino';
 import type { Logger } from 'pino';
 import { APP_CONFIG, AppConfig } from '../../config/configuration';
 import { CLOCK, systemClock } from '../../shared/domain/clock';
+import { CODE_EVIDENCE_STORE } from './application/github/code-evidence-store.port';
+import { GITHUB_API } from './application/github/github-api.port';
+import { SyncGithubEvidenceService } from './application/github/sync-github-evidence.service';
 import { CONNECTOR_REGISTRY } from './application/ports/connector.port';
 import { CREDENTIAL_RESOLVER } from './application/ports/credential-resolver.port';
 import {
@@ -41,6 +44,7 @@ import {
   PinoRunLoggerFactory,
 } from './infrastructure/logging/pino-run-logger.factory';
 import { CredentialResolverService } from './infrastructure/persistence/credential-resolver.service';
+import { PrismaCodeEvidenceStore } from './infrastructure/persistence/prisma-code-evidence.store';
 import { PrismaCredentialRepository } from './infrastructure/persistence/prisma-credential.repository';
 import { PrismaIntegrationJobRepository } from './infrastructure/persistence/prisma-integration-job.repository';
 import { PrismaIntegrationSettingRepository } from './infrastructure/persistence/prisma-integration-setting.repository';
@@ -48,6 +52,9 @@ import { PrismaRunnerLeaseRepository } from './infrastructure/persistence/prisma
 import { PrismaSnapshotRepository } from './infrastructure/persistence/prisma-snapshot.repository';
 import { PrismaSyncRunRepository } from './infrastructure/persistence/prisma-sync-run.repository';
 import { FakeConnector } from './infrastructure/providers/fake/fake.connector';
+import { FetchGithubTransport } from './infrastructure/providers/github/fetch-github-transport';
+import { FixtureGithubTransport } from './infrastructure/providers/github/fixture-github-transport';
+import { GithubConnector } from './infrastructure/providers/github/github.connector';
 import { EnabledConnectorRegistry } from './infrastructure/providers/registry';
 import {
   INTEGRATIONS_CONFIG,
@@ -109,11 +116,27 @@ import { IntegrationsShutdown } from './infrastructure/scheduler/integrations-sh
       useFactory: (base: Logger) => new PinoRunLoggerFactory(base),
     },
     FakeConnector,
+    // Proveedor `github` (change `add-github-code-evidence`): el transporte de fixtures solo con
+    // `GITHUB_TRANSPORT=fixture`, que el arranque prohíbe en producción.
+    {
+      provide: GITHUB_API,
+      inject: [INTEGRATIONS_CONFIG],
+      useFactory: (config: AppConfig['integrations']) =>
+        config.githubTransport === 'fixture'
+          ? new FixtureGithubTransport()
+          : new FetchGithubTransport(),
+    },
+    { provide: CODE_EVIDENCE_STORE, useClass: PrismaCodeEvidenceStore },
+    SyncGithubEvidenceService,
+    GithubConnector,
     {
       provide: CONNECTOR_REGISTRY,
-      inject: [INTEGRATIONS_CONFIG, FakeConnector],
-      useFactory: (config: AppConfig['integrations'], fake: FakeConnector) =>
-        new EnabledConnectorRegistry(config.enabledProviders, [fake]),
+      inject: [INTEGRATIONS_CONFIG, FakeConnector, GithubConnector],
+      useFactory: (
+        config: AppConfig['integrations'],
+        fake: FakeConnector,
+        github: GithubConnector,
+      ) => new EnabledConnectorRegistry(config.enabledProviders, [fake, github]),
     },
     IntegrationStatusReader,
     ListIntegrationsUseCase,

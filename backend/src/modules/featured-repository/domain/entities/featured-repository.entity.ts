@@ -1,4 +1,5 @@
 import { LocalizedText } from '../../../../shared/domain/i18n';
+import { RepositoryEvidence } from '../value-objects/repository-evidence';
 
 export interface FeaturedRepositoryProps {
   readonly id: string;
@@ -12,14 +13,19 @@ export interface FeaturedRepositoryProps {
   readonly tags: readonly string[];
   readonly order: number;
   readonly visible: boolean;
+  /**
+   * Lo verificado contra GitHub (change `add-github-code-evidence`). Solo se LEE: la escribe la
+   * sincronización y nunca forma parte de lo que guarda el panel.
+   */
+  readonly evidence?: RepositoryEvidence | null;
 }
 
-/** Datos para crear un repositorio: el id lo genera la persistencia. */
-export type NewFeaturedRepositoryProps = Omit<FeaturedRepositoryProps, 'id'>;
+/** Datos para crear un repositorio: el id lo genera la persistencia y la evidencia no se escribe. */
+export type NewFeaturedRepositoryProps = Omit<FeaturedRepositoryProps, 'id' | 'evidence'>;
 
 /**
  * Repositorio destacado de GitHub, cargado a mano. Participa del filtrado por tags
- * (implementa `Taggable`). `stars` no forma parte de la entidad: lo llenará la sincronización.
+ * (implementa `Taggable`). Las stars y demás datos verificados viven en `evidence`, no en la fila.
  */
 export class FeaturedRepository {
   private constructor(private readonly props: FeaturedRepositoryProps) {}
@@ -71,5 +77,8 @@ export class FeaturedRepository {
   }
   get visible(): boolean {
     return this.props.visible;
+  }
+  get evidence(): RepositoryEvidence | null {
+    return this.props.evidence ?? null;
   }
 }

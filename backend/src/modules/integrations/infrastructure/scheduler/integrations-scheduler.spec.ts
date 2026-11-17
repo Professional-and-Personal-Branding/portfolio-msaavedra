@@ -17,6 +17,7 @@ const CONFIG: IntegrationsConfig = {
   runMaxMs: 300_000,
   keys: undefined,
   activeKeyId: undefined,
+  githubTransport: 'http',
 };
 
 function setup(overrides: Partial<IntegrationsConfig> = {}, runDuration = 0) {

@@ -31,6 +31,8 @@ export interface IntegrationsConfig {
   /** Keyring crudo (`k1:<base64>,…`): lo parsea `Keyring`; nunca se loguea. */
   keys: string | undefined;
   activeKeyId: string | undefined;
+  /** Transporte del proveedor `github`: `http` (API real) o `fixture` (solo desarrollo y pruebas). */
+  githubTransport: 'http' | 'fixture';
 }
 
 export interface AppConfig {
@@ -84,6 +86,7 @@ export function loadConfiguration(): { [APP_CONFIG]: AppConfig } {
         runMaxMs: env.INTEGRATIONS_RUN_MAX_MS,
         keys: env.INTEGRATIONS_KEYS,
         activeKeyId: env.INTEGRATIONS_ACTIVE_KEY,
+        githubTransport: env.GITHUB_TRANSPORT,
       },
     },
   };

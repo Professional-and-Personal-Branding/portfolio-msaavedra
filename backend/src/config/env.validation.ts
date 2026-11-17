@@ -133,6 +133,19 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsString()
   INTEGRATIONS_ACTIVE_KEY?: string;
+
+  /**
+   * Token del proveedor `github` (change `add-github-code-evidence`, D1). OPCIONAL: si está,
+   * manda sobre la credencial guardada desde el panel. No se valida el prefijo (fine-grained o
+   * clásico); nunca se imprime. La URL base de GitHub NO es configurable.
+   */
+  @IsOptional()
+  @IsString()
+  GITHUB_SYNC_TOKEN?: string;
+
+  /** `http` (la API real) o `fixture` (respuestas de `backend/test/fixtures/github`; prohibido en producción). */
+  @IsIn(['http', 'fixture'])
+  GITHUB_TRANSPORT: 'http' | 'fixture' = 'http';
 }
 
 /** Valor de ejemplo del repositorio: jamás debe llegar a producción. */
@@ -159,6 +172,11 @@ function productionIssues(env: EnvironmentVariables): string[] {
   }
   if (!env.FRONTEND_URL.startsWith('https://')) {
     issues.push('FRONTEND_URL: en producción debe usar https');
+  }
+  // Mismo criterio que el proveedor `fake` (add-github-code-evidence, D15): el transporte de
+  // fixtures responde datos inventados y nunca puede estar en un servidor real.
+  if (env.GITHUB_TRANSPORT === 'fixture') {
+    issues.push('GITHUB_TRANSPORT: el transporte "fixture" no puede usarse en producción');
   }
   return issues;
 }

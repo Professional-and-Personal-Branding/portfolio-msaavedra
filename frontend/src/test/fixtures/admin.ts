@@ -347,6 +347,27 @@ export const ADMIN_PROJECTS: AdminProjectFixture[] = [
 ];
 
 type AdminRepositoryFixture = components['schemas']['AdminFeaturedRepositoryResponse'];
+type AdminEvidenceFixture = components['schemas']['AdminRepositoryEvidenceResponse'];
+
+/** Evidencia cruda verificada contra GitHub (change `add-github-code-evidence`). */
+export function makeAdminEvidence(
+  overrides: Partial<AdminEvidenceFixture> = {},
+): AdminEvidenceFixture {
+  return {
+    status: 'OK',
+    repoKey: 'ejemplo/reservas-api',
+    stars: 12,
+    primaryLanguage: 'Java',
+    topics: ['spring-boot'],
+    archived: false,
+    movedTo: null,
+    githubDescription: 'API de reservas (descripción en GitHub).',
+    verifiedAt: '2026-11-16T10:00:00.000Z',
+    changedAt: '2026-11-15T10:00:00.000Z',
+    stale: false,
+    ...overrides,
+  };
+}
 
 export function makeAdminRepository(
   overrides: Partial<AdminRepositoryFixture> = {},
@@ -361,6 +382,7 @@ export function makeAdminRepository(
     tags: ['java'],
     order: 0,
     visible: true,
+    evidence: null,
     ...overrides,
   };
 }

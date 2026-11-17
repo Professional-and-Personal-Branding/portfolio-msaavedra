@@ -1,5 +1,17 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`add-github-code-evidence`)
+
+Los repositorios destacados dicen cuántas stars tienen, en qué lenguajes están escritos y cuándo se verificaron, sin que la ruta pública dependa de GitHub.
+
+- **Proveedor `github`.** Entrada del catálogo de integraciones, permitido en producción, con `GITHUB_SYNC_TOKEN` opcional (si está, manda sobre la credencial del panel) y `GITHUB_TRANSPORT` (`http` o `fixture`; `fixture` prohibido en producción). La URL base `https://api.github.com` es fija.
+- **Conector en serie.** `GET /repos/{owner}/{repo}` y `/languages` por repositorio, siempre con `Authorization` y `If-None-Match` (un `304` autorizado no gasta cuota), hasta 50 repositorios por trabajo, timeout de 15 s por petición, cuerpo de hasta 512 KiB y redirecciones solo dentro de `api.github.com`. Reserva de cuota (con 50 peticiones o menos el trabajo se pausa hasta el reinicio), 401 como fallo permanente, límite secundario con espera de un minuto, y 404, 403 y 451 como estado de **un** repositorio sin frenar a los demás. Snapshots reducidos a una lista blanca de campos.
+- **Tabla `RepositoryEvidence`.** Migración aditiva `add_github_code_evidence` (un tipo y una tabla, sin tocar las existentes). La escribe solo el conector; `featured-repository` la lee. Lo curado a mano no se sobrescribe y el lenguaje manual manda sobre el de GitHub.
+- **Vista pública.** La tarjeta suma stars (desde 1), hasta 3 lenguajes con porcentaje, hasta 5 topics sin repetir tecnologías, «Archivado», el mes del último cambio y «Verificado en GitHub el…» (ES/EN); sin evidencia válida queda igual que antes. El PDF no cambia y el JSON Resume solo usa el lenguaje efectivo.
+- **Panel.** Cada repositorio de `/admin/proyectos` muestra su estado de verificación, el diálogo la descripción de GitHub de solo lectura y el lenguaje de GitHub como placeholder, y el bloque avisa con el enlace **Ver integraciones** si la última sincronización falló. Sin ítem nuevo en la barra. Con el token vencido el sitio sigue mostrando los últimos datos con su fecha.
+- **Pruebas sin red.** Transporte de fixtures (`backend/test/fixtures/github`, cuenta ficticia), un servidor HTTP en `127.0.0.1` para el transporte real y e2e de las dos corridas, el 304, el token vencido y la ausencia de peticiones desde la ruta pública. Regla de arquitectura: solo el almacén del conector escribe la evidencia.
+- **Docs.** `docs/MANUAL.md` e `index.html` (TC-52, B7, B18, glosario; las capturas `tc52-*` y `bo-integraciones-github*`), `docs/DEPLOY.md` y `docs/DEPLOY-RAILWAY.md` (cómo crear el token fine-grained, dónde cargarlo y qué hacer al vencer), `docs/ARCHITECTURE.md`, `docs/DATA-POPULATION.md` § 10 y `backend/.env.example`. Las dos pantallas «B17» del manual se separan: **Integraciones pasa a B18**. Contrato: `openapi.json` y `api.d.ts` regenerados.
+
 ## Update — Noviembre 2026 (`raise-manual-images-cap`)
 
 - **Tope del total de imágenes del manual en 8 MB.** `npm run manual:check` admitía hasta 4 MB y las 55 capturas ya sumaban 3,99 MB: para fusionar `add-job-posting-intake` hubo que recomprimir tres. El tope por imagen (150 KB) y el de `index.html` (1 MB) no cambian, y el mensaje de error toma el valor de la constante.
@@ -32,7 +44,7 @@ Base reutilizable para hablar con terceros sin demorar ninguna petición, sin ej
 - **CLI.** `npm run integrations:sync [-- --provider <id>] [-- --plan]` corre el ejecutor una vez, sin HTTP ni servicio de Railway; salidas 0, 1 y 2.
 - **No genera cuellos de botella (medido).** Con un trabajo lento corriendo en el mismo proceso (~6 s en 60 pasos y 5 ms de CPU por paso), `GET /health/live` mantiene su p95 (línea de base 4–5 ms; con trabajo 4–8 ms contra un umbral de +25 ms), su máximo queda en 5–11 ms (umbral 150 ms) y el p99 del retardo del event loop en ~22–24 ms (umbral 50 ms); «Sincronizar ahora» responde 202 en 16–22 ms sin llamar al conector; `app.close()` con un trabajo en curso tarda 18 ms (3 s si el conector ignora la señal; tope 5 s).
 - **CI.** El job `backend-e2e` suma `npm run build` antes de los e2e: `integrations-env.e2e-spec.ts` arranca `node dist/main` como proceso hijo.
-- **Docs.** `docs/DEPLOY.md` y `docs/DEPLOY-RAILWAY.md` (variables, keyring, rotación, una sola réplica, `drainingSeconds` > 8 s), `docs/ARCHITECTURE.md` (módulo, rutas y presupuesto de los trabajos) y `docs/MANUAL.md` con `index.html` (B17, TC-49, glosario, `bo-integraciones.jpg`).
+- **Docs.** `docs/DEPLOY.md` y `docs/DEPLOY-RAILWAY.md` (variables, keyring, rotación, una sola réplica, `drainingSeconds` > 8 s), `docs/ARCHITECTURE.md` (módulo, rutas y presupuesto de los trabajos) y `docs/MANUAL.md` con `index.html` (B18, TC-49, glosario, `bo-integraciones.jpg`).
 
 ## Update — Noviembre 2026 (`add-featured-repositories`)
 

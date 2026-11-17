@@ -12,6 +12,7 @@ const repo = (id: string): Repo => ({
   technologies: [],
   tags: [],
   order: 0,
+  evidence: null,
 });
 
 function output(repositories: Repo[]): CuratedProfileOutput {

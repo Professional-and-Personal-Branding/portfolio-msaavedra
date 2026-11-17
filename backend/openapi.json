@@ -7077,6 +7077,68 @@
           "order"
         ]
       },
+      "RepositoryEvidenceLanguageResponse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Java"
+          },
+          "percent": {
+            "type": "number",
+            "example": 82,
+            "description": "Porcentaje entero por bytes (sin 0 %)."
+          }
+        },
+        "required": [
+          "name",
+          "percent"
+        ]
+      },
+      "RepositoryEvidenceResponse": {
+        "type": "object",
+        "properties": {
+          "stars": {
+            "type": "number",
+            "example": 12
+          },
+          "languages": {
+            "description": "Hasta 3, por bytes.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RepositoryEvidenceLanguageResponse"
+            }
+          },
+          "topics": {
+            "description": "Hasta 5 topics de GitHub, sin repetir las tecnologías cargadas a mano.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pushedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Última verificación contra GitHub."
+          }
+        },
+        "required": [
+          "stars",
+          "languages",
+          "topics",
+          "pushedAt",
+          "archived",
+          "verifiedAt"
+        ]
+      },
       "FeaturedRepositoryResponse": {
         "type": "object",
         "properties": {
@@ -7094,7 +7156,8 @@
           "language": {
             "type": "string",
             "nullable": true,
-            "example": "Java"
+            "example": "Java",
+            "description": "Lenguaje efectivo: el manual o, si falta, el principal verificado en GitHub."
           },
           "description": {
             "type": "string",
@@ -7115,6 +7178,16 @@
           },
           "order": {
             "type": "number"
+          },
+          "evidence": {
+            "nullable": true,
+            "description": "Nulo si no hay evidencia válida (no verificado, privado, no encontrado o URL nueva).",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RepositoryEvidenceResponse"
+              }
+            ]
           }
         },
         "required": [
@@ -7125,7 +7198,8 @@
           "description",
           "technologies",
           "tags",
-          "order"
+          "order",
+          "evidence"
         ]
       },
       "EducationResponse": {
@@ -9099,6 +9173,76 @@
           }
         }
       },
+      "AdminRepositoryEvidenceResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "OK",
+              "NOT_FOUND",
+              "INACCESSIBLE",
+              "PRIVATE"
+            ]
+          },
+          "repoKey": {
+            "type": "string",
+            "example": "octo-org/reservas-api"
+          },
+          "stars": {
+            "type": "number",
+            "nullable": true
+          },
+          "primaryLanguage": {
+            "type": "string",
+            "nullable": true
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "movedTo": {
+            "type": "string",
+            "nullable": true,
+            "description": "full_name si GitHub lo movió."
+          },
+          "githubDescription": {
+            "type": "string",
+            "nullable": true,
+            "description": "Solo referencia para curar."
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "changedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "La URL cambió desde la última sincronización."
+          }
+        },
+        "required": [
+          "status",
+          "repoKey",
+          "stars",
+          "primaryLanguage",
+          "topics",
+          "archived",
+          "movedTo",
+          "githubDescription",
+          "verifiedAt",
+          "changedAt",
+          "stale"
+        ]
+      },
       "AdminFeaturedRepositoryResponse": {
         "type": "object",
         "properties": {
@@ -9138,6 +9282,15 @@
           },
           "visible": {
             "type": "boolean"
+          },
+          "evidence": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminRepositoryEvidenceResponse"
+              }
+            ]
           }
         },
         "required": [
@@ -9149,7 +9302,8 @@
           "technologies",
           "tags",
           "order",
-          "visible"
+          "visible",
+          "evidence"
         ]
       },
       "CreateFeaturedRepositoryDto": {

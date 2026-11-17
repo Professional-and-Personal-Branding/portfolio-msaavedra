@@ -1,0 +1,28 @@
+Cierre (rama feat/github-code-evidence, 2026-11-16). Antes = punto de partida (1.1); despues = estado final.
+
+backend/
+  lint                      ok                      -> ok
+  typecheck                 ok                      -> ok
+  build                     ok                      -> ok
+  npm test (Jest)           160 suites, 2041 tests  -> 169 suites, 2187 tests, todo verde
+  openapi:export            -                       -> sin deriva (git diff --exit-code -- openapi.json)
+  test:e2e (base descartable portfolio_github_e2e, migrada y sembrada, FRONTEND_URL=http://localhost:5173)
+                            30 suites, 441 tests    -> 31 suites, 463 tests, todo verde
+  (una primera corrida completa fallo SOLO integrations-latency, un test de tiempos; aislado paso y la segunda corrida completa dio 31/31)
+
+frontend/
+  lint                      ok                      -> ok
+  tsc -b / build            ok                      -> ok
+  npm test (Vitest)         82 archivos, 1272 tests -> 84 archivos, 1295 tests, todo verde
+  api:types                 -                       -> sin deriva (git diff --exit-code -- src/shared/types/api.d.ts)
+  perf:budget               150.9 KB gzip           -> 151.2 KB gzip (tope 155 KB)
+  manual:check              51 casos, 55 imagenes   -> ok: 52 casos, 60 imagenes (4.33 MB), index.html 360 KB, 226 ids
+
+raiz
+  openspec validate --all --strict   -> 46 passed, 0 failed (incluye change/add-github-code-evidence); sin "Archive would refuse"
+
+app real (sobre portfolio_github_check con el ejemplo, imagen de frontend/Dockerfile en 8155, API en 3355 con GITHUB_TRANSPORT=fixture)
+  a11y:check con panel      72 cargas, 0 violaciones, teclado sin problemas  (8.1-a11y-check.txt)
+  print:check               20 casos, una pagina en A4 y Letter, contraste minimo 9.74:1  (8.2-print-check.txt)
+  manual:capture --only     5 capturas nuevas (tc52-tarjeta, tc52-panel, tc52-token-vencido, bo-integraciones-github, bo-integraciones-github-fallida)
+  TC-52                     parcial: 8.1-tc52.md

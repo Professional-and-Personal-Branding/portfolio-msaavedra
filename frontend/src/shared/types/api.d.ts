@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 72797ade0e82272ad893c877fb56117c9ac77507dc28b9f0bb35f9c5ad71029a
+// openapi-sha256: 19240c34765295d11c5c8775740da5b6146644091c10649e8f7916b6ce31b2fe
 export interface paths {
     "/api/admin/analytics/views": {
         parameters: {
@@ -1303,6 +1303,7 @@ export interface components {
         };
         AdminFeaturedRepositoryResponse: {
             description: components["schemas"]["LocalizedTextDto"];
+            evidence: components["schemas"]["AdminRepositoryEvidenceResponse"] | null;
             id: string;
             /** @example Java */
             language: string | null;
@@ -1348,6 +1349,26 @@ export interface components {
             technologies: string[];
             url: string | null;
             visible: boolean;
+        };
+        AdminRepositoryEvidenceResponse: {
+            archived: boolean;
+            /** Format: date-time */
+            changedAt: string;
+            /** @description Solo referencia para curar. */
+            githubDescription: string | null;
+            /** @description full_name si GitHub lo movió. */
+            movedTo: string | null;
+            primaryLanguage: string | null;
+            /** @example octo-org/reservas-api */
+            repoKey: string;
+            /** @description La URL cambió desde la última sincronización. */
+            stale: boolean;
+            stars: number | null;
+            /** @enum {string} */
+            status: "OK" | "NOT_FOUND" | "INACCESSIBLE" | "PRIVATE";
+            topics: string[];
+            /** Format: date-time */
+            verifiedAt: string;
         };
         AdminResponse: {
             /** @example admin@example.com */
@@ -2139,8 +2160,13 @@ export interface components {
         FeaturedRepositoryResponse: {
             /** @description Resuelta al locale. */
             description: string;
+            /** @description Nulo si no hay evidencia válida (no verificado, privado, no encontrado o URL nueva). */
+            evidence: components["schemas"]["RepositoryEvidenceResponse"] | null;
             id: string;
-            /** @example Java */
+            /**
+             * @description Lenguaje efectivo: el manual o, si falta, el principal verificado en GitHub.
+             * @example Java
+             */
             language: string | null;
             /** @example reservas-api */
             name: string;
@@ -2534,6 +2560,31 @@ export interface components {
             timezone: string;
             /** @default 0 */
             yearsOfExperience: number;
+        };
+        RepositoryEvidenceLanguageResponse: {
+            /** @example Java */
+            name: string;
+            /**
+             * @description Porcentaje entero por bytes (sin 0 %).
+             * @example 82
+             */
+            percent: number;
+        };
+        RepositoryEvidenceResponse: {
+            archived: boolean;
+            /** @description Hasta 3, por bytes. */
+            languages: components["schemas"]["RepositoryEvidenceLanguageResponse"][];
+            /** Format: date-time */
+            pushedAt: string | null;
+            /** @example 12 */
+            stars: number;
+            /** @description Hasta 5 topics de GitHub, sin repetir las tecnologías cargadas a mano. */
+            topics: string[];
+            /**
+             * Format: date-time
+             * @description Última verificación contra GitHub.
+             */
+            verifiedAt: string;
         };
         ResolvedThemeResponse: {
             /** @example true */

@@ -1,0 +1,9 @@
+Punto de partida (rama feat/github-code-evidence sobre fbff0e9, 2026-11-16)
+- PROVIDER_CATALOG: solo `fake`. FeaturedRepositoryOutput sin `evidence`. Ultimo caso del manual: TC-51.
+- backend: lint ok, typecheck ok, build ok
+- backend npm test: 160 suites, 2041 tests, todo verde
+- backend test:e2e (base descartable portfolio_github_e2e migrada y sembrada, FRONTEND_URL=http://localhost:5173): 30 suites, 441 tests, todo verde
+  (con FRONTEND_URL distinto de 5173, 3 suites que comparan URLs del sitemap/JSON-LD fallan: es el entorno, no el codigo)
+- frontend: lint ok; npm test 82 archivos, 1272 tests (2 fallaron por timeout cuando corrian a la vez que el e2e del backend y pasaron solas); build ok
+- frontend perf:budget: arranque 150.9 KB gzip (tope 155)
+- frontend manual:check: ok, 51 casos, 55 imagenes (3.99 MB), index.html 346 KB
