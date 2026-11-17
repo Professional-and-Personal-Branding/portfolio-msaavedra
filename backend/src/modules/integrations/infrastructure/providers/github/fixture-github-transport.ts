@@ -7,7 +7,10 @@ import {
   GithubRequest,
   GithubResponse,
 } from '../../../application/github/github-api.port';
-import { ProviderFailure, transient } from '../../../../../shared/domain/provider-failure/provider-failure';
+import {
+  ProviderFailure,
+  transient,
+} from '../../../../../shared/domain/provider-failure/provider-failure';
 
 /** Secreto de prueba que el transporte rechaza con 401 (simula un token vencido). */
 export const FIXTURE_INVALID_TOKEN = 'fixture-invalid-token';

@@ -4,7 +4,11 @@ import {
   GithubRequest,
   GithubResponse,
 } from '../../../application/github/github-api.port';
-import { permanent, ProviderFailure, transient } from '../../../../../shared/domain/provider-failure/provider-failure';
+import {
+  permanent,
+  ProviderFailure,
+  transient,
+} from '../../../../../shared/domain/provider-failure/provider-failure';
 
 /** URL base FIJA (D3): no hay variable de entorno, así el token no puede redirigirse a otro host. */
 export const GITHUB_API_BASE_URL = 'https://api.github.com';
