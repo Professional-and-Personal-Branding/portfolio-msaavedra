@@ -279,6 +279,31 @@ jobs:
           echo "--- /tech-lead-dotnet"
           curl -sSI http://localhost:8080/tech-lead-dotnet | grep -i 'content-security-policy'
           curl -sS http://localhost:8080/tech-lead-dotnet | grep -o '<title>[^<]*</title>' | head -1
+          # Una sola línea Cache-Control por respuesta y con el valor esperado (D6 de
+          # `polish-pre-deploy-cleanup`): sin el `?` de la regla @noCache, las rutas de la API con
+          # política propia salen con dos líneas (la de Caddy y la suya).
+          echo "--- Cache-Control"
+          ASSET=$(curl -sS http://localhost:8080/ | grep -o 'src="/assets/[^"]*\.js"' | head -1 | sed 's/^src="//; s/"$//')
+          test -n "$ASSET" || { echo "No se encontró el JS de /assets en el HTML"; exit 1; }
+          FALLAS=0
+          check_cache() {
+            esperado="$2"
+            cabeceras=$(curl -sS -D - -o /dev/null "http://localhost:8080$1" | tr -d '\r' | grep -i '^cache-control:' || true)
+            cuenta=$(printf '%s' "$cabeceras" | grep -c . || true)
+            valor=$(printf '%s' "$cabeceras" | sed 's/^[^:]*: *//')
+            if [ "$cuenta" = 1 ] && [ "$valor" = "$esperado" ]; then
+              echo "ok   $1 -> $valor"
+            else
+              echo "FALLA $1 -> $cuenta línea(s) [$valor], esperado 1 línea [$esperado]"
+              FALLAS=1
+            fi
+          }
+          check_cache / 'no-cache'
+          check_cache "$ASSET" 'public, max-age=31536000, immutable'
+          check_cache /profile-prefetch.js 'no-cache'
+          check_cache /api/curated-profiles/all 'no-cache'
+          check_cache /api/curated-profiles/all/resume.json 'no-cache'
+          exit "$FALLAS"
       - uses: browser-actions/setup-chrome@v2
         id: chrome
         with:

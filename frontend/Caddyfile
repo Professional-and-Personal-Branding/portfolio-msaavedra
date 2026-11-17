@@ -109,8 +109,14 @@
 	# caché con otra lógica de clave que la app nueva provocaría una visita doble (D5).
 	header /fonts/* Cache-Control "public, max-age=31536000, immutable"
 
+	# Todo lo demás (el HTML, `/profile-prefetch.js` y las rutas de la API sin política propia)
+	# sale con `no-cache`. El prefijo `?` lo pone como valor por defecto, una vez que el handler
+	# escribió sus cabeceras: si la API ya mandó su `Cache-Control` (`no-store` del panel,
+	# `private, no-store` del resume.json protegido), se respeta sola y no se le suma una segunda
+	# línea (change `polish-pre-deploy-cleanup`, D5). Por eso `/api/*` no se excluye del matcher:
+	# las rutas de la API sin política seguirían saliendo sin `Cache-Control`.
 	@noCache not path /assets/* /fonts/*
-	header @noCache Cache-Control "no-cache"
+	header @noCache ?Cache-Control "no-cache"
 
 	header {
 		-Server
