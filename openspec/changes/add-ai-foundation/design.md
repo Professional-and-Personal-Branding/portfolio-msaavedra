@@ -379,6 +379,19 @@ Supuestos de la propuesta (§ 7) por mes, con el modelo que este diseño recomie
 3. El owner crea la clave en la Console (workspace dedicado, P1), fija el spend limit, carga `ANTHROPIC_API_KEY`, `AI_ENABLED=true` y `AI_MONTHLY_BUDGET_USD=10` en Railway y pulsa **Probar conexión**.
 4. **Vuelta atrás:** `AI_ENABLED=false` y redeploy. Las tablas quedan inertes; borrarlas es una migración aparte que no hace falta.
 
+## Notas de implementación
+
+Ajustes menores respecto del texto original, sin cambiar ninguna decisión (se detectaron al implementar contra el SDK 1.9.0 y el código vecino):
+
+- **D5.** Se usa `messages.create` con `output_config.format` (`zodOutputFormat`) y la validación con Zod en el adaptador, la alternativa que D5 ya documentaba: `messages.parse` lanza si el JSON no parsea y un `refusal` o un `max_tokens` (que se facturan) quedarían sin `usage`. El id de la petición sale de `.withResponse()`. Detalle en `verification/3.2-sdk.md`.
+- **D3 y D21.** El SDK 1.9 manda la clave como `Authorization: Bearer`, no como `x-api-key`; la redacción de logs cubre las dos cabeceras.
+- **D7 y D14.** El semáforo se toma **antes** del conteo y de la reserva (y no después de reservar): así una petición que responde 503 «ocupado» nunca reservó presupuesto, como pide la spec.
+- **D8.** `abandonExpired(now)` barre las reservas vencidas de **todos** los meses (cada una concilia el suyo), para que una corrida huérfana del último día de un mes no quede reservada para siempre. Se reutiliza el `Clock` compartido (`shared/domain/clock`) en vez de un puerto propio.
+- **D11 y D16.** `LlmRequest` lleva `cacheKey` (no se envía a la API): es lo que busca el adaptador de cassettes. La tarea de humo recibe `{ caso }` opcional para que cada caso de eval tenga su propia clave y su cassette; sin él vale `conexion`.
+- **D13, capa 3.** Cada `AiTaskDefinition` declara `sampleSource(exampleCv)`: el test de lista negra lo usa para armar el origen con `docs/examples/cv-data.example.json`. La regla de arquitectura «`modules/ai` no importa `auth`» admite una sola excepción, `jwt-auth.guard`, que el controller necesita (igual que `integrations`).
+- **P4.** La purga a los 180 días quedó implementada como `npm run ai-runs:purge` (simulación por defecto, `-- --apply` escribe) en este mismo change.
+- **P1.** Ver D17: la clave de las evals es `AI_EVAL_API_KEY`, distinta de `ANTHROPIC_API_KEY`.
+
 ## Open Questions
 
 **Resueltas por el owner y la sesión principal el 2026-11-17** (ninguna queda abierta):

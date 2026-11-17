@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -166,36 +165,44 @@ function RecentRuns({ runs }: { runs: readonly AiRun[] }) {
   return (
     <div>
       <h3 className="mb-2 text-sm font-semibold">Corridas recientes</h3>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Fecha</TableHead>
-            <TableHead>Tarea</TableHead>
-            <TableHead>Versión</TableHead>
-            <TableHead>Modelo</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Tokens (entrada / salida)</TableHead>
-            <TableHead>Costo</TableHead>
-            <TableHead>Duración</TableHead>
-            <TableHead>De caché</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {runs.map((run) => (
-            <TableRow key={run.id}>
-              <TableCell>{formatDateTime(run.createdAt)}</TableCell>
-              <TableCell className="font-mono text-xs">{run.task}</TableCell>
-              <TableCell>v{run.promptVersion}</TableCell>
-              <TableCell className="font-mono text-xs">{run.model}</TableCell>
-              <TableCell>{RUN_STATUS_LABELS[run.status]}</TableCell>
-              <TableCell>{tokensLabel(run)}</TableCell>
-              <TableCell>{costLabel(run.costMicroUsd)}</TableCell>
-              <TableCell>{durationLabel(run.durationMs)}</TableCell>
-              <TableCell>{run.fromCache ? 'Sí' : 'No'}</TableCell>
+      {/* Región con foco: en pantallas angostas la tabla se desplaza (axe: scrollable-region-focusable). */}
+      <div
+        role="region"
+        aria-label="Corridas recientes de IA"
+        tabIndex={0}
+        className="overflow-x-auto"
+      >
+        <table className="w-full caption-bottom text-sm">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Fecha</TableHead>
+              <TableHead>Tarea</TableHead>
+              <TableHead>Versión</TableHead>
+              <TableHead>Modelo</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Tokens (entrada / salida)</TableHead>
+              <TableHead>Costo</TableHead>
+              <TableHead>Duración</TableHead>
+              <TableHead>De caché</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {runs.map((run) => (
+              <TableRow key={run.id}>
+                <TableCell>{formatDateTime(run.createdAt)}</TableCell>
+                <TableCell className="font-mono text-xs">{run.task}</TableCell>
+                <TableCell>v{run.promptVersion}</TableCell>
+                <TableCell className="font-mono text-xs">{run.model}</TableCell>
+                <TableCell>{RUN_STATUS_LABELS[run.status]}</TableCell>
+                <TableCell>{tokensLabel(run)}</TableCell>
+                <TableCell>{costLabel(run.costMicroUsd)}</TableCell>
+                <TableCell>{durationLabel(run.durationMs)}</TableCell>
+                <TableCell>{run.fromCache ? 'Sí' : 'No'}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </table>
+      </div>
     </div>
   );
 }

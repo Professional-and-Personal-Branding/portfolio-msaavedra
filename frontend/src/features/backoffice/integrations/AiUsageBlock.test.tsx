@@ -133,6 +133,10 @@ describe('Bloque «Inteligencia artificial» de Integraciones', () => {
     renderPage();
     const region = await block();
     const table = await within(region).findByRole('table');
+    // En pantallas angostas la tabla se desplaza: la región tiene que tener foco (axe).
+    expect(
+      within(region).getByRole('region', { name: 'Corridas recientes de IA' }),
+    ).toHaveAttribute('tabindex', '0');
     const rows = within(table).getAllByRole('row');
     expect(rows).toHaveLength(3);
     const first = within(rows[1] as HTMLElement);
