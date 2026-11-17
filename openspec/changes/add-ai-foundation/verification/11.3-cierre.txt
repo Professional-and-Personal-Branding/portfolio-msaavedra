@@ -1,0 +1,22 @@
+Cierre de add-ai-foundation (2026-11-17, rama feat/ai-foundation)
+
+Backend (antes -> después)
+- npm run lint: OK; npm run typecheck: OK; npm run build: OK
+- npm test: 169 suites / 2193 tests  ->  185 suites / 2455 tests (incluye security.spec.ts y architecture.spec.ts)
+- npm run test:e2e (base descartable migrada y sembrada, FRONTEND_URL=http://localhost:5173): 31 suites / 464 tests  ->  33 suites / 490 tests
+- npm run openapi:export: sin deriva (git diff --exit-code -- openapi.json)
+- prisma migrate diff --from-schema-datasource --to-schema-datamodel: No difference detected
+
+Frontend (antes -> después)
+- npm test: 84 archivos / 1295 tests  ->  86 archivos / 1323 tests; lint, typecheck y build OK; api:types sin deriva
+- perf:budget: 151,2 KB -> 151,2 KB (tope 155 KB)
+- manual:check: ok
+
+OpenSpec
+- npx -y @fission-ai/openspec@1.14.1 validate --all --strict: 47 passed, 0 failed; sin «Archive would refuse»
+
+App real (TC-54, proveedor fake, imagen de frontend/Dockerfile, base descartable): ver 10.1-tc54.md; a11y:check con panel: 0 violaciones
+Llamadas a Anthropic durante todo el change: ninguna (sin clave; los adaptadores se probaron contra 127.0.0.1)
+
+Limpieza: bases portfolio_ai_* borradas, backend/.env del worktree y .scratch/ quitados, contenedor y procesos detenidos.
+git status del checkout principal: limpio.

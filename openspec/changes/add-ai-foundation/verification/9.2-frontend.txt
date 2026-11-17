@@ -1,0 +1,9 @@
+Frontend (rama feat/ai-foundation)
+- npm run lint: OK
+- npm run typecheck (tsc -b): OK
+- npm test: 86 archivos, 1323 tests, todos en verde (84 / 1295 antes). Una corrida intermedia con la máquina cargada falló 3 tests de otros archivos
+  (CuratedProfilePage, CuratedProfileView.staged y ProfileBuilderPage, por tiempos); pasaron aislados y en la corrida completa siguiente.
+- npm run build: OK
+- npm run perf:budget: /assets/index-*.js 150,0 KB + profile-prefetch.js 1,2 KB = 151,2 KB de 155 KB (igual que antes: nada de IA en el arranque; el panel es un chunk aparte)
+- npm run api:types: sin deriva de src/shared/types/api.d.ts
+- npm run manual:check: ok (53 casos alineados, 62 imágenes, index.html 376 KB)
