@@ -27,27 +27,27 @@
 
 ## 4. Tablas del Dashboard (D7)
 
-- [ ] 4.1 `frontend/src/shared/components/ui/table.tsx`: prop opcional `regionLabel`; con ella, el contenedor lleva `role="region"`, `aria-label` y `tabIndex={0}`. Verificar: `npm run typecheck`.
-- [ ] 4.2 `DashboardPage.tsx`: `ShareLinkTable` con `regionLabel="Visitas por enlace"` y `SourceTable` con `regionLabel="Visitas por portal"`. Verificar: test del Dashboard con `byShareLink` y `bySource` no vacíos: `getByRole('region', { name: 'Visitas por enlace' })` y `{ name: 'Visitas por portal' }` con `tabIndex` 0; con listas vacías, ninguna de las dos regiones.
-- [ ] 4.3 Test de `Table` sin `regionLabel` (o el de Postulaciones): el contenedor no tiene `role`, `aria-label` ni `tabIndex`. Verificar: `npm run test` en verde.
-- [ ] 4.4 Verificar: `npm run lint`, `npm run build` y `npm run perf:budget` (el panel es otro chunk; el arranque público no cambia).
+- [x] 4.1 `frontend/src/shared/components/ui/table.tsx`: prop opcional `regionLabel`; con ella, el contenedor lleva `role="region"`, `aria-label` y `tabIndex={0}`. Verificar: `npm run typecheck`.
+- [x] 4.2 `DashboardPage.tsx`: `ShareLinkTable` con `regionLabel="Visitas por enlace"` y `SourceTable` con `regionLabel="Visitas por portal"`. Verificar: test del Dashboard con `byShareLink` y `bySource` no vacíos: `getByRole('region', { name: 'Visitas por enlace' })` y `{ name: 'Visitas por portal' }` con `tabIndex` 0; con listas vacías, ninguna de las dos regiones.
+- [x] 4.3 Test de `Table` sin `regionLabel` (o el de Postulaciones): el contenedor no tiene `role`, `aria-label` ni `tabIndex`. Verificar: `npm run test` en verde.
+- [x] 4.4 Verificar: `npm run lint`, `npm run build` y `npm run perf:budget` (el panel es otro chunk; el arranque público no cambia).
 
 ## 5. `a11y:check` con las tablas llenas (D8)
 
-- [ ] 5.1 `frontend/scripts/check-a11y.mjs`: `seedShareLinkVisits(session, home)` con el perfil `all`: enlace idempotente «Auditoría a11y — enlace de seguimiento con etiqueta larga para el móvil» (portal `linkedin`), dos `GET /api/curated-profiles/all?via=<código>` y uno `?src=portal-de-empleo-ejemplo` desde Node con un User-Agent de Chrome de escritorio y sin cookies, y espera (hasta 5 s) a ver filas en `byShareLink` y `bySource`. Cabecera del script al día. Verificar: `node --check scripts/check-a11y.mjs`.
-- [ ] 5.2 Entrada `admin-dashboard-tablas` (`/admin`) en `ERROR_ENTRIES` o un mapa equivalente, con `prepare` que exige filas en las dos tablas y, en móvil, `scrollWidth > clientWidth` en el contenedor de **Por enlace**. Verificar: con `A11Y_CHECK_DISPOSABLE_DB=1` y panel, contra la imagen de 3.4, la entrada sale sin problemas de preparación y sin violaciones en los dos viewports.
-- [ ] 5.3 Prueba negativa: con el `table.tsx` anterior (sin `regionLabel`), la misma corrida reporta `scrollable-region-focusable` en `admin-dashboard-tablas.mobile` y sale con 1. Verificar: salida en `verification/5.3-a11y-negativo.txt`.
-- [ ] 5.4 Corrida completa en las dos bases: `npm run a11y:check -- http://localhost:8156 --out reports` con `cv-data.json` y con el ejemplo (`A11Y_CHECK_PROFILE=ejemplo-backend`), con panel. Verificar: código 0 en las dos; segunda corrida sobre la misma base sin un enlace duplicado (`GET /api/admin/curated-profiles/<id-de-all>/share-links`). Salida en `verification/5.4-a11y.txt`.
+- [x] 5.1 `frontend/scripts/check-a11y.mjs`: `seedShareLinkVisits(session, home)` con el perfil `all`: enlace idempotente «Auditoría a11y — enlace de seguimiento con etiqueta larga para el móvil» (portal `linkedin`), dos `GET /api/curated-profiles/all?via=<código>` y uno `?src=portal-de-empleo-ejemplo` desde Node con un User-Agent de Chrome de escritorio y sin cookies, y espera (hasta 5 s) a ver filas en `byShareLink` y `bySource`. Cabecera del script al día. Verificar: `node --check scripts/check-a11y.mjs`.
+- [x] 5.2 Entrada `admin-dashboard-tablas` (`/admin`) en `ERROR_ENTRIES` o un mapa equivalente, con `prepare` que exige filas en las dos tablas y, en móvil, `scrollWidth > clientWidth` en el contenedor de **Por enlace**. Verificar: con `A11Y_CHECK_DISPOSABLE_DB=1` y panel, contra la imagen de 3.4, la entrada sale sin problemas de preparación y sin violaciones en los dos viewports.
+- [x] 5.3 Prueba negativa: con el `table.tsx` anterior (sin `regionLabel`), la misma corrida reporta `scrollable-region-focusable` en `admin-dashboard-tablas.mobile` y sale con 1. Verificar: salida en `verification/5.3-a11y-negativo.txt`.
+- [x] 5.4 Corrida completa en las dos bases: `npm run a11y:check -- http://localhost:8156 --out reports` con `cv-data.json` y con el ejemplo (`A11Y_CHECK_PROFILE=ejemplo-backend`), con panel. Verificar: código 0 en las dos; segunda corrida sobre la misma base sin un enlace duplicado (`GET /api/admin/curated-profiles/<id-de-all>/share-links`). Salida en `verification/5.4-a11y.txt`.
 
 ## 6. Documentación (D2, D9)
 
-- [ ] 6.1 `docs/DEPLOY.md`: sección *Migración `retire_featured_repository_stars` (destructiva)* con la comprobación previa, el respaldo y el rollback por SQL de D2; en § Caddy, la regla de `no-cache` como valor por defecto. Verificar: lectura y enlaces internos.
-- [ ] 6.2 Aplicar la migración en la base local del owner **solo** después de `SELECT count(*) FROM "FeaturedRepository" WHERE "stars" IS NOT NULL;` (y `pg_dump -Fc` si da más de 0). Verificar: conteo y resultado de `npm run prisma:migrate` en `verification/6.2-base-local.txt`.
-- [ ] 6.3 `docs/DATA-POPULATION.md`: sin la fila `stars` de § 12 y sin la oración de la columna inerte; una línea que diga que una clave `stars` de un archivo viejo se ignora. `docs/ARCHITECTURE.md`: sin «La columna `FeaturedRepository.stars` queda inerte». Verificar: `grep -n "stars" docs/DATA-POPULATION.md docs/ARCHITECTURE.md` solo devuelve menciones a la evidencia y a la compatibilidad.
-- [ ] 6.4 `docs/MANUAL.md` e `index.html`: TC-53 (pasos, resultado esperado, errores típicos y la fila en la tabla de la suite), oración nueva en B2 *Acciones y avisos*. Ejecutarlo sobre la base de ejemplo descartable después de TC-41 y marcar su estado según lo ejecutado. Verificar: `npm run manual:check` en verde.
-- [ ] 6.5 `docs/CHANGELOG.md`: entrada del change. Verificar: lectura.
+- [x] 6.1 `docs/DEPLOY.md`: sección *Migración `retire_featured_repository_stars` (destructiva)* con la comprobación previa, el respaldo y el rollback por SQL de D2; en § Caddy, la regla de `no-cache` como valor por defecto. Verificar: lectura y enlaces internos.
+- [ ] 6.2 (PENDIENTE del owner: la sesión de implementación tiene prohibido tocar la base `portfolio`; ya se sabe que el conteo da 0) Aplicar la migración en la base local del owner **solo** después de `SELECT count(*) FROM "FeaturedRepository" WHERE "stars" IS NOT NULL;` (y `pg_dump -Fc` si da más de 0). Verificar: conteo y resultado de `npm run prisma:migrate` en `verification/6.2-base-local.txt`.
+- [x] 6.3 `docs/DATA-POPULATION.md`: sin la fila `stars` de § 12 y sin la oración de la columna inerte; una línea que diga que una clave `stars` de un archivo viejo se ignora. `docs/ARCHITECTURE.md`: sin «La columna `FeaturedRepository.stars` queda inerte». Verificar: `grep -n "stars" docs/DATA-POPULATION.md docs/ARCHITECTURE.md` solo devuelve menciones a la evidencia y a la compatibilidad.
+- [x] 6.4 `docs/MANUAL.md` e `index.html`: TC-53 (pasos, resultado esperado, errores típicos y la fila en la tabla de la suite), oración nueva en B2 *Acciones y avisos*. Ejecutarlo sobre la base de ejemplo descartable después de TC-41 y marcar su estado según lo ejecutado. Verificar: `npm run manual:check` en verde.
+- [x] 6.5 `docs/CHANGELOG.md`: entrada del change. Verificar: lectura.
 
 ## 7. Cierre
 
-- [ ] 7.1 Verificar: `npx -y @fission-ai/openspec@1.14.1 validate --all --strict` sin fallas nuevas (las de requisitos de más de 500 caracteres de specs ya archivadas se informan aparte) y sin «Archive would refuse».
-- [ ] 7.2 `verification.md` con el índice de evidencias y el estado de TC-53.
+- [x] 7.1 Verificar: `npx -y @fission-ai/openspec@1.14.1 validate --all --strict` sin fallas nuevas (las de requisitos de más de 500 caracteres de specs ya archivadas se informan aparte) y sin «Archive would refuse».
+- [x] 7.2 `verification.md` con el índice de evidencias y el estado de TC-53.
