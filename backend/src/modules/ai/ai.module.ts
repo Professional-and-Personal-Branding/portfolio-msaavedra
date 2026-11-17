@@ -100,8 +100,13 @@ import { PrismaAiRunRepository } from './infrastructure/persistence/prisma-ai-ru
     { provide: AI_BUDGET_REPOSITORY, useClass: PrismaAiBudgetRepository },
     {
       provide: BUDGET_GUARD,
-      inject: [AI_BUDGET_REPOSITORY, AI_SETTINGS, CLOCK],
-      useFactory: (repository: AiBudgetRepository, settings: AiSettings, clock: Clock) =>
+      inject: [AI_BUDGET_REPOSITORY, AI_SETTINGS, CLOCK, AI_BASE_LOGGER],
+      useFactory: (
+        repository: AiBudgetRepository,
+        settings: AiSettings,
+        clock: Clock,
+        base: Logger,
+      ) =>
         new BudgetGuard(
           repository,
           {
@@ -109,6 +114,7 @@ import { PrismaAiRunRepository } from './infrastructure/persistence/prisma-ai-ru
             requestTimeoutMs: settings.requestTimeoutMs,
           },
           clock,
+          { warn: (message, data) => base.warn(data, message) },
         ),
     },
     {

@@ -215,3 +215,77 @@ describe('BudgetGuard.blockProvider', () => {
     expect(until.getTime()).toBe(NOW.getTime() + 35 * 24 * 60 * 60 * 1000);
   });
 });
+
+describe('BudgetGuard — avisos y reserva abandonada (B3, B4)', () => {
+  function withLogger() {
+    const store = new InMemoryAiStore();
+    const clock = new MutableClock(NOW);
+    const warnings: Array<{ message: string; data: Record<string, unknown> }> = [];
+    const guard = new BudgetGuard(store, { capMicroUsd: CAP, requestTimeoutMs: 60_000 }, clock, {
+      warn: (message, data) => warnings.push({ message, data }),
+    });
+    const identity = (): AiRunIdentity => ({
+      id: 'r1',
+      task: 'ai.smoke',
+      promptVersion: 1,
+      model: 'claude-haiku-5-5',
+      inputHash: 'h',
+      cacheKey: 'k',
+      budgetMonth: '2026-11',
+      now: clock.now(),
+    });
+    return { store, clock, guard, warnings, identity };
+  }
+
+  it('B3: avisa cuando el costo liquidado supera lo reservado, sin datos sensibles', async () => {
+    const { guard, warnings, identity } = withLogger();
+    const reserved = await guard.reserve(identity(), 100);
+    if (!reserved.ok) throw new Error('se esperaba ok');
+    await guard.settle(reserved.value, {
+      status: 'SUCCEEDED',
+      costMicroUsd: 150,
+      durationMs: 1,
+      finishedAt: NOW,
+    });
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0].data).toEqual({
+      aiRunId: 'r1',
+      task: 'ai.smoke',
+      reservedMicroUsd: 100,
+      costMicroUsd: 150,
+    });
+  });
+
+  it('B3: no avisa si el costo no supera la reserva', async () => {
+    const { guard, warnings, identity } = withLogger();
+    const reserved = await guard.reserve(identity(), 100);
+    if (!reserved.ok) throw new Error('se esperaba ok');
+    await guard.settle(reserved.value, {
+      status: 'SUCCEEDED',
+      costMicroUsd: 100,
+      durationMs: 1,
+      finishedAt: NOW,
+    });
+    expect(warnings).toEqual([]);
+  });
+
+  it('B4: si la reserva ya estaba abandonada, la corrida no queda SUCCEEDED y se loguea', async () => {
+    const { guard, store, clock, warnings, identity } = withLogger();
+    const reserved = await guard.reserve(identity(), 400);
+    if (!reserved.ok) throw new Error('se esperaba ok');
+    clock.advance(60_000 + ORPHAN_GRACE_MS + 1);
+    await store.abandonExpired(clock.now());
+    const closed = await guard.settle(reserved.value, {
+      status: 'SUCCEEDED',
+      costMicroUsd: 90,
+      durationMs: 1,
+      finishedAt: clock.now(),
+    });
+    expect(closed.status).toBe('ABANDONED');
+    expect(closed.props.costMicroUsd).toBe(400);
+    expect(closed.props.failureKind).toBe('Abandoned');
+    expect(warnings.map((w) => w.message).join(' ')).toContain('abandonada');
+    // El gasto no se duplica: sigue siendo la reserva entera, una vez.
+    expect(store.snapshot('2026-11')).toEqual({ spent: 400, reserved: 0 });
+  });
+});

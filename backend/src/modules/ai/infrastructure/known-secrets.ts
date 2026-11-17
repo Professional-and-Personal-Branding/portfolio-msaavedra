@@ -6,6 +6,17 @@ import { AppConfig } from '../../../config/configuration';
  * secreto del JWT, la sal de analítica, el keyring entero y cada una de sus claves, la clave de
  * Anthropic y los tokens de los proveedores de integración.
  */
+/** Contraseña de una URL de conexión (`postgresql://usuario:clave@host/db`), ya decodificada; vacío si no hay. */
+function passwordOf(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  try {
+    const password = decodeURIComponent(new URL(url).password);
+    return password === '' ? undefined : password;
+  } catch {
+    return undefined;
+  }
+}
+
 export function collectKnownSecrets(
   config: AppConfig,
   env: NodeJS.ProcessEnv = process.env,
@@ -23,6 +34,8 @@ export function collectKnownSecrets(
     const separator = entry.indexOf(':');
     if (separator > 0) add(entry.slice(separator + 1).trim());
   }
+  add(passwordOf(config.databaseUrl));
+  add(env.ADMIN_PASSWORD);
   add(env.GITHUB_SYNC_TOKEN);
   add(env.FAKE_PROVIDER_TOKEN);
   return [...secrets];

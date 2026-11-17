@@ -249,6 +249,36 @@ describe('collectKnownSecrets', () => {
     );
   });
 
+  it('B2: suma la contraseña de DATABASE_URL (decodificada) y ADMIN_PASSWORD', () => {
+    const config = {
+      jwt: { secret: 'jwt-secret-1234567890' },
+      analyticsSalt: 'sal-de-analitica',
+      databaseUrl: 'postgresql://usuario:cl%40ve-de-la-base@localhost:5434/db?schema=public',
+      ai: { apiKey: undefined },
+      integrations: { keys: undefined },
+    } as unknown as AppConfig;
+    const secrets = collectKnownSecrets(config, { ADMIN_PASSWORD: 'pass-del-admin-123' });
+    expect(secrets).toEqual(expect.arrayContaining(['cl@ve-de-la-base', 'pass-del-admin-123']));
+  });
+
+  it('B2: una DATABASE_URL sin contraseña o inválida no rompe', () => {
+    const base = {
+      jwt: { secret: 'jwt-secret-1234567890' },
+      analyticsSalt: '',
+      ai: {},
+      integrations: {},
+    };
+    expect(
+      collectKnownSecrets({ ...base, databaseUrl: 'no es una url' } as unknown as AppConfig, {}),
+    ).toEqual(['jwt-secret-1234567890']);
+    expect(
+      collectKnownSecrets(
+        { ...base, databaseUrl: 'postgresql://u@h/db' } as unknown as AppConfig,
+        {},
+      ),
+    ).toEqual(['jwt-secret-1234567890']);
+  });
+
   it('descarta valores vacíos', () => {
     const config = {
       jwt: { secret: 'jwt-secret-1234567890' },

@@ -80,6 +80,10 @@ Al terminar una llamada con `usage`, el sistema SHALL liberar la reserva y sumar
 - **WHEN** la llamada supera `AI_REQUEST_TIMEOUT_MS`
 - **THEN** el `AiRun` queda `FAILED` con `Transient` y su reserva entera pasa a gastado
 
+#### Scenario: Conexión cortada después de enviar
+- **WHEN** el socket se corta o el cliente falla sin una respuesta HTTP del proveedor durante la llamada facturable
+- **THEN** el `AiRun` queda `FAILED` con `Transient` y su reserva entera pasa a gastado, porque puede haberse facturado; una respuesta HTTP 4xx o 5xx, en cambio, no cuesta nada
+
 ### Requirement: Sin pasarse con llamadas concurrentes
 La reserva SHALL ser una única sentencia condicional sobre la fila del mes, de modo que reservas simultáneas, incluso desde dos instancias, MUST NOT sumar más que el tope.
 
@@ -122,6 +126,17 @@ Solo datos del CV y de vacantes SHALL poder salir hacia el proveedor, armados co
 #### Scenario: Lista negra sobre los datos de ejemplo
 - **WHEN** corre el test de lista negra con cada tarea registrada sobre `docs/examples/cv-data.example.json`
 - **THEN** ningún payload contiene el email del perfil ni un valor con forma de token, IP o JWT
+
+### Requirement: Entrada delimitada como dato
+La entrada que se envía al modelo SHALL ir delimitada como dato en `<datos>` y `<texto>`, y MUST NOT poder cerrar su propio delimitador: en el JSON, `<` y `>` SHALL viajar como `\u003c` y `\u003e`, y en el texto libre como `&lt;` y `&gt;` (se escapa, no se quita).
+
+#### Scenario: Etiqueta anidada en el texto libre
+- **WHEN** el texto libre contiene `<</texto>/texto>`
+- **THEN** el mensaje enviado tiene un único `</texto>`, el del delimitador, y el contenido queda con `&lt;&lt;/texto&gt;/texto&gt;`
+
+#### Scenario: Cierre del bloque de datos desde un campo estructurado
+- **WHEN** un valor del JSON contiene `</datos>`
+- **THEN** el mensaje enviado tiene un único `</datos>` y el valor viaja como `\u003c/datos\u003e`, que sigue siendo JSON válido
 
 ### Requirement: Redacción del texto libre
 En los campos marcados como texto libre (como el texto pegado de una vacante), emails y teléfonos SHALL reemplazarse por `[email]` y `[teléfono]` antes de enviarse; credenciales y secretos MUST seguir bloqueando la corrida.

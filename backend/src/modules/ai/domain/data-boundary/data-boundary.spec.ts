@@ -33,6 +33,13 @@ describe('assertLlmSafe — claves prohibidas', () => {
     'ciphertext',
     'phone',
     'telephone',
+    'correo',
+    'correoElectronico',
+    'mail',
+    'telefono',
+    'celular',
+    'contrasena',
+    'clave',
   ])('bloquea la clave %s, también anidada', (key) => {
     expect(isForbiddenKey(key)).toBe(true);
     const result = assertLlmSafe(structured({ a: [{ b: { [key]: 'x' } }] }));
@@ -196,5 +203,21 @@ describe('assertLlmSafe — propiedad', () => {
           expect(result.value.payload.freeText.v).not.toContain('persona@ejemplo.test');
       }),
     );
+  });
+});
+
+describe('assertLlmSafe — B1 y B2', () => {
+  it('un teléfono en un campo estructurado bloquea', () => {
+    expect(assertLlmSafe(structured({ contacto: ['+591 71234567'] })).ok).toBe(false);
+    expect(assertLlmSafe(structured({ contacto: 'llamá al (591) 712-3456' })).ok).toBe(false);
+    expect(assertLlmSafe(structured({ fecha: '2026-01-15', versiones: 'Node 18.2.0' })).ok).toBe(
+      true,
+    );
+  });
+
+  it('B2: la forma base64 de un secreto de la configuración también bloquea', () => {
+    const encoded = Buffer.from(SECRET, 'utf-8').toString('base64');
+    expect(assertLlmSafe(structured({ nota: `x ${encoded} y` }), [SECRET]).ok).toBe(false);
+    expect(assertLlmSafe({ structured: null, freeText: { v: encoded } }, [SECRET]).ok).toBe(false);
   });
 });

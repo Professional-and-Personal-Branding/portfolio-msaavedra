@@ -12,6 +12,9 @@ import { AI_EVAL_SUITES } from './suites';
 /** Tope por corrida cuando no se pide otro (D17, P1): los 10 USD de la app no se tocan. */
 export const DEFAULT_EVAL_MAX_USD = 2;
 
+/** Techo de una corrida de evals: pedir más (con `--max-usd` o `AI_EVAL_MAX_USD`) se niega (B6). */
+export const MAX_EVAL_USD = 2;
+
 /** Salida con código 2 = se negó sin gastar, igual que los `*_DISPOSABLE_DB=1` del repo. */
 export const EXIT_REFUSED = 2;
 
@@ -79,6 +82,17 @@ export async function runAiEvalCli(argv: readonly string[], deps: AiEvalCliDeps)
     );
     return EXIT_REFUSED;
   }
+  // Las evals nunca usan la clave de la app (P1): si coinciden, se niega (B6).
+  if (apiKey === (deps.env.ANTHROPIC_API_KEY?.trim() ?? '')) {
+    deps.error(
+      'ai:eval: AI_EVAL_API_KEY es igual a ANTHROPIC_API_KEY: las evals usan la clave de su propio workspace. No se hizo ninguna llamada.',
+    );
+    return EXIT_REFUSED;
+  }
+  if (deps.env.NODE_ENV === 'production') {
+    deps.error('ai:eval: se niega con NODE_ENV=production. No se hizo ninguna llamada.');
+    return EXIT_REFUSED;
+  }
   if (deps.env.AI_EVAL_ALLOW_SPEND !== '1') {
     deps.error(
       'ai:eval: las evals en vivo gastan dinero de verdad. Para permitirlo, exportá AI_EVAL_ALLOW_SPEND=1. No se hizo ninguna llamada.',
@@ -88,6 +102,12 @@ export async function runAiEvalCli(argv: readonly string[], deps: AiEvalCliDeps)
   const maxRaw = args.maxUsd ?? Number(deps.env.AI_EVAL_MAX_USD ?? DEFAULT_EVAL_MAX_USD);
   if (!Number.isFinite(maxRaw) || maxRaw <= 0) {
     deps.error('ai:eval: AI_EVAL_MAX_USD debe ser un número mayor que 0');
+    return EXIT_REFUSED;
+  }
+  if (maxRaw > MAX_EVAL_USD) {
+    deps.error(
+      `ai:eval: el tope pedido (${maxRaw} USD) supera el techo de una corrida (${MAX_EVAL_USD} USD). No se hizo ninguna llamada.`,
+    );
     return EXIT_REFUSED;
   }
   const capMicroUsd = Math.round(maxRaw * MICRO_USD_PER_USD);

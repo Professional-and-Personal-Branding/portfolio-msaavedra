@@ -17,6 +17,8 @@ import {
 /** Reintentos del conteo de tokens: es gratis (D9). */
 const COUNT_MAX_RETRIES = 2;
 const COUNT_TIMEOUT_MS = 10_000;
+/** Margen del plazo total sobre el timeout del SDK (B4). */
+const DEADLINE_MARGIN_MS = 5_000;
 
 export interface AnthropicAdapterOptions {
   readonly timeoutMs: number;
@@ -79,8 +81,16 @@ export class AnthropicLlmAdapter implements LlmPort {
             thinking: this.thinkingOf(request),
             output_config: { effort: request.effort, format: zodOutputFormat(request.schema) },
           },
-          // Una sola vez: los reintentos del SDK multiplicarían el costo potencial (D9).
-          { signal, timeout: this.options.timeoutMs, maxRetries: 0 },
+          // Una sola vez: los reintentos del SDK multiplicarían el costo potencial (D9). El plazo propio
+          // cubre también la lectura del cuerpo, que el `timeout` del SDK no abarca (B4).
+          {
+            signal: AbortSignal.any([
+              signal,
+              AbortSignal.timeout(this.options.timeoutMs + DEADLINE_MARGIN_MS),
+            ]),
+            timeout: this.options.timeoutMs,
+            maxRetries: 0,
+          },
         )
         .withResponse();
       message = response.data;
@@ -119,7 +129,12 @@ export class AnthropicLlmAdapter implements LlmPort {
       return { kind: 'Transient', message: 'timeout de la solicitud', billingUnknown: true };
     }
     if (error instanceof Anthropic.APIConnectionError) {
-      return { kind: 'Transient', message: redact('error de red con Anthropic') };
+      // El socket pudo cortarse DESPUÉS de enviar: Anthropic puede haber facturado (M1).
+      return {
+        kind: 'Transient',
+        message: redact('error de red con Anthropic'),
+        billingUnknown: true,
+      };
     }
     if (error instanceof Anthropic.APIError) {
       const status = error.status as number | undefined;
@@ -136,7 +151,12 @@ export class AnthropicLlmAdapter implements LlmPort {
       }
       return this.cleaned(classified);
     }
-    return { kind: 'Transient', message: redact('error inesperado al llamar a Anthropic') };
+    // Un error desconocido tampoco prueba que no se haya enviado: se imputa la reserva (M1).
+    return {
+      kind: 'Transient',
+      message: redact('error inesperado al llamar a Anthropic'),
+      billingUnknown: true,
+    };
   }
 
   /** El spend limit conserva su fecha de reinicio; las demás pistas se acotan. */

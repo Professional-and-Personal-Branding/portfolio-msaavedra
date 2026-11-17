@@ -298,4 +298,21 @@ describe('AiTaskRunner', () => {
     expect(request.user.startsWith('<datos>')).toBe(true);
     expect(request.model).toBe('claude-haiku-5-5');
   });
+
+  it('B4: si la reserva venció antes de conciliar, no devuelve éxito: AiRunFailedError ABANDONED', async () => {
+    const { runner, llm, clock, store } = setup();
+    // La llamada tarda más que el vencimiento de la reserva y el barrido la abandona mientras tanto.
+    llm.queue(ok(completion({ estado: 'ok' })));
+    const original = llm.complete.bind(llm);
+    llm.complete = async (request: never) => {
+      clock.advance(60_000 + 60_000 + 1);
+      await store.abandonExpired(clock.now());
+      return original(request);
+    };
+    const result = await runner.run(aiSmokeTask, undefined);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect((result.error as AiRunFailedError).status).toBe('ABANDONED');
+    expect(await store.findSucceededByCacheKey('cualquiera')).toBeNull();
+    expect([...store.runs.values()].some((r) => r.status === 'SUCCEEDED')).toBe(false);
+  });
 });

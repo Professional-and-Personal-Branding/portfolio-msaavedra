@@ -318,7 +318,8 @@ describe('AnthropicLlmAdapter (contra un servidor HTTP falso)', () => {
     expect(!wrong.ok && wrong.error.kind).toBe('InvalidOutput');
     if (!wrong.ok && wrong.error.kind === 'InvalidOutput') {
       expect(wrong.error.usage.outputTokens).toBe(50);
-      expect(wrong.error.issues[0]).toContain('estado');
+      expect(wrong.error.issues[0]).toBe('invalid_value (profundidad 1)');
+      expect(wrong.error.issues.join(' ')).not.toContain('estado');
     }
   });
 
@@ -343,6 +344,46 @@ describe('AnthropicLlmAdapter (contra un servidor HTTP falso)', () => {
       cacheReadTokens: 400,
       cacheWriteTokens: 20,
     });
+  });
+
+  it('M1: un socket cortado después de enviar es Transient con billingUnknown (puede haberse facturado)', async () => {
+    api.responder = (_s, res) => {
+      res.socket?.destroy();
+    };
+    const result = await adapter.complete(request(), signal);
+    expect(api.messages()).toHaveLength(1);
+    expect(result.ok).toBe(false);
+    if (!result.ok && result.error.kind === 'Transient') {
+      expect(result.error.billingUnknown).toBe(true);
+    } else {
+      throw new Error('se esperaba Transient');
+    }
+  });
+
+  it('M1: una respuesta HTTP 5xx NO es billingUnknown (con seguridad no se facturó)', async () => {
+    api.responder = (_s, res) =>
+      api.json(res, 500, { type: 'error', error: { type: 'api_error', message: 'x' } });
+    const result = await adapter.complete(request(), signal);
+    expect(!result.ok && result.error.kind).toBe('Transient');
+    if (!result.ok) expect('billingUnknown' in result.error).toBe(false);
+  });
+
+  it('M1: un error desconocido del cliente también imputa la reserva', async () => {
+    const broken = new AnthropicLlmAdapter(
+      {
+        messages: {
+          create: () => {
+            throw new TypeError('algo raro');
+          },
+        },
+      } as never,
+      { timeoutMs: 5000, knownSecrets: [TEST_KEY] },
+    );
+    const result = await broken.complete(request(), signal);
+    expect(!result.ok && result.error.kind).toBe('Transient');
+    if (!result.ok && result.error.kind === 'Transient') {
+      expect(result.error.billingUnknown).toBe(true);
+    }
   });
 
   it('timeout: Transient con billingUnknown y una sola petición', async () => {
@@ -405,6 +446,18 @@ describe('AnthropicLlmAdapter (contra un servidor HTTP falso)', () => {
 });
 
 describe('createAnthropicClient', () => {
+  it('B5: el nivel de log es explícito y ANTHROPIC_LOG=debug del entorno no lo cambia', () => {
+    const previous = process.env.ANTHROPIC_LOG;
+    process.env.ANTHROPIC_LOG = 'debug';
+    try {
+      const client = createAnthropicClient({ apiKey: TEST_KEY, timeoutMs: 5000 });
+      expect((client as unknown as { logLevel?: string }).logLevel).toBe('warn');
+    } finally {
+      if (previous === undefined) delete process.env.ANTHROPIC_LOG;
+      else process.env.ANTHROPIC_LOG = previous;
+    }
+  });
+
   it('ignora ANTHROPIC_BASE_URL y ANTHROPIC_AUTH_TOKEN del entorno', () => {
     const previous = { ...process.env };
     process.env.ANTHROPIC_BASE_URL = 'http://127.0.0.1:1';

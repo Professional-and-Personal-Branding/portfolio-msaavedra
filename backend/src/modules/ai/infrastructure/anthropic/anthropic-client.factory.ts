@@ -29,4 +29,6 @@ export const createAnthropicClient: AnthropicClientFactory = (options) =>
     baseURL: options.baseURL ?? ANTHROPIC_BASE_URL,
     maxRetries: 0,
     timeout: options.timeoutMs,
+    // Explícito: `ANTHROPIC_LOG=debug` del entorno volcaría prompts y cuerpos a la consola (B5).
+    logLevel: 'warn',
   });

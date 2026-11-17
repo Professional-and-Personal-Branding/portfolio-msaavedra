@@ -200,6 +200,8 @@ export class AiTaskRunner {
           finishedAt: this.clock.now(),
         });
         this.logger.log(this.logEntry(run));
+        // Si la reserva ya estaba abandonada, la corrida no es SUCCEEDED: no se entrega como éxito (B4).
+        if (run.status !== 'SUCCEEDED') return fail(this.failedError(run));
         return ok({ output: validated.data, run });
       }
       const run = await this.guard.settle(

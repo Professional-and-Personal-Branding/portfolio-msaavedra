@@ -92,6 +92,53 @@ describe('ai:eval — las tres negativas salen con código 2 sin llamar', () => 
     expect(llm.completeCalls).toBe(0);
   });
 
+  it('B6: AI_EVAL_API_KEY igual a ANTHROPIC_API_KEY se niega sin llamar', async () => {
+    const { deps, errors, llm } = setup({
+      AI_EVAL_API_KEY: KEY,
+      ANTHROPIC_API_KEY: KEY,
+      AI_EVAL_ALLOW_SPEND: '1',
+    });
+    expect(await runAiEvalCli([], deps)).toBe(2);
+    expect(errors.join(' ')).toContain('igual a ANTHROPIC_API_KEY');
+    expect(llm()).toBeUndefined();
+  });
+
+  it('B6: con una clave distinta de la app sigue su camino', async () => {
+    const { deps } = setup({
+      AI_EVAL_API_KEY: KEY,
+      ANTHROPIC_API_KEY: 'otra-clave-de-la-app',
+      AI_EVAL_ALLOW_SPEND: '1',
+    });
+    expect(await runAiEvalCli([], deps)).not.toBe(2);
+  });
+
+  it('B6: NODE_ENV=production se niega sin llamar', async () => {
+    const { deps, errors, llm } = setup({
+      AI_EVAL_API_KEY: KEY,
+      AI_EVAL_ALLOW_SPEND: '1',
+      NODE_ENV: 'production',
+    });
+    expect(await runAiEvalCli([], deps)).toBe(2);
+    expect(errors.join(' ')).toContain('NODE_ENV=production');
+    expect(llm()).toBeUndefined();
+  });
+
+  it('B6: un tope mayor al techo de 2 USD se niega (con --max-usd y con AI_EVAL_MAX_USD)', async () => {
+    const env = { AI_EVAL_API_KEY: KEY, AI_EVAL_ALLOW_SPEND: '1' };
+    const a = setup(env);
+    expect(await runAiEvalCli(['--max-usd', '2.01'], a.deps)).toBe(2);
+    expect(a.errors.join(' ')).toContain('supera el techo');
+    expect(a.llm()).toBeUndefined();
+    const b = setup({ ...env, AI_EVAL_MAX_USD: '5' });
+    expect(await runAiEvalCli([], b.deps)).toBe(2);
+    expect(b.llm()).toBeUndefined();
+  });
+
+  it('B6: justo en el techo (2 USD) se permite', async () => {
+    const { deps } = setup({ AI_EVAL_API_KEY: KEY, AI_EVAL_ALLOW_SPEND: '1' });
+    expect(await runAiEvalCli(['--max-usd', '2'], deps)).not.toBe(2);
+  });
+
   it('--max-usd inválido o tarea desconocida: código 2', async () => {
     const env = { AI_EVAL_API_KEY: KEY, AI_EVAL_ALLOW_SPEND: '1' };
     expect(await runAiEvalCli(['--max-usd', 'abc'], setup(env).deps)).toBe(2);

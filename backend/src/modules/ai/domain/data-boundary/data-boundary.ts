@@ -45,6 +45,13 @@ const FORBIDDEN_KEY_PARTS: readonly string[] = [
   'credential',
   'ciphertext',
   'phone',
+  // Variantes en español (B1).
+  'correo',
+  'mail',
+  'telefono',
+  'celular',
+  'contrasena',
+  'clave',
 ];
 /** Palabras cortas y ambiguas: solo coincidencia exacta (`hash`, `salt`). */
 const FORBIDDEN_KEY_EXACT: readonly string[] = ['hash', 'salt', 'ip'];
@@ -112,13 +119,22 @@ function scanString(
     if (pattern.regex.test(value)) return new ForbiddenDataError(`${pattern.name} en ${where}`);
   }
   for (const secret of knownSecrets) {
-    if (secret.length >= MIN_SECRET_LENGTH && value.includes(secret)) {
+    if (
+      secret.length >= MIN_SECRET_LENGTH &&
+      (value.includes(secret) || value.includes(Buffer.from(secret, 'utf-8').toString('base64')))
+    ) {
       return new ForbiddenDataError(`secreto de la configuración en ${where}`);
     }
   }
   if (structured) {
     for (const pattern of STRUCTURED_ONLY_PATTERNS) {
       if (pattern.regex.test(value)) return new ForbiddenDataError(`${pattern.name} en ${where}`);
+    }
+    // Un teléfono en un campo estructurado también bloquea (B1).
+    PHONE_GLOBAL.lastIndex = 0;
+    if (PHONE_GLOBAL.test(value)) {
+      PHONE_GLOBAL.lastIndex = 0;
+      return new ForbiddenDataError(`teléfono en ${where}`);
     }
   }
   return null;

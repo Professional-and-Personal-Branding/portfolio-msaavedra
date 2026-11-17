@@ -5,15 +5,22 @@ import { fail, ok, Result } from '../../../../shared/domain/result';
 import { LlmRequest } from '../ports/llm.port';
 import { AiTaskDefinition } from '../tasks/ai-task';
 
-/** Cierra la sección de datos: un texto libre no puede salirse de su delimitador. */
-const DELIMITER_TAGS = /<\/?\s*(datos|texto)[^>]*>/gi;
+/** En el JSON de la entrada, `<` y `>` van como escapes válidos de JSON: ningún valor puede cerrar `</datos>` (M2). */
+function escapeJsonAngles(json: string): string {
+  return json.replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+}
+
+/** En el texto libre se escapan en vez de quitarse: una sola pasada de quitar deja pasar `<</texto>/texto>` (M2). */
+function escapeFreeText(text: string): string {
+  return text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
 /** Mensaje del usuario con la entrada delimitada como dato (D5): nunca son instrucciones. */
 export function buildUserMessage(payload: LlmPayload): string {
-  const parts = [`<datos>\n${canonicalJson(payload.structured)}\n</datos>`];
+  const parts = [`<datos>\n${escapeJsonAngles(canonicalJson(payload.structured))}\n</datos>`];
   for (const name of Object.keys(payload.freeText).sort()) {
-    const text = payload.freeText[name].replace(DELIMITER_TAGS, '');
-    parts.push(`<texto nombre="${name}">\n${text}\n</texto>`);
+    const safeName = name.replace(/[^A-Za-z0-9_.-]/g, '_');
+    parts.push(`<texto nombre="${safeName}">\n${escapeFreeText(payload.freeText[name])}\n</texto>`);
   }
   return parts.join('\n');
 }

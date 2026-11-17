@@ -3,6 +3,7 @@ import { fail, ok, Result } from '../../../../shared/domain/result';
 import { AiRun, AiRunFinish, AiRunIdentity } from '../../domain/ai-run.entity';
 import { AiBudgetExhaustedError } from '../../domain/errors/ai.errors';
 import { AiBudgetRepository } from '../ports/ai-repositories';
+import { AiGuardLogger, noopGuardLogger } from '../ports/ai-support.ports';
 
 /** Margen que se suma al timeout para considerar huérfana una reserva (D8.4). */
 export const ORPHAN_GRACE_MS = 60_000;
@@ -33,6 +34,7 @@ export class BudgetGuard {
     private readonly repository: AiBudgetRepository,
     private readonly options: BudgetGuardOptions,
     private readonly clock: Clock,
+    private readonly logger: AiGuardLogger = noopGuardLogger,
   ) {}
 
   get capMicroUsd(): number {
@@ -74,13 +76,40 @@ export class BudgetGuard {
   async settle(run: AiRun, finish: AiRunFinish): Promise<AiRun> {
     const closed = run.finish(finish);
     if (!closed.ok) throw closed.error;
-    await this.repository.settle({
+    const reserved = run.props.reservedMicroUsd;
+    if (finish.costMicroUsd > reserved) {
+      // El conteo subestimó la entrada más allá del margen: el exceso se imputa igual (D7), pero se avisa (B3).
+      this.logger.warn('El costo liquidado de una corrida de IA superó lo reservado', {
+        aiRunId: run.id,
+        task: run.props.task,
+        reservedMicroUsd: reserved,
+        costMicroUsd: finish.costMicroUsd,
+      });
+    }
+    const applied = await this.repository.settle({
       run: closed.value,
       month: run.props.budgetMonth,
-      releasedMicroUsd: run.props.reservedMicroUsd,
+      releasedMicroUsd: reserved,
       chargedMicroUsd: finish.costMicroUsd,
     });
-    return closed.value;
+    if (applied) return closed.value;
+    // El barrido ya la había pasado a ABANDONED e imputado su reserva entera: no se concilia dos veces
+    // y la corrida no puede quedar SUCCEEDED en silencio (B4).
+    this.logger.warn('Se concilió una corrida de IA cuya reserva ya estaba abandonada', {
+      aiRunId: run.id,
+      task: run.props.task,
+      reservedMicroUsd: reserved,
+    });
+    return AiRun.restore({
+      ...run.props,
+      status: 'ABANDONED',
+      costMicroUsd: reserved,
+      usage: finish.usage ?? run.props.usage,
+      failureKind: 'Abandoned',
+      failureMessage: 'la reserva venció antes de conciliar',
+      durationMs: finish.durationMs,
+      finishedAt: finish.finishedAt,
+    });
   }
 
   /**

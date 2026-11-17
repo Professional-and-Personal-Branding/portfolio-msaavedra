@@ -66,9 +66,10 @@ export function interpretMessage<T>(
   }
   const parsed = schema.safeParse(json);
   if (!parsed.success) {
+    // Solo el código de Zod y la profundidad del path: las claves y valores los generó el modelo (B7).
     const issues = parsed.error.issues
       .slice(0, 5)
-      .map((issue) => `${issue.path.join('.') || '(raíz)'}: ${issue.message}`);
+      .map((issue) => `${issue.code} (profundidad ${issue.path.length})`);
     return fail({ kind: 'InvalidOutput', issues, usage, requestId });
   }
   return ok({

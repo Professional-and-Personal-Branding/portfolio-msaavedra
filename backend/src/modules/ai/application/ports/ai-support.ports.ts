@@ -43,3 +43,9 @@ export interface AiRunLogEntry {
 export interface AiRunLogger {
   log(entry: AiRunLogEntry): void;
 }
+
+/** Avisos del guardián del presupuesto: solo identificadores y cifras, nunca datos sensibles. */
+export interface AiGuardLogger {
+  warn(message: string, data: Record<string, unknown>): void;
+}
+export const noopGuardLogger: AiGuardLogger = { warn: () => undefined };
