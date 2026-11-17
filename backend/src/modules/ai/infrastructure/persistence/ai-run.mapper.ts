@@ -1,5 +1,5 @@
-import { AiRun as AiRunRow, AiRunStatus as AiRunStatusRow, Prisma } from '@prisma/client';
-import { AiRun, AiRunStatus } from '../../domain/ai-run.entity';
+import { AiRun as AiRunRow, Prisma } from '@prisma/client';
+import { AiRun } from '../../domain/ai-run.entity';
 
 /** Fila de Prisma → entidad de dominio. */
 export function toDomain(row: AiRunRow): AiRun {
@@ -15,7 +15,7 @@ export function toDomain(row: AiRunRow): AiRun {
     model: row.model,
     inputHash: row.inputHash,
     cacheKey: row.cacheKey,
-    status: row.status as AiRunStatus,
+    status: row.status,
     reservedMicroUsd: row.reservedMicroUsd,
     costMicroUsd: row.costMicroUsd,
     usage: hasUsage
@@ -60,7 +60,7 @@ type FinalColumns = Pick<
 export function toFinalData(run: AiRun): FinalColumns {
   const p = run.props;
   return {
-    status: p.status as AiRunStatusRow,
+    status: p.status,
     costMicroUsd: p.costMicroUsd,
     inputTokens: p.usage?.inputTokens ?? null,
     outputTokens: p.usage?.outputTokens ?? null,
@@ -94,5 +94,5 @@ export function toCreateData(run: AiRun): Prisma.AiRunUncheckedCreateInput {
 }
 
 function jsonOrNull(value: unknown): Prisma.InputJsonValue | typeof Prisma.DbNull {
-  return value === null || value === undefined ? Prisma.DbNull : (value as Prisma.InputJsonValue);
+  return value === null || value === undefined ? Prisma.DbNull : value;
 }

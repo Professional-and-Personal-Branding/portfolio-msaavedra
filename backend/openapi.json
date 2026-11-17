@@ -5945,6 +5945,112 @@
           "admin"
         ]
       }
+    },
+    "/api/admin/ai/usage": {
+      "get": {
+        "description": "Responde también con la IA apagada (`state: DISABLED`): solo lee la base. Nunca incluye las entradas ni las salidas de las corridas.",
+        "operationId": "AdminAiController_usage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiUsageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gasto de IA del mes",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/ai/smoke": {
+      "post": {
+        "description": "Corre la tarea interna de humo (texto fijo, Haiku 5.5, sin datos del usuario) y devuelve su corrida. Ignora la caché: prueba la conexión de verdad. Con `AI_PROVIDER=fake` no llama a Anthropic. Una llamada que se hizo y falló (transitorio, spend limit, rechazo) responde 201 con la corrida `FAILED` o `REFUSED`. Límite: 5 por minuto.",
+        "operationId": "AdminAiController_smoke",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiRunResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión de administrador",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La IA está apagada, se alcanzó el tope del mes o Anthropic cortó por su spend limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Más de 5 por minuto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Hay demasiadas consultas de IA en curso; trae `retry-after`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Probar la conexión con el proveedor de IA",
+        "tags": [
+          "admin"
+        ]
+      }
     }
   },
   "info": {
@@ -10574,6 +10680,218 @@
         },
         "required": [
           "secret"
+        ]
+      },
+      "AiProvider": {
+        "type": "string",
+        "enum": [
+          "anthropic",
+          "fake"
+        ]
+      },
+      "AiUsageState": {
+        "type": "string",
+        "enum": [
+          "DISABLED",
+          "OK",
+          "NEAR_LIMIT",
+          "EXHAUSTED",
+          "PROVIDER_BLOCKED"
+        ]
+      },
+      "AiRunStatus": {
+        "type": "string",
+        "enum": [
+          "RESERVED",
+          "SUCCEEDED",
+          "CACHED",
+          "REFUSED",
+          "FAILED",
+          "ABANDONED",
+          "BLOCKED"
+        ]
+      },
+      "AiRunResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "task": {
+            "type": "string",
+            "example": "ai.smoke"
+          },
+          "promptVersion": {
+            "type": "number"
+          },
+          "model": {
+            "type": "string",
+            "example": "claude-haiku-5-5"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AiRunStatus"
+              }
+            ]
+          },
+          "inputTokens": {
+            "type": "number",
+            "nullable": true
+          },
+          "outputTokens": {
+            "type": "number",
+            "nullable": true
+          },
+          "cacheReadTokens": {
+            "type": "number",
+            "nullable": true
+          },
+          "cacheWriteTokens": {
+            "type": "number",
+            "nullable": true
+          },
+          "reservedMicroUsd": {
+            "type": "number",
+            "description": "Reserva previa, en micro-USD (1 USD = 1 000 000)"
+          },
+          "costMicroUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Costo real imputado, en micro-USD; `null` mientras la corrida sigue reservada"
+          },
+          "durationMs": {
+            "type": "number",
+            "nullable": true
+          },
+          "failureKind": {
+            "type": "string",
+            "nullable": true,
+            "example": "Transient"
+          },
+          "failureMessage": {
+            "type": "string",
+            "nullable": true,
+            "description": "Redactado y de hasta 500 caracteres"
+          },
+          "stopReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "fromCache": {
+            "type": "boolean",
+            "description": "`true` si se sirvió desde la caché (sin llamada y sin costo)"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO 8601"
+          },
+          "finishedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          }
+        },
+        "required": [
+          "id",
+          "task",
+          "promptVersion",
+          "model",
+          "status",
+          "inputTokens",
+          "outputTokens",
+          "cacheReadTokens",
+          "cacheWriteTokens",
+          "reservedMicroUsd",
+          "costMicroUsd",
+          "durationMs",
+          "failureKind",
+          "failureMessage",
+          "stopReason",
+          "fromCache",
+          "createdAt",
+          "finishedAt"
+        ]
+      },
+      "AiUsageResponse": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "`false` = `AI_ENABLED` apagado en este servidor"
+          },
+          "provider": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AiProvider"
+              }
+            ]
+          },
+          "month": {
+            "type": "string",
+            "example": "2026-11",
+            "description": "Mes calendario UTC"
+          },
+          "budgetUsd": {
+            "type": "number",
+            "description": "Tope mensual en USD (`AI_MONTHLY_BUDGET_USD`)"
+          },
+          "spentUsd": {
+            "type": "number"
+          },
+          "reservedUsd": {
+            "type": "number"
+          },
+          "remainingUsd": {
+            "type": "number"
+          },
+          "percentUsed": {
+            "type": "number",
+            "description": "Gastado sobre el tope, redondeado a entero"
+          },
+          "state": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AiUsageState"
+              }
+            ]
+          },
+          "providerBlockedUntil": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601; solo si el corte sigue vigente"
+          },
+          "providerBlockReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "pricingVerifiedAt": {
+            "type": "string",
+            "example": "2026-11-17",
+            "description": "Cuándo se verificó la tabla de precios"
+          },
+          "recentRuns": {
+            "description": "Las 20 más recientes, sin entradas ni salidas",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiRunResponse"
+            }
+          }
+        },
+        "required": [
+          "enabled",
+          "provider",
+          "month",
+          "budgetUsd",
+          "spentUsd",
+          "reservedUsd",
+          "remainingUsd",
+          "percentUsed",
+          "state",
+          "providerBlockedUntil",
+          "providerBlockReason",
+          "pricingVerifiedAt",
+          "recentRuns"
         ]
       }
     }

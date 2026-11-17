@@ -122,11 +122,13 @@ export class AnthropicLlmAdapter implements LlmPort {
       return { kind: 'Transient', message: redact('error de red con Anthropic') };
     }
     if (error instanceof Anthropic.APIError) {
-      const status = error.status;
-      const retryAfter = error.headers?.get('retry-after') ?? undefined;
+      const status = error.status as number | undefined;
+      // Sin la librería DOM, `Headers` no tiene tipo acá: se lee por su forma.
+      const headers = error.headers as { get(name: string): string | null } | undefined;
+      const retryAfter = headers?.get('retry-after') ?? undefined;
       const classified = classifyAnthropicError({
         ...(status === undefined ? {} : { status }),
-        body: error.error,
+        body: error.error as unknown,
         ...(retryAfter === undefined ? {} : { retryAfter }),
       });
       if (status === 401 || status === 403) {

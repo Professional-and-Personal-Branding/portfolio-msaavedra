@@ -56,13 +56,12 @@ const textTask: AiTaskDefinition<{ texto: string; email?: string }, { estado: 'o
   id: 'ai.eco',
   sampleSource: () => ({ texto: 'hola' }),
   outputSchema: z.object({ estado: z.enum(['ok']) }),
-  buildInput: (source) => ({
-    structured: (source.email ? { email: source.email } : { a: 1 }) as Record<
-      string,
-      string | number
-    >,
-    freeText: { vacante: source.texto },
-  }),
+  buildInput: (source) => {
+    const structured: Record<string, string | number> = source.email
+      ? { email: source.email }
+      : { a: 1 };
+    return { structured, freeText: { vacante: source.texto } };
+  },
 };
 
 describe('AiTaskRunner', () => {

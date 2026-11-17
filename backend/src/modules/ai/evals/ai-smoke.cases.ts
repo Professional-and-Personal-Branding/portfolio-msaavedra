@@ -13,7 +13,7 @@ export const aiSmokeEvalSuite = defineEvalSuite<AiSmokeSource, AiSmokeOutput>({
       id: 'valido',
       source: { caso: 'valido' },
       expect: 'output',
-      validate: (output) => (output.estado === 'ok' ? [] : [`estado inesperado: ${output.estado}`]),
+      validate: (output) => (output.estado === 'ok' ? [] : ['estado inesperado']),
     },
     { id: 'refusal', source: { caso: 'refusal' }, expect: 'Refused' },
     { id: 'max-tokens', source: { caso: 'max-tokens' }, expect: 'Truncated' },

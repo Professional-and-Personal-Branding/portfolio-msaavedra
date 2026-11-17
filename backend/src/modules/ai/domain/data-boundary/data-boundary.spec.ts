@@ -148,12 +148,8 @@ describe('assertLlmSafe — propiedad', () => {
       { depthSize: 'small', maxDepth: 3 },
       leaf,
       fc.array(tie('node'), { maxLength: 3 }),
-      fc.dictionary(
-        fc.constantFrom('a', 'b', 'role', 'items', 'x'),
-        tie('node') as fc.Arbitrary<JsonValue>,
-        { maxKeys: 3 },
-      ),
-    ) as fc.Arbitrary<JsonValue>,
+      fc.dictionary(fc.constantFrom('a', 'b', 'role', 'items', 'x'), tie('node'), { maxKeys: 3 }),
+    ),
   })).node;
 
   const forbiddenValues = [

@@ -62,11 +62,7 @@ export function defineEvalSuite<I, O>(definition: EvalSuiteDefinition<I, O>): Ev
     cases: definition.cases.map((item): EvalCaseRef => ({
       id: item.id,
       expect: item.expect,
-      prepare: (knownSecrets) =>
-        prepareTaskRun(task, item.source, knownSecrets) as Result<
-          PreparedRun<unknown>,
-          ForbiddenDataError
-        >,
+      prepare: (knownSecrets) => prepareTaskRun(task, item.source, knownSecrets),
       run: async (runner, store) => {
         const result = await runner.run(task, item.source, { bypassCache: true });
         if (result.ok) {

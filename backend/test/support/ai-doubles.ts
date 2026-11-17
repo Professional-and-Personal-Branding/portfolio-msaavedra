@@ -95,7 +95,7 @@ export class ScriptedLlm implements LlmPort {
 
   complete<T>(request: LlmRequest<T>): Promise<Result<LlmCompletion<T>, LlmFailure>> {
     this.completeCalls += 1;
-    this.requests.push(request as LlmRequest);
+    this.requests.push(request);
     const step = this.steps.shift() ?? this.defaultStep;
     return Promise.resolve(step as CompleteStep<T>);
   }
