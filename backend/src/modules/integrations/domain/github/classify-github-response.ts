@@ -1,4 +1,4 @@
-import { ProviderFailure, permanent, resetAt, retryAfter } from '../provider-failure';
+import { ProviderFailure, permanent, resetAt, retryAfter } from '../../../../shared/domain/provider-failure/provider-failure';
 import { classifyHttpFailure } from '../services/classify-http-failure';
 
 /** Reserva de cuota (D7): con tantas peticiones o menos por delante, el trabajo se detiene. */

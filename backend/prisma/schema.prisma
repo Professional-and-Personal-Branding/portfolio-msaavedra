@@ -549,3 +549,57 @@ model RepositoryEvidence {
   verifiedAt           DateTime                 // última vez que GitHub respondió por este repo
   changedAt            DateTime                 // última vez que cambió el contenido
 }
+
+// ─────────────────────────────────────────────────────────────
+// BASE DE IA (change `add-ai-foundation`)
+// ─────────────────────────────────────────────────────────────
+// Una fila por corrida de IA y un contador por mes UTC. Solo `modules/ai` las escribe. La
+// entrada NUNCA se guarda: solo su hash y la salida validada. Dinero en micro-USD enteros.
+enum AiRunStatus {
+  RESERVED
+  SUCCEEDED
+  CACHED
+  REFUSED
+  FAILED
+  ABANDONED
+  BLOCKED
+}
+
+model AiRun {
+  id                   String      @id @default(cuid())
+  task                 String
+  promptVersion        Int
+  model                String
+  inputHash            String      // SHA-256 de la entrada canónica; la entrada NO se guarda
+  cacheKey             String
+  status               AiRunStatus
+  reservedMicroUsd     Int         @default(0)
+  costMicroUsd         Int?        // real, desde usage; null mientras RESERVED
+  inputTokens          Int?
+  outputTokens         Int?
+  cacheReadTokens      Int?
+  cacheWriteTokens     Int?
+  stopReason           String?
+  failureKind          String?
+  failureMessage       String?     // ya pasado por redactSecrets
+  output               Json?       // solo la salida validada
+  requestId            String?
+  durationMs           Int?
+  budgetMonth          String      // 'AAAA-MM' en UTC
+  reservationExpiresAt DateTime?
+  createdAt            DateTime    @default(now())
+  finishedAt           DateTime?
+
+  @@index([cacheKey, status])
+  @@index([budgetMonth, status])
+  @@index([createdAt])
+}
+
+model AiBudgetMonth {
+  month                String    @id // 'AAAA-MM' UTC
+  spentMicroUsd        Int       @default(0)
+  reservedMicroUsd     Int       @default(0)
+  providerBlockedUntil DateTime?
+  providerBlockReason  String?
+  updatedAt            DateTime  @updatedAt
+}

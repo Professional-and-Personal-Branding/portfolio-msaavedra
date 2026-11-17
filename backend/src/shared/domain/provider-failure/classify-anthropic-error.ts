@@ -4,7 +4,7 @@ import {
   ProviderFailure,
   retryAfter,
   transient,
-} from '../provider-failure';
+} from './provider-failure';
 
 export interface AnthropicErrorInput {
   readonly status?: number;
@@ -31,12 +31,16 @@ function nextMonthStart(now: Date): Date {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
 }
 
+// Texto confirmado del 400 del límite fijado en la Console (organización o workspace): empieza así.
+const CONSOLE_LIMIT_PREFIX = /^You have reached your specified (workspace )?API usage limits/i;
+// Heurística heredada para otras variantes del texto (se mantiene por si el mensaje cambia).
 const SPEND_TEXT = /spend limit|usage limit/i;
 
 /**
- * Distingue el corte de presupuesto de la API de Anthropic de un error común (D9, para 2.0).
- * El texto exacto del 400 por tope de la Console NO está confirmado (P4): se trata por
- * heurística y un 400 con otro texto queda como `Permanent`, que tampoco se reintenta.
+ * Distingue el corte de presupuesto de la API de Anthropic de un error común. Con el change
+ * `add-ai-foundation` el texto del 400 de la Console quedó confirmado en la documentación oficial
+ * (2026-11-17); un 429 `ramp_limit_exceeded` es un límite de rampa, nunca presupuesto, y un 400 por
+ * un parámetro inválido sigue siendo `Permanent` (que tampoco se reintenta).
  */
 export function classifyAnthropicError(input: AnthropicErrorInput): ProviderFailure {
   const now = input.now ?? new Date();
@@ -55,7 +59,11 @@ export function classifyAnthropicError(input: AnthropicErrorInput): ProviderFail
     return budgetExhausted('error de facturación: sin saldo o tope alcanzado');
   }
   if (status === 400) {
-    if (error.type === 'invalid_request_error' && SPEND_TEXT.test(error.message ?? '')) {
+    const message = error.message ?? '';
+    if (
+      error.type === 'invalid_request_error' &&
+      (CONSOLE_LIMIT_PREFIX.test(message) || SPEND_TEXT.test(message))
+    ) {
       return budgetExhausted('tope de gasto o de uso alcanzado');
     }
     return permanent('HTTP 400: solicitud inválida');

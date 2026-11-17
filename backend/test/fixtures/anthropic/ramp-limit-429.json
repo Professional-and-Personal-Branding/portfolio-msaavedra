@@ -1,0 +1,9 @@
+{
+  "_nota": "limite de rampa del proveedor: NO es presupuesto (documentacion oficial, 2026-11-17)",
+  "type": "error",
+  "error": {
+    "type": "rate_limit_error",
+    "message": "Request rate is ramping up; slow down.",
+    "details": { "error_code": "ramp_limit_exceeded" }
+  }
+}

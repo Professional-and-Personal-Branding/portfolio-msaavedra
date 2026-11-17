@@ -22,7 +22,7 @@ import {
   projectGithubLanguages,
   projectGithubRepository,
 } from '../../domain/github/project-github-repository';
-import { ProviderFailure, transient } from '../../domain/provider-failure';
+import { ProviderFailure, transient } from '../../../../shared/domain/provider-failure/provider-failure';
 import { RunLogger } from '../ports/run-logger.port';
 import { SnapshotStore, StoredSnapshot } from '../ports/snapshot-store.port';
 import { SyncOutcome } from '../ports/connector.port';

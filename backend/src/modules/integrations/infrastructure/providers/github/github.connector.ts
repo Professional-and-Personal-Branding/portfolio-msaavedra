@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Result } from '../../../../../shared/domain/result';
 import { ConnectorPort, SyncContext, SyncOutcome } from '../../../application/ports/connector.port';
 import { SyncGithubEvidenceService } from '../../../application/github/sync-github-evidence.service';
-import { ProviderFailure } from '../../../domain/provider-failure';
+import { ProviderFailure } from '../../../../../shared/domain/provider-failure/provider-failure';
 
 /**
  * Conector del proveedor `github` (change `add-github-code-evidence`, D2): solo adapta

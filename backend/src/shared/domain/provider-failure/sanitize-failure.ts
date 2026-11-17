@@ -1,4 +1,4 @@
-import { budgetExhausted, ProviderFailure, transient } from '../provider-failure';
+import { budgetExhausted, ProviderFailure, transient } from './provider-failure';
 
 /** Topes de las pistas del tercero (revisión de seguridad M2): un valor enorme no puede congelar al proveedor. */
 export const MAX_RETRY_AFTER_SECONDS = 24 * 60 * 60;
