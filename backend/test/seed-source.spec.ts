@@ -282,10 +282,10 @@ describe('repositorios destacados (add-featured-repositories, D2 y D14)', () => 
     expect(parseSeedSource(d).ok).toBe(true);
   });
 
-  it('rechaza stars que no es un número', () => {
-    expect(errorPaths(withRepos(repo({ stars: 'muchas' })))).toEqual([
-      'profile.featuredRepositories[0].stars',
-    ]);
+  it('acepta stars que no es un número: la clave se ignora (polish-pre-deploy-cleanup, D3)', () => {
+    const d = cvData();
+    withRepos(repo({ stars: 'muchas' }))(d);
+    expect(parseSeedSource(d).ok).toBe(true);
   });
 
   it('repository:<id> se resuelve con el id del archivo y rechaza uno inexistente', () => {

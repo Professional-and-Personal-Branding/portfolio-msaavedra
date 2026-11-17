@@ -4,18 +4,18 @@
 
 ## 1. Spec y verificación previa
 
-- [ ] 1.1 Deltas en `specs/`: `MODIFIED` de *Campos de un repositorio destacado*, *Repositorios destacados en el seed* y *Regiones desplazables alcanzables con teclado* (con todos sus escenarios); `ADDED` en `web-performance`, `web-accessibility` y `platform-manual`. Verificar: `npx -y @fission-ai/openspec@1.14.1 validate polish-pre-deploy-cleanup --strict` sin errores y sin «Archive would refuse».
-- [ ] 1.2 Confirmar que `main` no trae otra migración posterior a `20261116212530_add_github_code_evidence` ni otro change que toque `FeaturedRepository`. Verificar: `ls backend/prisma/migrations` y `ls openspec/changes`.
+- [x] 1.1 Deltas en `specs/`: `MODIFIED` de *Campos de un repositorio destacado*, *Repositorios destacados en el seed* y *Regiones desplazables alcanzables con teclado* (con todos sus escenarios); `ADDED` en `web-performance`, `web-accessibility` y `platform-manual`. Verificar: `npx -y @fission-ai/openspec@1.14.1 validate polish-pre-deploy-cleanup --strict` sin errores y sin «Archive would refuse».
+- [x] 1.2 Confirmar que `main` no trae otra migración posterior a `20261116212530_add_github_code_evidence` ni otro change que toque `FeaturedRepository`. Verificar: `ls backend/prisma/migrations` y `ls openspec/changes`.
 
 ## 2. Columna `stars` (D1, D3, D4)
 
-- [ ] 2.1 Sacar `stars` del modelo `FeaturedRepository` en `backend/prisma/schema.prisma` (sin tocar `RepositoryEvidence.stars`). Verificar: `npm run prisma:generate` y `npm run typecheck` en verde.
-- [ ] 2.2 Crear la migración con `npx prisma migrate dev --create-only --name retire_featured_repository_stars` contra una base descartable y dejar el SQL exactamente como en D1 (comentario y una sola sentencia). Verificar: el archivo solo contiene `ALTER TABLE "FeaturedRepository" DROP COLUMN "stars";` además de los comentarios; `npm run prisma:status` sin deriva.
-- [ ] 2.3 Escenario «Base con datos»: en una base descartable migrada **hasta** `add_github_code_evidence`, insertar dos repositorios (uno con `stars = 7`) con evidencia, guardar `GET /api/featured-repositories`, aplicar la migración y repetir la petición. Verificar: la migración termina con 0, las dos respuestas son iguales y `\d "FeaturedRepository"` no lista `stars`. Salida en `verification/2.3-migracion.txt`.
-- [ ] 2.4 `seed-source.ts`: sale `stars?` de `SeedFeaturedRepository` y la validación de tipo. `seed-runner.ts`: el comentario «`stars` se ignora» se actualiza. Comentarios de `featured-repository.prisma-mapper.ts` sin la mención a la columna inerte. Verificar: `grep -rn "stars" backend/scripts` solo devuelve el comentario de compatibilidad.
-- [ ] 2.5 Tests del seed: `seed-source.spec.ts` (acepta `stars: 12` y `stars: "muchas"` sin errores) y `seed-runner.spec.ts` (los repositorios se crean sin `stars`). Verificar: `npm run test -- seed` en verde.
-- [ ] 2.6 Contrato sin cambios. Verificar: `npm run openapi:export` y `git diff --exit-code backend/openapi.json`; en `frontend`, `npm run api:types` y `git diff --exit-code src/shared/types/api.d.ts`.
-- [ ] 2.7 Suite completa. Verificar: `npm run lint`, `npm run test` y `npm run test:e2e` (base local migrada y sembrada) en verde, incluidos `featured-repositories.e2e-spec.ts` (400 por `stars`) y `github-code-evidence.e2e-spec.ts`; `npm run seed` + `npm run seed:verify` y `SEED_DISPOSABLE_DB=1 npm run seed:example` + `npm run seed:example:verify` con código 0.
+- [x] 2.1 Sacar `stars` del modelo `FeaturedRepository` en `backend/prisma/schema.prisma` (sin tocar `RepositoryEvidence.stars`). Verificar: `npm run prisma:generate` y `npm run typecheck` en verde.
+- [x] 2.2 Crear la migración con `npx prisma migrate dev --create-only --name retire_featured_repository_stars` contra una base descartable y dejar el SQL exactamente como en D1 (comentario y una sola sentencia). Verificar: el archivo solo contiene `ALTER TABLE "FeaturedRepository" DROP COLUMN "stars";` además de los comentarios; `npm run prisma:status` sin deriva.
+- [x] 2.3 Escenario «Base con datos»: en una base descartable migrada **hasta** `add_github_code_evidence`, insertar dos repositorios (uno con `stars = 7`) con evidencia, guardar `GET /api/featured-repositories`, aplicar la migración y repetir la petición. Verificar: la migración termina con 0, las dos respuestas son iguales y `\d "FeaturedRepository"` no lista `stars`. Salida en `verification/2.3-migracion.txt`.
+- [x] 2.4 `seed-source.ts`: sale `stars?` de `SeedFeaturedRepository` y la validación de tipo. `seed-runner.ts`: el comentario «`stars` se ignora» se actualiza. Comentarios de `featured-repository.prisma-mapper.ts` sin la mención a la columna inerte. Verificar: `grep -rn "stars" backend/scripts` solo devuelve el comentario de compatibilidad.
+- [x] 2.5 Tests del seed: `seed-source.spec.ts` (acepta `stars: 12` y `stars: "muchas"` sin errores) y `seed-runner.spec.ts` (los repositorios se crean sin `stars`). Verificar: `npm run test -- seed` en verde.
+- [x] 2.6 Contrato sin cambios. Verificar: `npm run openapi:export` y `git diff --exit-code backend/openapi.json`; en `frontend`, `npm run api:types` y `git diff --exit-code src/shared/types/api.d.ts`.
+- [x] 2.7 Suite completa. Verificar: `npm run lint`, `npm run test` y `npm run test:e2e` (base local migrada y sembrada) en verde, incluidos `featured-repositories.e2e-spec.ts` (400 por `stars`) y `github-code-evidence.e2e-spec.ts`; `npm run seed` + `npm run seed:verify` y `SEED_DISPOSABLE_DB=1 npm run seed:example` + `npm run seed:example:verify` con código 0.
 
 ## 3. Caddy (D5, D6)
 
