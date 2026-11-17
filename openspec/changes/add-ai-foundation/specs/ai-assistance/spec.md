@@ -207,10 +207,14 @@ Cada tarea SHALL tener casos de eval con datos ficticios y cassettes versionados
 - **THEN** el test falla pidiendo regrabarlo
 
 ### Requirement: Evals en vivo a demanda
-`npm run ai:eval` SHALL correr los casos contra la API real con un presupuesto en memoria, sin tocar la base. MUST negarse con código 2, sin ninguna llamada, si falta la clave, si falta `AI_EVAL_ALLOW_SPEND=1` o si la suma de reservas supera el tope de la corrida (2 USD por defecto). Informa tasas y costo.
+`npm run ai:eval` SHALL correr los casos contra la API real con un presupuesto en memoria, sin tocar la base, usando la clave del workspace de evals (`AI_EVAL_API_KEY`, distinta de `ANTHROPIC_API_KEY`). MUST negarse con código 2, sin ninguna llamada facturable, si falta esa clave, si falta `AI_EVAL_ALLOW_SPEND=1` o si la suma de reservas supera el tope de la corrida (2 USD por defecto). Informa tasas y costo.
+
+#### Scenario: Solo la clave de la app
+- **WHEN** se corre con `ANTHROPIC_API_KEY` pero sin `AI_EVAL_API_KEY`
+- **THEN** sale con código 2 y no hace ninguna petición
 
 #### Scenario: Sin permiso de gasto
-- **WHEN** se corre con la clave pero sin `AI_EVAL_ALLOW_SPEND=1`
+- **WHEN** se corre con `AI_EVAL_API_KEY` pero sin `AI_EVAL_ALLOW_SPEND=1`
 - **THEN** sale con código 2 y no hace ninguna petición
 
 #### Scenario: Tope insuficiente

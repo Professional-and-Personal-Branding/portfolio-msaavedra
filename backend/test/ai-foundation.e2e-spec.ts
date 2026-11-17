@@ -6,6 +6,11 @@
 import { randomUUID } from 'crypto';
 import request from 'supertest';
 import {
+  AI_RUN_REPOSITORY,
+  AiRunRepository,
+} from '../src/modules/ai/application/ports/ai-repositories';
+import { PurgeAiRunOutputsUseCase } from '../src/modules/ai/application/use-cases/purge-ai-run-outputs.use-case';
+import {
   AI_BUDGET_REPOSITORY,
   AiBudgetRepository,
 } from '../src/modules/ai/application/ports/ai-repositories';
@@ -257,6 +262,54 @@ describe('IA con el proveedor fake (e2e)', () => {
     expect(ctx.countSpy).not.toHaveBeenCalled();
     const run = await ctx.prisma.aiRun.findFirstOrThrow({ where: { task: 'ai.fuga' } });
     expect(run).toMatchObject({ status: 'BLOCKED', failureKind: 'ForbiddenData', costMicroUsd: 0 });
+  });
+
+  it('(P4) la purga deja en nulo la salida de las corridas de más de 180 días y conserva las métricas', async () => {
+    const base = {
+      task: 'ai.smoke',
+      promptVersion: 1,
+      model: 'claude-haiku-5-5',
+      inputHash: 'h',
+      status: 'SUCCEEDED' as const,
+      costMicroUsd: 45,
+      inputTokens: 200,
+      outputTokens: 50,
+      budgetMonth: '2026-01',
+      output: { estado: 'ok' },
+    };
+    const day = 24 * 60 * 60 * 1000;
+    await ctx.prisma.aiRun.createMany({
+      data: [
+        {
+          ...base,
+          id: 'purga-vieja',
+          cacheKey: 'k-vieja',
+          createdAt: new Date(Date.now() - 181 * day),
+        },
+        {
+          ...base,
+          id: 'purga-reciente',
+          cacheKey: 'k-reciente',
+          createdAt: new Date(Date.now() - 10 * day),
+        },
+      ],
+    });
+    const useCase = new PurgeAiRunOutputsUseCase(ctx.app.get<AiRunRepository>(AI_RUN_REPOSITORY));
+
+    const dry = await useCase.execute({ now: new Date(), apply: false });
+    expect(dry.affected).toBe(1);
+    expect(
+      (await ctx.prisma.aiRun.findUniqueOrThrow({ where: { id: 'purga-vieja' } })).output,
+    ).not.toBeNull();
+
+    const applied = await useCase.execute({ now: new Date(), apply: true });
+    expect(applied.affected).toBe(1);
+    const vieja = await ctx.prisma.aiRun.findUniqueOrThrow({ where: { id: 'purga-vieja' } });
+    expect(vieja.output).toBeNull();
+    expect(vieja).toMatchObject({ status: 'SUCCEEDED', costMicroUsd: 45, inputTokens: 200 });
+    const reciente = await ctx.prisma.aiRun.findUniqueOrThrow({ where: { id: 'purga-reciente' } });
+    expect(reciente.output).toEqual({ estado: 'ok' });
+    expect((await useCase.execute({ now: new Date(), apply: true })).affected).toBe(0);
   });
 
   it('el estado cerca del tope se refleja en el uso', async () => {

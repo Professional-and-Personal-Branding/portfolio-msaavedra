@@ -12,6 +12,7 @@ import type { IntegrationStatus } from '../shared/admin-types';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { PageHeader } from '../shared/PageHeader';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
+import { AiUsageBlock } from './AiUsageBlock';
 import {
   EMPTY_CREDENTIAL_FORM,
   credentialFormSchema,
@@ -66,26 +67,29 @@ export function IntegrationsPage() {
         />
       )}
 
-      {integrations.data && (
-        <div className="flex flex-col gap-6">
-          {!integrations.data.schedulerEnabled && (
-            <p role="status" className="surface px-4 py-3 text-sm">
-              {SCHEDULER_OFF_MESSAGE}
-            </p>
-          )}
+      <div className="flex flex-col gap-6">
+        {integrations.data && (
+          <div className="flex flex-col gap-6">
+            {!integrations.data.schedulerEnabled && (
+              <p role="status" className="surface px-4 py-3 text-sm">
+                {SCHEDULER_OFF_MESSAGE}
+              </p>
+            )}
 
-          {integrations.data.providers.length === 0 ? (
-            <EmptyState
-              title="No hay integraciones habilitadas."
-              description="Se activan con la variable INTEGRATIONS_ENABLED del servidor."
-            />
-          ) : (
-            integrations.data.providers.map((provider) => (
-              <IntegrationCard key={provider.provider} status={provider} />
-            ))
-          )}
-        </div>
-      )}
+            {integrations.data.providers.length === 0 ? (
+              <EmptyState
+                title="No hay integraciones habilitadas."
+                description="Se activan con la variable INTEGRATIONS_ENABLED del servidor."
+              />
+            ) : (
+              integrations.data.providers.map((provider) => (
+                <IntegrationCard key={provider.provider} status={provider} />
+              ))
+            )}
+          </div>
+        )}
+        <AiUsageBlock />
+      </div>
     </>
   );
 }

@@ -1,5 +1,19 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`add-ai-foundation`)
+
+La base de IA de la Fase 2.0, sin ninguna feature para el usuario: un puerto hacia el modelo, un tope mensual que no se puede pasar, el registro de cada corrida, una frontera de datos con su prueba de lista negra y evals que corren en el CI sin red ni clave. Con `AI_ENABLED=false` (el default) la app funciona exactamente igual que antes.
+
+- **Módulo `ai`.** `LlmPort` con adaptadores `anthropic` (SDK oficial `@anthropic-ai/sdk` 1.9.0, el único archivo que lo importa), `fake` (ocho escenarios, prohibido en producción), `disabled` y de cassettes. Modelos por tarea declarados en código (Haiku 5.5 por defecto, Sonnet 5.5 si una eval lo justifica; Opus fuera del registro), thinking apagado según el modelo, salida validada con Zod y revisión de `stop_reason` antes de leer el contenido. Sin `temperature`, `top_p`, `top_k`, prefill ni `tool_choice` forzado.
+- **Presupuesto.** `AiBudgetMonth` y `AiRun` (migración aditiva `add_ai_foundation`): dinero en micro-USD enteros, reserva del peor caso con un `UPDATE` condicional atómico (probado con 20 reservas concurrentes contra Postgres), conciliación con el `usage`, timeout que imputa la reserva entera, reservas huérfanas que vencen y bloqueo del mes si Anthropic corta por su spend limit. La llamada facturable no se reintenta; el conteo de tokens (gratis) sí.
+- **Clasificador de errores.** `ProviderFailure`, `classifyAnthropicError` y `sanitizeFailure` pasan a `shared/domain/provider-failure`; el 400 de la Console reconoce el texto confirmado («You have reached your specified … API usage limits») y el 429 `ramp_limit_exceeded` no cuenta como presupuesto.
+- **Frontera de datos.** Constructores con lista blanca, guardián en `application` (claves y valores prohibidos, redacción de emails y teléfonos del texto libre) y tres capas de pruebas, incluida la lista negra por tarea sobre `docs/examples/`. Caché por hash y prompts versionados con su SHA-256 verificado.
+- **Ruta pública aislada.** Reglas de arquitectura (el SDK solo en su adaptador; la ruta pública no importa `ai`; `ai` solo escribe `AiRun` y `AiBudgetMonth`), semáforo por proceso, timeouts y un e2e con una llamada lenta en curso.
+- **Evals.** Cassettes en `backend/test/fixtures/ai/` dentro de `npm test`; `npm run ai:eval` a demanda con un presupuesto en memoria, que se niega (código 2, sin gastar) sin `AI_EVAL_API_KEY` —la clave de un workspace aparte con spend limit de 5 USD y 2 USD por corrida, que no es la de la app—, sin `AI_EVAL_ALLOW_SPEND=1` o con las reservas por encima del tope, y que redacta los secretos al grabar.
+- **Retención.** `npm run ai-runs:purge` deja en nulo la salida de las corridas de más de 180 días (simulación por defecto).
+- **Panel.** Bloque **Inteligencia artificial** al final de `/admin/integraciones` (sin ítem en la barra): estado por texto, gasto del mes contra el tope, corte del proveedor, corridas recientes y **Probar conexión** con confirmación; aviso en el Dashboard cuando se alcanzó el tope. `GET /api/admin/ai/usage` y `POST /api/admin/ai/smoke`.
+- **Docs.** `docs/MANUAL.md` e `index.html` (TC-54, B18 y glosario), `docs/DEPLOY-RAILWAY.md` (dos workspaces, spend limits, variables y vuelta atrás), `docs/ARCHITECTURE.md` y `backend/.env.example`. Contrato: `openapi.json` y `api.d.ts` regenerados.
+
 ## Update — Noviembre 2026 (`add-github-code-evidence`)
 
 Los repositorios destacados dicen cuántas stars tienen, en qué lenguajes están escritos y cuándo se verificaron, sin que la ruta pública dependa de GitHub.

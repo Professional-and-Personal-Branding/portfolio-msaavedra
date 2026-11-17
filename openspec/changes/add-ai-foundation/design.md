@@ -73,7 +73,7 @@ Alternativa descartada: **reusar la cola de integraciones (`IntegrationJob`) par
 | `AI_MAX_INPUT_TOKENS` | `50000` | 1 000 a 100 000 (mantiene a Haiku 5.5 en la tarifa de hasta 100K). |
 | `AI_FAKE_SCENARIO` | `ok` | Solo con `AI_PROVIDER=fake`; valores de D20. |
 
-Las variables de las evals en vivo (`AI_EVAL_ALLOW_SPEND`, `AI_EVAL_MAX_USD`) las lee solo el script y no se validan al arrancar la API.
+Las variables de las evals en vivo (`AI_EVAL_API_KEY`, `AI_EVAL_ALLOW_SPEND`, `AI_EVAL_MAX_USD`) las lee solo el script y no se validan al arrancar la API. **`AI_EVAL_API_KEY` no es `ANTHROPIC_API_KEY`**: es la clave del workspace de evals de la Console (P1 = A) y vive solo en la terminal del owner, nunca en Railway.
 
 Con `AI_ENABLED=false` las demás variables se validan igual si están (un valor inválido sigue impidiendo el arranque), pero la clave no se exige.
 
@@ -281,8 +281,9 @@ Alternativa descartada: **solo lista blanca, sin guardián.** Un constructor nue
 ### D17 — `npm run ai:eval` a demanda
 
 - `tsx scripts/ai-eval.ts [--task <id>] [--record] [--max-usd <n>]`.
-- **Se niega (código 2) sin gastar** si falta `ANTHROPIC_API_KEY`, si falta `AI_EVAL_ALLOW_SPEND=1`, o si la **suma de las reservas** de todos los casos (D7) supera `--max-usd` (default `AI_EVAL_MAX_USD` o 2 USD). Mismo patrón que los `*_DISPOSABLE_DB=1` del repo.
+- **Se niega (código 2) sin gastar** si falta `AI_EVAL_API_KEY` (la clave del workspace de evals, **distinta** de `ANTHROPIC_API_KEY`: tener solo esta última no alcanza), si falta `AI_EVAL_ALLOW_SPEND=1`, o si la **suma de las reservas** de todos los casos (D7, con `count_tokens`, que es gratis) supera `--max-usd` (default `AI_EVAL_MAX_USD` o 2 USD). Mismo patrón que los `*_DISPOSABLE_DB=1` del repo.
 - Usa el `AnthropicLlmAdapter` real con un `BudgetGuard` **en memoria** con ese tope: no toca la base ni el ledger de producción. Corta en cuanto el gasto real llega al tope.
+- **Dónde se gasta (P1 = A, decisión del owner del 2026-11-17).** Las evals en vivo usan un **workspace aparte** de la Console, con su propio spend limit de **5 USD**, y cada corrida tiene un tope de **2 USD**. Los 10 USD de `AI_MONTHLY_BUDGET_USD` quedan **solo** para la IA del panel. Cada clave va en su variable: `ANTHROPIC_API_KEY` (workspace de la app, en Railway) y `AI_EVAL_API_KEY` (workspace de evals, solo en la terminal local). El script nunca lee la primera.
 - Informa por tarea la **tasa** de casos que pasan los validadores (no salidas idénticas: sin `temperature` no hay determinismo), los tokens y el costo real; sale con 1 si alguna tarea queda bajo su umbral.
 - `--record`: escribe los cassettes pasando cada string por `redactSecrets` con la clave conocida, y **se niega a escribir** si después de redactar queda algún `sk-ant-`, la clave exacta o un email que no sea del dominio ficticio del ejemplo. El escaneo de `architecture.spec.ts` (que ya cubre `backend/test/fixtures`) es la segunda barrera.
 - Solo datos ficticios: nunca se manda a la API el CV real del owner desde una eval.
@@ -343,7 +344,7 @@ Supuestos de la propuesta (§ 7) por mes, con el modelo que este diseño recomie
 
 - Con **Opus** para las cartas (lo que suponía la propuesta), ese rubro sube a ≈ 4,8 USD y el total a ≈ 7,6–8,5 USD: entra, pero con poco margen. Por eso Opus queda fuera del registro hasta que una eval lo justifique (P2).
 - **Reserva pico:** una llamada de Sonnet con 25K de entrada y `max_tokens` 8 000 reserva ≈ 0,15 USD; con `AI_MAX_CONCURRENCY=2` en dos instancias, el pico reservado es < 0,6 USD. Cerca del tope, el guard rechaza la última llamada que no entra aunque su costo real hubiera sido menor: es el precio de no pasarse nunca.
-- **Evals en vivo:** con la tarea de humo cuestan centavos; las de las features (≤ 2 USD por corrida con el tope del script) van **fuera** de los 10 USD de la app si el owner confirma P1.
+- **Evals en vivo:** con la tarea de humo cuestan centavos; las de las features (≤ 2 USD por corrida con el tope del script) van **fuera** de los 10 USD de la app: P1 = A (workspace de evals con spend limit de 5 USD y tope de 2 USD por corrida).
 
 ## Plan de verificación
 
@@ -379,6 +380,19 @@ Supuestos de la propuesta (§ 7) por mes, con el modelo que este diseño recomie
 4. **Vuelta atrás:** `AI_ENABLED=false` y redeploy. Las tablas quedan inertes; borrarlas es una migración aparte que no hace falta.
 
 ## Open Questions
+
+**Resueltas por el owner y la sesión principal el 2026-11-17** (ninguna queda abierta):
+
+- **P1 = A (owner).** Las evals en vivo usan un workspace aparte de la Console, con un spend limit de 5 USD y un tope de 2 USD por corrida; los 10 USD de `AI_MONTHLY_BUDGET_USD` quedan solo para la IA del panel. La clave de evals va en `AI_EVAL_API_KEY` (no es la de la API). Ver D17 y `docs/DEPLOY-RAILWAY.md`.
+- **P2.** Opus 5.5 queda fuera del registro hasta que una eval lo justifique (se decide en `add-ai-application-drafts`).
+- **P3.** Sin fallback del servidor ante rechazos (D10).
+- **P4.** `AiRun.output` se retiene **180 días** y después se purga. Implementado como `npm run ai-runs:purge` (simulación por defecto; `-- --apply` escribe), que deja en `NULL` el `output` de las corridas más viejas y conserva todas las métricas. Una salida purgada ya no acierta en la caché y la tarea vuelve a llamar.
+- **P5.** La clave solo viene del entorno (D3).
+- **P6.** Los emails y teléfonos del texto libre se redactan (D13).
+- **P7.** El aviso «cerca del tope» salta al 80 % (D18).
+
+Texto original de las preguntas, para el historial:
+
 
 Ver la lista Pn en el informe del arquitecto; se resumen aquí.
 

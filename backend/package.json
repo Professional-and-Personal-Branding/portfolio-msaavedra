@@ -35,6 +35,7 @@
     "job-postings:purge": "tsx scripts/purge-job-posting-text.ts",
     "cv:lint": "tsx scripts/cv-lint.ts",
     "ai:eval": "tsx scripts/ai-eval.ts",
+    "ai-runs:purge": "tsx scripts/ai-runs-purge.ts",
     "integrations:rekey": "tsx scripts/integrations-rekey.ts",
     "integrations:sync": "ts-node --transpile-only -P tsconfig.json scripts/integrations-sync.ts",
     "openapi:export": "ts-node --transpile-only -P tsconfig.json scripts/export-openapi.ts"

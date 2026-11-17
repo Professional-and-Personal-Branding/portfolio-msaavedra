@@ -9,6 +9,11 @@ export interface AiRunRepository {
   findSucceededByCacheKey(cacheKey: string): Promise<AiRun | null>;
   findById(id: string): Promise<AiRun | null>;
   listRecent(limit: number): Promise<AiRun[]>;
+  /**
+   * Cantidad de corridas creadas antes de `cutoff` que todavía guardan su `output`; con `apply`
+   * además lo deja en nulo (retención de 180 días, P4). Conserva todas las métricas.
+   */
+  purgeOutputs(cutoff: Date, apply: boolean): Promise<number>;
 }
 
 export interface BudgetMonthSnapshot {

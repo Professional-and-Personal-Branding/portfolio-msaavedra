@@ -71,6 +71,11 @@ export type IntegrationStatus = Schemas['IntegrationStatusResponse'];
 export type EnqueueSyncResult = Schemas['EnqueueSyncResponse'];
 export type SyncRunOutcome = Schemas['SyncRunOutcome'];
 
+// add-ai-foundation: gasto de IA del mes y corridas recientes (solo lectura).
+export type AiUsage = Schemas['AiUsageResponse'];
+export type AiRun = Schemas['AiRunResponse'];
+export type AiUsageState = Schemas['AiUsageState'];
+
 export type AdminTheme = Schemas['ThemeResponse'];
 export type ProfileViews = Schemas['ProfileViewsResponse'];
 export type Visibility = AdminCuratedProfile['visibility'];

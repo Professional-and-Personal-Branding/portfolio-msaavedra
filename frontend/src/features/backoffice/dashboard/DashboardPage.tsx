@@ -20,6 +20,7 @@ import {
 } from '@/shared/components/ui/table';
 import { profilePath } from '@/shared/lib/profile-link';
 import { PageHeader } from '../shared/PageHeader';
+import { AiUsageNotice } from '../integrations/AiUsageNotice';
 import { IntegrationsNotice } from '../integrations/IntegrationsNotice';
 import { ApplicationsStrip } from './ApplicationsStrip';
 import { EmptyState, ErrorPanel, LoadingRows } from '../shared/states';
@@ -65,6 +66,7 @@ export function DashboardPage() {
 
       <ApplicationsStrip />
       <IntegrationsNotice />
+      <AiUsageNotice />
 
       {analytics.isPending && <LoadingRows rows={3} />}
       {analytics.isError && (

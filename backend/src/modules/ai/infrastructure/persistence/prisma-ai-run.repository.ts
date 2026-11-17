@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../shared/infrastructure/persistence/prisma.service';
 import { AiRunRepository } from '../../application/ports/ai-repositories';
 import { AiRun } from '../../domain/ai-run.entity';
@@ -32,5 +33,15 @@ export class PrismaAiRunRepository implements AiRunRepository {
       take: limit,
     });
     return rows.map(toDomain);
+  }
+
+  async purgeOutputs(cutoff: Date, apply: boolean): Promise<number> {
+    const where: Prisma.AiRunWhereInput = {
+      createdAt: { lt: cutoff },
+      NOT: { output: { equals: Prisma.DbNull } },
+    };
+    if (!apply) return this.prisma.aiRun.count({ where });
+    const result = await this.prisma.aiRun.updateMany({ where, data: { output: Prisma.DbNull } });
+    return result.count;
   }
 }

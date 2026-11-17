@@ -44,6 +44,17 @@ export class InMemoryAiStore implements AiRunRepository, AiBudgetRepository {
     return Promise.resolve(found ?? null);
   }
 
+  purgeOutputs(cutoff: Date, apply: boolean): Promise<number> {
+    let count = 0;
+    for (const run of [...this.runs.values()]) {
+      if (run.props.createdAt < cutoff && run.props.output !== null) {
+        count += 1;
+        if (apply) this.runs.set(run.id, AiRun.restore({ ...run.props, output: null }));
+      }
+    }
+    return Promise.resolve(count);
+  }
+
   findById(id: string): Promise<AiRun | null> {
     return Promise.resolve(this.runs.get(id) ?? null);
   }
