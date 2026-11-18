@@ -3,7 +3,11 @@ import { CLOCK, Clock } from '../../../../shared/domain/clock';
 import { redactSecrets } from '../../../../shared/domain/redact-secrets';
 import { fail, Result } from '../../../../shared/domain/result';
 import { IntegrationJob } from '../../domain/entities/integration-job.entity';
-import { permanent, ProviderFailure, transient } from '../../domain/provider-failure';
+import {
+  permanent,
+  ProviderFailure,
+  transient,
+} from '../../../../shared/domain/provider-failure/provider-failure';
 import {
   INTEGRATION_JOB_REPOSITORY,
   IntegrationJobRepository,

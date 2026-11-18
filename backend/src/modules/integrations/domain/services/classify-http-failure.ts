@@ -1,4 +1,10 @@
-import { permanent, ProviderFailure, resetAt, retryAfter, transient } from '../provider-failure';
+import {
+  permanent,
+  ProviderFailure,
+  resetAt,
+  retryAfter,
+  transient,
+} from '../../../../shared/domain/provider-failure/provider-failure';
 
 export interface HttpFailureInput {
   /** Ausente si no hubo respuesta (red caída, timeout, DNS). */

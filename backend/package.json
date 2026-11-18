@@ -34,6 +34,8 @@
     "views:reclassify": "tsx scripts/reclassify-views.ts",
     "job-postings:purge": "tsx scripts/purge-job-posting-text.ts",
     "cv:lint": "tsx scripts/cv-lint.ts",
+    "ai:eval": "tsx scripts/ai-eval.ts",
+    "ai-runs:purge": "tsx scripts/ai-runs-purge.ts",
     "integrations:rekey": "tsx scripts/integrations-rekey.ts",
     "integrations:sync": "ts-node --transpile-only -P tsconfig.json scripts/integrations-sync.ts",
     "openapi:export": "ts-node --transpile-only -P tsconfig.json scripts/export-openapi.ts"
@@ -42,6 +44,7 @@
     "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "1.9.0",
     "@nestjs/common": "~11.2.3",
     "@nestjs/config": "~4.0.4",
     "@nestjs/core": "~11.2.3",
@@ -65,7 +68,8 @@
     "prisma": "~6.19.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "tsx": "^4.23.15"
+    "tsx": "^4.23.15",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

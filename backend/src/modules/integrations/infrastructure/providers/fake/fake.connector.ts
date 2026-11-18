@@ -8,7 +8,7 @@ import {
   resetAt,
   retryAfter,
   transient,
-} from '../../../domain/provider-failure';
+} from '../../../../../shared/domain/provider-failure/provider-failure';
 
 export const FAKE_SCENARIOS = [
   'ok',

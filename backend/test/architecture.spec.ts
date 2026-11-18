@@ -330,3 +330,184 @@ describe('Fixtures sin tokens (riesgo «Se filtra un token»)', () => {
     expect(TOKEN.test('ghp_corto')).toBe(false);
   });
 });
+
+// add-ai-foundation (D13, D14, D15): el módulo `ai` queda aislado y confinado.
+describe('Módulo ai (add-ai-foundation)', () => {
+  const AI_DIR = path.join(SRC, 'modules', 'ai');
+  const aiFiles = (): string[] => walk(AI_DIR);
+  const unix = (file: string): string => file.split(path.sep).join('/');
+
+  /** Módulos de la ruta pública: ninguno puede importar `modules/ai` (D14). */
+  const PUBLIC_MODULES = [
+    'curated-profile',
+    'profile',
+    'experience',
+    'skill',
+    'analytics',
+    'featured-repository',
+    'education',
+    'project',
+    'social-link',
+    'theme',
+    'health',
+  ];
+
+  /** Regla 1: `@anthropic-ai/sdk` solo se importa en `modules/ai/infrastructure/anthropic/`. */
+  const sdkImportsOutsideAdapter = (files: string[]): string[] =>
+    files
+      .filter((file) => !/modules\/ai\/infrastructure\/anthropic\//.test(unix(file)))
+      .flatMap((file) =>
+        importsOf(file)
+          .filter((imp) => /^@anthropic-ai\/sdk(\/|$)/.test(imp))
+          .map((imp) => `${path.relative(SRC, file)} → ${imp}`),
+      );
+
+  /** Regla 2: nada de la ruta pública importa `modules/ai`. */
+  const publicImportsAi = (files: string[]): string[] =>
+    violations(files, [/(^|\/)modules\/ai(\/|$)/, /(^|\/)\.\.\/ai(\/|$)/]);
+
+  /**
+   * Regla 3: `modules/ai` no importa `analytics`, `auth` (salvo el guard del controller),
+   * `share-link` ni la persistencia de credenciales de `integrations`.
+   */
+  const aiImportsForbidden = (files: string[]): string[] =>
+    files.flatMap((file) =>
+      importsOf(file)
+        .filter(
+          (imp) =>
+            /(^|\/)(modules\/)?(analytics|share-link)(\/|$)/.test(imp) ||
+            (/(^|\/)(modules\/)?auth(\/|$)/.test(imp) && !/jwt-auth\.guard$/.test(imp)) ||
+            /integrations\/.*(credential|crypto|keyring)/i.test(imp),
+        )
+        .map((imp) => `${path.relative(SRC, file)} → ${imp}`),
+    );
+
+  /** Regla 4: las únicas escrituras de Prisma en `modules/ai` son `aiRun` y `aiBudgetMonth`. */
+  const WRITE_CALL =
+    /\.(\w+)\.(create|createMany|update|updateMany|upsert|delete|deleteMany)\s*\(/g;
+  const WRITE_SQL = /\b(?:INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+"([A-Za-z]+)"/g;
+  const ALLOWED_MODELS = new Set(['aiRun', 'aiBudgetMonth']);
+  const ALLOWED_TABLES = new Set(['AiRun', 'AiBudgetMonth']);
+  const aiForeignWrites = (files: string[]): string[] =>
+    files.flatMap((file) => {
+      const source = fs.readFileSync(file, 'utf-8');
+      const rel = path.relative(SRC, file);
+      const calls = [...source.matchAll(WRITE_CALL)]
+        .filter((m) => !ALLOWED_MODELS.has(m[1]))
+        .map((m) => `${rel} → ${m[1]}.${m[2]}`);
+      const sql = [...source.matchAll(WRITE_SQL)]
+        .filter((m) => !ALLOWED_TABLES.has(m[1]))
+        .map((m) => `${rel} → SQL sobre "${m[1]}"`);
+      return [...calls, ...sql];
+    });
+
+  it('existe el módulo ai y tiene archivos que auditar', () => {
+    expect(aiFiles().length).toBeGreaterThan(0);
+  });
+
+  it('el SDK de Anthropic solo se importa en modules/ai/infrastructure/anthropic/ (regla 1)', () => {
+    const files = [...walk(SRC), ...walk(path.resolve(__dirname, '../scripts'))];
+    expect(files.some((f) => /anthropic-llm\.adapter\.ts$/.test(f))).toBe(true);
+    expect(sdkImportsOutsideAdapter(files)).toEqual([]);
+  });
+
+  it.each(PUBLIC_MODULES)('modules/%s no importa modules/ai (regla 2)', (name) => {
+    const files = walk(path.join(SRC, 'modules', name));
+    expect(files.length).toBeGreaterThan(0);
+    expect(publicImportsAi(files)).toEqual([]);
+  });
+
+  it('el head renderizado y los controllers públicos no importan modules/ai (regla 2)', () => {
+    const publicFiles = walk(path.join(SRC, 'modules')).filter(
+      (file) =>
+        !unix(file).includes('/modules/ai/') &&
+        (/head/i.test(path.basename(file)) || /public.*controller/i.test(path.basename(file))),
+    );
+    expect(publicFiles.length).toBeGreaterThan(0);
+    expect(publicImportsAi(publicFiles)).toEqual([]);
+  });
+
+  it('modules/ai no importa analytics, auth (salvo el guard), share-link ni credenciales (regla 3)', () => {
+    expect(aiImportsForbidden(aiFiles())).toEqual([]);
+  });
+
+  it('las únicas escrituras de Prisma en modules/ai son aiRun y aiBudgetMonth (regla 4)', () => {
+    expect(aiForeignWrites(aiFiles())).toEqual([]);
+    // La regla no está vacía: el repositorio de presupuesto realmente escribe.
+    const store = aiFiles().find((f) => /prisma-ai-budget\.repository\.ts$/.test(f));
+    expect(store).toBeDefined();
+    expect(
+      /\b(?:INSERT\s+INTO|UPDATE)\s+"AiBudgetMonth"/.test(
+        fs.readFileSync(store as string, 'utf-8'),
+      ),
+    ).toBe(true);
+  });
+
+  describe('autocontrol de las reglas de ai', () => {
+    const withProbe = (name: string, body: string, check: (files: string[]) => string[]) => {
+      const tmp = path.join(__dirname, name);
+      fs.writeFileSync(tmp, body);
+      try {
+        return check([tmp]);
+      } finally {
+        fs.unlinkSync(tmp);
+      }
+    };
+
+    it('la regla 1 detecta un import del SDK fuera del adaptador', () => {
+      const found = withProbe(
+        '__arch_probe_ai1__.ts',
+        "import Anthropic from '@anthropic-ai/sdk';\nimport { z } from '@anthropic-ai/sdk/helpers/zod';\nexport const x = [Anthropic, z];\n",
+        sdkImportsOutsideAdapter,
+      );
+      expect(found).toHaveLength(2);
+    });
+
+    it('la regla 2 detecta un import de modules/ai desde la ruta pública', () => {
+      const found = withProbe(
+        '__arch_probe_ai2__.ts',
+        "import { X } from '../src/modules/ai/application/services/ai-task-runner';\nexport const x = X;\n",
+        publicImportsAi,
+      );
+      expect(found).toHaveLength(1);
+    });
+
+    it('la regla 3 detecta analytics, auth y credenciales, pero acepta el guard', () => {
+      const check = (imp: string) =>
+        withProbe(
+          '__arch_probe_ai3__.ts',
+          `import { X } from '${imp}';\nexport const x = X;\n`,
+          aiImportsForbidden,
+        );
+      expect(check('../../analytics/domain/x')).toHaveLength(1);
+      expect(check('../../share-link/domain/x')).toHaveLength(1);
+      expect(check('../../auth/domain/entities/admin-user.entity')).toHaveLength(1);
+      expect(check('../../integrations/infrastructure/crypto/keyring')).toHaveLength(1);
+      expect(check('../../../../auth/infrastructure/security/jwt-auth.guard')).toEqual([]);
+    });
+
+    it('la regla 4 detecta una escritura ajena (cliente y SQL) y deja pasar las propias', () => {
+      expect(
+        withProbe(
+          '__arch_probe_ai4a__.ts',
+          'export const f = (prisma: unknown) => prisma.curatedProfile.update({});\n',
+          aiForeignWrites,
+        ),
+      ).toHaveLength(1);
+      expect(
+        withProbe(
+          '__arch_probe_ai4b__.ts',
+          'export const f = (tx: unknown) => tx.$executeRaw`UPDATE "CuratedProfile" SET x = 1`;\n',
+          aiForeignWrites,
+        ),
+      ).toHaveLength(1);
+      expect(
+        withProbe(
+          '__arch_probe_ai4c__.ts',
+          'export const f = (tx: unknown) => { tx.aiRun.create({}); tx.$executeRaw`UPDATE "AiBudgetMonth" SET x = 1`; };\n',
+          aiForeignWrites,
+        ),
+      ).toEqual([]);
+    });
+  });
+});

@@ -14,7 +14,7 @@ import {
   EvidenceTarget,
 } from '../../src/modules/integrations/application/github/code-evidence-store.port';
 import { ok, Result } from '../../src/shared/domain/result';
-import { ProviderFailure } from '../../src/modules/integrations/domain/provider-failure';
+import { ProviderFailure } from '../../src/shared/domain/provider-failure/provider-failure';
 import { RepositoryEvidence } from '../../src/modules/featured-repository/domain/value-objects/repository-evidence';
 import {
   SnapshotRecord,

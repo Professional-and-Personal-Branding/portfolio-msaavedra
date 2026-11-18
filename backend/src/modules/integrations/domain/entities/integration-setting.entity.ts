@@ -1,6 +1,6 @@
-import { ProviderFailure } from '../provider-failure';
+import { ProviderFailure } from '../../../../shared/domain/provider-failure/provider-failure';
 import { nextRetryDelay } from '../services/next-retry-delay';
-import { sanitizeFailure } from '../services/sanitize-failure';
+import { sanitizeFailure } from '../../../../shared/domain/provider-failure/sanitize-failure';
 
 /** Cuántos `Transient` seguidos abren el breaker (D10). */
 export const BREAKER_THRESHOLD = 5;

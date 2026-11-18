@@ -1,0 +1,10 @@
+
+> portfolio-backend@0.1.0 ai:eval
+> tsx scripts/ai-eval.ts
+
+ai:eval: falta AI_EVAL_API_KEY (la clave del workspace de evals de la Console, distinta de ANTHROPIC_API_KEY). No se hizo ninguna llamada.
+exit=2
+> tsx scripts/ai-eval.ts
+
+ai:eval: las evals en vivo gastan dinero de verdad. Para permitirlo, exportá AI_EVAL_ALLOW_SPEND=1. No se hizo ninguna llamada.
+exit=2

@@ -1,5 +1,5 @@
 import { Result } from '../../../../shared/domain/result';
-import { ProviderFailure } from '../../domain/provider-failure';
+import { ProviderFailure } from '../../../../shared/domain/provider-failure/provider-failure';
 
 export const GITHUB_API = Symbol('GITHUB_API');
 

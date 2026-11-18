@@ -30,7 +30,9 @@
  * esté arrancada con `INTEGRATIONS_ENABLED=fake` e `INTEGRATIONS_SCHEDULER_ENABLED=true`;
  * y, para `bo-desde-vacante` (change `add-job-posting-intake`), la importación de UNA vacante PEGADA ficticia
  * (`POST /api/admin/job-postings` con `text`: sin red, y idempotente porque el mismo texto
- * reimporta la misma fila). El script no hace ningún otro POST, PATCH ni DELETE, y
+ * reimporta la misma fila); y, para `bo-integraciones-ia` (change `add-ai-foundation`), UNA corrida de la tarea de humo
+ * (`POST /api/admin/ai/smoke`, solo si todavía no hay ninguna), que exige el proveedor `fake` (sin red ni clave: el script se
+ * niega con el proveedor real). El script no hace ningún otro POST, PATCH ni DELETE, y
  * nunca escribe una contraseña real en un campo: la captura del error de credenciales usa un
  * email inexistente y un valor de relleno que no pertenece a nadie, y la de Cuenta (`bo-cuenta`)
  * solo valores de relleno que la validación del cliente rechaza sin enviar nada. Los errores de validación
@@ -415,6 +417,32 @@ const MANIFEST = [
       ['esperar', 500],
     ],
   },
+  // Inteligencia artificial (change `add-ai-foundation`, B18 y TC-54). Se generan con `--only` contra una API con
+  // `AI_ENABLED=true` y `AI_PROVIDER=fake` (sin red ni clave). `bo-integraciones-ia` crea UNA corrida de humo si todavía
+  // no hay ninguna; `tc54-tope` exige la API arrancada con `AI_MONTHLY_BUDGET_USD=0`.
+  {
+    id: 'bo-integraciones-ia',
+    ruta: '/admin/integraciones',
+    sesion: true,
+    esperar: 'Inteligencia artificial',
+    preparar: 'ia-de-ejemplo',
+    pasos: [
+      ['esperarTexto', 'Exitosa'],
+      ['verSeccion', 'section[aria-labelledby="ai-usage-heading"]'],
+      ['esperar', 500],
+    ],
+  },
+  {
+    id: 'tc54-tope',
+    ruta: '/admin/integraciones',
+    sesion: true,
+    esperar: 'Inteligencia artificial',
+    pasos: [
+      ['esperarTexto', 'Se alcanzó el tope de IA del mes'],
+      ['verSeccion', 'section[aria-labelledby="ai-usage-heading"]'],
+      ['esperar', 500],
+    ],
+  },
   {
     id: 'bo-enlace-stats',
     ruta: '/admin/proyectos',
@@ -647,6 +675,28 @@ async function ensureExampleApplications(page, profileId) {
  * la API del panel y espera al tick del ejecutor. Falla con un mensaje claro si la API no tiene
  * `INTEGRATIONS_ENABLED=fake` o si el scheduler está apagado (nada correría).
  */
+/**
+ * Para `bo-integraciones-ia` (change `add-ai-foundation`): UNA corrida de la tarea de humo con el proveedor
+ * `fake` (sin red ni clave), solo si todavía no hay ninguna. Exige la API con `AI_ENABLED=true` y `AI_PROVIDER=fake`.
+ */
+async function ensureExampleAiRun(page) {
+  const outcome = await page.evaluate(async () => {
+    const usage = await (await fetch('/api/admin/ai/usage', { credentials: 'same-origin' })).json();
+    if (!usage.enabled) return 'apagada';
+    if (usage.provider !== 'fake') return 'proveedor-real';
+    if (usage.recentRuns.length > 0) return 'listo';
+    const response = await fetch('/api/admin/ai/smoke', { method: 'POST', credentials: 'same-origin' });
+    return response.ok ? 'listo' : `smoke-${response.status}`;
+  });
+  if (outcome === 'apagada') {
+    throw new Error('La API tiene la IA apagada: arrancala con AI_ENABLED=true y AI_PROVIDER=fake.');
+  }
+  if (outcome === 'proveedor-real') {
+    throw new Error('La API usa el proveedor real: la captura solo corre con AI_PROVIDER=fake (no hace llamadas facturables).');
+  }
+  if (outcome !== 'listo') throw new Error(`No pude crear la corrida de humo de ejemplo: ${outcome}`);
+}
+
 async function ensureExampleIntegration(page) {
   const outcome = await page.evaluate(async () => {
     const json = async (path, init) => {
@@ -775,6 +825,10 @@ for (const entry of selected) {
     }
     if (entry.preparar === 'integracion-de-ejemplo') {
       await ensureExampleIntegration(page);
+      await page.reload({ waitUntil: 'networkidle0' });
+    }
+    if (entry.preparar === 'ia-de-ejemplo') {
+      await ensureExampleAiRun(page);
       await page.reload({ waitUntil: 'networkidle0' });
     }
     if (entry.esperar) await waitForText(page, entry.esperar);

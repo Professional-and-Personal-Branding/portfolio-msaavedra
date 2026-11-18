@@ -1,7 +1,47 @@
 /* eslint-disable */
 // Generado por `npm run api:types` desde backend/openapi.json. NO editar a mano.
-// openapi-sha256: 19240c34765295d11c5c8775740da5b6146644091c10649e8f7916b6ce31b2fe
+// openapi-sha256: 73f30d51eca2f01421c5794d12dea0e30304bd7325dd9b7efcbaa896614a873a
 export interface paths {
+    "/api/admin/ai/smoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Probar la conexión con el proveedor de IA
+         * @description Corre la tarea interna de humo (texto fijo, Haiku 5.5, sin datos del usuario) y devuelve su corrida. Ignora la caché: prueba la conexión de verdad. Con `AI_PROVIDER=fake` no llama a Anthropic. Una llamada que se hizo y falló (transitorio, spend limit, rechazo) responde 201 con la corrida `FAILED` o `REFUSED`. Límite: 5 por minuto.
+         */
+        post: operations["AdminAiController_smoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/ai/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Gasto de IA del mes
+         * @description Responde también con la IA apagada (`state: DISABLED`): solo lee la base. Nunca incluye las entradas ni las salidas de las corridas.
+         */
+        get: operations["AdminAiController_usage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/analytics/views": {
         parameters: {
             query?: never;
@@ -1417,6 +1457,69 @@ export interface components {
             url: string;
             visible: boolean;
         };
+        /** @enum {string} */
+        AiProvider: "anthropic" | "fake";
+        AiRunResponse: {
+            cacheReadTokens: number | null;
+            cacheWriteTokens: number | null;
+            /** @description Costo real imputado, en micro-USD; `null` mientras la corrida sigue reservada */
+            costMicroUsd: number | null;
+            /** @description ISO 8601 */
+            createdAt: string;
+            durationMs: number | null;
+            /** @example Transient */
+            failureKind: string | null;
+            /** @description Redactado y de hasta 500 caracteres */
+            failureMessage: string | null;
+            /** @description ISO 8601 */
+            finishedAt: string | null;
+            /** @description `true` si se sirvió desde la caché (sin llamada y sin costo) */
+            fromCache: boolean;
+            id: string;
+            inputTokens: number | null;
+            /** @example claude-haiku-5-5 */
+            model: string;
+            outputTokens: number | null;
+            promptVersion: number;
+            /** @description Reserva previa, en micro-USD (1 USD = 1 000 000) */
+            reservedMicroUsd: number;
+            status: components["schemas"]["AiRunStatus"];
+            stopReason: string | null;
+            /** @example ai.smoke */
+            task: string;
+        };
+        /** @enum {string} */
+        AiRunStatus: "RESERVED" | "SUCCEEDED" | "CACHED" | "REFUSED" | "FAILED" | "ABANDONED" | "BLOCKED";
+        AiUsageResponse: {
+            /** @description Tope mensual en USD (`AI_MONTHLY_BUDGET_USD`) */
+            budgetUsd: number;
+            /** @description `false` = `AI_ENABLED` apagado en este servidor */
+            enabled: boolean;
+            /**
+             * @description Mes calendario UTC
+             * @example 2026-11
+             */
+            month: string;
+            /** @description Gastado sobre el tope, redondeado a entero */
+            percentUsed: number;
+            /**
+             * @description Cuándo se verificó la tabla de precios
+             * @example 2026-11-17
+             */
+            pricingVerifiedAt: string;
+            provider: components["schemas"]["AiProvider"];
+            /** @description ISO 8601; solo si el corte sigue vigente */
+            providerBlockedUntil: string | null;
+            providerBlockReason: string | null;
+            /** @description Las 20 más recientes, sin entradas ni salidas */
+            recentRuns: components["schemas"]["AiRunResponse"][];
+            remainingUsd: number;
+            reservedUsd: number;
+            spentUsd: number;
+            state: components["schemas"]["AiUsageState"];
+        };
+        /** @enum {string} */
+        AiUsageState: "DISABLED" | "OK" | "NEAR_LIMIT" | "EXHAUSTED" | "PROVIDER_BLOCKED";
         ApplicationResponse: {
             /**
              * @description AAAA-MM-DD
@@ -2990,6 +3093,89 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    AdminAiController_smoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiRunResponse"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description La IA está apagada, se alcanzó el tope del mes o Anthropic cortó por su spend limit */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Más de 5 por minuto */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Hay demasiadas consultas de IA en curso; trae `retry-after` */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAiController_usage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiUsageResponse"];
+                };
+            };
+            /** @description Sin sesión de administrador */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
     AdminAnalyticsController_views: {
         parameters: {
             query?: {

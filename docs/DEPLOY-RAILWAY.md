@@ -107,6 +107,7 @@ FRONTEND_URL=https://mjsaavedra.is-a.dev
 - **`FRONTEND_URL`** lleva el dominio real, que se completa en el paso 6. La API en producción exige un valor https; si querés probar antes de tener dominio, poné provisoriamente `https://<dominio-up.railway.app-de-web>` y reemplazalo en el paso 6.
 - **No** definir `ENABLE_API_DOCS` (Swagger queda cerrado), **ni** `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` (viven solo en la terminal del paso 4), **ni** `SEED_ALLOW_PRODUCTION`.
 - **Integraciones con terceros:** dejá las ocho variables `INTEGRATIONS_*` **sin definir** hasta que llegue un proveedor real (`INTEGRATIONS_ENABLED`, `INTEGRATIONS_SCHEDULER_ENABLED`, `INTEGRATIONS_SYNC_CRON`, `INTEGRATIONS_TICK_SECONDS`, `INTEGRATIONS_JOB_TIMEOUT_MS`, `INTEGRATIONS_RUN_MAX_MS`, `INTEGRATIONS_KEYS` e `INTEGRATIONS_ACTIVE_KEY`). Sus defaults dejan todo apagado y `fake` está prohibido en producción. `GITHUB_SYNC_TOKEN` (opcional) y `GITHUB_TRANSPORT` (`http` por defecto; `fixture` está prohibido en producción) solo cuentan si encendés el proveedor `github`. El detalle, en [`DEPLOY.md` § 3](DEPLOY.md#integraciones-con-terceros-change-add-integrations-foundation).
+- **Inteligencia artificial** (change `add-ai-foundation`): dejá las variables `AI_*` y `ANTHROPIC_API_KEY` **sin definir** en el primer deploy: con `AI_ENABLED` ausente la IA queda apagada y la app funciona exactamente igual. Cómo encenderla: [«Encender la IA (opcional)»](#encender-la-ia-opcional) más abajo.
 - El drenaje de 10 s ya está versionado (`drainingSeconds`); la variable `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` solo hace falta para pisarlo desde el panel. La API espera hasta 5 s a registrar las visitas en vuelo al apagarse.
 - [ ] Deploy.
 
@@ -128,6 +129,50 @@ FRONTEND_URL=https://mjsaavedra.is-a.dev
 > Las migraciones `retire_accent_color` (destructiva) y `localize_language_level` (de datos) son inocuas sobre una base **vacía**, como la de este primer deploy. Las demás solo agregan tablas o columnas con valor por defecto. Si algún día un deploy aplica una migración destructiva o de datos sobre una base con contenido, hacé un respaldo antes (§ 9.5 y [«Deploys siguientes»](#deploys-siguientes)).
 
 - [ ] Opcional: **Settings → Networking → Generate Domain** en `api`, para mirar la API cruda en el paso 7. Se puede borrar después.
+
+### Encender la IA (opcional)
+
+Change `add-ai-foundation`. Es una base: hoy solo trae el panel de gasto y **Probar conexión** (la IA para el usuario llega con los changes siguientes). Conviene encenderla después del primer deploy, con el sitio ya estable, y se puede apagar en cualquier momento.
+
+**Dos workspaces en la Console de Anthropic, dos claves.** Los 10 USD del tope mensual son solo para la IA del panel; las evals en vivo gastan aparte (decisión P1 del owner):
+
+| Workspace | Para qué | Spend limit de la Console | Variable de la clave | Dónde vive la clave |
+|---|---|---|---|---|
+| `portfolio-app` | La IA del panel (Probar conexión y las features que vienen) | un poco por encima del tope propio (p. ej. **12 USD**), para que el cortafuegos propio salte primero | `ANTHROPIC_API_KEY` | variable del servicio `api` en Railway |
+| `portfolio-evals` | `npm run ai:eval` | **5 USD** | `AI_EVAL_API_KEY` (**no** es la `ANTHROPIC_API_KEY`) | solo la terminal del owner; nunca en Railway ni en un archivo |
+
+Si el spend limit de la Console fuera menor que `AI_MONTHLY_BUDGET_USD`, corta Anthropic antes y el panel lo muestra como «Anthropic cortó por el spend limit hasta {fecha}».
+
+- [ ] En la Console, creá el workspace `portfolio-app`, fijale el spend limit y creá su clave. Pegala directo en el gestor de contraseñas.
+- [ ] Variables del servicio `api` (Raw Editor), todas opcionales salvo las dos primeras:
+
+```ini
+AI_ENABLED=true
+ANTHROPIC_API_KEY=<la clave del workspace portfolio-app>
+AI_MONTHLY_BUDGET_USD=10
+```
+
+  `AI_PROVIDER` queda en su default (`anthropic`): el proveedor `fake` está prohibido en producción y la API no arranca con él. Sin la clave, con `AI_ENABLED=true` la API **no arranca** (el log nombra `ANTHROPIC_API_KEY` sin imprimir ningún valor y queda sirviendo la versión anterior). `AI_REQUEST_TIMEOUT_MS`, `AI_MAX_CONCURRENCY` y `AI_MAX_INPUT_TOKENS` tienen defaults sensatos (60 000 ms, 2 y 50 000).
+- [ ] Deploy. El pre-deploy aplica la migración aditiva `add_ai_foundation` (un tipo y dos tablas, sin tocar las existentes).
+- [ ] En `/admin/integraciones`, bloque **Inteligencia artificial**: debe decir «Activa» y «Gastado 0,00 de 10,00 USD». Pulsá **Probar conexión** (confirma que es una llamada real, de unos 0,0001 USD): la corrida queda **Exitosa**, con su costo.
+- [ ] Mirá el costo de esa petición en la Console de Anthropic: tiene que coincidir con el que muestra el panel.
+
+**Vuelta atrás.** `AI_ENABLED=false` (o borrar la variable) y redeploy: el cliente de Anthropic deja de construirse y la app queda como antes. Las tablas quedan inertes; no hace falta borrarlas.
+
+**Qué pasa al llegar al tope.** Con gastado más reservado en el tope (`AI_MONTHLY_BUDGET_USD`), el panel dice «Se alcanzó el tope de IA del mes» y el Dashboard lo avisa; no se hace ninguna llamada más hasta el día 1 a las 00:00 UTC. Si Anthropic corta antes por su spend limit, el panel dice hasta cuándo.
+
+**Retención.** La salida validada de cada corrida (`AiRun.output`) se guarda 180 días. `npm run ai-runs:purge` (simulación) y `npm run ai-runs:purge -- --apply` la dejan en nulo pasado ese plazo, sin tocar costos ni métricas. Correlo desde tu máquina con la `DATABASE_URL` pública temporal, como en el paso 4 (o dentro de un deploy de mantenimiento).
+
+**Evals en vivo (manual y a demanda).** Desde `backend/`, con la clave del workspace de evals y solo con los datos ficticios de `docs/examples/`:
+
+```powershell
+$env:AI_EVAL_API_KEY = '<clave del workspace portfolio-evals>'   # en esta terminal; no la guardes en ningún archivo
+$env:AI_EVAL_ALLOW_SPEND = '1'
+npm run ai:eval -- --task ai.smoke --max-usd 1
+Remove-Item Env:AI_EVAL_API_KEY, Env:AI_EVAL_ALLOW_SPEND
+```
+
+Sin `AI_EVAL_API_KEY`, sin `AI_EVAL_ALLOW_SPEND=1` o con las reservas de los casos por encima del tope de la corrida (2 USD por defecto), el script sale con código **2** sin hacer ninguna llamada facturable. Con `-- --record` regraba los cassettes de `backend/test/fixtures/ai/` (redacta secretos y se niega a escribir si queda alguno).
 
 ---
 

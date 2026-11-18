@@ -4,6 +4,7 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { APP_CONFIG, AppConfig, loadConfiguration } from './config/configuration';
+import { AiModule } from './modules/ai/ai.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { ApplicationTrackingModule } from './modules/application-tracking/application-tracking.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -64,6 +65,7 @@ import { PrismaModule } from './shared/infrastructure/persistence/prisma.module'
     CvConsistencyModule,
     JobPostingModule,
     IntegrationsModule,
+    AiModule,
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: ContentLanguageInterceptor },

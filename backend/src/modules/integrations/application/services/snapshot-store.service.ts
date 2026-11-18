@@ -2,7 +2,10 @@ import { createHash } from 'crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { CLOCK, Clock } from '../../../../shared/domain/clock';
 import { fail, ok, Result } from '../../../../shared/domain/result';
-import { permanent, ProviderFailure } from '../../domain/provider-failure';
+import {
+  permanent,
+  ProviderFailure,
+} from '../../../../shared/domain/provider-failure/provider-failure';
 import {
   SNAPSHOT_REPOSITORY,
   SnapshotRepository,

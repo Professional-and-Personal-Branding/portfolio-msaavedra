@@ -1,4 +1,4 @@
-import { MAX_REDACTED_LENGTH, redactSecrets } from './redact-secrets';
+import { MAX_REDACTED_LENGTH, redactSecrets, redactSecretsUntruncated } from './redact-secrets';
 
 describe('redactSecrets', () => {
   it('reemplaza el valor exacto de un secreto conocido', () => {
@@ -53,5 +53,13 @@ describe('redactSecrets', () => {
   it('recorta a 500 caracteres', () => {
     const out = redactSecrets('x'.repeat(MAX_REDACTED_LENGTH + 1));
     expect(out).toHaveLength(500);
+  });
+
+  it('redactSecretsUntruncated redacta igual pero no recorta (cassettes de IA)', () => {
+    const long = `${'y'.repeat(800)} sk-ant-api03-${'q'.repeat(30)}`;
+    const out = redactSecretsUntruncated(long);
+    expect(out).toHaveLength(800 + 1 + '[Redacted]'.length);
+    expect(out).not.toContain('sk-ant-');
+    expect(redactSecrets(long)).toHaveLength(500);
   });
 });

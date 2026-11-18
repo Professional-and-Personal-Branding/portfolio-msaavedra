@@ -1,0 +1,8 @@
+{
+  "_nota": "texto confirmado en la documentacion oficial el 2026-11-17 (limite de uso fijado en la Console, organizacion)",
+  "type": "error",
+  "error": {
+    "type": "invalid_request_error",
+    "message": "You have reached your specified API usage limits. You will regain access on 2026-12-01 at 00:00 UTC."
+  }
+}
