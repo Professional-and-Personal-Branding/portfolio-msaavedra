@@ -45,7 +45,7 @@ export function toRepositoryEvidence(r: RepositoryEvidenceRecord): RepositoryEvi
   };
 }
 
-/** La columna `stars` se ignora (inerte, P3): las stars viven en la evidencia verificada. */
+/** Las stars no se guardan en el repositorio: viven en la evidencia verificada. */
 export function toFeaturedRepositoryEntity(r: FeaturedRepositoryWithEvidence): FeaturedRepository {
   return FeaturedRepository.create({
     id: r.id,

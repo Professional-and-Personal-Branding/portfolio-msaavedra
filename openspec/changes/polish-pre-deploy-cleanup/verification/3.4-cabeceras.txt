@@ -1,0 +1,40 @@
+# 3.4 Cabeceras Cache-Control (imagen portfolio-web:cleanup, API 3356, base del ejemplo)
+## ANTES (Caddyfile de main)
+/                                                              lineas=1 valor=[no-cache]
+/assets/index-D1pAzMLH.js                                      lineas=1 valor=[public, max-age=31536000, immutable]
+/profile-prefetch.js                                           lineas=1 valor=[no-cache]
+/api/curated-profiles/all                                      lineas=1 valor=[no-cache]
+/api/curated-profiles/all/resume.json                          lineas=2 valor=[no-cache|no-cache]
+/api/curated-profiles/ejemplo-protegido/resume.json?token=ejemplo-token-2026 lineas=2 valor=[no-cache|private, no-store]
+/api/admin/consistency                                         lineas=2 valor=[no-cache|no-store]
+
+## DESPUES (Caddyfile con ?Cache-Control)
+/                                                              lineas=1 valor=[no-cache]
+/assets/index-D1pAzMLH.js                                      lineas=1 valor=[public, max-age=31536000, immutable]
+/profile-prefetch.js                                           lineas=1 valor=[no-cache]
+/api/curated-profiles/all                                      lineas=1 valor=[no-cache]
+/api/curated-profiles/all/resume.json                          lineas=1 valor=[no-cache]
+/api/curated-profiles/ejemplo-protegido/resume.json?token=ejemplo-token-2026 lineas=1 valor=[private, no-store]
+/api/admin/consistency                                         lineas=1 valor=[no-store]
+
+## caddy adapt (handler de la regla @noCache)
+{"handler": "headers", "response": {"require": {"headers": {"Cache-Control": null}}, "set": {"Cache-Control": ["no-cache"]}}}
+
+## Bloque del CI (D6) contra el Caddyfile nuevo
+--- Cache-Control
+ok   / -> no-cache
+ok   /assets/index-D1pAzMLH.js -> public, max-age=31536000, immutable
+ok   /profile-prefetch.js -> no-cache
+ok   /api/curated-profiles/all -> no-cache
+ok   /api/curated-profiles/all/resume.json -> no-cache
+rc=0
+
+## Bloque del CI (D6) contra el Caddyfile anterior (debe fallar)
+--- Cache-Control
+ok   / -> no-cache
+ok   /assets/index-D1pAzMLH.js -> public, max-age=31536000, immutable
+ok   /profile-prefetch.js -> no-cache
+ok   /api/curated-profiles/all -> no-cache
+FALLA /api/curated-profiles/all/resume.json -> 2 línea(s) [no-cache
+no-cache], esperado 1 línea [no-cache]
+rc=1

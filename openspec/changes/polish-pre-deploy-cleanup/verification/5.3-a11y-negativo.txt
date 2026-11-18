@@ -1,0 +1,17 @@
+# 5.3 Prueba negativa: imagen con el table.tsx y el Dashboard anteriores (sin regionLabel), ejemplo, panel
+42:admin.mobile: scrollable-region-focusable(serious)x1 · teclado: ok (29 controles)
+43:  admin-dashboard-tablas.mobile: las tablas «Por enlace» y «Por portal» no tienen filas: las visitas de preparación no llegaron a HUMAN con enlace y portal
+44:admin-dashboard-tablas.mobile: scrollable-region-focusable(serious)x1
+63:  admin-dashboard-tablas.desktop: las tablas «Por enlace» y «Por portal» no tienen filas: las visitas de preparación no llegaron a HUMAN con enlace y portal
+64:admin-dashboard-tablas.desktop: sin violaciones
+85:Base: http://localhost:8156 · 2026-11-17T06:57:25.366Z · 74 cargas (con panel)
+89:| scrollable-region-focusable | serious | 2 | 2: admin.mobile, admin-dashboard-tablas.mobile | `section[aria-labelledby="por-enlace"] > .overflow-x-auto.relative[data-slot="table-container"]` |
+91:Violaciones serious/critical: 2 nodos en 1 regla(s).
+94:- admin-dashboard-tablas.mobile: las tablas «Por enlace» y «Por portal» no tienen filas: las visitas de preparación no llegaron a HUMAN con enlace y portal
+95:- admin-dashboard-tablas.desktop: las tablas «Por enlace» y «Por portal» no tienen filas: las visitas de preparación no llegaron a HUMAN con enlace y portal
+97:rc=1
+| Regla | Impacto | Nodos | Páginas | Ejemplo |
+|---|---|---|---|---|
+| scrollable-region-focusable | serious | 2 | 2: admin.mobile, admin-dashboard-tablas.mobile | `section[aria-labelledby="por-enlace"] > .overflow-x-auto.relative[data-slot="table-container"]` |
+
+Violaciones serious/critical: 2 nodos en 1 regla(s).

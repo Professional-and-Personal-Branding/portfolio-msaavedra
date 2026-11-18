@@ -172,7 +172,6 @@ model FeaturedRepository {
   description  Json                       // LocalizedText
   technologies String[]
   tags         String[]                   // para filtrado por perfil curado
-  stars        Int?                       // columna inerte desde `add-github-code-evidence` (P3): las stars viven en RepositoryEvidence
   order        Int      @default(0)
   visible      Boolean  @default(true)
   evidence     RepositoryEvidence?

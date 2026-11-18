@@ -350,6 +350,45 @@ describe('DashboardPage — enlaces de seguimiento y portales', () => {
     expect(region).toHaveTextContent('Todavía ninguna visita trae un portal');
   });
 
+  // polish-pre-deploy-cleanup (D7): el contenedor que desplaza la tabla es alcanzable con teclado.
+  it('con filas, las tablas Por enlace y Por portal van en una región con nombre y enfocable', async () => {
+    server.use(
+      attributed({
+        byShareLink: [
+          {
+            shareLinkId: 'a',
+            code: 'k7m2q9xw4t',
+            label: 'Acme',
+            slug: 'acme-backend',
+            portal: 'linkedin',
+            revoked: false,
+            views: 4,
+          },
+        ],
+        bySource: [{ source: 'linkedin', views: 5 }],
+      }),
+      ...adminHandlers,
+    );
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    const porEnlace = await screen.findByRole('region', { name: 'Visitas por enlace' });
+    const porPortal = await screen.findByRole('region', { name: 'Visitas por portal' });
+    for (const region of [porEnlace, porPortal]) {
+      expect(region).toHaveAttribute('tabindex', '0');
+      expect(region).toHaveClass('overflow-x-auto');
+      expect(within(region).getByRole('table')).toBeInTheDocument();
+    }
+  });
+
+  it('con las listas vacías no hay regiones de tabla desplazable', async () => {
+    server.use(attributed({ byShareLink: [], bySource: [] }), ...adminHandlers);
+    renderWithProviders(<AppRouter />, { route: '/admin' });
+
+    await screen.findByRole('region', { name: 'Por enlace' });
+    expect(screen.queryByRole('region', { name: 'Visitas por enlace' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Visitas por portal' })).toBeNull();
+  });
+
   it('Por origen aclara que casi siempre da «directo» y manda a las tablas nuevas', async () => {
     server.use(...adminHandlers);
     renderWithProviders(<AppRouter />, { route: '/admin' });

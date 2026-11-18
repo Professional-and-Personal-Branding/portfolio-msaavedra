@@ -321,7 +321,7 @@ function ShareLinkTable({ total, rows }: { total: number; rows: ProfileViews['by
           <strong>Publicación</strong> de un perfil y usá ese link al enviarlo.
         </p>
       ) : (
-        <Table>
+        <Table regionLabel="Visitas por enlace">
           <TableHeader>
             <TableRow>
               <TableHead>Enlace</TableHead>
@@ -378,7 +378,7 @@ function SourceTable({ total, rows }: { total: number; rows: ProfileViews['bySou
           <strong>Publicación</strong> de un perfil.
         </p>
       ) : (
-        <Table>
+        <Table regionLabel="Visitas por portal">
           <TableHeader>
             <TableRow>
               <TableHead>Portal</TableHead>

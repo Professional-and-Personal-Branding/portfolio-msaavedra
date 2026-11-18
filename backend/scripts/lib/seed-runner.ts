@@ -344,7 +344,7 @@ async function writeSeed(
   }
 
   // ── Featured repositories (curaduría manual) ──
-  // Todos, también los ocultos (como proyectos), con `order` = posición. `stars` se ignora.
+  // Todos, también los ocultos (como proyectos), con `order` = posición. Una clave `stars` de un archivo anterior se ignora como cualquier clave desconocida.
   const repos = data.profile.featuredRepositories ?? [];
   log(`📦 Creando ${repos.length} repositorios destacados...`);
   for (let i = 0; i < repos.length; i++) {
