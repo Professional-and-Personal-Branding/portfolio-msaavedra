@@ -19,11 +19,11 @@ El owner decidió cerrarlas antes del deploy (P4).
 - **Validación de producción** (`backend/src/config/env.validation.ts`):
   - Con `NODE_ENV=production`, `ANALYTICS_SALT` pasa a ser **obligatoria** (D1).
   - `FRONTEND_URL` tiene que ser un **origen** (esquema, host y puerto opcional), sin barra final, ruta, query, fragmento ni credenciales, en todos los entornos (D2).
-  - Propuesto, no bloqueante: en producción, `ANALYTICS_SALT` de al menos 32 caracteres y distinta de toda clave del keyring de integraciones (D4, P1).
+  - En producción, `ANALYTICS_SALT` de al menos 32 caracteres y distinta de toda clave del keyring de integraciones (D4, P1 = sí, decidido el 2026-11-18).
 - **`admin:bootstrap`** (`backend/scripts/bootstrap-admin.ts`):
   - Con `NODE_ENV=production` rechaza la contraseña de ejemplo (sale con 1 y no toca la base) (D3).
-  - Propuesto, no bloqueante: en producción exige 12 caracteres o más, como **Cuenta** (D5, P2).
-- **`job-postings:purge`**: simulación por defecto y `-- --apply` para escribir, como `views:reclassify` y `ai-runs:purge` (D6; recomendado, P3). Sin servicio cron: purga perezosa más una corrida mensual a mano (D7, decisión del owner).
+  - En producción exige 12 caracteres o más, como **Cuenta** (D5, P2 = sí).
+- **`job-postings:purge`**: simulación por defecto y `-- --apply` para escribir, como `views:reclassify` y `ai-runs:purge` (D6, P3 = sí). Sin servicio cron: purga perezosa más una corrida mensual a mano (D7, decisión del owner).
 - **Guías de deploy corregidas** (las 28 discrepancias):
   - Las 15 migraciones con su riesgo (D8).
   - El renombre de los servicios a `api` y `web` como primer paso (D9).
@@ -57,9 +57,9 @@ Ninguna.
 
 - `api-platform`:
   - MODIFIED *Reglas de las variables de sesión y analítica*: `ANALYTICS_SALT` sigue con su valor por defecto solo fuera de producción.
-  - MODIFIED *Arranque seguro en producción*: `ANALYTICS_SALT` obligatoria y, propuesto, larga y distinta del keyring.
+  - MODIFIED *Arranque seguro en producción*: `ANALYTICS_SALT` obligatoria larga y distinta del keyring.
   - ADDED *FRONTEND_URL es un origen*.
-- `admin-authentication`: MODIFIED *Bootstrap del administrador*: contraseña de ejemplo rechazada en producción y, propuesto, longitud mínima de 12.
+- `admin-authentication`: MODIFIED *Bootstrap del administrador*: contraseña de ejemplo rechazada en producción y longitud mínima de 12.
 - `job-posting-intake`: MODIFIED *Texto de la vacante por 90 días*: el comando simula por defecto.
 
 ## Impact

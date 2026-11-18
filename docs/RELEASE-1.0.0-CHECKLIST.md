@@ -10,7 +10,7 @@
 
 ## 🔴 Bloqueantes — sin esto NO se despliega a producción
 
-- [x] ✅ **Secretos fuertes.** El historial de git no contiene secretos y `.env` está ignorado (verificado y blindado con `backend/test/security.spec.ts`). Además, **la API no arranca en producción** si `JWT_SECRET` es el de `.env.example`, tiene menos de 32 caracteres o coincide con `ANALYTICS_SALT`, o si `FRONTEND_URL` no usa https (`src/config/env.validation.ts`). Cómo generarlos: `docs/DEPLOY.md` § 1.
+- [x] ✅ **Secretos fuertes.** El historial de git no contiene secretos y `.env` está ignorado (verificado y blindado con `backend/test/security.spec.ts`). Además, **la API no arranca en producción** si `JWT_SECRET` es el de `.env.example`, tiene menos de 32 caracteres o coincide con `ANALYTICS_SALT`; si `ANALYTICS_SALT` falta, tiene menos de 32 caracteres o coincide con una clave del keyring; o si `FRONTEND_URL` no usa https. En cualquier entorno exige que `FRONTEND_URL` sea un origen, sin barra final ni ruta (`src/config/env.validation.ts`, change `prepare-deploy-1-0-0`). Cómo generarlos: `docs/DEPLOY.md` § 1.
 - [x] ✅ **Migraciones Prisma en producción.** `npm run prisma:deploy` (`prisma migrate deploy`) con la migración `init` versionada. `db push` queda prohibido y así se documenta en `docs/DEPLOY.md` § 3.
 - [x] ✅ **CORS estricto.** Solo el origen exacto de `FRONTEND_URL`, con métodos y cabeceras acotados y `credentials` para la cookie del panel (`src/shared/infrastructure/http/cors.options.ts`). Un origen ajeno no recibe `Access-Control-Allow-Origin`.
 - [x] ✅ **Validación de inputs.** DTOs con `class-validator` y `adminValidationPipe` (whitelist + forbidNonWhitelisted) en todos los endpoints que reciben cuerpo. Un test estático falla si se agrega uno sin el pipe.
@@ -34,6 +34,8 @@
 - [ ] ⏳ **Backup fuera de Railway y prueba de restauración.** Un `pg_dump -Fc` propio (con Public Access encendido solo para eso), guardado fuera de la PC de trabajo y restaurado en un `postgres:<N>-alpine` descartable con la misma versión mayor del servicio; el conteo de `CuratedProfile` tiene que coincidir. Paso 9 de `docs/DEPLOY-RAILWAY.md`.
 - [ ] ⏳ **Config file path de los dos servicios.** `/backend/railway.json` en `api` y `/frontend/railway.json` en `web` (rutas absolutas desde la raíz del repo). Sin eso Railway ignora el archivo versionado: el build no corre `prisma generate` y no hay pre-deploy ni healthcheck. Pasos 3 y 5.
 - [ ] ⏳ **IP real del cliente verificada.** El `Caddyfile` copia `X-Real-IP` a `X-Forwarded-For`; falta comprobar en el sitio desplegado que el límite del login es por IP real (otra red recibe 401, no 429) y que Railway pisa un `X-Real-IP` falso del cliente. Paso 7 (7b y 7c).
+- [ ] ⏳ **Changes archivados antes del deploy.** `openspec/changes/` solo con `archive/`: `polish-pre-deploy-cleanup` y `add-ai-foundation` ya están archivados; falta `prepare-deploy-1-0-0`. Paso 0 de `docs/DEPLOY-RAILWAY.md`.
+- [ ] ⏳ **Purgas mensuales, sin cron.** `npm run job-postings:purge` (simulación y `-- --apply`) cada mes y `npm run ai-runs:purge` desde mayo de 2027, a mano desde la PC. Sección «Operación» de `docs/DEPLOY-RAILWAY.md`.
 - [ ] ⏳ **Primer poblado desde la máquina del owner.** `npm run seed`, `seed:verify` y `admin:bootstrap` contra `DATABASE_PUBLIC_URL` (sin `railway run`), y Public Access apagado después. Paso 4.
 
 ---
@@ -46,6 +48,7 @@
 - [x] ✅ **Dashboard de analítica.** Entregado en la Fase 5: visitas por perfil, idioma y día, con rango de fechas.
 - [x] ✅ **CI.** `.github/workflows/ci.yml` corre lint, typecheck, unitarios, e2e contra Postgres (con `prisma migrate deploy` y seed), build y el control del contrato OpenAPI en cada push y PR a `main` (PR #2). Desde `improve-a11y-and-performance` suma el job `web-quality` (*Frontend · accesibilidad y Lighthouse*: axe, recorrido de teclado y Lighthouse sobre la imagen de producción del frontend) y `perf:budget` en el job `frontend`. Impedir fusionar con ellos en rojo requeriría *required checks*, que el plan gratuito de GitHub no ofrece con un repositorio privado (403); hoy el control es de proceso. El **CD** queda del lado de Railway, que despliega al hacer push a `main` una vez configurado el deploy.
 - [ ] **Repositorios destacados reales.** Curaduría manual pendiente (de Manuel): completar `featuredRepositories` en `docs/cv-data.json`. Ver `docs/DATA-POPULATION.md` § 10.
+- [ ] ⏸️ **Opcionales con el sitio estable: evidencia de GitHub e IA.** Se encienden después de un deploy estable (GitHub, con 2 o más repositorios cargados; TC-52 y TC-54 contra los servicios reales). Spend limits de 12 USD (`portfolio-app`) y 5 USD (`portfolio-evals`). Sección «Opcionales, con el sitio estable» de `docs/DEPLOY-RAILWAY.md`.
 - [ ] ⏸️ **Token CSRF.** Diferido: la cookie es `SameSite` estricto y los endpoints de escritura solo aceptan JSON, así que un formulario cross-site no puede provocar una escritura. Revisar si alguna vez se sirve el frontend desde un subdominio no confiable.
 
 ---

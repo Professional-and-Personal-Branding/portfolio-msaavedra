@@ -22,7 +22,7 @@ Decisiones del owner del 2026-11-18 sobre la revisión:
   - `ANALYTICS_SALT` obligatoria en producción.
   - `FRONTEND_URL` sin barra ni ruta.
   - `admin:bootstrap` sin la contraseña de ejemplo en producción.
-  - Otros endurecimientos baratos, propuestos como no bloqueantes.
+  - Otros endurecimientos baratos (D4, D5 y D6), aprobados después como P1, P2 y P3.
 - **P5 y P6.** Con la recomendación del arquitecto:
   - Wait for CI, si el panel lo ofrece.
   - GitHub e IA después de un deploy estable, con 2 o más repositorios cargados.
@@ -65,13 +65,13 @@ Con `NODE_ENV=production` y `ADMIN_PASSWORD` igual a `cambiar-en-primer-arranque
 
 - *Descartada:* rechazarla siempre. Rompería el primer arranque local documentado en `docs/DATA-POPULATION.md` sin ninguna ganancia.
 
-### D4 — Propuesto: `ANALYTICS_SALT` de 32 caracteres o más y distinta del keyring, en producción
+### D4 — `ANALYTICS_SALT` de 32 caracteres o más y distinta del keyring, en producción
 
 Ambas reglas son baratas y siguen el criterio del `JWT_SECRET`. La guía genera la sal con 32 bytes en base64 (44 caracteres), y una clave del keyring tiene el mismo formato: copiar la sal como clave es un error plausible. El mensaje nombra la variable sin el valor. **Decidido por el owner el 2026-11-18 (P1 = sí).** Si más adelante se revierte, se quitan del delta y de la tarea 1.3 sin afectar al resto.
 
 - *Descartada:* exigir 32 también fuera de producción. Es el mismo argumento que en D1.
 
-### D5 — Propuesto: el bootstrap exige 12 caracteres o más en producción
+### D5 — el bootstrap exige 12 caracteres o más en producción
 
 Hoy `admin:bootstrap` acepta 8 y el cambio de contraseña desde **Cuenta** exige de 12 a 256. La guía ya pide al menos 12. Con la regla, la contraseña de recuperación no puede ser más débil que la del panel. Fuera de producción sigue el mínimo de 8. **Decidido por el owner el 2026-11-18 (P2 = sí).**
 
