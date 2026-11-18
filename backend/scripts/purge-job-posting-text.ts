@@ -1,10 +1,12 @@
 /**
  * Borra el texto de las vacantes importadas con más de 90 días (change `add-job-posting-intake`).
  *
- *   npm run job-postings:purge
+ *   npm run job-postings:purge             → simulación: cuenta las vencidas y no escribe
+ *   npm run job-postings:purge -- --apply  → purga
  *
  * Conserva título, empresa, ubicación, modalidad, URLs, fechas y los términos detectados; solo
- * pone `description` en nulo. Idempotente. Salida: 0 ok · 1 error de base.
+ * pone `description` en nulo. Sin `--apply` simula (cuenta y no escribe). Idempotente.
+ * Salida: 0 ok · 1 error de base.
  */
 import { PrismaClient } from '@prisma/client';
 import { BackgroundTasks } from '../src/shared/application/background-tasks';
@@ -23,10 +25,15 @@ async function main(): Promise<number> {
   const prisma = new PrismaService(noBackground);
   try {
     await prisma.$connect();
-    return await runJobPostingPurge(new PrismaJobPostingRepository(prisma), new Date(), {
-      log: (line) => console.log(line),
-      error: (line) => console.error(`❌ ${line}`),
-    });
+    return await runJobPostingPurge(
+      new PrismaJobPostingRepository(prisma),
+      new Date(),
+      { apply: process.argv.includes('--apply') },
+      {
+        log: (line) => console.log(line),
+        error: (line) => console.error(`❌ ${line}`),
+      },
+    );
   } catch (error) {
     console.error(
       '❌ Error en job-postings:purge:',

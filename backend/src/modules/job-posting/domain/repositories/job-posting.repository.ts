@@ -21,4 +21,6 @@ export interface JobPostingRepository {
    * términos (D13). Un único `UPDATE`; devuelve la cantidad de filas purgadas.
    */
   purgeExpiredText(now: Date): Promise<number>;
+  /** Cuántas filas purgaría `purgeExpiredText(now)`, sin escribir (simulación del comando de purga). */
+  countExpiredText(now: Date): Promise<number>;
 }
