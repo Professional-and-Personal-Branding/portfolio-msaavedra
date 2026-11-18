@@ -1,0 +1,31 @@
+# 5.4 a11y:check con panel, imagen portfolio-web:cleanup (localhost:8156), API 3356
+
+## Ejemplo (A11Y_CHECK_PROFILE=ejemplo-backend), primera corrida
+43:admin-dashboard-tablas.mobile: sin violaciones
+62:admin-dashboard-tablas.desktop: sin violaciones
+83:Base: http://localhost:8156 · 2026-11-17T06:51:56.431Z · 74 cargas (con panel)
+89:Violaciones serious/critical: 0 nodos en 0 regla(s).
+90:Recorrido de teclado: sin problemas.
+91:Entradas con error a la vista: sin problemas.
+93:rc=0
+
+## Ejemplo, segunda corrida sobre la misma base (idempotencia)
+43:admin-dashboard-tablas.mobile: sin violaciones
+62:admin-dashboard-tablas.desktop: sin violaciones
+83:Base: http://localhost:8156 · 2026-11-17T07:03:06.436Z · 74 cargas (con panel)
+89:Violaciones serious/critical: 0 nodos en 0 regla(s).
+90:Recorrido de teclado: sin problemas.
+91:Entradas con error a la vista: sin problemas.
+93:rc=0
+
+## Base sembrada con docs/cv-data.json (perfil por defecto tech-lead-dotnet)
+65:admin-dashboard-tablas.mobile: sin violaciones
+84:admin-dashboard-tablas.desktop: sin violaciones
+105:Base: http://localhost:8156 · 2026-11-17T07:11:12.962Z · 96 cargas (con panel)
+111:Violaciones serious/critical: 0 nodos en 0 regla(s).
+112:Recorrido de teclado: sin problemas.
+113:Entradas con error a la vista: sin problemas.
+115:rc=0
+
+## Enlaces de auditoría en la base del ejemplo tras dos corridas (esperado 1)
+1

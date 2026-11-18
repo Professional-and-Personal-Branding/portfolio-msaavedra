@@ -1,0 +1,6 @@
+# TC-53 en la app real (imagen portfolio-web:cleanup en localhost:8156, API 3356, base portfolio_cleanup_b con el ejemplo, Chrome con viewport móvil 375x812, teclado real por CDP)
+login 200
+foco en región {"label":"Visitas por enlace","tabindex":"0","role":"region","outline":"solid 2px rgb(56, 189, 248)","scrollWidth":403,"clientWidth":285,"scrollLeft":0}
+tras ArrowRight {"label":"Visitas por enlace","tabindex":"0","role":"region","outline":"solid 2px rgb(56, 189, 248)","scrollWidth":403,"clientWidth":285,"scrollLeft":40} DESPLAZÓ
+foco en región {"label":"Visitas por portal","tabindex":"0","role":"region","outline":"solid 2px rgb(56, 189, 248)","scrollWidth":285,"clientWidth":285,"scrollLeft":0}
+tras ArrowRight {"label":"Visitas por portal","tabindex":"0","role":"region","outline":"solid 2px rgb(56, 189, 248)","scrollWidth":285,"clientWidth":285,"scrollLeft":0} no desplazó (no desborda)

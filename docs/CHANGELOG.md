@@ -1,5 +1,15 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`polish-pre-deploy-cleanup`)
+
+Limpieza antes del Deploy 1.0.0: una columna que nadie leía, una cabecera duplicada y dos tablas del Dashboard que el teclado no alcanzaba en el celular.
+
+- **Se retira `FeaturedRepository.stars`.** Migración `retire_featured_repository_stars` (`DROP COLUMN`, destructiva), probada con filas de `stars` no nulas y con el rollback por SQL. El seed olvida la clave: un archivo anterior con `stars` carga igual y no la escribe. Sin cambios de contrato (`openapi.json` y `api.d.ts` idénticos). Comprobación previa, respaldo y rollback en `docs/DEPLOY.md`.
+- **Una sola línea `Cache-Control` por respuesta.** La regla de Caddy pasa a `header @noCache ?Cache-Control "no-cache"`: es el valor por defecto y no se suma al de la API. El HTML, `/profile-prefetch.js` y las rutas de la API sin política siguen con `no-cache`; las que traen la suya (`no-store` del panel, `private, no-store` del `resume.json` protegido) salen solas. El paso de Caddy del job `web-quality` cuenta las líneas de cinco respuestas y un test de Vitest exige el `?` en el `Caddyfile`.
+- **Tablas del Dashboard alcanzables con teclado.** `Table` acepta `regionLabel`; **Por enlace** y **Por portal** pasan a ser regiones con nombre y foco (como **Visitas por día**), así que a 375 px se desplazan con las flechas y axe ya no marca `scrollable-region-focusable`. Las demás tablas del panel no cambian.
+- **`a11y:check` ve esas tablas con filas.** Antes del panel crea (una vez, por la API) un enlace de seguimiento con etiqueta larga en el perfil `all` y registra desde Node visitas de persona con `?via=` y `?src=`; la entrada nueva `admin-dashboard-tablas` exige filas en las dos tablas y, en móvil, que la de **Por enlace** desborde. La prueba negativa con el `Table` anterior reporta la violación.
+- **Docs.** `docs/MANUAL.md` e `index.html` (TC-53 y B2), `docs/DEPLOY.md`, `docs/DATA-POPULATION.md` § 12 y `docs/ARCHITECTURE.md`.
+
 ## Update — Noviembre 2026 (`add-github-code-evidence`)
 
 Los repositorios destacados dicen cuántas stars tienen, en qué lenguajes están escritos y cuándo se verificaron, sin que la ruta pública dependa de GitHub.

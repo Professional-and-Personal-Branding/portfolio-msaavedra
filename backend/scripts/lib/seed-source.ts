@@ -47,8 +47,6 @@ export interface SeedFeaturedRepository {
   description: LocalizedText;
   tags: string[];
   technologies?: string[];
-  /** Se acepta por compatibilidad y se ignora al escribir: lo llenará la sincronización. */
-  stars?: number;
   visible: boolean;
 }
 
@@ -427,9 +425,6 @@ function checkProfile(c: Checker, v: unknown): void {
       c.strings(r['tags'], `${at}.tags`);
       c.strings(r['technologies'], `${at}.technologies`, true);
       c.bool(r['visible'], `${at}.visible`);
-      if (r['stars'] !== undefined && typeof r['stars'] !== 'number') {
-        c.add(`${at}.stars`, 'debe ser un número (se ignora al cargar)');
-      }
       // Las mismas reglas de dominio que la API del panel (D2, D14): URL de GitHub y límites.
       if (name !== undefined && url !== undefined) {
         const valid = validateFeaturedRepository({

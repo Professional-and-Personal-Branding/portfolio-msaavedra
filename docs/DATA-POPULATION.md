@@ -239,7 +239,7 @@ Las dos entradas iniciales:
 
 Desde el change `add-featured-repositories` los repos destacados **se muestran**: la sección **Repositorios destacados** (`repositories`, el décimo id del catálogo) va después de Proyectos, y se cargan desde el panel (**Proyectos, repositorios y enlaces → Repositorios destacados**) o desde `cv-data.json`.
 
-**Concepto clave:** esto NO es un dump automático del API de GitHub. Es una lista curada de los repos que querés mostrar, con su descripción bilingüe. Los datos **que escribís vos** (abajo) nunca los toca la sincronización; los **verificados** (stars, lenguajes, topics, último push, archivado) los trae el proveedor `github` de Integraciones, si lo encendés (change `add-github-code-evidence`; ver *Qué es manual y qué viene de GitHub*). `stars` se acepta en el archivo por compatibilidad y se ignora: la columna quedó inerte.
+**Concepto clave:** esto NO es un dump automático del API de GitHub. Es una lista curada de los repos que querés mostrar, con su descripción bilingüe. Los datos **que escribís vos** (abajo) nunca los toca la sincronización; los **verificados** (stars, lenguajes, topics, último push, archivado) los trae el proveedor `github` de Integraciones, si lo encendés (change `add-github-code-evidence`; ver *Qué es manual y qué viene de GitHub*).
 
 Reglas que conviene conocer:
 - **Solo GitHub**, con la forma exacta `https://github.com/<usuario>/<repositorio>` (sin `www.`, sin barra final, sin `.git`, sin query). Una URL de otro host o fuera de forma se rechaza, en el panel con «La URL tiene que ser https://github.com/<usuario>/<repositorio>» y en el seed con el campo `profile.featuredRepositories[i].url`.
@@ -549,7 +549,8 @@ Se muestran en la sección **Repositorios destacados**, que aparece desde 2 repo
 | `technologies` | lista de texto | No (`[]`) | `["Spring Boot","PostgreSQL"]` | Repositorios destacados (chips) y `keywords` del JSON Resume | Tecnologías |
 | `tags` | lista de texto | Sí | `["java","microservices"]` | No se ve: filtra por perfil | Tags |
 | `visible` | booleano | Sí | `false` | Oculto: solo en el panel; nunca entra en un perfil | Visible en el sitio |
-| `stars` | número | No | `12` | **Ignorado**: se acepta por compatibilidad con archivos anteriores y la columna queda nula | No se edita |
+
+Una clave `stars` de un archivo anterior se ignora como cualquier clave que el seed no conoce: el archivo carga igual y el repositorio no guarda stars. Las stars verificadas salen solo de GitHub (§ 10).
 
 ### 12.11 `exampleViews[]` (solo el ejemplo)
 

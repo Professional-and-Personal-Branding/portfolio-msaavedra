@@ -1,0 +1,27 @@
+# 2.3 Migración retire_featured_repository_stars con datos (base portfolio_cleanup_mig)
+## Antes: esquema con stars, fila r1 con stars=7
+ stars        | integer |           |          | 
+ order        | integer |           | not null | 0
+    "FeaturedRepository_order_idx" btree ("order")
+[{"id":"r1","name":"uno","url":"https://github.com/ejemplo/uno","language":"Java","description":"uno","technologies":["Java"],"tags":["backend"],"order":0,"evidence":{"stars":1234,"languages":[],"topics":[],"pushedAt":null,"archived":false,"verifiedAt":"2026-11-17T06:38:42.979Z"}},{"id":"r2","name":"dos","url":"https://github.com/ejemplo/dos","language":"Go","description":"dos","technologies":["Go"],"tags":["backend"],"order":1,"evidence":null}]
+## Aplicar la migración
+Applying migration `20261117063808_retire_featured_repository_stars`
+  └─ 20261117063808_retire_featured_repository_stars/
+All migrations have been successfully applied.
+exit=0
+## Después: esquema sin stars
+ order        | integer |           | not null | 0
+    "FeaturedRepository_order_idx" btree ("order")
+ stars                | integer                        |           |          | 
+respuestas IGUALES antes/despues
+## Rollback D2
+ALTER TABLE
+ id | stars 
+----+-------
+ r1 |      
+ r2 |      
+(2 rows)
+
+con la columna recreada (nula) la API anterior/actual responde igual
+
+Database schema is up to date!
