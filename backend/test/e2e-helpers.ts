@@ -71,12 +71,14 @@ export async function createHardenedTestApp(
     nodeEnv: process.env.NODE_ENV,
     loginLimit: process.env.THROTTLE_LOGIN_LIMIT,
     frontendUrl: process.env.FRONTEND_URL,
+    analyticsSalt: process.env.ANALYTICS_SALT,
   };
   if (options.production) {
     process.env.NODE_ENV = 'production';
     // Las reglas de producción exigen https y un secreto fuerte.
     process.env.FRONTEND_URL = 'https://portafolio.test';
     process.env.JWT_SECRET = 'x'.repeat(48);
+    process.env.ANALYTICS_SALT = 'y'.repeat(44);
   }
   if (options.loginLimit !== undefined) {
     process.env.THROTTLE_LOGIN_LIMIT = String(options.loginLimit);
@@ -99,6 +101,8 @@ export async function createHardenedTestApp(
     process.env.NODE_ENV = previous.nodeEnv;
     process.env.THROTTLE_LOGIN_LIMIT = previous.loginLimit;
     process.env.FRONTEND_URL = previous.frontendUrl;
+    if (previous.analyticsSalt === undefined) delete process.env.ANALYTICS_SALT;
+    else process.env.ANALYTICS_SALT = previous.analyticsSalt;
   }
 }
 

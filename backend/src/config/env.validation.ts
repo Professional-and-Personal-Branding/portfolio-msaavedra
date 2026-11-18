@@ -61,7 +61,10 @@ export class EnvironmentVariables {
   @Matches(/^\d+(s|m|h|d)?$/, { message: 'JWT_EXPIRES_IN must be seconds or like 30m, 12h, 1d' })
   JWT_EXPIRES_IN: string = '1d';
 
-  /** Sal del hash de IP para analítica. Si falta, se usa JWT_SECRET. */
+  /**
+   * Sal del hash de IP para analítica. Fuera de producción, si falta se usa JWT_SECRET; con
+   * NODE_ENV=production es obligatoria, de 32 caracteres o más y distinta de JWT_SECRET y del keyring.
+   */
   @IsOptional()
   @IsString()
   @MinLength(8)
@@ -212,7 +215,15 @@ function productionIssues(env: EnvironmentVariables): string[] {
       `JWT_SECRET: en producción debe tener al menos ${PRODUCTION_SECRET_MIN_LENGTH} caracteres`,
     );
   }
-  if (env.ANALYTICS_SALT && env.ANALYTICS_SALT === env.JWT_SECRET) {
+  if (!env.ANALYTICS_SALT) {
+    issues.push(
+      'ANALYTICS_SALT: obligatoria en producción (generá una con openssl rand -base64 32)',
+    );
+  } else if (env.ANALYTICS_SALT.length < PRODUCTION_SECRET_MIN_LENGTH) {
+    issues.push(
+      `ANALYTICS_SALT: en producción debe tener al menos ${PRODUCTION_SECRET_MIN_LENGTH} caracteres`,
+    );
+  } else if (env.ANALYTICS_SALT === env.JWT_SECRET) {
     issues.push('ANALYTICS_SALT: debe ser distinto de JWT_SECRET');
   }
   if (!env.FRONTEND_URL.startsWith('https://')) {
@@ -288,6 +299,9 @@ function integrationIssues(env: EnvironmentVariables): string[] {
     if (keyring.rawValues.includes(env.JWT_SECRET)) {
       issues.push('INTEGRATIONS_KEYS: no puede repetir JWT_SECRET');
     }
+    if (env.ANALYTICS_SALT && keyring.rawValues.includes(env.ANALYTICS_SALT)) {
+      issues.push('INTEGRATIONS_KEYS: no puede repetir ANALYTICS_SALT');
+    }
   }
   return issues;
 }
@@ -319,6 +333,26 @@ function aiIssues(env: EnvironmentVariables): string[] {
   return issues;
 }
 
+/**
+ * `FRONTEND_URL` es un origen (esquema, host y puerto opcional) igual a su forma normalizada: sin
+ * barra final, ruta, query, fragmento ni credenciales. Aplica en todos los entornos porque CORS
+ * compara el origen exacto y las URLs del sitemap y del head se arman concatenando. El mensaje no
+ * repite el valor.
+ */
+function frontendUrlIssues(env: EnvironmentVariables): string[] {
+  let isOrigin = false;
+  try {
+    isOrigin = new URL(env.FRONTEND_URL).origin === env.FRONTEND_URL;
+  } catch {
+    isOrigin = false;
+  }
+  return isOrigin
+    ? []
+    : [
+        'FRONTEND_URL: tiene que ser un origen, sin barra final ni ruta (p. ej. https://mjsaavedra.is-a.dev)',
+      ];
+}
+
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {
   const validated = plainToInstance(EnvironmentVariables, config, {
     enableImplicitConversion: true,
@@ -329,6 +363,7 @@ export function validateEnv(config: Record<string, unknown>): EnvironmentVariabl
   const details = [
     ...errors.map((e) => `${e.property}: ${Object.values(e.constraints ?? {}).join(', ')}`),
     // Las reglas de producción solo se evalúan si la forma básica ya es válida.
+    ...(errors.some((e) => e.property === 'FRONTEND_URL') ? [] : frontendUrlIssues(validated)),
     ...(errors.length === 0 ? productionIssues(validated) : []),
     ...(errors.length === 0 ? integrationIssues(validated) : []),
     ...(errors.length === 0 ? aiIssues(validated) : []),

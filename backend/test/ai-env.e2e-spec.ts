@@ -111,6 +111,7 @@ describe('Arranque con las variables de la IA (e2e, proceso real)', () => {
       childEnv({
         NODE_ENV: 'production',
         JWT_SECRET: 'x'.repeat(48),
+        ANALYTICS_SALT: 'y'.repeat(44),
         FRONTEND_URL: 'https://portafolio.test',
         AI_PROVIDER: 'fake',
       }),
