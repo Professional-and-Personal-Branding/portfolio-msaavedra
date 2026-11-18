@@ -172,3 +172,25 @@ El manual SHALL incluir el caso TC-52 «Verificar los repositorios contra GitHub
 #### Scenario: Mensajes literales
 - **WHEN** se lee B7
 - **THEN** lista literalmente «Sin verificar», «No encontrado en GitHub», «GitHub no da acceso», «Privado: no se publica» y «La última sincronización con GitHub falló»
+
+### Requirement: Caso TC-53 de las tablas del Dashboard con teclado
+El manual SHALL incluir el caso TC-53: a 375 px, con al menos una visita atribuida a un enlace y otra a un portal, llegar con Tab a las tablas **Por enlace** y **Por portal** del Dashboard y desplazarlas con las flechas, con el contorno de foco visible. La pantalla B2 SHALL mencionar que las tablas desplazables se recorren con el teclado.
+
+#### Scenario: Caso TC-53 alineado
+- **WHEN** se ejecuta `npm run manual:check` con TC-53 en `MANUAL.md`, en `index.html` y en la tabla de la suite
+- **THEN** termina con código 0
+
+#### Scenario: Pasos reproducibles
+- **WHEN** se siguen los pasos de TC-53 sobre la base de ejemplo descartable después de TC-41
+- **THEN** el foco llega a la región «Visitas por enlace», la flecha derecha la desplaza y el contorno se ve
+
+### Requirement: Caso TC-54 de la base de IA
+El manual SHALL incluir el caso TC-54 «Ver el gasto de IA y probar la conexión» y ampliar B18 Integraciones con el bloque «Inteligencia artificial», las variables `AI_*`, la clave, el tope y el spend limit de la Console, con capturas generadas por `manual:capture` con `AI_PROVIDER=fake`, sin red ni clave real.
+
+#### Scenario: Caso TC-54 alineado
+- **WHEN** se ejecuta `npm run manual:check` con TC-54 en `MANUAL.md` e `index.html`
+- **THEN** termina con código 0 y las capturas nuevas figuran en el inventario
+
+#### Scenario: Mensajes literales
+- **WHEN** se lee B18
+- **THEN** lista literalmente «La IA está apagada», «Se alcanzó el tope de IA del mes» y «Anthropic cortó por el spend limit»

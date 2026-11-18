@@ -1,0 +1,10 @@
+6.2 — Migración en la base local del owner (2026-11-18, sesión principal)
+
+SELECT count(*) FROM "FeaturedRepository";  -> 0 (ninguna fila, ningún stars no nulo)
+Respaldo previo igualmente: backups/portfolio-pre-cleanup-20261118-023258.dump (pg_dump -Fc, 87 917 bytes)
+
+npm run prisma:deploy
+  20261117063808_retire_featured_repository_stars/migration.sql
+  All migrations have been successfully applied.
+npm run prisma:status
+  Database schema is up to date!
