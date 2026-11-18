@@ -1,7 +1,7 @@
-import { IntegrationJob } from '../entities/integration-job.entity';
-import { IntegrationSetting } from '../entities/integration-setting.entity';
+import { IntegrationJob } from '../../../modules/integrations/domain/entities/integration-job.entity';
+import { IntegrationSetting } from '../../../modules/integrations/domain/entities/integration-setting.entity';
 import { classifyAnthropicError } from './classify-anthropic-error';
-import { classifyHttpFailure } from './classify-http-failure';
+import { classifyHttpFailure } from '../../../modules/integrations/domain/services/classify-http-failure';
 import { MAX_RESET_HORIZON_MS, MAX_RETRY_AFTER_SECONDS, sanitizeFailure } from './sanitize-failure';
 
 const NOW = new Date('2026-11-12T12:00:00.000Z');

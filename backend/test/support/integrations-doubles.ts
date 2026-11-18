@@ -31,7 +31,7 @@ import {
   CredentialMissingError,
   CredentialUnreadableError,
 } from '../../src/modules/integrations/domain/errors/integration.errors';
-import { ProviderFailure } from '../../src/modules/integrations/domain/provider-failure';
+import { ProviderFailure } from '../../src/shared/domain/provider-failure/provider-failure';
 import {
   EnqueueJobInput,
   EnqueueJobResult,

@@ -1,0 +1,28 @@
+{
+  "task": "ai.smoke",
+  "promptVersion": 1,
+  "promptSha256": "a6a55e3df049d1451041888943b84f5c52d83d43cf5176cae19b0672698cb1ec",
+  "model": "claude-haiku-5-5",
+  "cacheKey": "b95773e00da88d7b6f6303557b340df65ec4e1f173f88f792932d329aca24ce8",
+  "recordedAt": "2026-11-17T00:00:00.000Z",
+  "sdkVersion": "1.9.0",
+  "pricingVerifiedAt": "2026-11-17",
+  "_nota": "Escrito a mano a partir de la forma documentada de la respuesta (no se grabó: no hay clave). Regrabar con npm run ai:eval -- --record.",
+  "response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"estado\":"
+      }
+    ],
+    "stop_reason": "max_tokens",
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 215,
+      "output_tokens": 256,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    },
+    "model": "claude-haiku-5-5"
+  }
+}

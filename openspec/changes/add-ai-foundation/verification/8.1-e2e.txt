@@ -1,0 +1,15 @@
+E2E de la base de IA (base descartable portfolio_ai_e2e, migrada y sembrada; FRONTEND_URL=http://localhost:5173; npm run build antes)
+  test/ai-foundation.e2e-spec.ts: 19 casos
+    (a) humo 201 con AiRun SUCCEEDED de claude-haiku-5-5 (200/50 tokens, 45 micro-USD); un segundo humo vuelve a llamar al adaptador, ninguna corrida CACHED
+    (b) el runner con la misma entrada: la segunda CACHED con una sola llamada; bypassCache vuelve a llamar
+    (c) 20 reservas concurrentes contra Postgres con un tope que admite 7: exactamente 7; conciliar libera la reserva y no duplica el cargo
+    (d) AI_MONTHLY_BUDGET_USD=0: 422 «Se alcanzó el tope de IA del mes», sin llamar al adaptador, estado EXHAUSTED
+    (e) spend-limit-tier (bloquea hasta el día 1 del mes siguiente 00:00 UTC) y spend-limit-console (una hora): el humo siguiente no llama
+    (f) slow con AI_REQUEST_TIMEOUT_MS=5000: GET /api/curated-profiles/all responde en < 500 ms mientras el humo espera; el humo termina FAILED con la reserva entera imputada
+    (g) huérfana vencida -> ABANDONED con su reserva imputada antes de evaluar la nueva
+    (h) 401 sin sesión en las dos rutas
+    (i) adaptador espía: ningún payload con el email del perfil ni el JWT_SECRET
+    (j) AI_ENABLED=false: la factory del cliente nunca se invoca, usage DISABLED, humo 422 sin crear AiRun
+    + límite de 5 por minuto (la sexta responde 429), purga de salidas a los 180 días y dato prohibido BLOQUEADO
+  test/ai-env.e2e-spec.ts: 7 casos con el proceso real (node dist/main)
+Resultado final (npm run test:e2e): 33 suites, 490 tests, todos en verde.

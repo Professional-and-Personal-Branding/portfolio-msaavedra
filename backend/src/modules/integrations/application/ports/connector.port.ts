@@ -1,5 +1,5 @@
 import { Result } from '../../../../shared/domain/result';
-import { ProviderFailure } from '../../domain/provider-failure';
+import { ProviderFailure } from '../../../../shared/domain/provider-failure/provider-failure';
 import { RunLogger } from './run-logger.port';
 import { SnapshotStore } from './snapshot-store.port';
 

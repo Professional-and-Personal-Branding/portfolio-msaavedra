@@ -1,0 +1,13 @@
+Punto de partida (2026-11-17, rama feat/ai-foundation sobre 5d5d3cc; main = 5e7235d)
+- Sin backend/src/modules/ai; sin @anthropic-ai/sdk ni zod en backend/package.json.
+- classify-anthropic-error.ts en modules/integrations/domain/services/.
+- Ultimo caso del manual: ver TC en docs/MANUAL.md (TC-52).
+Backend (base descartable portfolio_ai_e2e, migrada y sembrada con docs/cv-data.json):
+- npm run lint: OK; npm run typecheck: OK
+- npm test: 169 suites, 2193 tests, todos en verde
+- npm run build: OK
+- FRONTEND_URL=http://localhost:5173 npm run test:e2e: 31 suites, 464 tests, en verde
+Frontend:
+- npm run lint: OK; npm test: 84 archivos, 1295 tests, en verde
+- npm run build: OK
+- npm run perf:budget: 151.2 KB de 155 KB (index 150.0 + prefetch 1.2)

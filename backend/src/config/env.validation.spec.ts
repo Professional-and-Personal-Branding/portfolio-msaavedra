@@ -297,3 +297,109 @@ describe('validateEnv — integraciones', () => {
     ).toBe('');
   });
 });
+
+// add-ai-foundation: variables de la IA (spec api-platform).
+describe('validateEnv — IA', () => {
+  const base = {
+    DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
+    JWT_SECRET: 'un-secreto-de-prueba-largo',
+  };
+  const API_KEY = 'clave-de-prueba-que-jamas-debe-imprimirse';
+
+  function messageOf(config: Record<string, unknown>): string {
+    try {
+      validateEnv(config);
+      return '';
+    } catch (error) {
+      return (error as Error).message;
+    }
+  }
+
+  it('sin ninguna variable AI_*: apagada, anthropic y tope de 10 USD', () => {
+    const env = validateEnv(base);
+    expect(env.AI_ENABLED).toBeUndefined();
+    expect(env.AI_PROVIDER).toBe('anthropic');
+    expect(env.AI_MONTHLY_BUDGET_USD).toBe(10);
+    expect(env.AI_REQUEST_TIMEOUT_MS).toBe(60000);
+    expect(env.AI_MAX_CONCURRENCY).toBe(2);
+    expect(env.AI_MAX_INPUT_TOKENS).toBe(50000);
+  });
+
+  it('encendida con anthropic y sin clave: falla nombrando ANTHROPIC_API_KEY', () => {
+    expect(messageOf({ ...base, AI_ENABLED: 'true' })).toMatch(/ANTHROPIC_API_KEY/);
+    expect(messageOf({ ...base, AI_ENABLED: 'true', ANTHROPIC_API_KEY: '' })).toMatch(
+      /ANTHROPIC_API_KEY/,
+    );
+  });
+
+  it('encendida con clave arranca; apagada no exige clave', () => {
+    expect(messageOf({ ...base, AI_ENABLED: 'true', ANTHROPIC_API_KEY: API_KEY })).toBe('');
+    expect(messageOf({ ...base, AI_ENABLED: 'false' })).toBe('');
+  });
+
+  it('con fake no pide la clave', () => {
+    expect(messageOf({ ...base, AI_ENABLED: 'true', AI_PROVIDER: 'fake' })).toBe('');
+  });
+
+  it('fake en producción no arranca y el error nombra AI_PROVIDER', () => {
+    const message = messageOf({
+      ...base,
+      NODE_ENV: 'production',
+      FRONTEND_URL: 'https://portafolio.test',
+      JWT_SECRET: 'x'.repeat(48),
+      AI_PROVIDER: 'fake',
+    });
+    expect(message).toMatch(/AI_PROVIDER/);
+  });
+
+  it('presupuesto inválido (negativo, mayor a 1000, más de 2 decimales, no numérico)', () => {
+    for (const value of ['-1', '1001', '10.123', 'abc']) {
+      expect(messageOf({ ...base, AI_MONTHLY_BUDGET_USD: value })).toMatch(/AI_MONTHLY_BUDGET_USD/);
+    }
+    expect(validateEnv({ ...base, AI_MONTHLY_BUDGET_USD: '0' }).AI_MONTHLY_BUDGET_USD).toBe(0);
+    expect(validateEnv({ ...base, AI_MONTHLY_BUDGET_USD: '12.5' }).AI_MONTHLY_BUDGET_USD).toBe(
+      12.5,
+    );
+  });
+
+  it('valida los rangos de timeout, concurrencia y entrada, también con la IA apagada', () => {
+    expect(messageOf({ ...base, AI_REQUEST_TIMEOUT_MS: '4999' })).toMatch(/AI_REQUEST_TIMEOUT_MS/);
+    expect(messageOf({ ...base, AI_REQUEST_TIMEOUT_MS: '120001' })).toMatch(
+      /AI_REQUEST_TIMEOUT_MS/,
+    );
+    expect(messageOf({ ...base, AI_MAX_CONCURRENCY: '5' })).toMatch(/AI_MAX_CONCURRENCY/);
+    expect(messageOf({ ...base, AI_MAX_CONCURRENCY: '0' })).toMatch(/AI_MAX_CONCURRENCY/);
+    expect(messageOf({ ...base, AI_MAX_INPUT_TOKENS: '999' })).toMatch(/AI_MAX_INPUT_TOKENS/);
+    expect(messageOf({ ...base, AI_MAX_INPUT_TOKENS: '100001' })).toMatch(/AI_MAX_INPUT_TOKENS/);
+  });
+
+  it('AI_ENABLED y AI_PROVIDER aceptan solo sus valores', () => {
+    expect(messageOf({ ...base, AI_ENABLED: 'si' })).toMatch(/AI_ENABLED/);
+    expect(messageOf({ ...base, AI_PROVIDER: 'openai' })).toMatch(/AI_PROVIDER/);
+  });
+
+  it('AI_FAKE_SCENARIO: solo con fake y con un valor conocido', () => {
+    expect(messageOf({ ...base, AI_PROVIDER: 'fake', AI_FAKE_SCENARIO: 'slow' })).toBe('');
+    expect(messageOf({ ...base, AI_PROVIDER: 'fake', AI_FAKE_SCENARIO: 'raro' })).toMatch(
+      /AI_FAKE_SCENARIO/,
+    );
+    expect(messageOf({ ...base, AI_FAKE_SCENARIO: 'slow' })).toMatch(/AI_FAKE_SCENARIO/);
+  });
+
+  it('una clave con espacios se rechaza sin imprimirla', () => {
+    const message = messageOf({ ...base, ANTHROPIC_API_KEY: 'con espacio' });
+    expect(message).toMatch(/ANTHROPIC_API_KEY/);
+    expect(message).not.toContain('con espacio');
+  });
+
+  it('el error de otra variable nunca imprime la clave', () => {
+    const message = messageOf({
+      DATABASE_URL: base.DATABASE_URL,
+      JWT_SECRET: 'corto',
+      AI_ENABLED: 'true',
+      ANTHROPIC_API_KEY: API_KEY,
+    });
+    expect(message).toMatch(/JWT_SECRET/);
+    expect(message).not.toContain(API_KEY);
+  });
+});

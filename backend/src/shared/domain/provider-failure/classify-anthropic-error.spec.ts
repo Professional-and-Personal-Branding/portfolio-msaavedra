@@ -3,7 +3,7 @@ import * as path from 'path';
 import { classifyAnthropicError } from './classify-anthropic-error';
 
 function fixture(name: string): unknown {
-  const file = path.resolve(__dirname, '../../../../../test/fixtures/anthropic', name);
+  const file = path.resolve(__dirname, '../../../../test/fixtures/anthropic', name);
   return JSON.parse(fs.readFileSync(file, 'utf-8'));
 }
 
@@ -30,11 +30,43 @@ describe('classifyAnthropicError', () => {
     expect(failure.resetAt?.toISOString()).toBe('2027-01-01T00:00:00.000Z');
   });
 
-  // Forma supuesta: reconfirmar en add-ai-foundation (P4).
+  // Forma heredada (heurística): se mantiene por si el texto de la Console cambia.
   it('400 invalid_request_error con texto de tope → BudgetExhausted sin resetAt', () => {
     const failure = classifyAnthropicError({ status: 400, body: fixture('spend-limit-400.json') });
     expect(failure.kind).toBe('BudgetExhausted');
     expect(failure).not.toHaveProperty('resetAt');
+  });
+
+  it.each(['spend-limit-400-console.json', 'spend-limit-400-workspace.json'])(
+    '400 con el texto confirmado de la Console (%s) → BudgetExhausted sin resetAt',
+    (name) => {
+      const failure = classifyAnthropicError({ status: 400, body: fixture(name) });
+      expect(failure.kind).toBe('BudgetExhausted');
+      expect(failure).not.toHaveProperty('resetAt');
+    },
+  );
+
+  it('429 ramp_limit_exceeded con retry-after → RetryAfter, nunca BudgetExhausted', () => {
+    const failure = classifyAnthropicError({
+      status: 429,
+      body: fixture('ramp-limit-429.json'),
+      retryAfter: '20',
+    });
+    expect(failure).toMatchObject({ kind: 'RetryAfter', seconds: 20 });
+  });
+
+  it('400 por el parámetro thinking rechazado → Permanent', () => {
+    const failure = classifyAnthropicError({
+      status: 400,
+      body: {
+        type: 'error',
+        error: {
+          type: 'invalid_request_error',
+          message: '"thinking.type.disabled" is not supported for this model',
+        },
+      },
+    });
+    expect(failure.kind).toBe('Permanent');
   });
 
   it('402 billing_error → BudgetExhausted sin resetAt', () => {

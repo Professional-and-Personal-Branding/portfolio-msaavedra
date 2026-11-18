@@ -7,7 +7,7 @@ import { randomBytes } from 'crypto';
 import request from 'supertest';
 import { GITHUB_API } from '../src/modules/integrations/application/github/github-api.port';
 import { RunDueJobsUseCase } from '../src/modules/integrations/application/use-cases/run-due-jobs.use-case';
-import { transient } from '../src/modules/integrations/domain/provider-failure';
+import { transient } from '../src/shared/domain/provider-failure/provider-failure';
 import {
   FIXTURE_INVALID_TOKEN,
   FixtureGithubTransport,

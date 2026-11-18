@@ -25,6 +25,11 @@ export const REDACTED_PATHS = [
   'ciphertext',
   'credential',
   'token',
+  // IA (change `add-ai-foundation`, D21): la clave de Anthropic jamás se loguea.
+  'req.headers["x-api-key"]',
+  'headers["x-api-key"]',
+  'apiKey',
+  'ANTHROPIC_API_KEY',
 ];
 
 const TOKEN_QUERY = /([?&]token=)[^&]*/gi;

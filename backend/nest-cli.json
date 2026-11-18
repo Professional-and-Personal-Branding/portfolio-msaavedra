@@ -5,6 +5,7 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "tsConfigPath": "tsconfig.build.json",
+    "assets": [{ "include": "modules/ai/prompts/**/*.md", "watchAssets": true }],
     "plugins": [
       {
         "name": "@nestjs/swagger",

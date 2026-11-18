@@ -40,6 +40,7 @@ export const adminKeys = {
   jobPostingSuggestion: (id: string) => ['admin', 'job-postings', 'suggestion', id] as const,
   consistency: ['admin', 'consistency'] as const,
   integrations: ['admin', 'integrations'] as const,
+  aiUsage: ['admin', 'ai', 'usage'] as const,
   analytics: (from: string, to: string) => ['admin', 'analytics', from, to] as const,
   preview: (draftKey: string, locale: string) => ['admin', 'preview', draftKey, locale] as const,
 };

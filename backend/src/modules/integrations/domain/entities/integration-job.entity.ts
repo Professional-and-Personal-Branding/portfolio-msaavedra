@@ -1,8 +1,8 @@
 import { fail, ok, Result } from '../../../../shared/domain/result';
 import { InvalidJobTransitionError } from '../errors/integration.errors';
-import { ProviderFailure } from '../provider-failure';
+import { ProviderFailure } from '../../../../shared/domain/provider-failure/provider-failure';
 import { hintMargin, nextRetryDelay } from '../services/next-retry-delay';
-import { sanitizeFailure } from '../services/sanitize-failure';
+import { sanitizeFailure } from '../../../../shared/domain/provider-failure/sanitize-failure';
 
 export type IntegrationJobStatus = 'PENDING' | 'RUNNING' | 'DONE' | 'FAILED' | 'DEAD';
 
