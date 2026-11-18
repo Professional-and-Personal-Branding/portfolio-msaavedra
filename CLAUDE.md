@@ -135,6 +135,8 @@ npm run cv:lint          # reglas de consistencia del CV sobre docs/cv-data.json
 npm run integrations:sync   # corre el ejecutor de integraciones una vez, sin HTTP ([-- --provider <id>] [-- --plan]): 0 ok, 1 algún trabajo falló, 2 entorno inválido
 npm run integrations:rekey  # recifra las credenciales con la clave activa del keyring
 npm run job-postings:purge  # simula: cuántas vacantes vencidas (90 días) purgaría; `-- --apply` borra su texto crudo
+npm run ai:eval          # evals en vivo contra Anthropic: exige AI_EVAL_API_KEY (workspace de evals, distinta de ANTHROPIC_API_KEY) y AI_EVAL_ALLOW_SPEND=1; tope 2 USD; se niega en producción (código 2)
+npm run ai-runs:purge    # deja en nulo la salida de las corridas de IA de más de 180 días (simulación; `-- --apply` escribe)
 npm run openapi:export   # escribe backend/openapi.json (fuente de los tipos del frontend; sin servidor ni DB)
 npm run prisma:deploy    # aplica migraciones en producción (NUNCA prisma db push)
 # El backoffice vive en el frontend: http://localhost:5173/admin
@@ -209,6 +211,9 @@ npm run perf:check -- <base>   # Lighthouse mobile, mediana de PERF_CHECK_RUNS (
   - [x] `raise-manual-images-cap` — el tope del total de imágenes de `manual:check` pasa de 4 MB a 8 MB; por imagen sigue en 150 KB (archivado 2026-11-13)
   - [x] `add-github-code-evidence` — primer proveedor real (`github`): verifica los repositorios destacados contra la API REST en serie, con ETag y un PAT de solo lectura (`GITHUB_SYNC_TOKEN` opcional o credencial del panel) que no sale de `api.github.com`; tabla `RepositoryEvidence` (migración aditiva), lo manual nunca se pisa, tarjeta con stars, lenguajes, topics y «Verificado en GitHub el…», cero red en la ruta pública y `GITHUB_TRANSPORT=fixture` (prohibido en producción) para tests y capturas; Integraciones pasa a B18 en el manual (archivado 2026-11-17)
   - Pendientes para el deploy: programar `job-postings:purge` (cron de Railway); para la evidencia de GitHub, crear el token fine-grained de solo lectura, habilitar `INTEGRATIONS_ENABLED=github` con el keyring y encender `INTEGRATIONS_SCHEDULER_ENABLED` en una sola réplica (`docs/DEPLOY-RAILWAY.md`), y ejecutar TC-52 contra GitHub real
+- [x] `polish-pre-deploy-cleanup` — limpieza antes del deploy 1.0.0: se retira la columna inerte `FeaturedRepository.stars` (migración `retire_featured_repository_stars`), Caddy deja una sola línea `Cache-Control` por respuesta (`?Cache-Control`) y las tablas «Por enlace» y «Por portal» del Dashboard se alcanzan con teclado (`Table.regionLabel`), con `a11y:check` auditándolas con filas (archivado 2026-11-18)
+- [ ] Fase 2.0 — IA con Anthropic (decisión del owner del 2026-11-17: tope de 10 USD por mes más el spend limit de la Console):
+  - [x] `add-ai-foundation` — módulo `ai` con `LlmPort` (adaptadores `anthropic`, `fake` prohibido en producción, `disabled` y de cassettes), modelos por tarea (Haiku 5.5 por defecto), `BudgetGuard` con reserva atómica del peor caso en `AiBudgetMonth` (micro-USD, `AI_MONTHLY_BUDGET_USD`), `maxRetries: 0`, `AiRun`, caché por hash, prompts versionados, frontera de datos con lista blanca y guardián, bloque «Inteligencia artificial» en `/admin/integraciones`, `npm run ai:eval` (solo con `AI_EVAL_API_KEY` de otro workspace y `AI_EVAL_ALLOW_SPEND=1`, tope 2 USD) y `npm run ai-runs:purge` (180 días); **apagada por defecto** (`AI_ENABLED`) (archivado 2026-11-18)
 
 ---
 
