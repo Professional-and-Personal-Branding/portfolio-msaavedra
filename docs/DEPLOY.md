@@ -45,7 +45,7 @@ openssl rand -base64 32
 openssl rand -base64 24
 ```
 
-Guardalos en el gestor de secretos del proveedor, nunca en el repositorio. La API **rechaza arrancar** en producción si el `JWT_SECRET` es el del `.env.example`, si tiene menos de 32 caracteres, si coincide con `ANALYTICS_SALT` o si `FRONTEND_URL` no usa `https`.
+Guardalos en el gestor de secretos del proveedor, nunca en el repositorio. Con `NODE_ENV=production` la API **rechaza arrancar** si el `JWT_SECRET` es el del `.env.example`, tiene menos de 32 caracteres o coincide con `ANALYTICS_SALT`; si `ANALYTICS_SALT` falta (es obligatoria en producción), tiene menos de 32 caracteres o coincide con una clave de `INTEGRATIONS_KEYS`; o si `FRONTEND_URL` no usa `https`. En **cualquier** entorno rechaza una `FRONTEND_URL` que no sea un origen (con barra final, ruta, query o credenciales). El mensaje nombra la variable y nunca imprime su valor.
 
 ---
 
@@ -61,33 +61,56 @@ Guardalos en el gestor de secretos del proveedor, nunca en el repositorio. La AP
 
 ### Variables de entorno
 
-| Variable | Valor en producción | Notas |
-|---|---|---|
-| `DATABASE_URL` | cadena del Postgres gestionado | con TLS |
-| `NODE_ENV` | `production` | activa HSTS, `Secure` en la cookie y las validaciones de arranque |
-| `PORT` | `8080` | fijala a mano: el `API_ORIGIN` del proxy la necesita explícita |
-| `FRONTEND_URL` | `https://portafolio.com` | **origen exacto**: es el único que CORS permite y la base de las URLs del sitemap. Con el proxy es el dominio del servicio `web`, no el de la API |
-| `JWT_SECRET` | el generado en § 1 | mínimo 32 caracteres |
-| `JWT_EXPIRES_IN` | `1d` | o `12h` si preferís sesiones más cortas |
-| `ANALYTICS_SALT` | el generado en § 1 | distinto del `JWT_SECRET` |
-| `SESSION_COOKIE_SAMESITE` | `strict` | mismo origen gracias al proxy del § 9.5; ver la tabla de § 0 |
-| `LOG_LEVEL` | `info` | `debug` solo para diagnosticar |
-| `THROTTLE_TTL` / `THROTTLE_LIMIT` | `60` / `120` | ventana en segundos y peticiones por IP |
-| `THROTTLE_LOGIN_LIMIT` | `5` | intentos de login por ventana e IP |
-| `ENABLE_API_DOCS` | *(sin definir)* | definila en `true` solo si querés Swagger público |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | los del administrador | **no van en el servicio `api`**: solo se usan al correr `admin:bootstrap` y se definen en la terminal de tu máquina (ver *Primer arranque*) |
-| `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` | *(no hace falta)* | solo Railway, servicio `api`. Ya queda versionado como `drainingSeconds: 10` en `backend/railway.json`; la variable solo sirve si querés pisarlo desde el panel. La API espera hasta 5 s a registrar las visitas en vuelo al apagarse; tiene que quedar **por encima de 5** (ver § 9.5, *Apagado de la API*) |
-| `INTEGRATIONS_ENABLED` | *(sin definir)* | Proveedores de integración habilitados, separados por comas. **Dejala sin definir hasta que quieras encender un proveedor** (existen `fake`, de prueba y prohibido en producción, y `github`, ver más abajo). Un id fuera del catálogo hace fallar el arranque |
-| `INTEGRATIONS_SCHEDULER_ENABLED` | `false` *(default)* | `true` enciende los timers del planificador y del ejecutor **en este proceso**. Encendelo en **una sola réplica** del servicio `api` |
-| `INTEGRATIONS_SYNC_CRON` | `0 10 * * *` *(default)* | Planificador diario, en **UTC** (06:00 en Bolivia). Una expresión cron inválida impide el arranque |
-| `INTEGRATIONS_TICK_SECONDS` | `60` *(default)* | Cada cuánto el ejecutor busca trabajos vencidos (10 a 3600) |
-| `INTEGRATIONS_JOB_TIMEOUT_MS` | `120000` *(default)* | Tiempo máximo de un trabajo (5000 a 600000 ms) |
-| `INTEGRATIONS_RUN_MAX_MS` | `300000` *(default)* | Duración máxima de una corrida: pasado ese tiempo no se reclaman más trabajos (10000 a 1800000 ms) |
-| `INTEGRATIONS_KEYS` | *(solo con proveedores)* | Keyring `id:base64`, separados por comas, con claves de **32 bytes**. Se exige solo si `INTEGRATIONS_ENABLED` no está vacía. En producción no puede ser la clave del `.env.example` ni repetir `JWT_SECRET` |
-| `INTEGRATIONS_ACTIVE_KEY` | *(solo con proveedores)* | `id` del keyring con el que se cifra; tiene que figurar en `INTEGRATIONS_KEYS` |
-| `GITHUB_SYNC_TOKEN` | *(opcional)* | Token del proveedor `github` (change `add-github-code-evidence`). Si está definido manda sobre la credencial guardada desde el panel (y el `PUT` de la credencial responde 422); si no, se usa la cifrada. Habilitar `github` **no** lo exige al arrancar. Se redacta de logs y errores y nunca se devuelve por la API. **No se llama `GITHUB_TOKEN`** a propósito |
-| `GITHUB_TRANSPORT` | `http` *(default)* | `http` (la API real, URL base fija `https://api.github.com`, sin variable para cambiarla) o `fixture` (respuestas inventadas del repositorio, solo desarrollo y pruebas). Otro valor, o `fixture` con `NODE_ENV=production`, impide el arranque |
-| `CSP_HEADER` | *(sin definir)* | **del servicio `web`, no de la API.** Nombre de la cabecera de la CSP del sitio; sin definir bloquea, con `Content-Security-Policy-Report-Only` solo reporta (ver § 9.5, *Content-Security-Policy del sitio*) |
+Tabla completa por servicio: todas las variables que valida `backend/src/config/env.validation.ts` más las del servicio `web` y las que solo viven en la terminal. **Secreto = sí** significa que va como variable *sealed* si el panel lo ofrece y que nunca se pega en un archivo del repo. Generadores: `openssl rand -base64 48` y `-base64 32` en bash; en PowerShell, `New-Secret 48` y `New-Secret 32` de [`DEPLOY-RAILWAY.md`](DEPLOY-RAILWAY.md) § 1.
+
+> **Si falta `NODE_ENV=production`**, la API arranca en modo desarrollo: sin las reglas de arranque seguro (`JWT_SECRET`, `ANALYTICS_SALT`, https), con la cookie sin `Secure`, sin HSTS y con Swagger abierto. Por eso el paso 3 de la guía pide mirar en el log la línea «Swagger deshabilitado…», que solo sale en producción.
+
+#### Servicio `api`
+
+| Variable | Obligatoria | Default / valor en producción | Secreto | Cómo generarla / notas |
+|---|---|---|---|---|
+| `NODE_ENV` | sí (en la práctica) | `production` | no | activa HSTS, `Secure` en la cookie y las validaciones de arranque; sin ella, ver la nota de arriba |
+| `PORT` | sí | `8080` (default del código: 3000) | no | fijala a mano: el `API_ORIGIN` del proxy la necesita explícita |
+| `DATABASE_URL` | sí | `${{Postgres.DATABASE_URL}}` | sí | red privada de Railway; con TLS |
+| `FRONTEND_URL` | no (default `http://localhost:5173`) | `https://portafolio.com` | no | **origen exacto**: esquema y host (y puerto), **sin barra final ni ruta**; con una barra el arranque falla en cualquier entorno. Es el único origen que CORS permite y la base del `canonical`, `og:*`, sitemap, robots y JSON Resume. Con el proxy es el dominio del servicio `web`. En producción exige `https` |
+| `JWT_SECRET` | sí | el generado en § 1 | sí | `openssl rand -base64 48`; en producción, mínimo 32 caracteres y distinto del valor de `.env.example`, de `ANALYTICS_SALT` y de toda clave de `INTEGRATIONS_KEYS` |
+| `JWT_EXPIRES_IN` | no | `1d` | no | segundos o `30m`, `12h`, `1d` |
+| `ANALYTICS_SALT` | **sí, en producción** (fuera de producción cae a `JWT_SECRET`) | el generado en § 1 | sí | `openssl rand -base64 32`; en producción, mínimo 32 caracteres y distinta de `JWT_SECRET` y de toda clave de `INTEGRATIONS_KEYS`. Rotarla corta la continuidad de visitantes únicos |
+| `SESSION_COOKIE_SAMESITE` | no (default `lax`) | `strict` | no | mismo origen gracias al proxy del § 9.5; ver la tabla de § 0 |
+| `LOG_LEVEL` | no | `info` | no | `debug` solo para diagnosticar |
+| `THROTTLE_TTL` / `THROTTLE_LIMIT` | no | `60` / `120` | no | ventana en segundos y peticiones por IP |
+| `THROTTLE_LOGIN_LIMIT` | no | `5` | no | intentos de login por ventana e IP |
+| `ENABLE_API_DOCS` | no | *(sin definir)* | no | `true` solo si querés Swagger público |
+| `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` | no | *(no hace falta)* | no | solo Railway. Ya queda versionado como `drainingSeconds: 10` en `backend/railway.json`; la variable solo sirve para pisarlo desde el panel. La API espera hasta 5 s a registrar las visitas en vuelo al apagarse; tiene que quedar **por encima de 5** (ver § 9.5, *Apagado de la API*) |
+| `INTEGRATIONS_ENABLED` | no | *(sin definir)* | no | proveedores habilitados, separados por comas (`fake`, de prueba y prohibido en producción, y `github`). **Dejala sin definir hasta que encienda un proveedor.** Un id fuera del catálogo impide el arranque |
+| `INTEGRATIONS_SCHEDULER_ENABLED` | no | `false` | no | `true` enciende los timers del planificador y del ejecutor **en este proceso**; en **una sola réplica** |
+| `INTEGRATIONS_SYNC_CRON` | no | `0 10 * * *` | no | planificador diario, en **UTC** (06:00 en Bolivia). Una expresión inválida impide el arranque |
+| `INTEGRATIONS_TICK_SECONDS` | no | `60` | no | cada cuánto el ejecutor busca trabajos vencidos (10 a 3600) |
+| `INTEGRATIONS_JOB_TIMEOUT_MS` | no | `120000` | no | tiempo máximo de un trabajo (5000 a 600000 ms); no puede superar `INTEGRATIONS_RUN_MAX_MS` |
+| `INTEGRATIONS_RUN_MAX_MS` | no | `300000` | no | duración máxima de una corrida (10000 a 1800000 ms) |
+| `INTEGRATIONS_KEYS` | solo con proveedores | *(sin definir)* | sí | keyring `id:base64`, separado por comas, de claves de **32 bytes**: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`. Es una clave **nueva**: nunca `ANALYTICS_SALT` ni `JWT_SECRET`. En producción no admite la clave de `.env.example` |
+| `INTEGRATIONS_ACTIVE_KEY` | solo con proveedores o con claves | *(sin definir)* | no | `id` del keyring con el que se cifra; tiene que figurar en `INTEGRATIONS_KEYS` |
+| `GITHUB_SYNC_TOKEN` | no | *(sin definir)* | sí | token fine-grained de solo lectura del proveedor `github` (change `add-github-code-evidence`). Si está, manda sobre la credencial del panel (y el `PUT` de la credencial responde 422). Habilitar `github` **no** lo exige al arrancar. **No se llama `GITHUB_TOKEN`** a propósito |
+| `GITHUB_TRANSPORT` | no | `http` | no | `http` (URL base fija `https://api.github.com`) o `fixture` (datos inventados; prohibido con `NODE_ENV=production`) |
+| `AI_ENABLED` | no | *(sin definir = apagada)* | no | `true` enciende la IA (change `add-ai-foundation`). **Dejala sin definir en el primer deploy** |
+| `ANTHROPIC_API_KEY` | solo con `AI_ENABLED=true` y `AI_PROVIDER=anthropic` | *(sin definir)* | sí | clave del workspace `portfolio-app` de la Console de Anthropic; sin espacios. Solo del entorno: nunca del panel ni del keyring |
+| `AI_PROVIDER` | no | `anthropic` | no | `fake` (determinista, sin red) está prohibido con `NODE_ENV=production` |
+| `AI_MONTHLY_BUDGET_USD` | no | `10` | no | tope mensual propio, de 0 a 1000 y hasta 2 decimales; `0` = encendida sin presupuesto. Tiene que quedar por debajo del spend limit de la Console (12 USD) |
+| `AI_REQUEST_TIMEOUT_MS` | no | `60000` | no | 5000 a 120000 |
+| `AI_MAX_CONCURRENCY` | no | `2` | no | 1 a 4 |
+| `AI_MAX_INPUT_TOKENS` | no | `50000` | no | 1000 a 100000 |
+| `AI_FAKE_SCENARIO` | no | *(sin definir)* | no | solo con `AI_PROVIDER=fake`; no tiene sentido en producción |
+| `AI_EVAL_*` (`AI_EVAL_API_KEY`, `AI_EVAL_ALLOW_SPEND`) | no | **nunca en el servicio** | sí | solo en la terminal del owner, para `npm run ai:eval`; la clave es la del workspace `portfolio-evals`, distinta de `ANTHROPIC_API_KEY` |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | no | **nunca en el servicio** | sí (`ADMIN_PASSWORD`) | solo se usan al correr `admin:bootstrap`, en la terminal de tu máquina (ver *Primer arranque*). En producción el script rechaza la contraseña de `.env.example` y las de menos de 12 caracteres |
+| `SEED_ALLOW_PRODUCTION` | no | **nunca en el servicio** | no | solo para una recarga deliberada con `--overwrite`, en la terminal |
+
+#### Servicio `web`
+
+| Variable | Obligatoria | Default / valor en producción | Secreto | Cómo generarla / notas |
+|---|---|---|---|---|
+| `API_ORIGIN` | sí | `http://api.railway.internal:8080` | no | el nombre del servicio `api` tiene que ser exactamente `api` (la guía lo renombra primero) y el puerto, el `PORT` de `api` |
+| `VITE_API_URL` | no | **no definir** | no | el `ARG` del Dockerfile ya vale `""`: el cliente usa rutas relativas que resuelve el proxy |
+| `CSP_HEADER` | no | *(sin definir)* | no | nombre de la cabecera de la CSP del sitio; sin definir bloquea, con `Content-Security-Policy-Report-Only` solo reporta (ver § 9.5, *Content-Security-Policy del sitio*) |
 
 ### Integraciones con terceros (change `add-integrations-foundation`)
 
@@ -99,8 +122,8 @@ Cuando llegue un proveedor real:
 2. **Variables.** `INTEGRATIONS_ENABLED=<proveedor>`, su secreto como variable **opcional** (si no la definís, se carga desde el panel, cifrado con el keyring), `INTEGRATIONS_KEYS=k1:<base64>`, `INTEGRATIONS_ACTIVE_KEY=k1` y `INTEGRATIONS_SCHEDULER_ENABLED=true`.
 3. **Una sola réplica con el scheduler.** El arriendo del ejecutor (una fila en la base) y `FOR UPDATE SKIP LOCKED` impiden que dos procesos ejecuten el mismo trabajo, incluso durante el solapamiento de un deploy; aun así el scheduler se enciende en una sola réplica.
 4. **Drenaje.** `drainingSeconds` tiene que seguir **por encima de 8 s** (hoy 10): el apagado devuelve el trabajo en curso a la cola dentro de los 5 s de drenaje de las tareas en segundo plano.
-5. **Rotar una clave.** Agregá `k2` al keyring → `INTEGRATIONS_ACTIVE_KEY=k2` → redeploy → desde tu terminal, con `DATABASE_URL` de producción solo en ese proceso, `npm run integrations:rekey` (simulación) y `npm run integrations:rekey -- --apply` → quitá `k1`. Es idempotente: la segunda corrida dice «0 filas para recifrar».
-6. **Herramienta manual.** `npm run integrations:sync [-- --provider <id>] [-- --plan]` corre **una** vez el ejecutor sin abrir ningún puerto (no hay servicio cron aparte); sale con 0, 1 (algún trabajo quedó muerto) o 2 (configuración inválida o el arriendo lo tiene otra instancia).
+5. **Rotar una clave.** Agregá `k2` al keyring → `INTEGRATIONS_ACTIVE_KEY=k2` → redeploy → desde tu terminal, con **solo en ese proceso** `DATABASE_URL` (la pública de producción), `INTEGRATIONS_KEYS` (con `k1` y `k2`, las mismas del servicio) e `INTEGRATIONS_ACTIVE_KEY=k2`, `npm run integrations:rekey` (simulación) y `npm run integrations:rekey -- --apply` → quitá `k1` del servicio → limpiá las tres variables de la terminal. El script no pide nada más y sale con 2 si falta alguna. Es idempotente: la segunda corrida dice «0 filas para recifrar». La clave nueva es siempre una **generada para el keyring**: nunca la `ANALYTICS_SALT` ni el `JWT_SECRET` (la validación de arranque lo rechaza).
+6. **Herramienta manual.** `npm run integrations:sync [-- --provider <id>] [-- --plan]` corre **una** vez el ejecutor sin abrir ningún puerto (no hay servicio cron aparte); sale con 0, 1 (algún trabajo quedó muerto) o 2 (configuración inválida o el arriendo lo tiene otra instancia). **Desde la PC no es práctico contra producción:** carga la aplicación entera y por eso valida **todo** el entorno de producción (`DATABASE_URL`, `JWT_SECRET`, `ANALYTICS_SALT`, `FRONTEND_URL`, el keyring y el secreto del proveedor); para sincronizar en producción usá **Sincronizar ahora** en la pantalla **Integraciones**.
 
 Un trabajo nunca corre dentro de una petición ni la demora: se mide con `GET /health/live` mientras corre un trabajo lento (ver `docs/ARCHITECTURE.md` § 8).
 
@@ -171,14 +194,14 @@ El frontend se despliega como un contenedor: Node compila y **Caddy** sirve `dis
 
 | Archivo | Qué hace |
 |---|---|
-| `frontend/Dockerfile` | Dos etapas: `node:22-alpine` corre `npm ci && npm run build`, y `caddy:2-alpine` se queda solo con `dist/` |
+| `frontend/Dockerfile` | Dos etapas: `node:22.23.3-alpine` corre `npm ci && npm run build`, y `caddy:2.11.4-alpine` se queda solo con `dist/` |
 | `frontend/Caddyfile` | Sirve la SPA con `try_files {path} /index.html` y hace de proxy de `/api/*`, `/health*`, `/robots.txt` y `/sitemap.xml` |
 | `frontend/railway.json` | `builder: DOCKERFILE` |
 
 | Variable | Valor |
 |---|---|
 | `API_ORIGIN` | `http://<nombre-del-servicio-api>.railway.internal:8080` |
-| `VITE_API_URL` | **vacío** (el cliente usa rutas relativas y las resuelve el proxy) |
+| `VITE_API_URL` | **no definir** (el `ARG` del Dockerfile ya vale `""`: el cliente usa rutas relativas y las resuelve el proxy) |
 
 El `try_files` es el que evita que `/tech-lead-dotnet` devuelva 404. Los assets de Vite (`/assets/*`, con hash en el nombre) y las fuentes propias (`/fonts/*`) salen con `Cache-Control: public, max-age=31536000, immutable`; el HTML y todo lo demás, con `no-cache` **salvo que la API mande su propio `Cache-Control`**, que se respeta sola (la regla `header @noCache ?Cache-Control "no-cache"` solo pone el valor por defecto: sin el `?` las rutas con política propia, como `no-store` en el panel, saldrían con dos líneas). El CI cuenta las líneas de cinco respuestas en el paso «Frontend · Caddy con la imagen de producción».
 
@@ -276,7 +299,7 @@ dropdb portafolio_restore_test
 
 Anotá la fecha de la última prueba de restauración en `docs/RELEASE-1.0.0-CHECKLIST.md`.
 
-**Reclasificar las visitas.** Cada visita se guarda con su tipo (`HUMAN`, `OWNER`, `BOT`) y `views` suma solo las de personas. La migración `classify_profile_views` no cambia ningún número: las filas previas quedan `HUMAN`. Cuando suba la versión de la lista de bots (`BOT_USER_AGENT_PATTERNS_VERSION`), recalculá las filas existentes: primero `railway run npm run views:reclassify` (simulación: informa qué cambia y no escribe), con el `pg_dump` de arriba hecho, y después `railway run npm run views:reclassify -- --apply`. Es idempotente y no corre en el `preDeployCommand`: un deploy no escribe datos salvo las migraciones. Las visitas `OWNER` anteriores al change no se pueden recuperar (no se guardó la sesión).
+**Reclasificar las visitas.** Cada visita se guarda con su tipo (`HUMAN`, `OWNER`, `BOT`) y `views` suma solo las de personas. La migración `classify_profile_views` no cambia ningún número: las filas previas quedan `HUMAN`. Cuando suba la versión de la lista de bots (`BOT_USER_AGENT_PATTERNS_VERSION`), recalculá las filas existentes: desde tu máquina, con `DATABASE_URL` = `DATABASE_PUBLIC_URL` y `NODE_ENV=production` definidas solo en esa terminal (no con `railway run`: correría con la `DATABASE_URL` de la red privada, que desde tu PC no resuelve), primero `npm run views:reclassify` (simulación: informa qué cambia y no escribe), con el `pg_dump` de arriba hecho, y después `npm run views:reclassify -- --apply`. Es idempotente y no corre en el `preDeployCommand`: un deploy no escribe datos salvo las migraciones. Las visitas `OWNER` anteriores al change no se pueden recuperar (no se guardó la sesión).
 
 ---
 
@@ -368,7 +391,18 @@ En la pestaña **Routing** las reglas son ordenadas, gana la primera y se evalú
 
 Un proyecto con **tres servicios**: `api`, `Postgres` y `web`. Lo que es configuración vive en el repo; en el panel solo se ponen variables y dominios. Los diagramas de todo el despliegue (topología, reparto de Caddy, flujo de una visita y del login, fases de cada deploy, variables, migraciones, respaldos y dominio) están en [`DEPLOY-ARCHITECTURE.md`](DEPLOY-ARCHITECTURE.md).
 
-Las **8 migraciones** de la 1.0.0, en orden: `init`, `curated_profile_lifecycle`, `retire_accent_color` (destructiva, ver abajo), `localize_language_level` (de datos, ver abajo), `classify_profile_views`, `add_share_links`, `add_certification_credential` y `add_admin_session_version`. Las cuatro últimas solo agregan tablas o columnas con valor por defecto. Qué hace cada una: `DEPLOY-ARCHITECTURE.md` § 10.
+Las **15 migraciones** de la 1.0.0, en orden:
+
+1. `init`, `curated_profile_lifecycle` (aditivas).
+2. `retire_accent_color` (**destructiva**, ver abajo).
+3. `localize_language_level` (**de datos**, ver abajo).
+4. `classify_profile_views`, `add_share_links`, `add_certification_credential`, `add_admin_session_version`, `add_application_tracking`, `add_integrations_foundation`, `add_job_posting_intake` (aditivas).
+5. `order_repositories_section` (**de datos**, idempotente: ubica `repositories` después de `projects` en los perfiles ya sembrados; inocua sobre la base vacía).
+6. `add_github_code_evidence` (aditiva).
+7. `retire_featured_repository_stars` (**destructiva**, ver abajo).
+8. `add_ai_foundation` (aditiva: un tipo y dos tablas).
+
+Las aditivas solo agregan tablas o columnas con valor por defecto. Qué hace cada una: `DEPLOY-ARCHITECTURE.md` § 10.
 
 | Archivo | Servicio | Qué fija |
 |---|---|---|
@@ -394,7 +428,7 @@ Variables: las del § 3, con `PORT=8080`, `SESSION_COOKIE_SAMESITE=strict`, `FRO
 Se agrega desde el canvas del proyecto (New → Database → PostgreSQL).
 
 - `DATABASE_URL` se referencia con `${{Postgres.DATABASE_URL}}` y resuelve por la red privada; no hace falta exponerlo.
-- Para el § 7 sí necesitás acceso externo: **Settings → Networking → Public Access**, que crea el proxy TCP. Desde fuera la conexión exige `sslmode=require` y la cadena pública queda en `DATABASE_PUBLIC_URL`.
+- Para el § 7 sí necesitás acceso externo: **Settings → Networking → Public Access**, que crea el proxy TCP. Desde fuera la conexión exige `sslmode=require` y la cadena pública queda en `DATABASE_PUBLIC_URL`; si la conexión falla por TLS, agregá `?sslmode=require` a la URL (o `&sslmode=require` si ya trae parámetros).
 - Pestaña **Backups**: elegí el esquema (diario con 6 días, semanal con 1 mes, mensual con 3 meses). El restore se **prepara** montando un volumen nuevo con la fecha del backup y recién se aplica al hacer Deploy.
 - Agregá `?connection_limit=5` a la URL que usa la API si alguna vez subís réplicas, para que los pools no se sumen hasta agotar las conexiones.
 
@@ -405,8 +439,8 @@ Se agrega desde el canvas del proyecto (New → Database → PostgreSQL).
 | Root Directory | `frontend` |
 | Config file path | **`/frontend/railway.json`** (ruta absoluta desde la raíz del repo) |
 | Builder | **no tocar**: `frontend/railway.json` ya dice `DOCKERFILE` |
-| Variable `API_ORIGIN` | `http://api.railway.internal:8080` (el nombre del servicio `api`, tal como figura en el canvas) |
-| Variable `VITE_API_URL` | **vacía** |
+| Variable `API_ORIGIN` | `http://api.railway.internal:8080` (el servicio `api` tiene que llamarse exactamente `api`: es lo primero que se fija al crearlo) |
+| Variable `VITE_API_URL` | **no definir** (el `ARG` del Dockerfile ya vale `""`) |
 | Variable `CSP_HEADER` | opcional; sin definir, la CSP **bloquea** (ver *Content-Security-Policy* más abajo) |
 | Networking | acá va el dominio propio: es el que ve el navegador |
 
@@ -441,10 +475,10 @@ Caddy preserva el `Host` original al hacer proxy, así que la cookie de sesión 
 #### Orden de arranque
 
 1. Crear el proyecto y agregar **Postgres**.
-2. Crear `api` desde el repo con Root Directory `backend`, cargar las variables del § 3 y desplegar. El `preDeployCommand` corre la migración; el healthcheck decide si la versión entra.
+2. Crear `api` desde el repo, renombrarlo a `api` (Settings → Service Name) y con Root Directory `backend`, cargar las variables del § 3 —`FRONTEND_URL` ya con el dominio final— y desplegar. El primer deploy automático, anterior al renombre y a las variables, falla y es esperable. El `preDeployCommand` corre la migración; el healthcheck decide si la versión entra.
 3. Correr el primer arranque del § 3, desde tu máquina contra `DATABASE_PUBLIC_URL` (`npm run seed`, `seed:verify`, `admin:bootstrap`).
-4. Crear `web` con Root Directory `frontend`, poner `API_ORIGIN` y desplegar.
-5. Asignar el dominio al servicio `web` y recién entonces fijar `FRONTEND_URL` en `api` (CORS y las URLs del sitemap dependen de él) y redesplegar `api`.
+4. Crear `web`, renombrarlo a `web`, con Root Directory `frontend`, poner `API_ORIGIN` y desplegar.
+5. Asignar el dominio al servicio `web`. `FRONTEND_URL` ya quedó cargada desde el paso 2 (con el proxy solo da forma al `canonical`, `og:*`, sitemap, robots y JSON Resume, así que es inocua antes del lanzamiento): solo se redespliega `api` si el dominio final cambió.
 6. Correr la verificación del § 5.
 
 #### Migración `retire_accent_color` (destructiva)

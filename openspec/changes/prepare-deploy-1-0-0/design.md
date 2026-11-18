@@ -67,13 +67,13 @@ Con `NODE_ENV=production` y `ADMIN_PASSWORD` igual a `cambiar-en-primer-arranque
 
 ### D4 — Propuesto: `ANALYTICS_SALT` de 32 caracteres o más y distinta del keyring, en producción
 
-Ambas reglas son baratas y siguen el criterio del `JWT_SECRET`. La guía genera la sal con 32 bytes en base64 (44 caracteres), y una clave del keyring tiene el mismo formato: copiar la sal como clave es un error plausible. El mensaje nombra la variable sin el valor. **Sujeto a P1** (no bloqueante): si el owner lo rechaza, se quitan del delta y de la tarea 1.3 sin afectar al resto.
+Ambas reglas son baratas y siguen el criterio del `JWT_SECRET`. La guía genera la sal con 32 bytes en base64 (44 caracteres), y una clave del keyring tiene el mismo formato: copiar la sal como clave es un error plausible. El mensaje nombra la variable sin el valor. **Decidido por el owner el 2026-11-18 (P1 = sí).** Si más adelante se revierte, se quitan del delta y de la tarea 1.3 sin afectar al resto.
 
 - *Descartada:* exigir 32 también fuera de producción. Es el mismo argumento que en D1.
 
 ### D5 — Propuesto: el bootstrap exige 12 caracteres o más en producción
 
-Hoy `admin:bootstrap` acepta 8 y el cambio de contraseña desde **Cuenta** exige de 12 a 256. La guía ya pide al menos 12. Con la regla, la contraseña de recuperación no puede ser más débil que la del panel. Fuera de producción sigue el mínimo de 8. **Sujeto a P2** (no bloqueante).
+Hoy `admin:bootstrap` acepta 8 y el cambio de contraseña desde **Cuenta** exige de 12 a 256. La guía ya pide al menos 12. Con la regla, la contraseña de recuperación no puede ser más débil que la del panel. Fuera de producción sigue el mínimo de 8. **Decidido por el owner el 2026-11-18 (P2 = sí).**
 
 ### D6 — `job-postings:purge` simula por defecto (recomendado)
 
@@ -84,7 +84,7 @@ Hoy escribe directo. `views:reclassify`, `ai-runs:purge` e `integrations:rekey` 
 - Los códigos de salida no cambian (0 ok, 1 error de base).
 - La purga perezosa no cambia.
 
-**Sujeto a P3** (no bloqueante; recomendado): si el owner prefiere dejarlo como está, se quitan el delta de `job-posting-intake` y el grupo 3 de tareas.
+**Decidido por el owner el 2026-11-18 (P3 = sí).**
 
 - *Descartada:* dejarlo como está. La única diferencia es una palabra más al correrlo, y la inconsistencia ya generó el caso «¿este escribe o simula?» en la revisión.
 
@@ -147,18 +147,11 @@ La sección final es «Checklist de la 1.0.0»: una tabla por fase (antes, servi
 
 ## Open Questions
 
-- **P1 [no bloqueante]** ¿Se suman en producción `ANALYTICS_SALT` de 32 caracteres o más y distinta de toda clave del keyring (D4)?
-  - A) Sí.
-  - B) No, alcanza con que sea obligatoria.
-  - **Recomiendo A.**
-- **P2 [no bloqueante]** ¿El bootstrap exige 12 caracteres o más en producción (D5)?
-  - A) Sí, igual que **Cuenta**.
-  - B) No, sigue en 8.
-  - **Recomiendo A.**
-- **P3 [no bloqueante]** ¿`job-postings:purge` simula por defecto y escribe con `-- --apply` (D6)?
-  - A) Sí, como los otros tres comandos.
-  - B) No, sigue escribiendo directo.
-  - **Recomiendo A.**
+- **P1 [resuelta, 2026-11-18]** ¿Se suman en producción `ANALYTICS_SALT` de 32 caracteres o más y distinta de toda clave del keyring (D4)? **Sí (A).** Implementado en la tarea 1.3.
+- **P2 [resuelta, 2026-11-18]** ¿El bootstrap exige 12 caracteres o más en producción (D5)? **Sí (A)**, igual que **Cuenta**. Implementado en la tarea 2.2.
+- **P3 [resuelta, 2026-11-18]** ¿`job-postings:purge` simula por defecto y escribe con `-- --apply` (D6)? **Sí (A)**, como los otros tres comandos. Implementado en el grupo 3.
+
+Decisiones ya tomadas en la misma fecha: la 1.0.0 sale con `add-ai-foundation` (15 migraciones); la purga de vacantes es perezosa más una corrida mensual a mano, sin cron; spend limits de 12 USD (app) y 5 USD (evals); GitHub e IA se encienden después de un deploy estable, con 2 o más repositorios cargados. `polish-pre-deploy-cleanup` y `add-ai-foundation` se archivan en el PR #69; este change lo archiva la sesión principal después del merge.
 
 ## Discrepancias de la revisión (R1–R28) y dónde se corrigen
 

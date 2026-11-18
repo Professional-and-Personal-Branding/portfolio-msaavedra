@@ -134,7 +134,7 @@ npm run views:reclassify # recalcula el `kind` de las visitas con la lista de bo
 npm run cv:lint          # reglas de consistencia del CV sobre docs/cv-data.json (sin base): 0 ok, 1 algún error, 2 archivo inválido
 npm run integrations:sync   # corre el ejecutor de integraciones una vez, sin HTTP ([-- --provider <id>] [-- --plan]): 0 ok, 1 algún trabajo falló, 2 entorno inválido
 npm run integrations:rekey  # recifra las credenciales con la clave activa del keyring
-npm run job-postings:purge  # borra el texto crudo de las vacantes vencidas (90 días)
+npm run job-postings:purge  # simula: cuántas vacantes vencidas (90 días) purgaría; `-- --apply` borra su texto crudo
 npm run openapi:export   # escribe backend/openapi.json (fuente de los tipos del frontend; sin servidor ni DB)
 npm run prisma:deploy    # aplica migraciones en producción (NUNCA prisma db push)
 # El backoffice vive en el frontend: http://localhost:5173/admin

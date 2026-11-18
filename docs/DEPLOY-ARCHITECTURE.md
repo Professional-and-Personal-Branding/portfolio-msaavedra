@@ -311,11 +311,12 @@ flowchart LR
     A3["JWT_SECRET, JWT_EXPIRES_IN=1d<br/>ANALYTICS_SALT"]
     A4["FRONTEND_URL = https://dominio<br/>SESSION_COOKIE_SAMESITE=strict"]
     A5["LOG_LEVEL, THROTTLE_TTL,<br/>THROTTLE_LIMIT,<br/>THROTTLE_LOGIN_LIMIT"]
+    A6["Opcionales, apagadas al inicio:<br/>INTEGRATIONS_*, GITHUB_*,<br/>AI_* y ANTHROPIC_API_KEY"]
   end
 
   subgraph WV["Variables de web"]
     W1["API_ORIGIN =<br/>http://api.railway.internal:8080"]
-    W2["VITE_API_URL vacía"]
+    W2["VITE_API_URL sin definir"]
     W3["CSP_HEADER opcional<br/>solo para Report-Only"]
   end
 
@@ -323,6 +324,7 @@ flowchart LR
     T1["DATABASE_URL =<br/>DATABASE_PUBLIC_URL"]
     T2["ADMIN_EMAIL, ADMIN_PASSWORD,<br/>ADMIN_NAME"]
     T3["SEED_ALLOW_PRODUCTION=1<br/>solo para una recarga"]
+    T4["AI_EVAL_API_KEY y<br/>AI_EVAL_ALLOW_SPEND<br/>solo para ai:eval"]
   end
 
   S1 --> A3
@@ -332,8 +334,9 @@ flowchart LR
 ```
 
 - **El dominio no está en el código.** Todo lo que lleva una URL absoluta sale de `FRONTEND_URL`. Cambiar de dominio es cambiar esa variable y redesplegar `api` (guía, «Cambiar de dominio»).
-- **Nunca como variables del servicio:** `ADMIN_*`, `SEED_ALLOW_PRODUCTION` ni `ENABLE_API_DOCS`. Sin `ENABLE_API_DOCS`, Swagger queda cerrado.
-- **`VITE_API_URL` se inlina en el build.** Está vacía a propósito: si tuviera un valor, el cliente llamaría a otro origen y se perderían el `SameSite=strict` y el proxy.
+- **Nunca como variables del servicio:** `ADMIN_*`, `AI_EVAL_*`, `SEED_ALLOW_PRODUCTION` ni `ENABLE_API_DOCS`. Sin `ENABLE_API_DOCS`, Swagger queda cerrado. `AI_EVAL_*` y `ADMIN_*` viven solo en la terminal del owner.
+- **Obligatorias en producción:** `ANALYTICS_SALT` (32 caracteres o más, distinta de `JWT_SECRET` y de toda clave del keyring) y una `FRONTEND_URL` que sea un origen `https` sin barra final. Sin ellas la API no arranca. La tabla completa por servicio está en [`DEPLOY.md` § 3](DEPLOY.md#variables-de-entorno).
+- **`VITE_API_URL` se inlina en el build.** No se define a propósito (el `ARG` del Dockerfile ya vale vacío): si tuviera un valor, el cliente llamaría a otro origen y se perderían el `SameSite=strict` y el proxy.
 
 ---
 
@@ -353,6 +356,13 @@ El primer deploy las aplica todas sobre una base vacía. En los deploys siguient
 | 6 | `add_share_links` | tabla `ShareLink` y columnas `shareLinkId` y `source` en `ProfileView` | aditiva |
 | 7 | `add_certification_credential` | `verificationUrl`, `credentialId` y `expiresAt` en `Certification` | aditiva |
 | 8 | `add_admin_session_version` | `sessionVersion` en `AdminUser`, por defecto 0 | aditiva; las sesiones abiertas siguen válidas |
+| 9 | `add_application_tracking` | tablas de postulaciones | aditiva |
+| 10 | `add_integrations_foundation` | seis tablas de la cola y las credenciales de integraciones | aditiva |
+| 11 | `add_job_posting_intake` | tabla de vacantes importadas | aditiva |
+| 12 | `order_repositories_section` | ubica `repositories` después de `projects` en `sectionsOrder` de los perfiles ya sembrados | **de datos**, idempotente; inocua sobre la base vacía |
+| 13 | `add_github_code_evidence` | un tipo y la tabla `RepositoryEvidence` (nace vacía) | aditiva |
+| 14 | `retire_featured_repository_stars` | borra la columna inerte `stars` de `FeaturedRepository` | **destructiva**: comprobación y respaldo antes (DEPLOY.md § 9.5) |
+| 15 | `add_ai_foundation` | un tipo y dos tablas de la IA | aditiva |
 
 ### Dónde están los datos y cómo se recuperan
 
@@ -390,8 +400,8 @@ sequenceDiagram
   O->>G: PR con domains/mjsaavedra.json y domains/_railway-verify.mjsaavedra.json, sin proxied
   G-->>D: al fusionarlo, publica los registros
   R->>D: verifica el TXT y emite el certificado
-  O->>A: FRONTEND_URL=https://mjsaavedra.is-a.dev y redeploy
-  Note over A: canonical, og, robots, sitemap y CORS pasan a usar el dominio
+  O->>A: verifica canonical y og:url (FRONTEND_URL ya tenía el dominio desde el primer deploy)
+  Note over A: solo si el dominio cambió: nuevo valor de FRONTEND_URL y redeploy
 ```
 
 - **Sin `"proxied": true`.** Con el proxy de Cloudflare delante, Railway vería la IP de Cloudflare en `X-Real-IP` y se romperían los límites por visitante y la analítica.
@@ -401,19 +411,19 @@ sequenceDiagram
 
 ## 12. Primer despliegue, de punta a punta
 
-El orden importa: la API necesita la base, el poblado necesita la API migrada, y `FRONTEND_URL` definitivo necesita el dominio.
+El orden importa: la API necesita la base y el poblado necesita la API migrada. `FRONTEND_URL` lleva el dominio final desde el paso 3: con el proxy solo da forma al `canonical`, `og:*`, sitemap, robots y JSON Resume, así que antes del lanzamiento es inocuo y evita un redeploy.
 
 ```mermaid
 flowchart TD
   S1["1. Secretos al gestor"] --> S2["2. Proyecto y Postgres<br/>backups activados"]
-  S2 --> S3["3. Servicio api<br/>Config file path y variables<br/>FRONTEND_URL provisional"]
-  S3 --> S3v{"¿8 migraciones<br/>aplicadas y /health 200?"}
+  S2 --> S3["3. Servicio api<br/>renombrar a api, Config file path<br/>y variables con el FRONTEND_URL final"]
+  S3 --> S3v{"¿15 migraciones<br/>aplicadas y /health 200?"}
   S3v -->|no| S3f["Si algo falla<br/>de la guía"]
   S3v -->|sí| S4["4. Poblado desde la PC<br/>seed, seed:verify,<br/>admin:bootstrap<br/>Public Access off"]
-  S4 --> S5["5. Servicio web<br/>API_ORIGIN y VITE_API_URL vacía"]
+  S4 --> S5["5. Servicio web<br/>API_ORIGIN; VITE_API_URL sin definir"]
   S5 --> S5v{"¿/health por web<br/>devuelve JSON?"}
   S5v -->|no| S5f["revisar API_ORIGIN<br/>y el matcher del Caddyfile"]
-  S5v -->|sí| S6["6. Dominio is-a.dev<br/>FRONTEND_URL definitivo<br/>redeploy de api"]
+  S5v -->|sí| S6["6. Dominio is-a.dev<br/>verificar canonical y og<br/>(redeploy solo si cambió FRONTEND_URL)"]
   S6 --> S7["7. Verificación completa<br/>cabeceras, Swagger cerrado,<br/>IP real y límites"]
   S7 --> S8["8. Vistas previas<br/>LinkedIn, Slack,<br/>Rich Results"]
   S8 --> S9["9. Dump fuera de Railway<br/>y prueba de restauración"]
@@ -432,4 +442,4 @@ Cada caja es un paso de [`DEPLOY-RAILWAY.md`](DEPLOY-RAILWAY.md) con el mismo n�
 | `web` se cobra como un servicio más | el mismo origen vale más que el ahorro | servir el frontend desde otro proveedor implica perder `SameSite=strict` y volver a `none` con CORS |
 | Rollback limitado a 72 h (Hobby) | los deploys son frecuentes y chicos | volver a desplegar el commit anterior |
 | Sin monitoreo externo todavía | queda para el change `add-uptime-monitoring`, que necesita el sitio arriba | un chequeo externo de `/health` con aviso |
-| La migración corre mientras la versión vieja sirve | las migraciones actuales son aditivas | para un cambio destructivo, respaldo previo y aceptar unos segundos de error, o partirlo en dos deploys |
+| La migración corre mientras la versión vieja sirve | las de la 1.0.0 corren sobre una base vacía y las siguientes son aditivas salvo aviso | para un cambio destructivo, respaldo previo y aceptar unos segundos de error, o partirlo en dos deploys |
