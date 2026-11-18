@@ -209,6 +209,7 @@ npm run perf:check -- <base>   # Lighthouse mobile, mediana de PERF_CHECK_RUNS (
   - [x] `raise-manual-images-cap` — el tope del total de imágenes de `manual:check` pasa de 4 MB a 8 MB; por imagen sigue en 150 KB (archivado 2026-11-13)
   - [x] `add-github-code-evidence` — primer proveedor real (`github`): verifica los repositorios destacados contra la API REST en serie, con ETag y un PAT de solo lectura (`GITHUB_SYNC_TOKEN` opcional o credencial del panel) que no sale de `api.github.com`; tabla `RepositoryEvidence` (migración aditiva), lo manual nunca se pisa, tarjeta con stars, lenguajes, topics y «Verificado en GitHub el…», cero red en la ruta pública y `GITHUB_TRANSPORT=fixture` (prohibido en producción) para tests y capturas; Integraciones pasa a B18 en el manual (archivado 2026-11-17)
   - Pendientes para el deploy: programar `job-postings:purge` (cron de Railway); para la evidencia de GitHub, crear el token fine-grained de solo lectura, habilitar `INTEGRATIONS_ENABLED=github` con el keyring y encender `INTEGRATIONS_SCHEDULER_ENABLED` en una sola réplica (`docs/DEPLOY-RAILWAY.md`), y ejecutar TC-52 contra GitHub real
+- [x] `polish-pre-deploy-cleanup` — limpieza antes del deploy 1.0.0: se retira la columna inerte `FeaturedRepository.stars` (migración `retire_featured_repository_stars`), Caddy deja una sola línea `Cache-Control` por respuesta (`?Cache-Control`) y las tablas «Por enlace» y «Por portal» del Dashboard se alcanzan con teclado (`Table.regionLabel`), con `a11y:check` auditándolas con filas (archivado 2026-11-18)
 
 ---
 
