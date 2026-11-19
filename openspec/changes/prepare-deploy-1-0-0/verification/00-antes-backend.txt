@@ -1,0 +1,17 @@
+[33m[Nest] 30008  - [39m11/18/2026, 4:28:34 PM [33m   WARN[39m [38;5;3m[PrismaJsonMapper] [39m[33mCampo "Project.summary" con forma inesperada; se devuelve vacío[39m
+[31m[Nest] 37188  - [39m11/18/2026, 4:28:37 PM [31m  ERROR[39m [38;5;3m[InProcessBackgroundTasks] [39m[31mFalló la tarea en segundo plano "integrations-run": boom[39m
+
+Test Suites: 186 passed, 186 total
+Tests:       2483 passed, 2483 total
+Snapshots:   0 total
+Time:        69.53 s
+Ran all test suites.
+> portfolio-backend@0.1.0 lint
+> eslint "{src,test,scripts}/**/*.ts"
+
+> portfolio-backend@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+> portfolio-backend@0.1.0 build
+> nest build
+

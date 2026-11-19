@@ -1,5 +1,14 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`prepare-deploy-1-0-0`)
+
+Último endurecimiento antes del primer deploy (1.0.0) y guías de deploy alineadas con el código (28 discrepancias de la revisión del 2026-11-18).
+
+- **Arranque en producción.** `ANALYTICS_SALT` es obligatoria, de 32 caracteres o más y distinta de `JWT_SECRET` y de toda clave de `INTEGRATIONS_KEYS`; `FRONTEND_URL` tiene que ser un origen (sin barra final, ruta, query ni credenciales) en todos los entornos. Los mensajes nombran la variable y no imprimen el valor.
+- **`admin:bootstrap`.** Con `NODE_ENV=production` rechaza, sin tocar la base, la contraseña de `.env.example` y las de menos de 12 caracteres.
+- **`job-postings:purge`.** Simula por defecto y escribe con `-- --apply`, como `views:reclassify` y `ai-runs:purge`. Sin servicio cron: purga perezosa más una corrida mensual a mano.
+- **Guías.** `docs/DEPLOY-RAILWAY.md`, `DEPLOY.md` y `DEPLOY-ARCHITECTURE.md`: las 15 migraciones, renombre de servicios a `api` y `web`, `FRONTEND_URL` final desde el primer deploy, tabla completa de variables por servicio, spend limits de 12 y 5 USD, GitHub e IA en una fase posterior y un «Checklist de la 1.0.0» con vuelta atrás y respaldos.
+
 ## Update — Noviembre 2026 (`add-ai-foundation`)
 
 La base de IA de la Fase 2.0, sin ninguna feature para el usuario: un puerto hacia el modelo, un tope mensual que no se puede pasar, el registro de cada corrida, una frontera de datos con su prueba de lista negra y evals que corren en el CI sin red ni clave. Con `AI_ENABLED=false` (el default) la app funciona exactamente igual que antes.

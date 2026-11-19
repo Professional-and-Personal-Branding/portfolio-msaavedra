@@ -43,6 +43,36 @@ describe('validateEnv (spec api-platform — configuración fail-fast)', () => {
   });
 });
 
+describe('validateEnv — FRONTEND_URL es un origen (spec api-platform)', () => {
+  const base = {
+    DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
+    JWT_SECRET: 'un-secreto-de-prueba-largo',
+  };
+
+  it.each([
+    ['barra final', 'https://mjsaavedra.is-a.dev/'],
+    ['ruta', 'https://ejemplo.dev/portafolio'],
+    ['query', 'https://ejemplo.dev?x=1'],
+    ['credenciales', 'https://usuario:clave@ejemplo.dev'],
+    ['host en mayúsculas', 'https://Ejemplo.dev'],
+  ])('rechaza %s nombrando la variable y sin imprimir el valor', (_caso, value) => {
+    expect.assertions(2);
+    try {
+      validateEnv({ ...base, FRONTEND_URL: value });
+    } catch (error) {
+      const message = (error as Error).message;
+      expect(message).toMatch(/FRONTEND_URL: tiene que ser un origen/);
+      expect(message).not.toContain(value);
+    }
+  });
+
+  it('acepta un origen válido con puerto', () => {
+    expect(validateEnv({ ...base, FRONTEND_URL: 'http://localhost:5173' }).FRONTEND_URL).toBe(
+      'http://localhost:5173',
+    );
+  });
+});
+
 describe('expiresInToSeconds', () => {
   it('convierte unidades', () => {
     expect(expiresInToSeconds('90')).toBe(90);
@@ -62,6 +92,7 @@ describe('validateEnv — reglas de producción (spec api-platform)', () => {
     NODE_ENV: 'production',
     FRONTEND_URL: 'https://portafolio.example.com',
     JWT_SECRET: strongSecret,
+    ANALYTICS_SALT: 'y'.repeat(44),
   };
 
   it('acepta una configuración de producción correcta', () => {
@@ -96,6 +127,30 @@ describe('validateEnv — reglas de producción (spec api-platform)', () => {
     expect(() => validateEnv({ ...production, ANALYTICS_SALT: strongSecret })).toThrow(
       /ANALYTICS_SALT/,
     );
+  });
+
+  it('exige ANALYTICS_SALT en producción y nombra la variable (sal ausente)', () => {
+    const { ANALYTICS_SALT: _omitida, ...sinSal } = production;
+    void _omitida;
+    expect(() => validateEnv(sinSal)).toThrow(/ANALYTICS_SALT: obligatoria en producción/);
+  });
+
+  it('rechaza una ANALYTICS_SALT corta en producción sin imprimirla', () => {
+    const corta = 'z'.repeat(20);
+    expect.assertions(2);
+    try {
+      validateEnv({ ...production, ANALYTICS_SALT: corta });
+    } catch (error) {
+      const message = (error as Error).message;
+      expect(message).toMatch(/ANALYTICS_SALT.*32/);
+      expect(message).not.toContain(corta);
+    }
+  });
+
+  it('fuera de producción ANALYTICS_SALT sigue siendo opcional', () => {
+    expect(() =>
+      validateEnv({ ...production, NODE_ENV: 'development', ANALYTICS_SALT: undefined }),
+    ).not.toThrow();
   });
 
   it('exige https en FRONTEND_URL', () => {
@@ -238,6 +293,7 @@ describe('validateEnv — integraciones', () => {
       ...base,
       NODE_ENV: 'production',
       JWT_SECRET: key('j'),
+      ANALYTICS_SALT: key('s'),
       FRONTEND_URL: 'https://portafolio.test',
     };
     const example = messageOf({
@@ -249,6 +305,20 @@ describe('validateEnv — integraciones', () => {
     expect(messageOf({ ...production, INTEGRATIONS_KEYS: `k1:${key('j')}` })).toMatch(
       /INTEGRATIONS_KEYS/,
     );
+  });
+
+  it('en producción, repetir ANALYTICS_SALT como clave del keyring falla nombrando INTEGRATIONS_KEYS', () => {
+    const message = messageOf({
+      ...base,
+      NODE_ENV: 'production',
+      JWT_SECRET: key('j'),
+      ANALYTICS_SALT: key('s'),
+      FRONTEND_URL: 'https://portafolio.test',
+      INTEGRATIONS_KEYS: `k1:${key('s')}`,
+      INTEGRATIONS_ACTIVE_KEY: 'k1',
+    });
+    expect(message).toMatch(/INTEGRATIONS_KEYS: no puede repetir ANALYTICS_SALT/);
+    expect(message).not.toContain(key('s'));
   });
 
   it('un cron inválido falla nombrando INTEGRATIONS_SYNC_CRON sin imprimir el valor', () => {

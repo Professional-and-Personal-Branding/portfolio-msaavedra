@@ -114,6 +114,7 @@ describe('Arranque con variables de integraciones (e2e, proceso real)', () => {
       childEnv({
         NODE_ENV: 'production',
         JWT_SECRET: 'x'.repeat(48),
+        ANALYTICS_SALT: 'y'.repeat(44),
         FRONTEND_URL: 'https://portafolio.test',
         INTEGRATIONS_ENABLED: 'fake',
         FAKE_PROVIDER_TOKEN: 'token-de-prueba',
@@ -169,6 +170,7 @@ describe('Arranque con variables de integraciones (e2e, proceso real)', () => {
       childEnv({
         NODE_ENV: 'production',
         JWT_SECRET: 'x'.repeat(48),
+        ANALYTICS_SALT: 'y'.repeat(44),
         FRONTEND_URL: 'https://portafolio.test',
         GITHUB_TRANSPORT: 'fixture',
         GITHUB_SYNC_TOKEN: 'token-de-prueba-no-real',

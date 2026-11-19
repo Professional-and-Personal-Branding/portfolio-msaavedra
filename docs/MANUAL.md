@@ -770,7 +770,7 @@ Ruta: `/admin/cuenta`. Se llega con el botón **Cuenta** de la barra superior (a
 | No pudimos contactar al servidor. Intentá de nuevo. | Cualquier otro error. |
 | Contraseña actualizada. Se cerraron las sesiones de otros dispositivos. | Aviso de éxito; los tres campos quedan vacíos. |
 
-**Acciones y avisos:** Si la sesión se revocó (otro dispositivo cambió la contraseña) o venció, la próxima petición del panel da 401 y vuelve al login. Los `curl` con un `TOKEN` anterior al cambio también dan 401 (ver § 0). Si perdiste la contraseña, la recuperación es `npm run admin:bootstrap` desde la terminal: acepta contraseñas de 8 caracteres o más y también cierra todas las sesiones.
+**Acciones y avisos:** Si la sesión se revocó (otro dispositivo cambió la contraseña) o venció, la próxima petición del panel da 401 y vuelve al login. Los `curl` con un `TOKEN` anterior al cambio también dan 401 (ver § 0). Si perdiste la contraseña, la recuperación es `npm run admin:bootstrap` desde la terminal: en producción exige 12 caracteres o más y rechaza la contraseña de ejemplo de `.env.example` (fuera de producción acepta desde 8) y también cierra todas las sesiones.
 
 ![Cuenta con el aviso de repetición distinta](manual/bo-cuenta.jpg)
 
@@ -918,7 +918,7 @@ Ruta: `/admin/perfiles/desde-vacante`. Se llega con el botón **Desde una vacant
 
 **El borrador.** **Crear borrador** crea un perfil curado **Privado** y **No enumerado**, sin token, con los tags que dejaste marcados (o cualquier otro tag de tus datos) y el titular vacío (hereda el del perfil base). El slug sale de la empresa y el puesto, con el primer sufijo libre (`-2` … `-50`), o es el que escribas (si está ocupado, 409). No guarda ningún vínculo con la vacante: borrar la vacante no cambia el perfil. Terminalo en el constructor (B9 a B12) y publicalo desde **Publicación**.
 
-**El texto se guarda 90 días.** La descripción se conserva 90 días desde la importación («El texto se borra el 10 feb 2027») y después se borra, con «El texto se borró el …»; título, empresa, ubicación, enlaces, fechas y la cobertura se conservan. Reimportar renueva el plazo. La purga corre sola al listar, abrir o importar vacantes, y también a mano con `npm run job-postings:purge` en `backend/`. **La respuesta del sitio remoto nunca se guarda.**
+**El texto se guarda 90 días.** La descripción se conserva 90 días desde la importación («El texto se borra el 10 feb 2027») y después se borra, con «El texto se borró el …»; título, empresa, ubicación, enlaces, fechas y la cobertura se conservan. Reimportar renueva el plazo. La purga corre sola al listar, abrir o importar vacantes, y también a mano con `npm run job-postings:purge` en `backend/` (sin `-- --apply` solo informa cuántas purgaría; con `-- --apply` las purga). **La respuesta del sitio remoto nunca se guarda.**
 
 **Vacantes importadas.** La tabla muestra Puesto y empresa, Fuente e Importada. **Abrir** pone `?vacante={id}` en la URL (se conserva al recargar) y **Borrar** pide confirmar. Nada de esto se publica: no hay ninguna ruta pública, ni el sitemap ni el head de un perfil muestran vacantes.
 

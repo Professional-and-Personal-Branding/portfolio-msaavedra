@@ -103,4 +103,11 @@ export class PrismaJobPostingRepository implements JobPostingRepository {
     });
     return result.count;
   }
+
+  /** Mismo filtro que `purgeExpiredText`, solo lectura. */
+  countExpiredText(now: Date): Promise<number> {
+    return this.prisma.jobPosting.count({
+      where: { textPurgeAt: { lte: now }, description: { not: null } },
+    });
+  }
 }

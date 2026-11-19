@@ -72,6 +72,12 @@ class InMemoryRepo implements JobPostingRepository {
     }
     return Promise.resolve(count);
   }
+  countExpiredText(now: Date): Promise<number> {
+    return Promise.resolve(
+      [...this.rows.values()].filter((row) => row.textPurgeAt <= now && row.description !== null)
+        .length,
+    );
+  }
 }
 
 const vocabulary = (...tags: string[]): TagVocabulary =>
