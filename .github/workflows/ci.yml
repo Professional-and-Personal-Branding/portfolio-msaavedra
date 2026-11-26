@@ -2,7 +2,8 @@
 # push y en cada PR a main. Los e2e corren contra un Postgres real, migrado con
 # `prisma migrate deploy` y cargado con el seed, igual que en producción. El job
 # `web-quality` suma accesibilidad (axe y teclado) y Lighthouse contra la imagen de
-# producción del frontend, y `frontend` el presupuesto de JS del arranque público.
+# producción del frontend, y `frontend` el presupuesto de JS del arranque público. El job
+# `railway-iac` revisa, sin red, que `.railway/railway.ts` siga alineado con el repo.
 name: CI
 
 on:
@@ -66,7 +67,7 @@ jobs:
         working-directory: backend
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: portfolio
           POSTGRES_PASSWORD: portfolio
@@ -191,7 +192,7 @@ jobs:
         check: [a11y, a11y-example, lighthouse]
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: a11y
           POSTGRES_PASSWORD: a11y
@@ -346,3 +347,23 @@ jobs:
           path: frontend/reports
           retention-days: 14
           if-no-files-found: ignore
+
+  # Infraestructura de Railway como código (change `migrate-railway-iac`, D9): typecheck de
+  # `.railway/railway.ts` y su test de coherencia con el repo (scripts del backend, Dockerfile,
+  # Caddyfile, dominio y secretos). Sin red hacia Railway: no hay token ni se corre la CLI.
+  railway-iac:
+    name: Infra · IaC de Railway (sin red)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: .railway
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: .railway/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
