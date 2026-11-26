@@ -2,7 +2,7 @@
 
 > Vista de conjunto del despliegue en **Railway**: qué piezas hay, cómo viaja cada petición, qué pasa en cada deploy y dónde están los datos. Los pasos para hacerlo están en [`DEPLOY-RAILWAY.md`](DEPLOY-RAILWAY.md) (la guía con checkboxes) y el detalle campo por campo en [`DEPLOY.md`](DEPLOY.md) § 9.5. Este documento no reemplaza a ninguno de los dos: los explica.
 >
-> Todo lo que se describe acá sale de la configuración versionada: `backend/railway.json`, `frontend/railway.json`, `frontend/Dockerfile`, `frontend/Caddyfile`, `frontend/index.html`, `backend/src/config/env.validation.ts` y `backend/src/modules/health/`. Si uno de esos archivos cambia, este documento cambia en el mismo PR.
+> Todo lo que se describe acá sale de la configuración versionada: `.railway/railway.ts`, `frontend/Dockerfile`, `frontend/Caddyfile`, `frontend/index.html`, `backend/src/config/env.validation.ts` y `backend/src/modules/health/`. Si uno de esos archivos cambia, este documento cambia en el mismo PR.
 >
 > Los diagramas son [Mermaid](https://mermaid.js.org): GitHub los dibuja al abrir el archivo. En un editor sin soporte, el código de cada uno se lee como texto.
 
@@ -72,7 +72,7 @@ Tres ideas sostienen todo el diseño:
 
 - **Un solo origen.** Caddy sirve la SPA y también hace de proxy hacia la API. Para el navegador todo vive en `https://mjsaavedra.is-a.dev`: no hay CORS, la cookie de sesión puede ir con `SameSite=strict` y `VITE_API_URL` queda vacía (el cliente usa rutas relativas).
 - **La API y la base son privadas.** `api` no necesita dominio público (se puede generar uno para inspeccionarla y borrarlo después). El Postgres solo se abre a internet, por el proxy TCP de Railway, mientras dura una tarea desde la máquina del owner.
-- **La configuración está en el repo.** En el panel de Railway se cargan variables, la ruta del archivo de configuración y el dominio. Build, start, pre-deploy, healthcheck y drenaje salen de los `railway.json`.
+- **La configuración está en el repo.** Los tres servicios, sus variables no secretas, el build, el start, el pre-deploy, el healthcheck, el drenaje y el dominio salen de `.railway/railway.ts`, que se aplica con `railway config plan` y `railway config apply`. En el panel de Railway solo quedan los backups de Postgres, el Public Access temporal y la alerta de uso; los secretos se cargan por CLI y el archivo los conserva con `preserve()`.
 
 ---
 
@@ -287,9 +287,9 @@ stateDiagram-v2
 
 | Si falla en | Qué ves | Qué hacer |
 |---|---|---|
-| Build | error de TypeScript o de `@prisma/client` | revisar el Config file path: sin `/backend/railway.json` no corre `prisma generate` |
+| Build | error de TypeScript o de `@prisma/client` | revisar con `railway config plan --verbose` que el `buildCommand` de `api` sea el de `railway.ts` (con `prisma generate`) |
 | Pre-deploy | error de `prisma migrate deploy` | leer el log; corregir en una rama. Si quedó a medias, restaurar el último respaldo y recién entonces desplegar la corrección |
-| Arranque | el log nombra una variable | corregir la variable en el panel y redesplegar |
+| Arranque | el log nombra una variable | corregir la variable en `railway.ts` (o el secreto por CLI), `plan` → `apply` y redesplegar |
 | Healthcheck | `healthcheck failed` | la base no responde (`/health` da 503 a propósito) o `PORT` distinto de 8080 |
 | Después, en producción | un error que antes no estaba | **Rollback** desde Deployments, si la versión anterior tiene menos de 72 h. El rollback no revierte la base |
 
@@ -415,15 +415,15 @@ El orden importa: la API necesita la base y el poblado necesita la API migrada. 
 
 ```mermaid
 flowchart TD
-  S1["1. Secretos al gestor"] --> S2["2. Proyecto y Postgres<br/>backups activados"]
-  S2 --> S3["3. Servicio api<br/>renombrar a api, Config file path<br/>y variables con el FRONTEND_URL final"]
+  S1["1. Secretos al gestor"] --> S2["2. Proyecto<br/>railway init"]
+  S2 --> S3["3. api vacío, secretos sellados,<br/>plan y apply<br/>(crea Postgres y web; backups después)"]
   S3 --> S3v{"¿15 migraciones<br/>aplicadas y /health 200?"}
   S3v -->|no| S3f["Si algo falla<br/>de la guía"]
   S3v -->|sí| S4["4. Poblado desde la PC<br/>seed, seed:verify,<br/>admin:bootstrap<br/>Public Access off"]
-  S4 --> S5["5. Servicio web<br/>API_ORIGIN; VITE_API_URL sin definir"]
+  S4 --> S5["5. Servicio web (ya creado por el apply)<br/>verificar el proxy; VITE_API_URL sin definir"]
   S5 --> S5v{"¿/health por web<br/>devuelve JSON?"}
   S5v -->|no| S5f["revisar API_ORIGIN<br/>y el matcher del Caddyfile"]
-  S5v -->|sí| S6["6. Dominio is-a.dev<br/>verificar canonical y og<br/>(redeploy solo si cambió FRONTEND_URL)"]
+  S5v -->|sí| S6["6. Dominio is-a.dev (ya declarado)<br/>verificar canonical y og<br/>(redeploy solo si cambió FRONTEND_URL)"]
   S6 --> S7["7. Verificación completa<br/>cabeceras, Swagger cerrado,<br/>IP real y límites"]
   S7 --> S8["8. Vistas previas<br/>LinkedIn, Slack,<br/>Rich Results"]
   S8 --> S9["9. Dump fuera de Railway<br/>y prueba de restauración"]

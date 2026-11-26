@@ -4,7 +4,7 @@
 >
 > Procedimiento para poner el portafolio en producción: **backend** (NestJS + Postgres gestionado) y **frontend** (SPA estática). Escrito para seguirse de arriba abajo, una sola vez, y volver a él cuando haya que redeployar.
 >
-> **Proveedor elegido: Railway**, los tres servicios en el mismo proyecto. La configuración está versionada en el repo (`backend/railway.json`, `frontend/railway.json`, `frontend/Dockerfile`, `frontend/Caddyfile`) y el paso a paso está en el **§ 9.5**. El § 9 conserva la comparación con las otras tres plataformas evaluadas, por si algún día hay que mudarse.
+> **Proveedor elegido: Railway**, los tres servicios en el mismo proyecto. La configuración está versionada en el repo como código (`.railway/railway.ts`, que se aplica con `railway config plan` y `railway config apply`; más `frontend/Dockerfile` y `frontend/Caddyfile`) y el paso a paso está en el **§ 9.5**. Railway deprecó Config as Code (`railway.json`): los servicios nuevos no pueden usarlo y los archivos dejan de leerse el 2026-12-01, por eso el change `migrate-railway-iac` los reemplazó. El § 9 conserva la comparación con las otras tres plataformas evaluadas, por si algún día hay que mudarse.
 >
 > Este documento lo produjo la Fase 6 (`add-production-hardening`). El estado de cada ítem del checklist está en `docs/RELEASE-1.0.0-CHECKLIST.md`.
 
@@ -81,7 +81,7 @@ Tabla completa por servicio: todas las variables que valida `backend/src/config/
 | `THROTTLE_TTL` / `THROTTLE_LIMIT` | no | `60` / `120` | no | ventana en segundos y peticiones por IP |
 | `THROTTLE_LOGIN_LIMIT` | no | `5` | no | intentos de login por ventana e IP |
 | `ENABLE_API_DOCS` | no | *(sin definir)* | no | `true` solo si querés Swagger público |
-| `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` | no | *(no hace falta)* | no | solo Railway. Ya queda versionado como `drainingSeconds: 10` en `backend/railway.json`; la variable solo sirve para pisarlo desde el panel. La API espera hasta 5 s a registrar las visitas en vuelo al apagarse; tiene que quedar **por encima de 5** (ver § 9.5, *Apagado de la API*) |
+| `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` | no | *(no hace falta)* | no | solo Railway. Ya queda declarado como `drainingSeconds: 10` en `.railway/railway.ts`; la variable (también en `railway.ts`) es el respaldo si el plan no lo traslada. La API espera hasta 5 s a registrar las visitas en vuelo al apagarse; tiene que quedar **por encima de 5** (ver § 9.5, *Apagado de la API*) |
 | `INTEGRATIONS_ENABLED` | no | *(sin definir)* | no | proveedores habilitados, separados por comas (`fake`, de prueba y prohibido en producción, y `github`). **Dejala sin definir hasta que encienda un proveedor.** Un id fuera del catálogo impide el arranque |
 | `INTEGRATIONS_SCHEDULER_ENABLED` | no | `false` | no | `true` enciende los timers del planificador y del ejecutor **en este proceso**; en **una sola réplica** |
 | `INTEGRATIONS_SYNC_CRON` | no | `0 10 * * *` | no | planificador diario, en **UTC** (06:00 en Bolivia). Una expresión inválida impide el arranque |
@@ -142,25 +142,29 @@ Verifica cada repositorio destacado contra GitHub (stars, lenguajes, topics, úl
 
 ### Comandos
 
-En Railway estos comandos no se escriben en el panel: los toma de **`backend/railway.json`**, que está versionado.
+En Railway estos comandos no se escriben en el panel: los declara **`.railway/railway.ts`** (servicio `api`), que está versionado, y se aplican con `railway config plan` y `railway config apply`. El test de `.railway/railway.test.ts` comprueba, sin red, que cada `npm run <script>` exista en `backend/package.json`, que `prisma:deploy` sea `prisma migrate deploy` y que el start sea el de `start:prod`.
 
-```json
-{
-  "build": {
-    "builder": "RAILPACK",
-    "buildCommand": "npm run prisma:generate && npm run build",
-    "watchPatterns": ["/backend/**"]
+```ts
+const api = service("api", {
+  source: github(REPO, { branch: "main", checkSuites: true }),
+  rootDirectory: "backend",
+  build: {
+    builder: "RAILPACK",
+    buildCommand: "npm run prisma:generate && npm run build",
+    watchPatterns: ["/backend/**"],
   },
-  "deploy": {
-    "preDeployCommand": ["npm run prisma:deploy"],
-    "preDeployTimeoutSeconds": 300,
-    "startCommand": "node dist/main",
-    "healthcheckPath": "/health",
-    "healthcheckTimeout": 300,
-    "drainingSeconds": 10,
-    "restartPolicyType": "ON_FAILURE"
-  }
-}
+  preDeploy: "npm run prisma:deploy",
+  start: "node dist/main",
+  healthcheck: "/health",
+  healthcheckTimeout: 300,
+  deploy: {
+    preDeployTimeoutSeconds: 300,
+    drainingSeconds: 10,
+    restartPolicyType: "ON_FAILURE",
+    sleepApplication: false,
+  },
+  // env: …
+});
 ```
 
 Dos detalles que importan: el `buildCommand` corre `prisma generate` **antes** de `nest build` (sin el cliente generado, el build de TypeScript no compila), y los `watchPatterns` llevan **ruta absoluta desde la raíz del repo** (`/backend/**`) porque el repositorio es un monorepo: así un cambio solo en `frontend/` o en `docs/` no redespliega la API. `drainingSeconds: 10` da margen a que la API registre (hasta 5 s) las visitas en vuelo al apagarse.
@@ -182,7 +186,7 @@ El `preDeployCommand` solo migra (`npm run prisma:deploy`): **nunca siembra**. U
 
 ### Healthcheck
 
-En Railway ya queda puesto por `backend/railway.json` (`healthcheckPath: "/health"`). Con el healthcheck configurado, **el despliegue nuevo no se activa hasta que `/health` responda 2xx**, así que una base caída o una migración a medias no tumban el sitio.
+En Railway ya queda declarado en `.railway/railway.ts` (`healthcheck: "/health"`). Con el healthcheck configurado, **el despliegue nuevo no se activa hasta que `/health` responda 2xx**, así que una base caída o una migración a medias no tumban el sitio.
 
 `GET /health` responde 200 con la base accesible y **503** si no responde, para que el orquestador saque la instancia del balanceador. `GET /health/live` responde 200 mientras el proceso viva, sin tocar la base: útil como sonda de *liveness* para que una caída temporal de Postgres no provoque reinicios.
 
@@ -190,13 +194,13 @@ En Railway ya queda puesto por `backend/railway.json` (`healthcheckPath: "/healt
 
 ## 4. Frontend
 
-El frontend se despliega como un contenedor: Node compila y **Caddy** sirve `dist/`. Está todo versionado, no hay nada que configurar en el panel más allá de las variables.
+El frontend se despliega como un contenedor: Node compila y **Caddy** sirve `dist/`. Está todo versionado (el servicio, en `.railway/railway.ts`): no hay nada que configurar en el panel.
 
 | Archivo | Qué hace |
 |---|---|
 | `frontend/Dockerfile` | Dos etapas: `node:22.23.3-alpine` corre `npm ci && npm run build`, y `caddy:2.11.4-alpine` se queda solo con `dist/` |
 | `frontend/Caddyfile` | Sirve la SPA con `try_files {path} /index.html` y hace de proxy de `/api/*`, `/health*`, `/robots.txt` y `/sitemap.xml` |
-| `frontend/railway.json` | `builder: DOCKERFILE` |
+| `.railway/railway.ts` | declara el servicio `web`: `builder: DOCKERFILE`, healthcheck `/`, `PORT`, `API_ORIGIN` y el dominio |
 
 | Variable | Valor |
 |---|---|
@@ -406,43 +410,45 @@ Las aditivas solo agregan tablas o columnas con valor por defecto. Qué hace cad
 
 | Archivo | Servicio | Qué fija |
 |---|---|---|
-| `backend/railway.json` | `api` | builder Railpack, build con `prisma generate`, `watchPatterns` `/backend/**`, `preDeployCommand` (300 s), start, `healthcheckPath` `/health` (300 s), drenaje de 10 s y reinicio `ON_FAILURE` |
-| `frontend/railway.json` | `web` | `builder: DOCKERFILE`, `watchPatterns` `/frontend/**`, `healthcheckPath` `/` y reinicio `ON_FAILURE` |
+| `.railway/railway.ts` | `Postgres`, `api` y `web` | la base (Postgres 18), la fuente de cada servicio (repo, rama `main`, *Wait for CI*, Root Directory), `api` con Railpack, build con `prisma generate`, `watchPatterns` `/backend/**`, pre-deploy (300 s), start, healthcheck `/health` (300 s), drenaje de 10 s, reinicio `ON_FAILURE` y App Sleeping apagado; `web` con `DOCKERFILE`, `watchPatterns` `/frontend/**`, healthcheck `/`, `PORT`, `API_ORIGIN` y el dominio propio |
+| `.railway/railway.test.ts` | — | comprueba, sin red, que lo anterior siga alineado con el repo (scripts del backend, Dockerfile, Caddyfile, dominio, secretos); corre en el CI (job `railway-iac`) |
 | `frontend/Dockerfile` | `web` | build con Node + runtime con Caddy |
 | `frontend/Caddyfile` | `web` | fallback de la SPA, proxy a la API y cabeceras de caché |
 
 #### Servicio `api`
 
-| Campo del panel | Valor |
+| Campo | Valor (lo declara `railway.ts`) |
 |---|---|
+| Fuente | el repo, rama `main`, *Wait for CI* (`checkSuites`) |
 | Root Directory | `backend` |
-| Config file path | **`/backend/railway.json`** — ruta **absoluta desde la raíz del repo**: el Root Directory no la reubica, y `railway.json` a secas no se encuentra |
-| Build / Start / Pre-deploy / Healthcheck | **no tocar**: los toma de `backend/railway.json` |
-| Pre-deploy Timeout | `300` — ya versionado (`preDeployTimeoutSeconds`); por defecto **no tiene límite**, y un comando colgado deja el despliegue en curso indefinidamente |
-| Networking | el dominio público es opcional; dejalo para poder correr la verificación del § 5 contra la API cruda |
+| Build / Start / Pre-deploy / Healthcheck | declarados en el archivo (ver § 3, *Comandos*); no se tocan en el panel |
+| Pre-deploy Timeout | `300` (`preDeployTimeoutSeconds`); por defecto **no tiene límite**, y un comando colgado deja el despliegue en curso indefinidamente. Si el plan no lo traslada, el respaldo es el panel (Settings → Deploy) |
+| Networking | el dominio público es opcional (`railway domain --service api`, fuera del archivo); dejalo para poder correr la verificación del § 5 contra la API cruda |
 
-Variables: las del § 3, con `PORT=8080`, `SESSION_COOKIE_SAMESITE=strict`, `FRONTEND_URL` = el dominio del servicio `web` y `DATABASE_URL=${{Postgres.DATABASE_URL}}` (red privada).
+Variables: las del § 3, con `PORT=8080`, `SESSION_COOKIE_SAMESITE=strict`, `FRONTEND_URL` = el dominio del servicio `web` y `DATABASE_URL` como referencia a la salida de `Postgres` (red privada). `railway.ts` declara las no secretas; `JWT_SECRET` y `ANALYTICS_SALT` van con `preserve()` y su valor se carga por CLI antes del primer `plan` (`DEPLOY-RAILWAY.md`, paso 3).
 
 #### Servicio `Postgres`
 
-Se agrega desde el canvas del proyecto (New → Database → PostgreSQL).
+Lo crea el `apply` de `railway.ts` (helper `postgres()`, imagen `ghcr.io/railwayapp-templates/postgres-ssl:18`: **Postgres 18**, la misma versión mayor que el CI). Los backups y el Public Access son lo único que se hace en el panel.
 
-- `DATABASE_URL` se referencia con `${{Postgres.DATABASE_URL}}` y resuelve por la red privada; no hace falta exponerlo.
-- Para el § 7 sí necesitás acceso externo: **Settings → Networking → Public Access**, que crea el proxy TCP. Desde fuera la conexión exige `sslmode=require` y la cadena pública queda en `DATABASE_PUBLIC_URL`; si la conexión falla por TLS, agregá `?sslmode=require` a la URL (o `&sslmode=require` si ya trae parámetros).
+- `DATABASE_URL` se referencia desde `railway.ts` (`db.env.DATABASE_URL`) y resuelve por la red privada; no hace falta exponerlo.
+- Para el § 7 sí necesitás acceso externo: **Settings → Networking → Public Access**, que crea el proxy TCP. Es temporal y no se declara en el archivo: no corras `railway config apply` con él encendido (el plan lo propondría quitar). Desde fuera la conexión exige `sslmode=require` y la cadena pública queda en `DATABASE_PUBLIC_URL`; si la conexión falla por TLS, agregá `?sslmode=require` a la URL (o `&sslmode=require` si ya trae parámetros).
 - Pestaña **Backups**: elegí el esquema (diario con 6 días, semanal con 1 mes, mensual con 3 meses). El restore se **prepara** montando un volumen nuevo con la fecha del backup y recién se aplica al hacer Deploy.
 - Agregá `?connection_limit=5` a la URL que usa la API si alguna vez subís réplicas, para que los pools no se sumen hasta agotar las conexiones.
 
 #### Servicio `web`
 
-| Campo del panel | Valor |
+| Campo | Valor (lo declara `railway.ts`) |
 |---|---|
+| Fuente | el repo, rama `main`, *Wait for CI* (`checkSuites`) |
 | Root Directory | `frontend` |
-| Config file path | **`/frontend/railway.json`** (ruta absoluta desde la raíz del repo) |
-| Builder | **no tocar**: `frontend/railway.json` ya dice `DOCKERFILE` |
-| Variable `API_ORIGIN` | `http://api.railway.internal:8080` (el servicio `api` tiene que llamarse exactamente `api`: es lo primero que se fija al crearlo) |
+| Builder | `DOCKERFILE` con `dockerfilePath: "Dockerfile"` (relativo al Root Directory); no se toca en el panel |
+| Healthcheck | `/` |
+| Variable `PORT` | `8080`: el `Caddyfile` escucha en `{$PORT}` y el dominio propio apunta al mismo puerto |
+| Variable `API_ORIGIN` | `http://api.railway.internal:8080`, armada en `railway.ts` con el nombre y el `PORT` de `api` (el servicio `api` tiene que llamarse exactamente `api`) |
 | Variable `VITE_API_URL` | **no definir** (el `ARG` del Dockerfile ya vale `""`) |
 | Variable `CSP_HEADER` | opcional; sin definir, la CSP **bloquea** (ver *Content-Security-Policy* más abajo) |
-| Networking | acá va el dominio propio: es el que ve el navegador |
+| Networking | acá va el dominio propio (`domains` en `railway.ts`, puerto 8080): es el que ve el navegador. El dominio generado `*.up.railway.app` no va en el archivo |
 
 El `Caddyfile` escucha en `:{$PORT}` —Railway inyecta `PORT`— y reparte así:
 
@@ -474,12 +480,13 @@ Caddy preserva el `Host` original al hacer proxy, así que la cookie de sesión 
 
 #### Orden de arranque
 
-1. Crear el proyecto y agregar **Postgres**.
-2. Crear `api` desde el repo, renombrarlo a `api` (Settings → Service Name) y con Root Directory `backend`, cargar las variables del § 3 —`FRONTEND_URL` ya con el dominio final— y desplegar. El primer deploy automático, anterior al renombre y a las variables, falla y es esperable. El `preDeployCommand` corre la migración; el healthcheck decide si la versión entra.
-3. Correr el primer arranque del § 3, desde tu máquina contra `DATABASE_PUBLIC_URL` (`npm run seed`, `seed:verify`, `admin:bootstrap`).
-4. Crear `web`, renombrarlo a `web`, con Root Directory `frontend`, poner `API_ORIGIN` y desplegar.
-5. Asignar el dominio al servicio `web`. `FRONTEND_URL` ya quedó cargada desde el paso 2 (con el proxy solo da forma al `canonical`, `og:*`, sitemap, robots y JSON Resume, así que es inocua antes del lanzamiento): solo se redespliega `api` si el dominio final cambió.
-6. Correr la verificación del § 5.
+1. `railway init --name portfolio-msaavedra` (crea y vincula el proyecto).
+2. `railway add --service api --json`: un servicio `api` **vacío**, sin fuente, que no despliega.
+3. Cargar y sellar `JWT_SECRET` y `ANALYTICS_SALT` con `railway variable set … --skip-deploys` (el valor no toca el historial ni un archivo; `DEPLOY-RAILWAY.md`, paso 3).
+4. `railway config plan`: crea `Postgres` y `web`, actualiza `api`, **sin cambios en los secretos y con 0 to destroy**. Si propone otra cosa, no se aplica. Después `railway config apply`, interactivo. Railway despliega `api` y `web`: el `preDeployCommand` corre la migración y el healthcheck decide si la versión entra. `FRONTEND_URL` ya lleva el dominio final (con el proxy solo da forma al `canonical`, `og:*`, sitemap, robots y JSON Resume, así que es inocua antes del lanzamiento).
+5. Correr el primer arranque del § 3, desde tu máquina contra `DATABASE_PUBLIC_URL` (`npm run seed`, `seed:verify`, `admin:bootstrap`).
+6. El dominio propio ya está declarado en `web` desde el paso 4: solo falta el DNS (paso 6 de la guía corta).
+7. Correr la verificación del § 5.
 
 #### Migración `retire_accent_color` (destructiva)
 

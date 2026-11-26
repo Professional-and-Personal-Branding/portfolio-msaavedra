@@ -2,9 +2,9 @@
 
 > Diez pasos, en orden, para seguir con el panel de Railway abierto (y, al final, el [«Checklist de la 1.0.0»](#checklist-de-la-100), una página por fases con criterio de verificación y vuelta atrás). **El detalle y el por qué están en [`DEPLOY.md`](DEPLOY.md)**: cada paso indica entre paréntesis la sección a la que ir si algo no cierra.
 >
-> La configuración de build ya está versionada (`backend/railway.json`, `frontend/railway.json`, `frontend/Dockerfile`, `frontend/Caddyfile`). **En el panel se cargan variables, la ruta del archivo de configuración y el dominio.**
+> La configuración de Railway está versionada como código: **`.railway/railway.ts`** declara los tres servicios, sus variables no secretas y el dominio, y se aplica con `railway config plan` y `railway config apply` (más `frontend/Dockerfile` y `frontend/Caddyfile`). **En el panel quedan los backups de Postgres, el Public Access temporal y la alerta de uso; los secretos se cargan por CLI antes del primer `plan`.** Config as Code (`railway.json`) está deprecado por Railway y ya no se usa: los archivos dejan de leerse el 2026-12-01.
 >
-> Decisiones tomadas: plan **Hobby**; dominio **gratuito `mjsaavedra.is-a.dev`** para la 1.0.0 (subdominio de [is-a.dev](https://docs.is-a.dev), que se pide con un PR a su repositorio en GitHub); la compra de un dominio propio queda para después (ver [«Dominios candidatos»](#dominios-candidatos)). `FRONTEND_URL` lleva el dominio final desde el paso 3 (con el proxy es inocuo antes del lanzamiento; el paso 6 solo lo verifica). El dominio no está escrito en ningún archivo del código: si después se cambia por otro, alcanza con el procedimiento de [«Cambiar de dominio»](#cambiar-de-dominio). Comandos para **PowerShell**; los `curl` se escriben `curl.exe` para no chocar con el alias de PowerShell.
+> Decisiones tomadas: plan **Hobby**; dominio **gratuito `mjsaavedra.is-a.dev`** para la 1.0.0 (subdominio de [is-a.dev](https://docs.is-a.dev), que se pide con un PR a su repositorio en GitHub); la compra de un dominio propio queda para después (ver [«Dominios candidatos»](#dominios-candidatos)). `FRONTEND_URL` lleva el dominio final desde el paso 3 (con el proxy es inocuo antes del lanzamiento; el paso 6 solo lo verifica). El dominio vive en una sola constante de `.railway/railway.ts` (`SITE_DOMAIN`, que alimenta `FRONTEND_URL` y el dominio de `web`): si después se cambia por otro, alcanza con el procedimiento de [«Cambiar de dominio»](#cambiar-de-dominio). Comandos para **PowerShell**; los `curl` se escriben `curl.exe` para no chocar con el alias de PowerShell.
 
 **Arquitectura:** tres servicios en un proyecto. `web` (Caddy) sirve la SPA y hace de **proxy** de `/api/*`, `/health*`, `/robots.txt` y `/sitemap.xml` hacia `api` por la red privada. Un solo origen → cookie `SameSite=strict`, sin CORS, `VITE_API_URL` sin definir. (§ 0, § 9.5)
 
@@ -24,18 +24,19 @@ flowchart LR
 ## 0. Antes de empezar
 
 - [ ] Cuenta de Railway con el plan **Hobby** (USD 5 incluidos; el costo es por uso).
-- [ ] El repositorio conectado a Railway (GitHub) y `main` al día con este cambio.
-- [ ] **El CI del último commit de `main` en verde** (pestaña *Actions* de GitHub: backend, frontend y `web-quality`). Desde el 2026-11-18 el repo es público y `main` exige los 6 checks del CI (*required checks*): un PR en rojo no se puede fusionar. Igual conviene mirarlo antes de desplegar, porque Railway despliega lo que haya en `main` y un push directo de un administrador también tiene que pasar los checks. *Wait for CI* (pasos 3 y 5) suma un segundo freno del lado de Railway.
-- [ ] `openspec/changes/` con **solo `archive/`**: antes del deploy se archivan, en este orden, `polish-pre-deploy-cleanup`, `add-ai-foundation` y `prepare-deploy-1-0-0`. Ningún change a medio implementar en `main`.
+- [ ] **Railway CLI 5.49.1 o posterior** (`railway --version`; probada con 5.75.0) y `railway login`. La app de GitHub de Railway instalada con acceso al repositorio.
+- [ ] `main` al día con este cambio (trae `.railway/`). Desde la raíz: `npm ci --prefix .railway` (instala el paquete `railway` que evalúa el archivo).
+- [ ] **El CI del último commit de `main` en verde** (pestaña *Actions* de GitHub: backend, frontend, `web-quality` e `Infra · IaC de Railway (sin red)`). El repositorio es **público** y `main` tiene *required checks*; además los dos servicios nacen con *Wait for CI* (`checkSuites` en `railway.ts`): Railway espera al CI antes de desplegar.
+- [ ] `openspec/changes/` con **solo `archive/`**: `polish-pre-deploy-cleanup`, `add-ai-foundation` y `prepare-deploy-1-0-0` ya están archivados; falta archivar `migrate-railway-iac` después de su merge. Ningún change a medio implementar en `main`.
 - [ ] En tu máquina: Node 22, `git`, **Docker** (para la prueba de restauración del paso 9) y el `.env` de `backend/` apuntando a **tu base local**, nunca a producción.
 - [ ] Un gestor de contraseñas abierto: ahí van los secretos del paso 1.
-- [ ] Cuenta de GitHub para pedir `mjsaavedra.is-a.dev` (paso 6). Mientras el PR de is-a.dev no esté aprobado, los pasos 1 a 5 se pueden hacer y mirar el sitio con el dominio `*.up.railway.app` del servicio `web`; el `FRONTEND_URL` ya lleva el dominio final, así que hasta que exista el `canonical` y el sitemap apuntan a un dominio que todavía no resuelve (no importa antes del lanzamiento). Los pasos 6 a 8 quedan para cuando el dominio exista.
+- [ ] Cuenta de GitHub para pedir `mjsaavedra.is-a.dev` (paso 6). Mientras el PR de is-a.dev no esté aprobado, los pasos 1 a 5 se pueden hacer y mirar el sitio con el dominio generado `*.up.railway.app` del servicio `web` (paso 5); el `FRONTEND_URL` ya lleva el dominio final, así que hasta que exista el `canonical` y el sitemap apuntan a un dominio que todavía no resuelve (no importa antes del lanzamiento). Los pasos 6 a 8 quedan para cuando el dominio exista.
 
 ---
 
 ## 1. Secretos (§ 1)
 
-Pegá la función en PowerShell y generá los tres valores. Cada uno va **directo al gestor de contraseñas**; no los pegues en ningún archivo del repo.
+Pegá la función en PowerShell. Cada valor va **directo al gestor de contraseñas**; no los pegues en ningún archivo del repo. `JWT_SECRET` y `ANALYTICS_SALT` se generan y cargan en el paso 3 (la función de abajo es la misma); acá solo se genera la contraseña del administrador.
 
 ```powershell
 function New-Secret([int]$Bytes) {
@@ -45,9 +46,8 @@ function New-Secret([int]$Bytes) {
   [Convert]::ToBase64String($b)
 }
 
-New-Secret 48   # JWT_SECRET       (64 caracteres; mínimo exigido: 32)
-New-Secret 32   # ANALYTICS_SALT   (distinta del JWT_SECRET)
 New-Secret 24   # contraseña del administrador (ADMIN_PASSWORD en el paso 4)
+# Paso 3: New-Secret 48 (JWT_SECRET, 64 caracteres; mínimo exigido: 32) y New-Secret 32 (ANALYTICS_SALT, distinta del JWT_SECRET)
 ```
 
 La de 24 bytes da 32 caracteres. En producción `admin:bootstrap` **exige 12 o más** (igual que el cambio desde **Cuenta**, `/admin/cuenta`, que acepta de 12 a 256) y rechaza la contraseña de ejemplo de `.env.example`. La rotación de rutina se hace después desde **Cuenta**; `admin:bootstrap` queda como recuperación.
@@ -58,21 +58,49 @@ Con `NODE_ENV=production` la API **no arranca** si el `JWT_SECRET` es el del `.e
 
 ## 2. Proyecto y Postgres (§ 7, § 9.5)
 
-- [ ] New Project → **New → Database → PostgreSQL**.
-- [ ] Pestaña **Backups**: activar el esquema **diario (6 días) + semanal (1 mes) + mensual (3 meses)**. Ahora, no después. Si el plan no ofrece Backups, el `.dump` del paso 9 es el **único** respaldo: hacelo semanal el primer mes.
-- [ ] Anotar la **versión mayor de Postgres** del servicio (la muestra `select version();`): la necesitás en el paso 9 para usar la misma imagen `postgres:<N>-alpine`. Versión: `____`. El CI prueba con Postgres 16 (`postgres:16-alpine`): si Railway te da otra versión mayor, no hace falta cambiar nada para desplegar, pero anotá la diferencia y usá la de Railway en el paso 9.
+- [ ] Desde la raíz del repo: `railway init --name portfolio-msaavedra`. Crea el proyecto con el entorno `production` y lo vincula a esta carpeta.
+- [ ] **No** crear Postgres ni los servicios a mano: el `apply` del paso 3 los crea a partir de `.railway/railway.ts`. La versión mayor de Postgres la fija esa imagen: **18** (`ghcr.io/railwayapp-templates/postgres-ssl:18`), la misma que usa el CI (`postgres:18-alpine`), y el test de `.railway/` falla si cambia. Tu Postgres local puede seguir en otra versión: solo importa que el `pg_dump` del paso 9 sea de la 18 o posterior.
+- [ ] **Backups**: recién después del `apply` del paso 3, en la pestaña **Backups** del servicio `Postgres`, activar el esquema **diario (6 días) + semanal (1 mes) + mensual (3 meses)**. Los backups no tienen representación en IaC: se hacen en el panel. Si el plan no ofrece Backups, el `.dump` del paso 9 es el **único** respaldo: hacelo semanal el primer mes.
 
 ---
 
 ## 3. Servicio `api` (§ 9.5)
 
-- [ ] New → GitHub Repo. **Primero, Settings → Service Name: `api`** (el proxy del paso 5 resuelve `api.railway.internal`: con otro nombre, `web` no encuentra la API). El primer deploy automático que Railway lanza al crear el servicio, antes del nombre, la ruta y las variables, **falla: es esperable**; el bueno es el del botón Deploy de más abajo.
-- [ ] **Settings → Root Directory: `backend`**.
-- [ ] **Settings → Config-as-code → Config file path: `/backend/railway.json`**. Es una ruta **absoluta desde la raíz del repo**: el Root Directory no la reubica, y con `railway.json` a secas Railway no encuentra el archivo y usa sus valores por defecto (build sin `prisma generate`, sin pre-deploy ni healthcheck).
-- [ ] No tocar Build / Start / Pre-deploy / Healthcheck: los toma de `backend/railway.json`:
+El primer `apply` tiene un orden propio (decisión D5 de `migrate-railway-iac`): `api` vacío, secretos cargados y sellados, `plan`, revisión y recién entonces `apply`. Así el primer deploy de `api` ya encuentra sus secretos y no hay un deploy fallido esperable.
 
-  | Campo | Valor versionado |
+- [ ] `railway add --service api --json`. Crea el servicio **sin fuente**, así que no despliega. El nombre tiene que ser `api`: `railway.ts` lo declara con ese nombre y el proxy de `web` resuelve `api.railway.internal`.
+- [ ] **Secretos**, desde PowerShell, sin que el valor toque un archivo ni el historial (el historial guarda `$s`, no el valor). Con la función del paso 1 pegada, para cada uno:
+
+```powershell
+$s = New-Secret 48                 # JWT_SECRET (64 caracteres; mínimo exigido: 32)
+Set-Clipboard $s                   # pegalo en el gestor de contraseñas y después limpiá el portapapeles
+railway variable set "JWT_SECRET=$s" --service api --skip-deploys
+Remove-Variable s
+
+$s = New-Secret 32                 # ANALYTICS_SALT (distinta del JWT_SECRET)
+Set-Clipboard $s
+railway variable set "ANALYTICS_SALT=$s" --service api --skip-deploys
+Remove-Variable s
+```
+
+  No uses `| railway variable set --stdin`: PowerShell agrega un salto de línea al canalizar hacia un ejecutable nativo y quedaría dentro del secreto.
+- [ ] **Sellarlos**: `railway environment edit --service-config api variables.JWT_SECRET.isSealed true` y lo mismo con `ANALYTICS_SALT` (o desde el panel). Un valor sellado no se vuelve a ver: el gestor de contraseñas es la única copia.
+- [ ] `npm ci --prefix .railway` y, desde la raíz, `railway config plan` (con `--verbose` para ver cada campo). **Lo esperado:**
+  - crear `Postgres` y `web`;
+  - actualizar `api` (fuente, build, deploy y variables no secretas);
+  - **sin cambios** en `JWT_SECRET` ni `ANALYTICS_SALT`;
+  - `0 to destroy`.
+
+  **Criterio de parada:** si el plan propone crear un segundo `api`, borrar algo o tocar los secretos, **no se aplica**: se vuelve a leer el `design.md` de `migrate-railway-iac` (D5) y se consulta.
+- [ ] `railway config apply`, interactivo. Nunca con `--yes` ni `--confirm-destructive` sin haber leído el plan completo, y **no** con el Public Access de Postgres encendido.
+- [ ] Comprobar que la CLI trasladó los ajustes: `railway environment config --json` tiene que mostrar en `api` `preDeployTimeoutSeconds: 300`, `drainingSeconds: 10`, `healthcheckTimeout: 300`, `sleepApplication: false` y `checkSuites: true`, y en `web` `builder: DOCKERFILE` y `dockerfilePath`. Si falta alguno, usá el respaldo de la tabla [«Qué va por IaC, por CLI y por panel»](#qué-va-por-iac-por-cli-y-por-panel) y anotalo en esta guía.
+
+Lo que fija `.railway/railway.ts` en `api` (no se toca en el panel; cualquier cambio es un PR al archivo):
+
+  | Campo | Valor declarado |
   |---|---|
+  | Fuente | el repo, rama `main`, **Wait for CI** (`checkSuites`) |
+  | Root Directory | `backend` |
   | Builder | `RAILPACK` |
   | Build command | `npm run prisma:generate && npm run build` |
   | Watch paths | `/backend/**` |
@@ -83,37 +111,40 @@ Con `NODE_ENV=production` la API **no arranca** si el `JWT_SECRET` es el del `.e
   | Healthcheck timeout | `300` s |
   | Draining | `10` s |
   | Restart policy | `ON_FAILURE` |
+  | App Sleeping | apagado |
 
-  Comprobá en el panel que esos campos figuren como definidos por el archivo y que el **Pre-deploy Timeout** diga `300`.
+  Si querés comparar con lo que quedó en Railway: `railway environment config --json`.
 
   **Versión de Node.** `backend/package.json` fija `"engines": { "node": "22.x" }` y Railpack la respeta. El conector `github` usa `AbortSignal.any`, que exige Node 20.3 o posterior: no bajes de esa versión.
-- [ ] **Wait for CI** (Settings → Deploy), **si el panel lo ofrece**: suma un freno del lado de Railway a los *required checks* de `main`. Si no aparece, alcanzan los checks y el control del paso 0.
-- [ ] **App Sleeping apagado** (Settings → Serverless). Si el servicio durmiera, la primera visita del día pagaría el arranque.
-- [ ] Variables → Raw Editor, pegar y completar:
+
+**Variables.** Las no secretas las declara `railway.ts` (se aplican con el `apply`); los secretos los cargaste vos arriba:
 
 ```ini
+# declaradas en .railway/railway.ts
 NODE_ENV=production
 PORT=8080
-DATABASE_URL=${{Postgres.DATABASE_URL}}
-JWT_SECRET=<paso 1>
+DATABASE_URL=<referencia a la salida DATABASE_URL de Postgres>
 JWT_EXPIRES_IN=1d
-ANALYTICS_SALT=<paso 1>
 SESSION_COOKIE_SAMESITE=strict
 LOG_LEVEL=info
 THROTTLE_TTL=60
 THROTTLE_LIMIT=120
 THROTTLE_LOGIN_LIMIT=5
 FRONTEND_URL=https://mjsaavedra.is-a.dev
+
+# cargadas por CLI (paso 3) y declaradas con preserve(): el archivo conserva el valor que ya hay
+JWT_SECRET
+ANALYTICS_SALT
 ```
 
 - **`NODE_ENV=production` es la primera variable que importa.** Sin ella la API arranca en modo desarrollo: sin las reglas de arranque seguro, cookie sin `Secure`, sin HSTS y con Swagger abierto. En el log del arranque tiene que aparecer la línea «Swagger deshabilitado…», que solo sale en producción.
-- **`FRONTEND_URL`** es un **origen**: `https://` y el host, **sin barra final ni ruta** (con una barra la API no arranca). Lleva el dominio final desde ahora: con el proxy solo da forma al `canonical`, `og:*`, sitemap, robots y JSON Resume, y CORS no interviene en un mismo origen, así que es inocuo antes del lanzamiento y evita un redeploy. El paso 6 solo lo verifica.
-- **Secretos *sealed*:** si el panel lo ofrece, marcá como *sealed* `JWT_SECRET`, `ANALYTICS_SALT` y, cuando existan, `INTEGRATIONS_KEYS`, `GITHUB_SYNC_TOKEN` y `ANTHROPIC_API_KEY`. Quedan guardados en el gestor de contraseñas: un valor sellado no se vuelve a ver en el panel.
-- **No** definir `ENABLE_API_DOCS` (Swagger queda cerrado), **ni** `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` (viven solo en la terminal del paso 4), **ni** `SEED_ALLOW_PRODUCTION`.
-- **Integraciones con terceros:** dejá las ocho variables `INTEGRATIONS_*` **sin definir** hasta que llegue un proveedor real (`INTEGRATIONS_ENABLED`, `INTEGRATIONS_SCHEDULER_ENABLED`, `INTEGRATIONS_SYNC_CRON`, `INTEGRATIONS_TICK_SECONDS`, `INTEGRATIONS_JOB_TIMEOUT_MS`, `INTEGRATIONS_RUN_MAX_MS`, `INTEGRATIONS_KEYS` e `INTEGRATIONS_ACTIVE_KEY`). Sus defaults dejan todo apagado y `fake` está prohibido en producción. `GITHUB_SYNC_TOKEN` (opcional) y `GITHUB_TRANSPORT` (`http` por defecto; `fixture` está prohibido en producción) solo cuentan si encendés el proveedor `github`, y eso queda para la fase [«Opcionales, con el sitio estable»](#opcionales-con-el-sitio-estable). La tabla completa de variables por servicio, con default, secreto y cómo generarla, está en [`DEPLOY.md` § 3](DEPLOY.md#variables-de-entorno); el detalle de integraciones, en [`DEPLOY.md` § 3](DEPLOY.md#integraciones-con-terceros-change-add-integrations-foundation).
-- **Inteligencia artificial** (change `add-ai-foundation`): dejá las variables `AI_*` y `ANTHROPIC_API_KEY` **sin definir** en el primer deploy: con `AI_ENABLED` ausente la IA queda apagada y la app funciona exactamente igual. Se enciende en la fase [«Opcionales, con el sitio estable»](#opcionales-con-el-sitio-estable), después de un deploy estable.
-- El drenaje de 10 s ya está versionado (`drainingSeconds`); la variable `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` solo hace falta para pisarlo desde el panel. La API espera hasta 5 s a registrar las visitas en vuelo al apagarse.
-- [ ] Deploy.
+- **`FRONTEND_URL`** es un **origen**: `https://` y el host, **sin barra final ni ruta** (con una barra la API no arranca). Lleva el dominio final desde ahora: con el proxy solo da forma al `canonical`, `og:*`, sitemap, robots y JSON Resume, y CORS no interviene en un mismo origen, así que es inocuo antes del lanzamiento y evita un redeploy. Sale de la misma constante `SITE_DOMAIN` que el dominio de `web`, y el test de `.railway/` exige que coincidan. El paso 6 solo lo verifica.
+- **No** declarar `ENABLE_API_DOCS` (Swagger queda cerrado), **ni** `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` (viven solo en la terminal del paso 4), **ni** `SEED_ALLOW_PRODUCTION`. El test de `.railway/` falla si aparecen en el archivo.
+- **Integraciones con terceros:** dejá las ocho variables `INTEGRATIONS_*` **fuera de `railway.ts`** hasta que llegue un proveedor real (`INTEGRATIONS_ENABLED`, `INTEGRATIONS_SCHEDULER_ENABLED`, `INTEGRATIONS_SYNC_CRON`, `INTEGRATIONS_TICK_SECONDS`, `INTEGRATIONS_JOB_TIMEOUT_MS`, `INTEGRATIONS_RUN_MAX_MS`, `INTEGRATIONS_KEYS` e `INTEGRATIONS_ACTIVE_KEY`). Sus defaults dejan todo apagado y `fake` está prohibido en producción. `GITHUB_SYNC_TOKEN` (opcional) y `GITHUB_TRANSPORT` (`http` por defecto; `fixture` está prohibido en producción) solo cuentan si encendés el proveedor `github`, y eso queda para la fase [«Opcionales, con el sitio estable»](#opcionales-con-el-sitio-estable). La tabla completa de variables por servicio, con default, secreto y cómo generarla, está en [`DEPLOY.md` § 3](DEPLOY.md#variables-de-entorno); el detalle de integraciones, en [`DEPLOY.md` § 3](DEPLOY.md#integraciones-con-terceros-change-add-integrations-foundation).
+- **Inteligencia artificial** (change `add-ai-foundation`): dejá las variables `AI_*` y `ANTHROPIC_API_KEY` **fuera de `railway.ts`** en el primer deploy: con `AI_ENABLED` ausente la IA queda apagada y la app funciona exactamente igual. Se enciende en la fase [«Opcionales, con el sitio estable»](#opcionales-con-el-sitio-estable), después de un deploy estable.
+- El drenaje de 10 s ya está declarado (`drainingSeconds`). La API espera hasta 5 s a registrar las visitas en vuelo al apagarse.
+
+El `apply` crea los servicios y Railway despliega `api` y `web` desde `main`.
 
 **Cómo verificar el deploy** (pestaña Deployments → logs):
 
@@ -123,8 +154,8 @@ FRONTEND_URL=https://mjsaavedra.is-a.dev
 
 **Si falla:**
 
-- *Build: TypeScript no encuentra tipos de `@prisma/client`* → el `buildCommand` no es el del archivo: el Config file path está mal (arriba).
-- *Pre-deploy: error de conexión* → `DATABASE_URL=${{Postgres.DATABASE_URL}}` mal escrita, o el servicio de base con otro nombre en el canvas.
+- *Build: TypeScript no encuentra tipos de `@prisma/client`* → el `buildCommand` no es el declarado: el plan no lo trasladó. Corré `railway config plan --verbose` y, si falta, el respaldo de la tabla [«Qué va por IaC, por CLI y por panel»](#qué-va-por-iac-por-cli-y-por-panel).
+- *Pre-deploy: error de conexión* → Postgres todavía estaba provisionando (redesplegá `api` desde el panel o con `railway redeploy --service api`; la base sigue vacía y no hay riesgo), o el servicio de base no se llama `Postgres` en el canvas (la referencia de `DATABASE_URL` apunta a ese nombre).
 - *Arranque o pre-deploy: error de Prisma sobre `libssl`/OpenSSL o “query engine” no encontrado* → **a verificar**: sería que la imagen de runtime no trae la biblioteca que necesita el motor de Prisma. No definas variables a ciegas: copiá el mensaje exacto del log, buscalo en la documentación de Railpack y de Prisma y, si no se resuelve, frená y consultalo antes de seguir.
 - *El log habla de un secreto, de `ANALYTICS_SALT` o de `FRONTEND_URL`* → validación de arranque (paso 1). Falta la sal, es corta o igual a otro secreto; o `FRONTEND_URL` lleva barra final o ruta.
 - *“healthcheck failed”* → la base no responde (`/health` devuelve 503 a propósito) o `PORT` distinto de `8080`.
@@ -132,7 +163,7 @@ FRONTEND_URL=https://mjsaavedra.is-a.dev
 
 > Las migraciones destructivas (`retire_accent_color`, `retire_featured_repository_stars`) y las de datos (`localize_language_level`, `order_repositories_section`) son inocuas sobre una base **vacía**, como la de este primer deploy. Las demás solo agregan tablas, tipos o columnas con valor por defecto. Si algún día un deploy aplica una migración destructiva o de datos sobre una base con contenido, hacé un respaldo antes (§ 9.5 y [«Deploys siguientes»](#deploys-siguientes)).
 
-- [ ] Opcional: **Settings → Networking → Generate Domain** en `api`, para mirar la API cruda en el paso 7. Se puede borrar después.
+- [ ] Opcional: un dominio generado para `api`, para mirar la API cruda en el paso 7: `railway domain --service api`. No va en `railway.ts`; se puede borrar después.
 
 ---
 
@@ -183,20 +214,13 @@ Con contenido en producción hacen falta las **dos llaves** (`--overwrite` y `SE
 
 ## 5. Servicio `web` (§ 4, § 9.5)
 
-- [ ] New → GitHub Repo (el mismo). **Primero, Settings → Service Name: `web`.** Igual que en `api`, el primer deploy automático falla y es esperable.
-- [ ] **Root Directory: `frontend`**.
-- [ ] **Wait for CI**, si el panel lo ofrece (como en el paso 3).
-- [ ] **Config file path: `/frontend/railway.json`** (absoluta desde la raíz del repo, igual que en `api`).
-- [ ] Variables:
+`web` lo creó el mismo `apply` del paso 3, con el repo, Root Directory `frontend`, Wait for CI, el build con `frontend/Dockerfile`, el healthcheck `/`, `PORT=8080`, `API_ORIGIN` y el dominio propio. No hay nada que crear ni renombrar.
 
-```ini
-API_ORIGIN=http://api.railway.internal:8080
-```
-
-`API_ORIGIN` usa el nombre que le fijaste al servicio en el paso 3 (`api`) y el `PORT` de `api`. **No definir `VITE_API_URL`**: el `ARG` de `frontend/Dockerfile` ya vale vacío y el cliente usa rutas relativas que resuelve el proxy. **No definir `CSP_HEADER`**: sin definir, la CSP del sitio bloquea (si tras un deploy algo deja de cargar, `CSP_HEADER=Content-Security-Policy-Report-Only` solo reporta; § 9.5).
-
-- [ ] Deploy. El healthcheck de `web` es `/` (versionado).
+- [ ] Deployments de `web`: el build usa el Dockerfile y el healthcheck `/` queda en verde.
+- [ ] `API_ORIGIN` sale de las mismas constantes que el nombre y el `PORT` de `api` en `railway.ts` (`http://api.railway.internal:8080`): renombrar uno sin el otro rompe el test de `.railway/`, no el proxy en producción. **No definir `VITE_API_URL`**: el `ARG` de `frontend/Dockerfile` ya vale vacío y el cliente usa rutas relativas que resuelve el proxy. **No definir `CSP_HEADER`**: sin definir, la CSP del sitio bloquea (si tras un deploy algo deja de cargar, `CSP_HEADER=Content-Security-Policy-Report-Only` solo reporta; § 9.5).
+- [ ] Generar el dominio de prueba, que no va en `railway.ts`: `railway domain --service web`.
 - [ ] Verificar el proxy: `curl.exe -s https://<dominio-de-web>/health` tiene que devolver **JSON** (`{"status":"ok",...}`). Si devuelve HTML, el proxy no llega a la API (se sacó `/health` del matcher de `frontend/Caddyfile`, o `API_ORIGIN` está mal).
+- [ ] Con el dominio generado ya creado, `railway config plan` tiene que decir «0 to add, 0 to change, 0 to destroy». Si propone quitar un proxy TCP, el Public Access de Postgres quedó encendido: apagalo (paso 4).
 
 ---
 
@@ -204,14 +228,14 @@ API_ORIGIN=http://api.railway.internal:8080
 
 Es un subdominio, así que no hace falta `ALIAS` ni redirección de `www`. El trámite es un PR al repositorio [`is-a-dev/register`](https://github.com/is-a-dev/register) y **lo hacés vos desde tu cuenta de GitHub** (su README pide que la solicitud no la genere una IA y la revisan a mano; el tiempo de aprobación no está publicado). Seguí su [guía para Railway](https://docs.is-a.dev/guides/railway/) y la [estructura de archivos](https://docs.is-a.dev/domain-structure/).
 
-- [ ] En `web` → **Settings → Networking → Custom Domain** → agregar `mjsaavedra.is-a.dev`. Railway muestra dos valores: el destino del **`CNAME`** (`@`, tipo `xxxx.up.railway.app`) y el **`TXT`** de `_railway-verify`.
+- [ ] El dominio `mjsaavedra.is-a.dev` **ya está declarado** en `web` desde el `apply` del paso 3 (queda pendiente de verificación hasta que el DNS exista; es inocuo). Leer los dos valores que muestra Railway, el destino del **`CNAME`** (`@`, tipo `xxxx.up.railway.app`) y el **`TXT`** de `_railway-verify`: `railway domain status mjsaavedra.is-a.dev --service web --json`, o **Settings → Networking** del servicio `web`. No lo agregues por el panel o la CLI si no está en `railway.ts`: el próximo `apply` lo quitaría.
 - [ ] Hacer fork de `is-a-dev/register` y crear en la carpeta `domains/` dos archivos, con tu usuario de GitHub en `owner.username`:
   - `domains/mjsaavedra.json` → `{ "owner": { "username": "<tu-usuario>" }, "records": { "CNAME": "<destino que dio Railway>" } }`
   - `domains/_railway-verify.mjsaavedra.json` → `{ "owner": { "username": "<tu-usuario>" }, "records": { "TXT": "<valor de _railway-verify>" } }`
 - [ ] **Sin `"proxied": true`**. Ese campo pone el proxy de Cloudflare delante, y entonces Railway vería la IP de Cloudflare en `X-Real-IP`: se romperían la IP real del cliente y el límite de peticiones y de login por visitante (§ 9.5 «IP real del cliente»).
 - [ ] Abrir el PR con la vista previa del sitio que exige is-a.dev: el link `*.up.railway.app` del servicio `web` y una captura de la home. Si piden cambios, aplicarlos; si no, rechazan la solicitud.
 - [ ] Cuando lo fusionen, el DNS se publica en minutos (si a las 48 h no resuelve, abrir un issue o preguntar en su Discord). Esperar a que Railway marque el dominio verificado y el certificado emitido.
-- [ ] En `api`, confirmar que **`FRONTEND_URL=https://mjsaavedra.is-a.dev`** (origen exacto, sin barra final) es el valor cargado en el paso 3. Si lo cambiaste, **redeploy de `api`**; si no, no hace falta nada.
+- [ ] En `api`, confirmar que **`FRONTEND_URL=https://mjsaavedra.is-a.dev`** (origen exacto, sin barra final) es el valor declarado en `railway.ts`. Si lo cambiaste, es un PR a `railway.ts`, `plan` → `apply` y **redeploy de `api`**; si no, no hace falta nada.
 - [ ] Verificar: `curl.exe -s https://mjsaavedra.is-a.dev/tech-lead-dotnet | Select-String 'og:title|canonical'` muestra el título del perfil y `https://mjsaavedra.is-a.dev/tech-lead-dotnet` (no `localhost`).
 
 ---
@@ -263,7 +287,7 @@ curl.exe -s -o NUL -w "%{http_code}`n" -X POST "$SITIO/api/auth/login" -H 'Conte
 - [ ] Logs de `api` y `web` (panel): JSON con `reqId`, sin contraseñas ni tokens.
 - [ ] Abrir el sitio, entrar a `/admin` con el email y la contraseña del paso 4 y mirar un perfil.
 
-Contra el dominio de la API (`*.up.railway.app`, si lo generaste), donde se ve la respuesta cruda:
+Contra el dominio de la API (el generado con `railway domain --service api`, si lo creaste), donde se ve la respuesta cruda:
 
 ```powershell
 $API = 'https://api-xxxx.up.railway.app'
@@ -295,7 +319,7 @@ Después, apagar Public Access (`docs/DEPLOY.md` § 7).
 
 ## 9. Backup fuera de Railway y prueba de restauración (§ 7)
 
-El último bloqueante. Los backups de Railway viven en la misma cuenta; un dump propio no. Con Public Access del Postgres **encendido solo para esto** y la versión mayor anotada en el paso 2 (`<N>`):
+El último bloqueante. Los backups de Railway viven en la misma cuenta; un dump propio no. Con Public Access del Postgres **encendido solo para esto** y la versión mayor de la base (18):
 
 ```powershell
 $env:PGURL = '<DATABASE_PUBLIC_URL>'    # si la conexión falla por TLS, agregá ?sslmode=require
@@ -303,11 +327,11 @@ $fecha = Get-Date -Format yyyy-MM-dd
 New-Item -ItemType Directory -Force "$HOME\backups-portafolio" | Out-Null
 
 # Dump (formato custom). Se escribe con -f dentro del contenedor: no uses '>' en PowerShell, corrompe binarios.
-docker run --rm -e PGURL -v "$HOME\backups-portafolio:/out" postgres:<N>-alpine sh -c 'pg_dump "$PGURL" -Fc -f /out/portafolio.dump'
+docker run --rm -e PGURL -v "$HOME\backups-portafolio:/out" postgres:18-alpine sh -c 'pg_dump "$PGURL" -Fc -f /out/portafolio.dump'
 Rename-Item "$HOME\backups-portafolio\portafolio.dump" "portafolio-$fecha.dump"
 
 # Prueba de restauración en un Postgres descartable
-docker run -d --name pg-restore-test -e POSTGRES_PASSWORD=test postgres:<N>-alpine
+docker run -d --name pg-restore-test -e POSTGRES_PASSWORD=test postgres:18-alpine
 Start-Sleep 8
 docker cp "$HOME\backups-portafolio\portafolio-$fecha.dump" pg-restore-test:/tmp/b.dump
 docker exec pg-restore-test sh -c 'createdb -U postgres restore_test && pg_restore -U postgres -d restore_test --no-owner /tmp/b.dump'
@@ -350,21 +374,29 @@ Change `add-ai-foundation`. Es una base: hoy solo trae el panel de gasto y **Pro
 Si el spend limit de la Console fuera menor que `AI_MONTHLY_BUDGET_USD`, corta Anthropic antes y el panel lo muestra como «Anthropic cortó por el spend limit hasta {fecha}».
 
 - [ ] En la Console, creá el workspace `portfolio-app`, fijale el spend limit y creá su clave. Pegala directo en el gestor de contraseñas.
-- [ ] Variables del servicio `api` (Raw Editor), todas opcionales salvo las dos primeras:
+- [ ] Cargar el secreto por CLI **antes** (la clave no se escribe en ningún archivo y `Read-Host` no la deja en el historial):
 
-```ini
-AI_ENABLED=true
-ANTHROPIC_API_KEY=<la clave del workspace portfolio-app>
-AI_MONTHLY_BUDGET_USD=10
+```powershell
+$k = Read-Host 'ANTHROPIC_API_KEY'     # pegá la clave del workspace portfolio-app
+railway variable set "ANTHROPIC_API_KEY=$k" --service api --skip-deploys
+Remove-Variable k
+```
+
+- [ ] PR a `.railway/railway.ts` con las variables nuevas en `api` (el test de `.railway/` exige que la clave sea `preserve()`, nunca un literal), todas opcionales salvo las dos primeras:
+
+```ts
+AI_ENABLED: "true",
+ANTHROPIC_API_KEY: preserve(),
+AI_MONTHLY_BUDGET_USD: "10",
 ```
 
   `AI_PROVIDER` queda en su default (`anthropic`): el proveedor `fake` está prohibido en producción y la API no arranca con él. Sin la clave, con `AI_ENABLED=true` la API **no arranca** (el log nombra `ANTHROPIC_API_KEY` sin imprimir ningún valor y queda sirviendo la versión anterior). `AI_REQUEST_TIMEOUT_MS`, `AI_MAX_CONCURRENCY` y `AI_MAX_INPUT_TOKENS` tienen defaults sensatos (60 000 ms, 2 y 50 000).
-- [ ] Deploy. La migración aditiva `add_ai_foundation` (un tipo y dos tablas) **ya corrió** en el deploy que trajo el código (una de las 15 del paso 3): encender la IA no migra nada, solo cambia variables.
+- [ ] `railway config plan` (solo tiene que agregar esas dos variables y no tocar nada más), `railway config apply` y deploy. La migración aditiva `add_ai_foundation` (un tipo y dos tablas) **ya corrió** en el deploy que trajo el código (una de las 15 del paso 3): encender la IA no migra nada, solo cambia variables.
 - [ ] En `/admin/integraciones`, bloque **Inteligencia artificial**: debe decir «Activa» y «Gastado 0,00 de 10,00 USD». Pulsá **Probar conexión** (confirma que es una llamada real, de unos 0,0001 USD): la corrida queda **Exitosa**, con su costo.
 - [ ] Mirá el costo de esa petición en la Console de Anthropic: tiene que coincidir con el que muestra el panel.
 - [ ] Ejecutá **TC-54** de [`MANUAL.md`](MANUAL.md) contra Anthropic real (las pruebas del repo usan el proveedor `fake`).
 
-**Vuelta atrás.** `AI_ENABLED=false` (o borrar la variable) y redeploy: el cliente de Anthropic deja de construirse y la app queda como antes. Las tablas quedan inertes; no hace falta borrarlas.
+**Vuelta atrás.** `AI_ENABLED: "false"` en `railway.ts` (PR), `plan` → `apply` y redeploy: el cliente de Anthropic deja de construirse y la app queda como antes. Las tablas quedan inertes; no hace falta borrarlas.
 
 **Qué pasa al llegar al tope.** Con gastado más reservado en el tope (`AI_MONTHLY_BUDGET_USD`), el panel dice «Se alcanzó el tope de IA del mes» y el Dashboard lo avisa; no se hace ninguna llamada más hasta el día 1 a las 00:00 UTC. Si Anthropic corta antes por su spend limit, el panel dice hasta cuándo.
 
@@ -383,7 +415,7 @@ Sin `AI_EVAL_API_KEY`, sin `AI_EVAL_ALLOW_SPEND=1` o con las reservas de los cas
 
 ### Evidencia de GitHub
 
-**Antes de encender:** cargar **2 o más repositorios** en `/admin/proyectos`; sin repositorios no hay nada que verificar. Crear en GitHub un **token fine-grained** de solo lectura: *Public repositories (read-only)*, sin permisos adicionales y **con vencimiento** (anotá la fecha). Guardarlo en el gestor y cargarlo en el servicio `api` como `GITHUB_SYNC_TOKEN`, o dejar la variable sin definir y pegarlo en el campo **Credencial** de la tarjeta `github` en **Integraciones**. Encender con `INTEGRATIONS_ENABLED=github` (más el keyring y `INTEGRATIONS_SCHEDULER_ENABLED=true`, como arriba), pulsar **Sincronizar ahora** y mirar el bloque **Repositorios destacados** de `/admin/proyectos`. Cuando el token venza, el sitio sigue mostrando los últimos datos con su fecha y el panel avisa («La última sincronización con GitHub falló»): generá otro, reemplazalo y volvé a sincronizar. Detalle y vuelta atrás en [`DEPLOY.md`](DEPLOY.md#proveedor-github--evidencia-de-código-change-add-github-code-evidence).
+**Antes de encender:** cargar **2 o más repositorios** en `/admin/proyectos`; sin repositorios no hay nada que verificar. Crear en GitHub un **token fine-grained** de solo lectura: *Public repositories (read-only)*, sin permisos adicionales y **con vencimiento** (anotá la fecha). Guardarlo en el gestor y cargarlo en el servicio `api` como `GITHUB_SYNC_TOKEN` (valor por `railway variable set … --skip-deploys` y `GITHUB_SYNC_TOKEN: preserve()` en `railway.ts`), o dejar la variable sin definir y pegarlo en el campo **Credencial** de la tarjeta `github` en **Integraciones**. Encender con `INTEGRATIONS_ENABLED: "github"` (más el keyring y `INTEGRATIONS_SCHEDULER_ENABLED: "true"`, como arriba; todo en un PR a `railway.ts` y `plan` → `apply`), pulsar **Sincronizar ahora** y mirar el bloque **Repositorios destacados** de `/admin/proyectos`. Cuando el token venza, el sitio sigue mostrando los últimos datos con su fecha y el panel avisa («La última sincronización con GitHub falló»): generá otro, reemplazalo y volvé a sincronizar. Detalle y vuelta atrás en [`DEPLOY.md`](DEPLOY.md#proveedor-github--evidencia-de-código-change-add-github-code-evidence).
 
 - [ ] Ejecutá **TC-52** de [`MANUAL.md`](MANUAL.md) contra GitHub real (las pruebas del repo usan `GITHUB_TRANSPORT=fixture`).
 
@@ -399,7 +431,7 @@ Después del primero, cada push a `main` que toque `backend/` o `frontend/` desp
 - [ ] ¿Trae migraciones nuevas? Mirá `backend/prisma/migrations/` en el diff:
   - **Solo agrega** tablas, columnas con valor por defecto o índices: no hace falta nada más.
   - **Borra o transforma datos** (`DROP`, `UPDATE`, `ALTER COLUMN … TYPE`): hacé el dump del paso 9 **antes de fusionar**, y anotá en el PR cómo se vuelve atrás.
-- [ ] ¿Cambia una variable de entorno? Cargala en el panel **antes** de fusionar. Si la API la exige y falta, la versión nueva no arranca y queda la anterior sirviendo.
+- [ ] ¿Cambia una variable de entorno o un ajuste de despliegue? Va en `.railway/railway.ts` (un secreto, con `preserve()` y su valor cargado por CLI): `railway config plan` → `apply` **antes** de fusionar el código que la necesita. Si la API la exige y falta, la versión nueva no arranca y queda la anterior sirviendo. Nunca la cambies solo en el panel: el próximo `apply` la pisa.
 
 **Después del deploy:**
 
@@ -457,9 +489,9 @@ Remove-Item Env:DATABASE_URL, Env:NODE_ENV
 
 Después, apagar Public Access. Las dos purgas simulan por defecto, como `views:reclassify` e `integrations:rekey`.
 
-**Rotar secretos.** Cambiar `JWT_SECRET` en el panel y redesplegar `api` cierra **todas** las sesiones: sirve si se sospecha que el secreto se filtró. Cambiar `ANALYTICS_SALT` hace que, desde ese momento, las mismas IP den otro `ipHash`. No rompe nada, pero corta la continuidad de visitantes únicos. Generá los valores nuevos con la función del paso 1 y guardalos en el gestor antes de pegarlos.
+**Rotar secretos.** Cambiar `JWT_SECRET` (`railway variable set "JWT_SECRET=$s" --service api`, con `$s` generado como en el paso 3; `railway.ts` no cambia, porque `preserve()` conserva el valor) y redesplegar `api` cierra **todas** las sesiones: sirve si se sospecha que el secreto se filtró. Cambiar `ANALYTICS_SALT` hace que, desde ese momento, las mismas IP den otro `ipHash`. No rompe nada, pero corta la continuidad de visitantes únicos. Generá los valores nuevos con la función del paso 1 y guardalos en el gestor antes de pegarlos.
 
-**Integraciones (cuando haya un proveedor real).** Generar el keyring: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` por clave, guardada en el gestor antes de pegarla. Definir `INTEGRATIONS_ENABLED`, el secreto del proveedor, `INTEGRATIONS_KEYS`, `INTEGRATIONS_ACTIVE_KEY` e `INTEGRATIONS_SCHEDULER_ENABLED=true` en el servicio `api`, **en una sola réplica**. `drainingSeconds` tiene que seguir por encima de 8 s. Rotar una clave: agregar `k2` → `INTEGRATIONS_ACTIVE_KEY=k2` → redeploy → `npm run integrations:rekey` (simulación) y `-- --apply` desde tu terminal, con **solo en ese proceso** `DATABASE_URL` (la pública), `INTEGRATIONS_KEYS` (con `k1` y `k2`) e `INTEGRATIONS_ACTIVE_KEY=k2` → quitar `k1` del servicio y limpiar las tres variables de la terminal (`Remove-Item Env:DATABASE_URL, Env:INTEGRATIONS_KEYS, Env:INTEGRATIONS_ACTIVE_KEY`). La clave nueva se genera para el keyring: nunca es la `ANALYTICS_SALT` ni el `JWT_SECRET`. Para sincronizar en producción usá **Sincronizar ahora** en la pantalla **Integraciones**: `npm run integrations:sync` desde la PC cargaría la aplicación entera y pediría todo el entorno de producción (`DATABASE_URL`, `JWT_SECRET`, `ANALYTICS_SALT`, `FRONTEND_URL`, el keyring y el secreto del proveedor); sirve para diagnosticar en local, sin servicio cron aparte. La pantalla **Integraciones** (se llega desde **Cuenta**) avisa si un proveedor lleva más de 48 h sin una corrida exitosa.
+**Integraciones (cuando haya un proveedor real).** Generar el keyring: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` por clave, guardada en el gestor antes de pegarla. Declarar `INTEGRATIONS_ENABLED`, el secreto del proveedor, `INTEGRATIONS_KEYS`, `INTEGRATIONS_ACTIVE_KEY` e `INTEGRATIONS_SCHEDULER_ENABLED` en `.railway/railway.ts` (literales los no secretos y `preserve()` los secretos, con el valor cargado antes por CLI) y aplicar, **en una sola réplica**. `drainingSeconds` tiene que seguir por encima de 8 s. Rotar una clave: agregar `k2` → `INTEGRATIONS_ACTIVE_KEY=k2` → redeploy → `npm run integrations:rekey` (simulación) y `-- --apply` desde tu terminal, con **solo en ese proceso** `DATABASE_URL` (la pública), `INTEGRATIONS_KEYS` (con `k1` y `k2`) e `INTEGRATIONS_ACTIVE_KEY=k2` → quitar `k1` del servicio y limpiar las tres variables de la terminal (`Remove-Item Env:DATABASE_URL, Env:INTEGRATIONS_KEYS, Env:INTEGRATIONS_ACTIVE_KEY`). La clave nueva se genera para el keyring: nunca es la `ANALYTICS_SALT` ni el `JWT_SECRET`. Para sincronizar en producción usá **Sincronizar ahora** en la pantalla **Integraciones**: `npm run integrations:sync` desde la PC cargaría la aplicación entera y pediría todo el entorno de producción (`DATABASE_URL`, `JWT_SECRET`, `ANALYTICS_SALT`, `FRONTEND_URL`, el keyring y el secreto del proveedor); sirve para diagnosticar en local, sin servicio cron aparte. La pantalla **Integraciones** (se llega desde **Cuenta**) avisa si un proveedor lleva más de 48 h sin una corrida exitosa.
 
 **Monitoreo.** Hasta que exista el change `add-uptime-monitoring`, el único aviso automático es el del propio Railway cuando falla un deploy. Si el sitio se cae entre deploys, nadie avisa: conviene abrirlo de vez en cuando. `/health/live` en `200` con `/health` en `503` significa que la API vive pero no llega a la base.
 
@@ -467,11 +499,11 @@ Después, apagar Public Access. Las dos purgas simulan por defecto, como `views:
 
 ## Cambiar de dominio
 
-El dominio **no está en el código**: el `canonical`, la `og:url`/`og:image`, el `robots.txt`, el sitemap y CORS salen todos de la variable `FRONTEND_URL` del servicio `api`. Cambiar de dominio es configuración, sin PR ni rebuild de la imagen:
+El dominio **no está en el código de la app**: el `canonical`, la `og:url`/`og:image`, el `robots.txt`, el sitemap y CORS salen todos de la variable `FRONTEND_URL` del servicio `api`. En la infraestructura, `.railway/railway.ts` lo declara una sola vez (`SITE_DOMAIN`), y de ahí salen `FRONTEND_URL` y el dominio de `web`. Cambiar de dominio es un PR a ese archivo más `plan` → `apply`, sin rebuild de las imágenes (los `watchPatterns` no incluyen `.railway/`):
 
-1. Comprar el dominio nuevo (ver la tabla de candidatos) y, en `web` → **Custom Domain**, agregarlo **sin quitar todavía el anterior**. Cargar en su DNS el `ALIAS`/`CNAME` y el `TXT` que muestre Railway, sin proxy delante, y esperar el certificado.
-2. En `api`: `FRONTEND_URL=https://<nuevo>` y **redeploy de `api`**. Verificar con el paso 6 (`og:title` y `canonical` con el dominio nuevo) y con `curl.exe -s https://<nuevo>/robots.txt`.
-3. En el DNS del dominio **anterior**, redirigir todo con 301 a `https://<nuevo>` conservando la ruta (los links ya enviados y lo indexado siguen funcionando), y quitarlo de los Custom Domains de `web`.
+1. Comprar el dominio nuevo (ver la tabla de candidatos) y, en `railway.ts`, agregarlo a `domains` de `web` **sin quitar todavía el anterior** (los dos conviven en la lista). `plan` → `apply`. Cargar en su DNS el `ALIAS`/`CNAME` y el `TXT` que muestre `railway domain status <nuevo> --service web --json`, sin proxy delante, y esperar el certificado.
+2. En `railway.ts`: `FRONTEND_URL` con el dominio nuevo (la constante `SITE_DOMAIN`), `plan` → `apply` y **redeploy de `api`**. Verificar con el paso 6 (`og:title` y `canonical` con el dominio nuevo) y con `curl.exe -s https://<nuevo>/robots.txt`.
+3. En el DNS del dominio **anterior**, redirigir todo con 301 a `https://<nuevo>` conservando la ruta (los links ya enviados y lo indexado siguen funcionando), y quitarlo de `domains` en `railway.ts` (PR, `plan` → `apply`).
 4. Search Console: dar de alta el dominio nuevo, enviar `https://<nuevo>/sitemap.xml` y usar **Cambio de dirección** desde la propiedad anterior.
 5. Volver a pasar dos perfiles por LinkedIn Post Inspector (renueva la caché de la tarjeta) y actualizar el link en LinkedIn, GitHub y el CV.
 6. Mantener el dominio anterior renovado al menos un año, para que la redirección no se corte.
@@ -496,11 +528,37 @@ Descartados: `manuelsaavedra.com` y `msaavedra.com` (registrados); `.top`, `.xyz
 
 ---
 
+## Qué va por IaC, por CLI y por panel
+
+`.railway/railway.ts` manda: si `railway config plan --verbose` muestra un campo, no se toca por otro lado. `railway environment edit` es solo el **respaldo** cuando el plan no traslada algo (las rutas salen del esquema de la skill oficial de Railway).
+
+| Ajuste | Dónde | Respaldo si el plan no lo muestra |
+|---|---|---|
+| Root Directory (`backend`, `frontend`) | IaC: `rootDirectory` | `railway environment edit --service-config <svc> source.rootDirectory <dir>` |
+| Repo, rama y *Wait for CI* | IaC: `github(repo, { branch, checkSuites })` | `… source.repo`, `source.branch main`, `source.checkSuites true` |
+| Builder y `dockerfilePath` | IaC: `build` | `… build.builder DOCKERFILE`, `build.dockerfilePath Dockerfile` |
+| `watchPatterns` | IaC: `build.watchPatterns` | `… build.watchPatterns '["/backend/**"]'` |
+| Build command, pre-deploy, start, healthcheck, reinicio, App Sleeping | IaC | `… build.buildCommand`, `deploy.preDeployCommand`, `deploy.startCommand`, `deploy.healthcheckPath`, `deploy.healthcheckTimeout`, `deploy.restartPolicyType`, `deploy.sleepApplication` |
+| Pre-deploy timeout 300 y drenaje 10 s | IaC: `deploy` | **panel** (Settings → Deploy); el drenaje también con la variable `RAILWAY_DEPLOYMENT_DRAINING_SECONDS=10` en `railway.ts` |
+| Variables y referencia a la base | IaC: `env` | `railway variable set K=v --service <svc>` |
+| Secretos (`JWT_SECRET`, `ANALYTICS_SALT`) | **CLI**: `railway variable set … --skip-deploys` y sellado; en el archivo, `preserve()` | `railway environment edit --service-config api variables.<K>.isSealed true` o el panel |
+| Dominio propio | IaC: `domains` (con el puerto 8080) | `railway domain mjsaavedra.is-a.dev --service web --port 8080` |
+| Dominios generados `*.up.railway.app` | **CLI**: `railway domain --service <svc>`; no van en el archivo | — |
+| Backups de Postgres | **panel** (pestaña Backups) | — |
+| Versión mayor de Postgres | IaC: la imagen del helper `postgres()` (18) | — |
+| Public Access de Postgres (proxy TCP) | **panel**, temporal; no se declara | — |
+| Alerta de uso | **panel** | — |
+
+Quitar una variable o un recurso de `railway.ts` lo **borra** en el `apply`: el plan lo muestra y la CLI pide confirmación.
+
+---
+
 ## Si algo falla
 
 | Síntoma | Causa probable | Dónde |
 |---|---|---|
-| El deploy de `api` compila sin `prisma generate` o no corre el pre-deploy | Config file path mal (`railway.json` en vez de `/backend/railway.json`) | paso 3 |
+| El deploy de `api` compila sin `prisma generate` o no corre el pre-deploy | el plan no trasladó el campo: `railway config plan --verbose` no lo muestra | respaldo de la tabla «Qué va por IaC, por CLI y por panel» |
+| `railway config plan` propone quitar un proxy TCP | el Public Access de Postgres quedó encendido (no se declara en el archivo) | apagarlo en el panel (paso 4) y repetir el plan |
 | El deploy de `api` queda en "deploying" para siempre | el `preDeployCommand` colgado y sin timeout | Pre-deploy Timeout = 300 (§ 9.5) |
 | “healthcheck failed” | la base no responde (`/health` devuelve 503 a propósito) o `PORT` ≠ 8080 | logs del servicio (§ 3) |
 | La API no arranca y el log habla de un secreto | validación de arranque | § 1 |
@@ -530,8 +588,10 @@ Descartados: `manuelsaavedra.com` y `msaavedra.com` (registrados); `.top`, `.xyz
 - `prisma db push` en producción — solo `prisma migrate deploy` (lo corre el pre-deploy).
 - `npm run seed -- --overwrite` sobre datos reales sin el dump del paso 9 hecho antes.
 - `SEED_ALLOW_PRODUCTION` ni `ADMIN_*` como variables del servicio `api`: van solo en la terminal del paso 4.
-- Dejar el Public Access del Postgres encendido de forma permanente.
-- Commitear `.env` ni secretos. Van en las variables del servicio.
+- Dejar el Public Access del Postgres encendido de forma permanente, ni correr `railway config apply` con él encendido.
+- `railway config apply --yes` o `--confirm-destructive` sin haber leído el plan completo.
+- Cambiar una variable o un ajuste solo en el panel: el próximo `apply` lo pisa. Va en `.railway/railway.ts`.
+- Commitear `.env` ni secretos. Van en las variables del servicio, cargadas por CLI y declaradas con `preserve()` en `railway.ts`.
 - Confiar en un backup que no se restauró nunca.
 
 ## Lo que hay que saber de Railway
@@ -550,32 +610,31 @@ Una página para tachar en el día del deploy. Cada fila apunta al paso numerado
 
 | Hecho | Qué | Criterio de verificación |
 |---|---|---|
-| [ ] | [Paso 0](#0-antes-de-empezar): cuenta Hobby, repo conectado, CI de `main` en verde | pestaña *Actions*: backend, frontend y `web-quality` en verde en el último commit |
-| [ ] | `openspec/changes/` solo con `archive/` (se archivaron `polish-pre-deploy-cleanup`, `add-ai-foundation` y `prepare-deploy-1-0-0`) | `ls openspec/changes` muestra solo `archive` |
-| [ ] | [Paso 1](#1-secretos--1): `JWT_SECRET`, `ANALYTICS_SALT` y contraseña del administrador, directo al gestor | tres valores distintos en el gestor; ninguno en un archivo del repo |
+| [ ] | [Paso 0](#0-antes-de-empezar): cuenta Hobby, CLI ≥ 5.49.1, `npm ci --prefix .railway`, CI de `main` en verde | pestaña *Actions*: backend, frontend, `web-quality` e `Infra · IaC de Railway (sin red)` en verde en el último commit |
+| [ ] | `openspec/changes/` solo con `archive/` (se archivaron `polish-pre-deploy-cleanup`, `add-ai-foundation`, `prepare-deploy-1-0-0` y `migrate-railway-iac`) | `ls openspec/changes` muestra solo `archive` |
+| [ ] | [Paso 1](#1-secretos--1): función `New-Secret` y contraseña del administrador, directo al gestor | la contraseña en el gestor; ningún valor en un archivo del repo |
 
 ### Fase 2. Servicios
 
 | Hecho | Qué | Criterio de verificación |
 |---|---|---|
-| [ ] | [Paso 2](#2-proyecto-y-postgres--7--95): proyecto, Postgres y Backups | pestaña Backups con diario, semanal y mensual (o anotado que no hay y el `.dump` es el único respaldo); versión mayor anotada |
-| [ ] | [Paso 3](#3-servicio-api--95), primer ítem: servicio renombrado a `api`, Root Directory y Config file path | Settings muestra `api`, `backend` y `/backend/railway.json`; el pre-deploy dice 300 s |
-| [ ] | [Paso 5](#5-servicio-web--4--95), primer ítem: servicio renombrado a `web`, Root Directory y Config file path | Settings muestra `web`, `frontend` y `/frontend/railway.json` |
+| [ ] | [Paso 2](#2-proyecto-y-postgres--7--95): `railway init` y, después del `apply`, Backups de Postgres | pestaña Backups con diario, semanal y mensual (o anotado que no hay y el `.dump` es el único respaldo) |
+| [ ] | [Paso 3](#3-servicio-api--95): `api` vacío, secretos cargados y sellados, `railway config plan` revisado y `apply` hecho | el plan mostró `Postgres` y `web` a crear, `api` a actualizar, sin cambios en los secretos y `0 to destroy`; `railway environment config --json` trae los ajustes de `api` (pre-deploy 300 s, drenaje 10 s, healthcheck 300 s, sin App Sleeping, Wait for CI) y de `web` (`DOCKERFILE`) |
 
 ### Fase 3. Variables
 
 | Hecho | Qué | Criterio de verificación |
 |---|---|---|
-| [ ] | [Paso 3](#3-servicio-api--95): Raw Editor de `api` con `NODE_ENV=production`, `ANALYTICS_SALT` y `FRONTEND_URL=https://mjsaavedra.is-a.dev` (sin barra) | la API arranca; sin `ANALYTICS_SALT` o con barra final, el log nombra la variable y no arranca |
-| [ ] | Secretos *sealed* y Wait for CI, si el panel lo ofrece | los secretos ya no se ven en el panel; Wait for CI activo (o anotado que no existe) |
-| [ ] | [Paso 5](#5-servicio-web--4--95): `API_ORIGIN=http://api.railway.internal:8080` y **sin** `VITE_API_URL` | `curl.exe -s https://<dominio-de-web>/health` devuelve JSON |
-| [ ] | Variables `INTEGRATIONS_*`, `GITHUB_*`, `AI_*` y `ANTHROPIC_API_KEY` **sin definir** | no figuran en el Raw Editor de `api` |
+| [ ] | [Paso 3](#3-servicio-api--95): `railway.ts` declara `NODE_ENV=production` y `FRONTEND_URL=https://mjsaavedra.is-a.dev` (sin barra); `ANALYTICS_SALT` cargada por CLI | la API arranca; sin `ANALYTICS_SALT` o con barra final, el log nombra la variable y no arranca |
+| [ ] | Secretos sellados | los secretos ya no se ven en el panel; `railway.ts` los declara con `preserve()` |
+| [ ] | [Paso 5](#5-servicio-web--4--95): `API_ORIGIN=http://api.railway.internal:8080` (lo declara `railway.ts`) y **sin** `VITE_API_URL` | `curl.exe -s https://<dominio-de-web>/health` devuelve JSON |
+| [ ] | Variables `INTEGRATIONS_*`, `GITHUB_*`, `AI_*` y `ANTHROPIC_API_KEY` **sin definir** | no figuran en `railway.ts` ni en las variables de `api` |
 
 ### Fase 4. Primer deploy
 
 | Hecho | Qué | Criterio de verificación |
 |---|---|---|
-| [ ] | [Paso 3](#3-servicio-api--95), «Cómo verificar el deploy»: deploy de `api` | build con `prisma generate`; pre-deploy con las **15 migraciones** y «All migrations have been successfully applied»; healthcheck en verde; en el log, «Swagger deshabilitado…» |
+| [ ] | [Paso 3](#3-servicio-api--95), «Cómo verificar el deploy»: deploy de `api` (lo lanza el `apply`) | build con `prisma generate`; pre-deploy con las **15 migraciones** y «All migrations have been successfully applied»; healthcheck en verde; en el log, «Swagger deshabilitado…» |
 | [ ] | [Paso 5](#5-servicio-web--4--95): deploy de `web` | healthcheck `/` en verde; `/health` por `web` devuelve JSON, no HTML |
 
 ### Fase 5. Datos iniciales y respaldo cero
@@ -589,7 +648,7 @@ Una página para tachar en el día del deploy. Cada fila apunta al paso numerado
 
 | Hecho | Qué | Criterio de verificación |
 |---|---|---|
-| [ ] | [Paso 6](#6-dominio-gratuito-mjsaavedrais-adev--0): Custom Domain en `web`, PR a `is-a-dev/register` (sin `proxied`), certificado | Railway marca el dominio verificado y con certificado |
+| [ ] | [Paso 6](#6-dominio-gratuito-mjsaavedrais-adev--0): dominio ya declarado en `web`, PR a `is-a-dev/register` (sin `proxied`), certificado | Railway marca el dominio verificado y con certificado |
 | [ ] | `FRONTEND_URL` de `api` confirmada | `curl.exe -s https://mjsaavedra.is-a.dev/tech-lead-dotnet \| Select-String 'og:title\|canonical'` muestra el perfil y el dominio, no `localhost` |
 
 ### Fase 7. Verificación
@@ -623,14 +682,14 @@ Una página para tachar en el día del deploy. Cada fila apunta al paso numerado
 | Una **migración quedó a medias** | restaurar el último backup (paso 9) y recién entonces desplegar la corrección |
 | Un **defecto sin migración** en el deploy | *Rollback* al despliegue anterior (72 h en Hobby) |
 | Un **defecto con migración** | el rollback no revierte la base: el código viejo tiene que funcionar con la base nueva, o se restaura el `.dump` (migraciones destructivas y de datos: `DEPLOY.md` § 9.5) |
-| Una **variable faltante** | la versión nueva no arranca y la anterior sigue sirviendo: cargarla y redesplegar |
+| Una **variable faltante** | la versión nueva no arranca y la anterior sigue sirviendo: declararla en `railway.ts`, `plan` → `apply` y redesplegar |
 | **Datos pisados** o perdidos | backup de Railway o `.dump` del paso 9; si lo perdido es solo contenido del seed, la recarga deliberada del paso 4, con respaldo previo |
-| El **primer deploy quedó inutilizable** antes de compartir el link | no hay nada que revertir para el público: borrar y recrear los servicios o corregir y redesplegar; la base se puede vaciar y volver a poblar con el paso 4 |
+| El **primer deploy quedó inutilizable** antes de compartir el link | no hay nada que revertir para el público: borrar los servicios, corregir `railway.ts` y volver a aplicar, o corregir y redesplegar; la base se puede vaciar y volver a poblar con el paso 4 |
 
 ### Los tres respaldos
 
 | Respaldo | Dónde vive | Cuándo se verifica |
 |---|---|---|
-| Backups de Railway (diario, semanal, mensual) | la misma cuenta que el proyecto | se activan en el paso 2; el restore se prepara con un volumen nuevo |
-| `.dump` propio (`pg_dump -Fc`) | disco externo o almacenamiento cifrado, fuera de la PC de trabajo | se restaura en un `postgres:<N>-alpine` descartable en el paso 9 y cada mes |
+| Backups de Railway (diario, semanal, mensual) | la misma cuenta que el proyecto | se activan en el paso 2 (después del `apply`); el restore se prepara con un volumen nuevo |
+| `.dump` propio (`pg_dump -Fc`) | disco externo o almacenamiento cifrado, fuera de la PC de trabajo | se restaura en un `postgres:18-alpine` descartable en el paso 9 y cada mes |
 | El repositorio (`docs/cv-data.json`) | GitHub | solo sirve para el primer poblado: una recarga con `--overwrite` pisa lo editado en el panel |

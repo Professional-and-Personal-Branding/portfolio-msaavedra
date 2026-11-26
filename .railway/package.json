@@ -1,0 +1,19 @@
+{
+  "name": "portfolio-railway-iac",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Infraestructura de Railway del portafolio como código (railway.ts) y su test de coherencia",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --test --experimental-strip-types"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.7",
+    "railway": "3.17.0",
+    "typescript": "5.9.3"
+  }
+}
