@@ -1,0 +1,30 @@
+== 2.2 etiqueta esperada :17 (la imagen es :18)
+not ok 12 - base: Postgres 18
+  error: 'Postgres: la imagen debe terminar en :18'
+# pass 14
+# fail 1
+
+== 2.3a prisma:deploy renombrado en backend/package.json
+not ok 4 - api: cada npm run existe en backend/package.json y las migraciones son migrate deploy
+  error: 'api: el script "prisma:deploy" no existe en backend/package.json'
+# pass 14
+# fail 1
+
+== 2.3b ADMIN_PASSWORD agregado a api
+not ok 14 - variables prohibidas en el archivo
+  error: 'api: la variable ADMIN_PASSWORD no debe figurar'
+# pass 14
+# fail 1
+
+== 2.3c PORT de api distinto del puerto de API_ORIGIN
+not ok 9 - proxy: API_ORIGIN sale del nombre y el PORT de api
+  error: |-
+# pass 14
+# fail 1
+
+== 2.3d dominio generado en un comentario
+not ok 15 - texto fuente: sin UUIDs ni dominios generados
+  error: 'railway.ts contiene un dominio up.railway.app'
+# pass 14
+# fail 1
+
