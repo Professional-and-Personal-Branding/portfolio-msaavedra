@@ -124,6 +124,6 @@
 
 ## 7. Criterios de aceptación (Fase 6, infraestructura)
 
-- [ ] 7.1 `npx -y @fission-ai/openspec@1.14.1 validate migrate-railway-iac --strict` en verde, y `validate --all --strict` sin fallas nuevas respecto de `main`. **Verificación:** salida en `verification/30-openspec-validate.txt`.
+- [x] 7.1 `npx -y @fission-ai/openspec@1.14.1 validate migrate-railway-iac --strict` en verde, y `validate --all --strict` sin fallas nuevas respecto de `main`. **Verificación:** salida en `verification/30-openspec-validate.txt`.
 - [ ] 7.2 El CI completo en verde, con el job `railway-iac` (y, con P2-A, los e2e sobre Postgres 18). **Verificación:** pestaña *Actions* del PR.
-- [ ] 7.3 Ningún archivo de `backend/src`, `frontend/src`, `backend/prisma`, `frontend/Dockerfile` ni `frontend/Caddyfile` cambió. **Verificación:** `git diff --stat main...HEAD`.
+- [x] 7.3 Ningún archivo de `backend/src`, `frontend/src`, `backend/prisma`, `frontend/Dockerfile` ni `frontend/Caddyfile` cambió. **Verificación:** `git diff --stat main...HEAD`.
