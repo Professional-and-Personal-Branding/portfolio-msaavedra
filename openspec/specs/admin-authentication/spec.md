@@ -78,7 +78,7 @@ Las contraseñas MUST guardarse únicamente como hash argon2id (con sal); nunca 
 - **THEN** la correcta devuelve verdadero y una distinta devuelve falso
 
 ### Requirement: Bootstrap del administrador
-`npm run admin:bootstrap` SHALL crear el administrador a partir de `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `ADMIN_NAME` (o actualizar nombre y contraseña si ya existe, incrementando `sessionVersion` para cerrar las sesiones abiertas) y MUST fallar con mensaje claro si falta email o contraseña. El seed de datos MUST NOT borrar administradores. Sigue siendo la vía de recuperación si se pierde la contraseña.
+`npm run admin:bootstrap` SHALL crear el administrador a partir de `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `ADMIN_NAME` (o actualizarlo, incrementando `sessionVersion`) y MUST fallar con mensaje claro si falta email o contraseña. Con `NODE_ENV=production` MUST rechazar, sin tocar la base, la contraseña de `.env.example` y una de menos de 12 caracteres. El seed MUST NOT borrar administradores. Es la vía de recuperación de la contraseña.
 
 #### Scenario: Primer arranque
 - **WHEN** no existe administrador y se ejecuta el bootstrap con las variables definidas
@@ -99,6 +99,18 @@ Las contraseñas MUST guardarse únicamente como hash argon2id (con sal); nunca 
 #### Scenario: Seed preserva administradores
 - **WHEN** se ejecuta `npm run seed` con un administrador existente
 - **THEN** el administrador sigue existiendo
+
+#### Scenario: Contraseña de ejemplo en producción
+- **WHEN** se ejecuta con `NODE_ENV=production` y `ADMIN_PASSWORD=cambiar-en-primer-arranque`
+- **THEN** el proceso termina con código 1, nombra `ADMIN_PASSWORD` y no crea ni modifica ningún `AdminUser`
+
+#### Scenario: Contraseña de ejemplo fuera de producción
+- **WHEN** se ejecuta con `NODE_ENV=development` y la contraseña de `.env.example`
+- **THEN** avisa que es el valor de ejemplo y crea o actualiza el administrador
+
+#### Scenario: Contraseña corta en producción
+- **WHEN** se ejecuta con `NODE_ENV=production` y una `ADMIN_PASSWORD` de 10 caracteres
+- **THEN** el proceso termina con código 1 indicando el mínimo de 12 y no toca la base
 
 ### Requirement: Sesión del backoffice por cookie httpOnly
 `POST /api/auth/login`, además de devolver el JWT en el cuerpo, SHALL emitir una cookie `portfolio_session` con `httpOnly`, `sameSite=lax`, `path=/`, `secure` cuando `NODE_ENV=production` y `maxAge` igual a `JWT_EXPIRES_IN`. La cookie MUST NOT ser legible desde JavaScript.

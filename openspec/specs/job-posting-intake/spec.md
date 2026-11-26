@@ -189,15 +189,19 @@ Al importar, los términos de la vacante SHALL detectarse sobre el título y la 
 - **THEN** cada tag sugerido pertenece al vocabulario y no se repite
 
 ### Requirement: Texto de la vacante por 90 días
-La descripción SHALL guardarse con `textPurgeAt` a 90 días de la importación y SHALL borrarse, conservando metadatos y términos, al listar, leer o importar vacantes y con `npm run job-postings:purge`, sin depender de ningún scheduler. Reimportar SHALL renovar el plazo.
+La descripción SHALL guardarse con `textPurgeAt` a 90 días de la importación y SHALL borrarse, conservando metadatos y términos, al listar, leer o importar vacantes y con `npm run job-postings:purge -- --apply`, sin depender de ningún scheduler. Sin `--apply`, el comando SHALL solo informar cuántas purgaría, sin escribir. Reimportar SHALL renovar el plazo.
 
 #### Scenario: Purga perezosa
 - **WHEN** con el reloj 91 días después de importar se lista `GET /api/admin/job-postings`
 - **THEN** esa vacante tiene `description: null`, conserva título y términos, y la sugerencia sigue respondiendo
 
 #### Scenario: Comando de purga
-- **WHEN** se corre `npm run job-postings:purge` con dos vacantes vencidas
+- **WHEN** se corre `npm run job-postings:purge -- --apply` con dos vacantes vencidas
 - **THEN** imprime que purgó 2 y termina con código 0
+
+#### Scenario: Simulación por defecto
+- **WHEN** se corre `npm run job-postings:purge` sin `--apply` con dos vacantes vencidas
+- **THEN** imprime que purgaría 2, termina con código 0 y las dos conservan su `description`
 
 ### Requirement: API de vacantes del panel
 Bajo `/api/admin/job-postings`, con sesión de administrador, SHALL existir: `POST` (importar desde `url` o `text`), `GET` (lista por `importedAt` desc), `GET /:id`, `DELETE /:id` (204) y `GET /:id/suggestion`. Sin sesión SHALL responder 401 sin ninguna petición saliente; un id inexistente, 404.

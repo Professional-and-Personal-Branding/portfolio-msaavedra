@@ -28,11 +28,15 @@ La API SHALL leer su configuración desde variables de entorno (`DATABASE_URL`, 
 - **THEN** acepta conexiones en el puerto 3300
 
 ### Requirement: Reglas de las variables de sesión y analítica
-`JWT_SECRET` es obligatoria y MUST tener al menos 16 caracteres. `JWT_EXPIRES_IN` SHALL aceptar segundos o notación `1d`/`12h`/`30m` (default `1d`). `ANALYTICS_SALT` es opcional y SHALL usar `JWT_SECRET` como valor por defecto.
+`JWT_SECRET` es obligatoria y MUST tener al menos 16 caracteres. `JWT_EXPIRES_IN` SHALL aceptar segundos o notación `1d`/`12h`/`30m` (default `1d`). Fuera de producción, `ANALYTICS_SALT` es opcional y SHALL usar `JWT_SECRET` como valor por defecto; con `NODE_ENV=production` la rige el requisito *Arranque seguro en producción*.
 
 #### Scenario: JWT_SECRET ausente o corta
 - **WHEN** la API arranca sin `JWT_SECRET` o con una de 8 caracteres
 - **THEN** el proceso termina con código distinto de 0 y el error menciona `JWT_SECRET`
+
+#### Scenario: Sal por defecto fuera de producción
+- **WHEN** la API arranca con `NODE_ENV=development` y sin `ANALYTICS_SALT`
+- **THEN** arranca normalmente y el hash de IP usa `JWT_SECRET` como sal
 
 ### Requirement: Conexión a la base verificada al arranque
 La API SHALL establecer la conexión a PostgreSQL durante el arranque. Si la base no es alcanzable, el arranque MUST fallar con código distinto de 0 en lugar de quedar escuchando sin datos.
@@ -102,7 +106,7 @@ La API SHALL registrar un filtro de excepciones global que convierta **cualquier
 - **THEN** la respuesta es 400 y conserva los mensajes de `class-validator`, sin exponer la clase del DTO ni el stack
 
 ### Requirement: Arranque seguro en producción
-Con `NODE_ENV=production`, la validación de entorno SHALL impedir el arranque cuando `JWT_SECRET` sea el valor de `.env.example`, tenga menos de 32 caracteres o coincida con `ANALYTICS_SALT`, y cuando `FRONTEND_URL` no use `https`. El mensaje SHALL nombrar la variable y no imprimir su valor.
+Con `NODE_ENV=production`, la validación SHALL impedir el arranque cuando `JWT_SECRET` sea el valor de `.env.example`, tenga menos de 32 caracteres o coincida con `ANALYTICS_SALT`; cuando `ANALYTICS_SALT` falte, tenga menos de 32 caracteres o coincida con una clave de `INTEGRATIONS_KEYS`; y cuando `FRONTEND_URL` no use `https`. El mensaje SHALL nombrar la variable y no imprimir su valor.
 
 #### Scenario: Secreto de ejemplo en producción
 - **WHEN** se arranca con `NODE_ENV=production` y el `JWT_SECRET` que trae `.env.example`
@@ -119,6 +123,18 @@ Con `NODE_ENV=production`, la validación de entorno SHALL impedir el arranque c
 #### Scenario: Desarrollo no se ve afectado
 - **WHEN** se arranca con `NODE_ENV=development`, `FRONTEND_URL=http://localhost:5173` y un secreto de desarrollo
 - **THEN** la API arranca normalmente
+
+#### Scenario: Sal ausente en producción
+- **WHEN** `NODE_ENV=production`, con un `JWT_SECRET` válido y sin `ANALYTICS_SALT`
+- **THEN** el arranque falla nombrando `ANALYTICS_SALT` como obligatoria en producción
+
+#### Scenario: Sal corta en producción
+- **WHEN** `NODE_ENV=production` y `ANALYTICS_SALT` tiene 20 caracteres
+- **THEN** el arranque falla nombrando `ANALYTICS_SALT` e indicando la longitud mínima, sin mostrar su valor
+
+#### Scenario: Sal repetida en el keyring
+- **WHEN** `NODE_ENV=production` y `INTEGRATIONS_KEYS` contiene como clave el mismo valor que `ANALYTICS_SALT`
+- **THEN** el arranque falla nombrando `INTEGRATIONS_KEYS` sin mostrar ningún valor
 
 ### Requirement: Documentación interactiva fuera de producción
 Swagger SHALL publicarse en desarrollo y test, y MUST NOT publicarse cuando `NODE_ENV=production`, salvo que `ENABLE_API_DOCS=true` lo habilite explícitamente.
@@ -206,3 +222,18 @@ La validación de entorno SHALL aceptar `AI_ENABLED` (default `false`), `AI_PROV
 #### Scenario: Clave que no se imprime
 - **WHEN** el arranque falla por otra variable con `ANTHROPIC_API_KEY` definida
 - **THEN** el mensaje de error no contiene el valor de la clave
+
+### Requirement: FRONTEND_URL es un origen
+En cualquier entorno, `FRONTEND_URL` MUST ser un origen: esquema, host y puerto opcional, igual a su forma normalizada, sin barra final, ruta, query, fragmento ni credenciales. Si no lo es, el arranque MUST fallar nombrando `FRONTEND_URL` sin imprimir su valor.
+
+#### Scenario: Barra final
+- **WHEN** la API arranca con `FRONTEND_URL=https://mjsaavedra.is-a.dev/`
+- **THEN** el proceso termina con código distinto de 0 y el error nombra `FRONTEND_URL`
+
+#### Scenario: Con ruta
+- **WHEN** la API arranca con `FRONTEND_URL=https://ejemplo.dev/portafolio`
+- **THEN** el arranque falla nombrando `FRONTEND_URL`
+
+#### Scenario: Origen válido con puerto
+- **WHEN** la API arranca con `NODE_ENV=development` y `FRONTEND_URL=http://localhost:5173`
+- **THEN** arranca normalmente y CORS acepta exactamente ese origen
