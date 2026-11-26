@@ -1,0 +1,195 @@
+{
+  "proyecto": {
+    "raiz": "D:\\projects\\portfolio-msaavedra\\portfolio-msaavedra",
+    "nombre": "portfolio-msaavedra",
+    "paquetes": [
+      "backend/package.json",
+      "frontend/package.json"
+    ]
+  },
+  "stack": {
+    "frameworks": [
+      {
+        "nombre": "react",
+        "version": "^19.2.8"
+      }
+    ],
+    "bundler": [
+      {
+        "nombre": "vite",
+        "version": "^8.2.2"
+      }
+    ],
+    "typescript": "~5.9.3",
+    "gestor": "npm"
+  },
+  "estilos": {
+    "herramientas": [
+      {
+        "nombre": "tailwindcss",
+        "version": "^4.3.3"
+      },
+      {
+        "nombre": "@tailwindcss/vite",
+        "version": "^4.3.3"
+      }
+    ],
+    "sistemasDiseno": [
+      {
+        "nombre": "class-variance-authority",
+        "version": "^0.7.1"
+      }
+    ],
+    "daisyui": null
+  },
+  "iconos": [
+    {
+      "nombre": "lucide-react",
+      "version": "^1.41.0"
+    }
+  ],
+  "graficos": [],
+  "i18n": [],
+  "cssPropio": {
+    "archivos": [
+      {
+        "archivo": "frontend/src/themes/theme.css",
+        "lineas": 231
+      }
+    ],
+    "lineasTotales": 231,
+    "tokens": 67,
+    "coloresDistintos": 12,
+    "familiasTipograficas": [
+      "'Inter'"
+    ],
+    "fuentesRemotas": [
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com",
+      "https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap",
+      "https://fonts.googleapis.com/css2?family=${encodeURIComponent(name",
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
+      "https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2",
+      "https://fonts.googleapis.com/",
+      "https://fonts.googleapis.com\\",
+      "https://fonts.gstatic.com/",
+      "https://fonts.gstatic.com\\"
+    ]
+  },
+  "temas": {
+    "daisyui": [],
+    "prefersColorScheme": true,
+    "atributoDataTheme": true,
+    "claseDark": true,
+    "reducedMotion": true,
+    "viewTransitions": false
+  },
+  "vistas": {
+    "archivos": 150,
+    "htmls": [
+      "backend/src/modules/job-posting/infrastructure/sources/__fixtures__/jsonld-array.html",
+      "backend/src/modules/job-posting/infrastructure/sources/__fixtures__/jsonld-graph.html",
+      "backend/src/modules/job-posting/infrastructure/sources/__fixtures__/jsonld-invalid-then-valid.html",
+      "backend/src/modules/job-posting/infrastructure/sources/__fixtures__/no-jsonld.html",
+      "docs/demo-theming.html",
+      "docs/demo.html",
+      "docs/manual/index.html",
+      "frontend/index.html",
+      "openspec/changes/archive/2026-10-16-improve-a11y-and-performance/audit/lighthouse/admin-login.desktop.report.html",
+      "openspec/changes/archive/2026-10-16-improve-a11y-and-performance/audit/lighthouse/admin-login.mobile.report.html"
+    ],
+    "carpetas": [
+      {
+        "carpeta": "frontend/src/shared/components/ui",
+        "archivos": 20
+      },
+      {
+        "carpeta": "frontend/src/features/backoffice/shared",
+        "archivos": 15
+      },
+      {
+        "carpeta": "frontend/src/features/backoffice/curated-profiles",
+        "archivos": 14
+      },
+      {
+        "carpeta": "frontend/src/shared/components/portfolio",
+        "archivos": 14
+      },
+      {
+        "carpeta": "frontend/src/features/backoffice/integrations",
+        "archivos": 9
+      },
+      {
+        "carpeta": "frontend/src/features/backoffice/proyectos",
+        "archivos": 9
+      },
+      {
+        "carpeta": "frontend/src/features/navigation",
+        "archivos": 9
+      },
+      {
+        "carpeta": "frontend/src/features/backoffice/applications",
+        "archivos": 7
+      },
+      {
+        "carpeta": "frontend/src/app",
+        "archivos": 5
+      },
+      {
+        "carpeta": "frontend/src/features/backoffice/formacion",
+        "archivos": 4
+      }
+    ]
+  },
+  "seguridad": {
+    "cspDeclarada": true,
+    "permiteScriptEnLinea": false,
+    "permiteEstiloEnLinea": false,
+    "fuentesDeTerceros": false,
+    "csp": "Content-Security-Policy-Report-Only</code> en <code>web</code> (solo reporta, sin reconstruir) y mirá la consola. Detalle en <code>DEPLOY.md</code> § 9.5</td></tr>"
+  },
+  "pwa": {
+    "manifest": false,
+    "serviceWorker": false
+  },
+  "pruebas": {
+    "total": 293,
+    "deInterfaz": [
+      "backend/src/modules/theme/application/use-cases/list-themes.use-case.spec.ts",
+      "backend/src/modules/theme/domain/services/merge-theme-tokens.spec.ts",
+      "backend/src/modules/theme/infrastructure/persistence/theme.prisma-mapper.spec.ts",
+      "backend/test/admin-applications.e2e-spec.ts",
+      "backend/test/admin-password.e2e-spec.ts",
+      "backend/test/admin.e2e-spec.ts",
+      "backend/test/ai-env.e2e-spec.ts",
+      "backend/test/ai-foundation.e2e-spec.ts",
+      "backend/test/app.e2e-spec.ts",
+      "backend/test/auth.e2e-spec.ts",
+      "backend/test/background-views.e2e-spec.ts",
+      "backend/test/backoffice.e2e-spec.ts",
+      "backend/test/certifications-credential.e2e-spec.ts",
+      "backend/test/content-admin.e2e-spec.ts",
+      "backend/test/curated-profile-lifecycle.e2e-spec.ts",
+      "backend/test/curated-profile.e2e-spec.ts",
+      "backend/test/cv-consistency.e2e-spec.ts",
+      "backend/test/e2e-helpers.ts",
+      "backend/test/featured-repositories-curated.e2e-spec.ts",
+      "backend/test/featured-repositories.e2e-spec.ts",
+      "backend/test/github-code-evidence.e2e-spec.ts",
+      "backend/test/hardening.e2e-spec.ts",
+      "backend/test/integrations-admin.e2e-spec.ts",
+      "backend/test/integrations-env.e2e-spec.ts",
+      "backend/test/integrations-latency.e2e-spec.ts",
+      "backend/test/integrations-queue.e2e-spec.ts",
+      "backend/test/integrations-redaction.e2e-spec.ts",
+      "backend/test/integrations-rekey.e2e-spec.ts",
+      "backend/test/integrations-shutdown.e2e-spec.ts",
+      "backend/test/job-postings.e2e-spec.ts"
+    ],
+    "conSelectoresCss": 5
+  },
+  "avisos": [
+    "La CSP no permite scripts en línea: descartar librerías que los inyectan.",
+    "La CSP no permite estilos en línea: revisar librerías que escriben atributos style o etiquetas <style> en tiempo de ejecución."
+  ]
+}
