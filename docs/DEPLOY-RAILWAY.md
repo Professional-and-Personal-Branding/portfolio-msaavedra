@@ -25,7 +25,7 @@ flowchart LR
 
 - [ ] Cuenta de Railway con el plan **Hobby** (USD 5 incluidos; el costo es por uso).
 - [ ] El repositorio conectado a Railway (GitHub) y `main` al día con este cambio.
-- [ ] **El CI del último commit de `main` en verde** (pestaña *Actions* de GitHub: backend, frontend y `web-quality`). Railway despliega lo que haya en `main`, pase o no el CI: en este repo privado no hay *required checks* que lo impidan (el único freno posible es *Wait for CI* de los pasos 3 y 5, si el panel lo ofrece).
+- [ ] **El CI del último commit de `main` en verde** (pestaña *Actions* de GitHub: backend, frontend y `web-quality`). Desde el 2026-11-18 el repo es público y `main` exige los 6 checks del CI (*required checks*): un PR en rojo no se puede fusionar. Igual conviene mirarlo antes de desplegar, porque Railway despliega lo que haya en `main` y un push directo de un administrador también tiene que pasar los checks. *Wait for CI* (pasos 3 y 5) suma un segundo freno del lado de Railway.
 - [ ] `openspec/changes/` con **solo `archive/`**: antes del deploy se archivan, en este orden, `polish-pre-deploy-cleanup`, `add-ai-foundation` y `prepare-deploy-1-0-0`. Ningún change a medio implementar en `main`.
 - [ ] En tu máquina: Node 22, `git`, **Docker** (para la prueba de restauración del paso 9) y el `.env` de `backend/` apuntando a **tu base local**, nunca a producción.
 - [ ] Un gestor de contraseñas abierto: ahí van los secretos del paso 1.
@@ -87,7 +87,7 @@ Con `NODE_ENV=production` la API **no arranca** si el `JWT_SECRET` es el del `.e
   Comprobá en el panel que esos campos figuren como definidos por el archivo y que el **Pre-deploy Timeout** diga `300`.
 
   **Versión de Node.** `backend/package.json` fija `"engines": { "node": "22.x" }` y Railpack la respeta. El conector `github` usa `AbortSignal.any`, que exige Node 20.3 o posterior: no bajes de esa versión.
-- [ ] **Wait for CI** (Settings → Deploy), **si el panel lo ofrece**: es el único freno posible mientras el repo siga privado sin *required checks*. Si no aparece, el control es el del paso 0.
+- [ ] **Wait for CI** (Settings → Deploy), **si el panel lo ofrece**: suma un freno del lado de Railway a los *required checks* de `main`. Si no aparece, alcanzan los checks y el control del paso 0.
 - [ ] **App Sleeping apagado** (Settings → Serverless). Si el servicio durmiera, la primera visita del día pagaría el arranque.
 - [ ] Variables → Raw Editor, pegar y completar:
 
