@@ -268,7 +268,7 @@ Queda fuera de este change (P3). Si algún día entra, sería solo `plan` con `-
   - la tarea 6.2 exige verlos en `railway config plan --verbose` y, tras el apply, en `railway environment config --json`;
   - si falta alguno, se usa el respaldo de la tabla de arriba y se anota.
 - **`preserve()` sobre una variable inexistente y deploy al aplicar: no documentados.** Mitigación: el orden de D5 y su criterio de parada (P1).
-- **Postgres 18 contra el CI en 16.** El helper crea Postgres 18 (index.js L225) y los e2e y `web-quality` corren contra `postgres:16-alpine`. Prisma 6 y las 15 migraciones no se probaron sobre 18 (P2).
+- **Postgres 18 contra el CI.** El helper crea Postgres 18 (index.js L225). Resuelto por P2-A: el CI (`backend-e2e` y `web-quality`) corre contra `postgres:18-alpine` y prueba las 15 migraciones sobre la misma versión mayor; el `docker-compose.yml` local sigue en 16 a propósito.
 - **Public Access temporal.** Encender el proxy TCP de Postgres por el panel (pasos 4, 8 y 9) puede aparecer en el siguiente `plan` como algo a quitar, porque el archivo no lo declara. Regla de la guía: no correr `apply` con Public Access encendido; si el plan propone quitar un proxy TCP, es la señal de que quedó encendido.
 - **Dominios generados.** Las docs dicen que no van en el archivo. Se asume que el `plan` los ignora; la tarea 6.4 lo comprueba.
 - **Postgres todavía provisionando** cuando corre el primer pre-deploy de `api`. Si `prisma migrate deploy` falla por conexión, se redespliega `api` desde el panel o con `railway redeploy --service api`. La base sigue vacía y no hay riesgo.
@@ -284,26 +284,10 @@ Queda fuera de este change (P3). Si algún día entra, sería solo `plan` con `-
 
 ## Open Questions
 
-- **P1 [bloqueante para el primer `apply`, no para implementar]** ¿Qué orden se usa en el primer apply, dado que no está documentado qué hace `preserve()` sobre una variable inexistente ni si `apply` despliega?
-  - **A.** `api` vacío y secretos sellados antes del `plan`, con el criterio de parada de D5.
-  - **B.** `apply` directo, aceptando que el primer deploy de `api` falla, y secretos después con un redeploy.
-  - **C.** Una bandera de bootstrap en `railway.ts`.
-  - **Recomendación: A.** No depende de lo no documentado, y el `plan` (solo lectura) confirma el comportamiento antes de escribir nada.
-- **P2 [bloqueante antes del primer `apply`]** ¿Qué versión mayor de Postgres usa producción? Cambiarla después es una migración mayor con datos.
-  - **A.** 18, el default del helper, y en este change subir las imágenes del CI (`e2e` y `web-quality`) a `postgres:18-alpine`, para que las 15 migraciones se prueben sobre la misma versión.
-  - **B.** Fijar 16 con `database("Postgres", "postgres", { image: "ghcr.io/railwayapp-templates/postgres-ssl:16", … })`, igual que el CI. Hay que confirmar que esa etiqueta existe, y se aparta del helper recomendado.
-  - **C.** 18 sin tocar el CI, aceptando la diferencia que la guía ya anotaba.
-  - **Recomendación: A.**
-- **P3 [no bloqueante]** ¿Se suma la GitHub Action `railwayapp/config`?
-  - **A.** No, por ahora (D10).
-  - **B.** Solo `plan` en `push` a `main`, con un token en un *environment* con aprobación, en un change propio.
-  - **C.** Plan en PR y apply al fusionar.
-  - **Recomendación: A.** Si algún día hace falta, B.
-- **P4 [no bloqueante]** ¿El dominio `mjsaavedra.is-a.dev` se declara desde el primer apply (D6)?
-  - **A.** Sí, desde el primero.
-  - **B.** Comentado y descomentado en un PR chico antes de abrir el PR a is-a.dev.
-  - **Recomendación: A.** B también es seguro si el dominio nunca se agrega por fuera del archivo.
-- **P5 [no bloqueante]** ¿Se suma el job `railway-iac` a los *required checks* de `main`?
-  - **A.** Sí: lo hace el owner en Settings → Branches después del merge.
-  - **B.** No: queda informativo.
-  - **Recomendación: A.**
+Resueltas por el owner el 2026-11-25. Ya no hay preguntas abiertas.
+
+- **P1 — Resuelta: A.** Primer arranque con `api` vacío y los secretos cargados y sellados **antes** del `plan` y el `apply` (D5 tal cual, con su criterio de parada).
+- **P2 — Resuelta: A.** Postgres **18** en producción (el helper `postgres()` de IaC) y el CI pasa a `postgres:18-alpine` en este mismo change (`backend-e2e` y `web-quality`), para que las 15 migraciones se prueben sobre la misma versión mayor. El `docker-compose.yml` y el contenedor local del owner no se tocan: el local puede seguir en su versión.
+- **P3 — Resuelta: A.** Sin la GitHub Action `railwayapp/config` (D10). Si algún día hace falta, sería solo `plan` en `push` a `main`, en un change propio.
+- **P4 — Resuelta: A.** El dominio `mjsaavedra.is-a.dev` se declara en `railway.ts` desde el primer `apply` (D6).
+- **P5 — Resuelta: A.** El job `railway-iac` (nombre visible «Infra · IaC de Railway (sin red)») será *required check* de `main`; lo configura el owner después del merge (Settings → Branches).

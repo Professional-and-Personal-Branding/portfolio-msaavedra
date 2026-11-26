@@ -159,18 +159,22 @@ test("proxy: API_ORIGIN sale del nombre y el PORT de api", () => {
   assert.equal(literal(webVars, "API_ORIGIN"), `http://${api.name}.railway.internal:${port}`);
 });
 
-test("dominio: FRONTEND_URL es el origen https del dominio de web y PORT coincide con el del dominio", () => {
+test("dominio: FRONTEND_URL es el origen https de un dominio de web y PORT coincide con el de sus dominios", () => {
   const dominios = Object.keys(web.networking?.customDomains ?? {});
-  assert.equal(dominios.length, 1, "web: se esperaba un solo dominio propio");
-  const dominio = dominios[0] as string;
+  assert.ok(dominios.length >= 1, "web: falta el dominio propio");
   const frontendUrl = literal(apiVars, "FRONTEND_URL");
-  assert.equal(frontendUrl, `https://${dominio}`);
   assert.equal(new URL(frontendUrl).origin, frontendUrl, "FRONTEND_URL debe ser un origen");
-  assert.equal(
-    web.networking?.customDomains?.[dominio]?.port,
-    Number(literal(webVars, "PORT")),
-    "web: el puerto del dominio y PORT difieren",
+  assert.ok(
+    dominios.some((dominio) => frontendUrl === `https://${dominio}`),
+    "FRONTEND_URL no coincide con ningún dominio de web",
   );
+  for (const dominio of dominios) {
+    assert.equal(
+      web.networking?.customDomains?.[dominio]?.port,
+      Number(literal(webVars, "PORT")),
+      `web: el puerto del dominio ${dominio} y PORT difieren`,
+    );
+  }
 });
 
 test("base: DATABASE_URL referencia a Postgres", () => {

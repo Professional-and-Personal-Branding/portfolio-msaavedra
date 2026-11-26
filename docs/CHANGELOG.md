@@ -1,5 +1,15 @@
 # CHANGELOG — Datos del Portafolio
 
+## Update — Noviembre 2026 (`migrate-railway-iac`)
+
+La configuración de Railway pasa de Config as Code a infraestructura como código. Railway deprecó Config as Code: los servicios nuevos no pueden usarlo y los archivos `railway.json` dejan de leerse el 2026-12-01, antes del primer deploy.
+
+- **`.railway/railway.ts`.** Declara el entorno `production`: la base `Postgres` (imagen 18 del helper de IaC), `api` (Railpack, build con `prisma generate`, pre-deploy `prisma migrate deploy`, healthcheck y drenaje) y `web` (Dockerfile, `PORT`, `API_ORIGIN` derivado de `api` y el dominio `mjsaavedra.is-a.dev` desde el primer `apply`). Fuente en `main` con *Wait for CI*. Los secretos (`JWT_SECRET`, `ANALYTICS_SALT`) van con `preserve()`: su valor se carga por CLI antes del primer `plan`. Paquete propio con versiones exactas (`railway` 3.17.0, `typescript` 5.9.3).
+- **Test sin red.** `.railway/railway.test.ts` (`node --test`) comprueba que el archivo siga alineado con `backend/package.json`, el Dockerfile, el Caddyfile, el dominio y los secretos, y que la imagen de Postgres termine en `:18`.
+- **CI.** Job `railway-iac` (*Infra · IaC de Railway (sin red)*): `npm ci`, typecheck y test, sin token ni llamadas a Railway. Los jobs con Postgres (`backend-e2e` y `web-quality`) pasan a `postgres:18-alpine`, la misma versión mayor que producción.
+- **Retirados** `backend/railway.json` y `frontend/railway.json`.
+- **Guías.** `docs/DEPLOY-RAILWAY.md` (primer apply con `api` vacío y secretos sellados, tabla «Qué va por IaC, por CLI y por panel»), `DEPLOY.md`, `DEPLOY-ARCHITECTURE.md` y `RELEASE-1.0.0-CHECKLIST.md`, alineadas con el flujo `railway config plan` → `apply`. Sin cambios en `backend/src`, `frontend/src`, el Dockerfile ni el Caddyfile.
+
 ## Update — Noviembre 2026 (`prepare-deploy-1-0-0`)
 
 Último endurecimiento antes del primer deploy (1.0.0) y guías de deploy alineadas con el código (28 discrepancias de la revisión del 2026-11-18).

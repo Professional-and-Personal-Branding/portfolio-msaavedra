@@ -1,6 +1,6 @@
 # Tasks — migrate-railway-iac
 
-> Referencias: `proposal.md`, `design.md` (D1–D10; P1–P5 con recomendación) y el delta `specs/deployment-infrastructure/spec.md`.
+> Referencias: `proposal.md`, `design.md` (D1–D10; P1–P5 resueltas por el owner el 2026-11-25, todas con la opción A) y el delta `specs/deployment-infrastructure/spec.md`.
 >
 > **Orden:** 1 → 2 → 3 → 4 → 5, y el grupo 6 lo ejecuta el owner en el deploy. La rama sale de `main`. Cada grupo de código va en el mismo commit que su test.
 >
@@ -10,14 +10,14 @@
 
 ## 1. Paquete y archivo de IaC (`.railway/`)
 
-- [ ] 1.1 Crear `.railway/package.json`:
+- [x] 1.1 Crear `.railway/package.json`:
   - `name: portfolio-railway-iac`, `private: true`, `type: module`, `engines.node: 22.x`;
   - devDependencies exactas: `railway` **3.17.0**, `typescript` **5.9.3** y `@types/node` de la línea 22;
   - scripts `typecheck` (`tsc --noEmit -p tsconfig.json`) y `test` (`node --test --experimental-strip-types`).
 
   Generar el `package-lock.json` con `npm install` dentro de `.railway/` (D2). **Verificación:** `npm ci --prefix .railway` termina con código 0; `git status` no muestra `.railway/node_modules`; `backend/package*.json` y `frontend/package*.json` sin cambios.
-- [ ] 1.2 Crear `.railway/tsconfig.json`: `strict`, `module` y `moduleResolution` en `nodenext`, `target: es2023`, `noEmit`, `allowImportingTsExtensions`, `erasableSyntaxOnly`, `verbatimModuleSyntax`, `types: ["node"]` e `include` de `*.ts`. **Verificación:** `npm run typecheck --prefix .railway` sin errores.
-- [ ] 1.3 Escribir `.railway/railway.ts` según D3 y D4:
+- [x] 1.2 Crear `.railway/tsconfig.json`: `strict`, `module` y `moduleResolution` en `nodenext`, `target: es2023`, `noEmit`, `allowImportingTsExtensions`, `erasableSyntaxOnly`, `verbatimModuleSyntax`, `types: ["node"]` e `include` de `*.ts`. **Verificación:** `npm run typecheck --prefix .railway` sin errores.
+- [x] 1.3 Escribir `.railway/railway.ts` según D3 y D4:
   - constantes `REPO`, `SITE_DOMAIN`, `API_NAME` y `API_PORT`;
   - `postgres("Postgres")`;
   - `api` y `web` con las claves exactas de la tabla «Cada ajuste: dónde queda»;
@@ -26,7 +26,7 @@
   - `project("portfolio-msaavedra", { resources: [db, api, web] })`.
 
   Sin UUIDs, sin dominios generados y sin las variables prohibidas de D3. **Verificación:** typecheck en verde y revisión del diff contra la tabla de `design.md` (cada fila presente con su clave).
-- [ ] 1.4 Escribir `.railway/README.md` (corto): qué es el archivo, la versión mínima de la CLI (5.49.1; probada con 5.75.0) y los comandos `npm ci --prefix .railway`, `railway config plan` y `railway config apply`.
+- [x] 1.4 Escribir `.railway/README.md` (corto): qué es el archivo, la versión mínima de la CLI (5.49.1; probada con 5.75.0) y los comandos `npm ci --prefix .railway`, `railway config plan` y `railway config apply`.
   - Reglas: nunca `--yes` ni `--confirm-destructive` sin revisar el plan; no aplicar con el Public Access de Postgres encendido; un artefacto de `--out` va fuera de `.railway/`.
   - Remite a `docs/DEPLOY-RAILWAY.md`.
 
@@ -34,13 +34,13 @@
 
 ## 2. Test de coherencia (`.railway/railway.test.ts`)
 
-- [ ] 2.1 Test con `node:test` y `node:assert/strict`, según D8: importa `./railway.ts` y ejecuta el programa con `createRailwayContext({ environment: "production" })` y `project` de `railway/iac`. Cubre los escenarios de los requisitos *Infraestructura de Railway declarada como código*, *Comandos de api alineados*, *Ajustes de despliegue*, *Proxy, dominio y base* y *Secretos fuera del archivo*:
+- [x] 2.1 Test con `node:test` y `node:assert/strict`, según D8: importa `./railway.ts` y ejecuta el programa con `createRailwayContext({ environment: "production" })` y `project` de `railway/iac`. Cubre los escenarios de los requisitos *Infraestructura de Railway declarada como código*, *Comandos de api alineados*, *Ajustes de despliegue*, *Proxy, dominio y base* y *Secretos fuera del archivo*:
   - lee `../backend/package.json`, `../frontend/<dockerfilePath>` y `../frontend/Caddyfile` con rutas relativas a `import.meta.url`;
   - busca `railway.json` y `railway.toml` en la raíz, `backend/` y `frontend/`.
 
   **Verificación:** `npm test --prefix .railway` en verde.
-- [ ] 2.2 **(P2)** Assert de la imagen de `database.Postgres`: `:18` con la recomendación A. **Verificación:** se cambia a mano la etiqueta esperada a `:17` y el test falla; después se restaura.
-- [ ] 2.3 Pruebas negativas, hechas a mano y **sin commitear**:
+- [x] 2.2 **(P2)** Assert de la imagen de `database.Postgres`: `:18` con la recomendación A. **Verificación:** se cambia a mano la etiqueta esperada a `:17` y el test falla; después se restaura.
+- [x] 2.3 Pruebas negativas, hechas a mano y **sin commitear**:
   - renombrar `prisma:deploy` en una copia del `package.json` leído;
   - agregar `ADMIN_PASSWORD: "x"` a `api`;
   - cambiar `API_PORT` a 3000 sin tocar `API_ORIGIN`;
@@ -50,7 +50,7 @@
 
 ## 3. CI (`.github/workflows/ci.yml`)
 
-- [ ] 3.1 Job `railway-iac` (nombre visible «Infra · IaC de Railway (sin red)»), según D9:
+- [x] 3.1 Job `railway-iac` (nombre visible «Infra · IaC de Railway (sin red)»), según D9:
   - `runs-on: ubuntu-24.04`, `defaults.run.working-directory: .railway`;
   - `actions/checkout@v7`;
   - `actions/setup-node@v7` con `node-version: ${{ env.NODE_VERSION }}`, `cache: npm` y `cache-dependency-path: .railway/package-lock.json`;
@@ -61,11 +61,11 @@
 
 ## 4. Borrar Config as Code
 
-- [ ] 4.1 `git rm backend/railway.json frontend/railway.json`. **Verificación:** el test 2.1 («Sin Config as Code») sigue en verde; `grep -rn "railway.json" --exclude-dir=archive --exclude-dir=node_modules .` solo devuelve menciones históricas en `docs/CHANGELOG.md` y la explicación de la deprecación en las guías.
+- [x] 4.1 `git rm backend/railway.json frontend/railway.json`. **Verificación:** el test 2.1 («Sin Config as Code») sigue en verde; `grep -rn "railway.json" --exclude-dir=archive --exclude-dir=node_modules .` solo devuelve menciones históricas en `docs/CHANGELOG.md` y la explicación de la deprecación en las guías.
 
 ## 5. Documentación
 
-- [ ] 5.1 `docs/DEPLOY-RAILWAY.md`:
+- [x] 5.1 `docs/DEPLOY-RAILWAY.md`:
   - **Encabezado:** la configuración vive en `.railway/railway.ts` y se aplica con `plan` → `apply`; en el panel quedan los backups, el Public Access temporal y la alerta de uso.
   - **Paso 0:**
     - CLI ≥ 5.49.1 (`railway --version`), `railway login` y la app de GitHub de Railway con acceso al repo;
@@ -88,28 +88,28 @@
   - «Nunca» suma: `railway config apply --yes` o `--confirm-destructive` sin leer el plan, y cambiar una variable solo en el panel.
 
   **Verificación:** `grep -n "Config file path\|Config-as-code\|railway.json" docs/DEPLOY-RAILWAY.md` solo devuelve la nota de la deprecación; cada comando nuevo figura en la tabla de `design.md` o en las docs citadas ahí.
-- [ ] 5.2 `docs/DEPLOY.md`: encabezado (línea 7); § 3 «Comandos» (el JSON pasa a un extracto de `railway.ts`) y «Healthcheck»; la fila de `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` (`drainingSeconds` en `railway.ts`); § 4 (la fila de `frontend/railway.json` se reemplaza por `.railway/railway.ts`); § 9.5 (la tabla de archivos y las de `api` y `web` sin *Config file path*, con «lo declara `railway.ts`»). La tabla de variables de `web` suma `PORT=8080` (D4). **Verificación:** `grep -n "railway.json\|Config file path" docs/DEPLOY.md` solo devuelve la nota de la deprecación.
-- [ ] 5.3 `docs/DEPLOY-ARCHITECTURE.md`:
+- [x] 5.2 `docs/DEPLOY.md`: encabezado (línea 7); § 3 «Comandos» (el JSON pasa a un extracto de `railway.ts`) y «Healthcheck»; la fila de `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` (`drainingSeconds` en `railway.ts`); § 4 (la fila de `frontend/railway.json` se reemplaza por `.railway/railway.ts`); § 9.5 (la tabla de archivos y las de `api` y `web` sin *Config file path*, con «lo declara `railway.ts`»). La tabla de variables de `web` suma `PORT=8080` (D4). **Verificación:** `grep -n "railway.json\|Config file path" docs/DEPLOY.md` solo devuelve la nota de la deprecación.
+- [x] 5.3 `docs/DEPLOY-ARCHITECTURE.md`:
   - la línea 5 cambia la lista de archivos versionados;
   - la idea «La configuración está en el repo» (línea 75) dice que el panel solo guarda los backups y el Public Access, y la configuración va en `railway.ts`;
   - en la tabla de fallas (línea 290), la fila de Build remite al plan;
   - en el diagrama del § 12, la caja 3 pasa a «`api` vacío, secretos sellados, plan y apply».
 
   **Verificación:** lectura; los diagramas Mermaid siguen siendo válidos (GitHub los dibuja en la vista previa del PR).
-- [ ] 5.4 `docs/RELEASE-1.0.0-CHECKLIST.md`:
+- [x] 5.4 `docs/RELEASE-1.0.0-CHECKLIST.md`:
   - el ítem «Configuración de despliegue versionada» nombra `.railway/railway.ts` y su test;
   - el ítem ⏳ «Config file path» pasa a «Plan revisado y apply de `.railway/railway.ts`» (pasos 2 y 3);
   - el ítem del CI deja de decir que no hay required checks con el repo privado.
 
   **Verificación:** lectura.
-- [ ] 5.5 `docs/CHANGELOG.md`: entrada «Update — Noviembre 2026 (`migrate-railway-iac`)» al principio, con el porqué (deprecación y cutoff del 2026-12-01), el archivo, el test, el job del CI, los `railway.json` borrados y las guías. Las entradas viejas no se tocan. **Verificación:** lectura.
-- [ ] 5.6 `CLAUDE.md`:
+- [x] 5.5 `docs/CHANGELOG.md`: entrada «Update — Noviembre 2026 (`migrate-railway-iac`)» al principio, con el porqué (deprecación y cutoff del 2026-12-01), el archivo, el test, el job del CI, los `railway.json` borrados y las guías. Las entradas viejas no se tocan. **Verificación:** lectura.
+- [x] 5.6 `CLAUDE.md`:
   - la línea del roadmap «Deploy 1.0.0» nombra `.railway/railway.ts` (y deja `frontend/Dockerfile` y `frontend/Caddyfile`) en lugar de los dos `railway.json`;
   - se suma una línea `migrate-railway-iac` al roadmap;
   - «Decisiones tomadas → Despliegue» agrega: «configuración como IaC en `.railway/railway.ts` (`railway config plan` → `apply`); Config as Code deprecado; los secretos con `preserve()`».
 
   **Verificación:** `grep -n "railway.json" CLAUDE.md` no devuelve nada.
-- [ ] 5.7 **(P2, opción A)** Subir las imágenes de Postgres del CI (`e2e` y `web-quality` en `.github/workflows/ci.yml`) de `postgres:16-alpine` a `postgres:18-alpine`, y en las guías el texto «El CI prueba con Postgres 16». **Verificación:** el CI del PR en verde con las 15 migraciones aplicadas sobre 18 (log del paso de migraciones).
+- [x] 5.7 **(P2, opción A)** Subir las imágenes de Postgres del CI (`e2e` y `web-quality` en `.github/workflows/ci.yml`) de `postgres:16-alpine` a `postgres:18-alpine`, y en las guías el texto «El CI prueba con Postgres 16». **Verificación:** el CI del PR en verde con las 15 migraciones aplicadas sobre 18 (log del paso de migraciones).
 
 ## 6. Primer apply (lo ejecuta el owner; no lo hace la implementación)
 
