@@ -61,9 +61,15 @@ describe('ProfileBuilderPage', () => {
     await waitFor(() => expect(bodies).toHaveLength(1));
 
     await user.click(screen.getByRole('tab', { name: 'Selección' }));
-    await user.click(screen.getByRole('button', { name: 'java', pressed: false }));
-    await user.click(screen.getByRole('button', { name: 'leadership', pressed: false }));
-    await user.click(screen.getByRole('button', { name: 'legacy', pressed: false }));
+    // Tres cambios en renders distintos pero sin esperas entre ellos. Con `user.click` cada clic
+    // es asíncrono y, con la máquina cargada, uno solo puede tardar más que el debounce del
+    // preview (400 ms) y dispararlo a mitad de la tanda: la segunda petición salía sin todos los
+    // tags. `fireEvent` es sincrónico: los tres caen dentro de la ventana y reinician el temporizador.
+    for (const name of ['java', 'leadership', 'legacy']) {
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name, pressed: false }));
+      });
+    }
 
     await waitFor(() => expect(bodies).toHaveLength(2), { timeout: 3000 });
     expect(bodies[1]).toMatchObject({
@@ -629,10 +635,16 @@ describe('ProfileBuilderPage — aviso de faltantes de traducción', () => {
   });
 
   it('mientras el preview carga muestra un estado neutro, no "sin faltantes"', async () => {
+    // La respuesta en EN espera una compuerta que abre el test, no un plazo fijo: así el estado
+    // «comprobando» no depende de qué tan rápido corra la máquina.
+    let releaseEn: () => void = () => {};
+    const enGate = new Promise<void>((resolve) => {
+      releaseEn = resolve;
+    });
     server.use(
       http.post(`${API}/admin/curated-profiles/preview`, async ({ request }) => {
         const en = new URL(request.url).searchParams.get('locale') === 'en';
-        if (en) await new Promise((resolve) => setTimeout(resolve, 600));
+        if (en) await enGate;
         return HttpResponse.json({ ...makeCuratedProfile(), missingTranslations: [] });
       }),
       ...adminHandlers,
@@ -645,6 +657,7 @@ describe('ProfileBuilderPage — aviso de faltantes de traducción', () => {
     const notice = screen.getByTestId('missing-translations');
     expect(notice).toHaveTextContent('Comprobando traducciones en EN');
     expect(notice).not.toHaveTextContent('Sin faltantes');
+    releaseEn();
     await waitFor(() => expect(notice).toHaveTextContent('Sin faltantes de traducción en EN'));
   });
 
